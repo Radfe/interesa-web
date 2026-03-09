@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#102033" offset="0"></stop>
+      <stop stop-color="#0e1622" offset="1"></stop>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#g)"></rect>
+  <g fill="#10b4ff" opacity=".9">
+    <circle cx="1400" cy="150" r="8"></circle>
+    <circle cx="150" cy="700" r="6"></circle>
+    <circle cx="1200" cy="600" r="5"></circle>
+  </g>
+  <text x="80" y="120" font-family="system-ui,Segoe UI,Roboto,Arial" font-size="56" fill="#e9eef6" opacity=".9">Interesa.sk</text>
+  <text x="80" y="190" font-family="system-ui,Segoe UI,Roboto,Arial" font-size="28" fill="#9aa8ba">Ilustračný obrázok – nahraď .webp v /assets/img/articles/</text>
+</svg>

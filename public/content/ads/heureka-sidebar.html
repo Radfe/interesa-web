@@ -1,0 +1,47 @@
+<!-- /content/ads/heureka-sidebar.html -->
+<!-- Heureka – vyhľadávač + TOP produkty v kategórii (stackované nad sebou) -->
+<div class="adstack">
+  <!-- Vyhľadávač -->
+  <section class="widget">
+    <h3 class="widget-title">Vyhľadať na Heureke</h3>
+    <div class="widget-body">
+      <div class="heureka-affiliate-searchpanel"
+           data-trixam-positionid="67512"
+           data-trixam-codetype="iframe"
+           data-trixam-linktarget="top"></div>
+    </div>
+  </section>
+
+  <!-- Top produkty – kategória Výživové doplnky (ID 5526) -->
+  <section class="widget">
+    <h3 class="widget-title">Najpredávanejšie doplnky</h3>
+    <div class="widget-body">
+      <div class="heureka-affiliate-category"
+           data-trixam-positionid="40746"
+           data-trixam-categoryid="5526"
+           data-trixam-categoryfilters=""
+           data-trixam-codetype="iframe"
+           data-trixam-linktarget="top"></div>
+    </div>
+  </section>
+</div>
+
+<!-- Skript načítame bezpečne len raz na stránke -->
+<script>
+  (function(){
+    if (window.__heurekaTrixamLoaded) return;
+    window.__heurekaTrixamLoaded = true;
+    var s = document.createElement('script');
+    s.async = 1;
+    s.src = '//serve.affiliate.heurekashopping.sk/js/trixam.min.js';
+    document.body.appendChild(s);
+  })();
+</script>
+
+<style>
+  /* jemné doladenie vzhľadu v sidebare */
+  .adstack .widget{background:#fff;border:1px solid #e9eef5;border-radius:12px;padding:14px;margin:0 0 16px}
+  .adstack .widget-title{font:600 15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;margin:0 0 10px}
+  .adstack .widget-body{overflow:hidden}
+  .adstack iframe{width:100% !important;border:0}
+</style>

@@ -1,0 +1,31 @@
+/* Jemné „B12“ dochutenie: hero, interakcie, focusy */
+
+.hero-copy h1{ letter-spacing: -0.02em; text-wrap: balance; }
+.hero-copy p{ text-wrap: pretty; }
+
+.hero-figure img{ transform: scale(1.01); transition: transform .8s cubic-bezier(.2,.8,.2,1); }
+.hero-figure:hover img{ transform: scale(1.04); }
+
+a:focus-visible,
+button:focus-visible,
+.mega-caret:focus-visible,
+.nav-toggle-btn:focus-visible{ outline:none; box-shadow: var(--ring); border-radius: 12px; }
+
+.has-mega .mega-col li + li a{ margin-top:.08rem; }
+
+.lead-article p{ margin:.6rem 0; }
+.lead-article h2{ margin:.2rem 0 .4rem; line-height:1.22; }
+
+.site-footer nav a{ padding:.25rem .35rem; border-radius:8px; }
+.site-footer nav a:focus-visible{ box-shadow: var(--ring); }
+
+.card{ transition: transform .12s ease, box-shadow .18s ease, border-color .18s ease; }
+.card:hover{ transform: translateY(-3px); }
+
+/* desktop: jemný „glass“ v tray */
+@media (hover:hover){
+  .mega-tray{ backdrop-filter: blur(6px) saturate(112%); }
+}
+
+/* šetrenie na úzkom mobile */
+@media (max-width: 420px){ .promo-cards{ grid-template-columns: 1fr; } }

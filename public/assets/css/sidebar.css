@@ -1,0 +1,29 @@
+/* ========== Layout ========== */
+.container{max-width:1200px;margin:0 auto;padding:0 16px}
+.layout{display:grid;grid-template-columns:1fr 320px;gap:24px}
+@media (max-width:1024px){ .layout{grid-template-columns:1fr} .sidebar{order:2} }
+
+/* ========== Header ========== */
+.site-header{position:sticky;top:0;background:#fff;border-bottom:1px solid #eef2f6;z-index:10}
+.nav-wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{display:inline-flex;gap:.5rem;align-items:center;font-weight:700;text-decoration:none;color:#111}
+
+/* ========== Hero ========== */
+.hero{margin:24px 0;padding:24px;border-radius:12px;background:linear-gradient(90deg,#f4f8ff,#f8fbff);border:1px solid #eef2f6}
+.hero h1{margin:0 0 6px 0;line-height:1.2}
+
+/* ========== Right sidebar ========== */
+.sidebar .sticky{position:sticky;top:88px}
+.widget{border:1px solid #eef2f6;border-radius:12px;background:#fff;padding:12px;margin:0 0 16px 0}
+.widget h3{margin:6px 0 10px 0;font-size:16px}
+.widget-body{display:flex;justify-content:center}
+.banner-slot{width:100%;display:flex;justify-content:center}
+.banner-slot iframe{max-width:100%}
+
+/* ========== Footer ========== */
+.site-footer{margin-top:28px;border-top:1px solid #eef2f6;background:#fff}
+.foot-wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 0}
+.foot-left{display:flex;align-items:center;gap:10px}
+.brand-txt{font-weight:700}
+.muted{color:#6b7280;font-size:13px}
+.foot-nav a{margin-left:14px;text-decoration:none}
