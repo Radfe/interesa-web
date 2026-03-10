@@ -7,6 +7,10 @@ $metaImage = page_image();
 $metaType = page_type();
 $metaRobots = page_robots();
 $searchQuery = trim((string) ($_GET['q'] ?? ''));
+$pagePublished = isset($page_published) ? (string) $page_published : '';
+$pageModified = isset($page_modified) ? (string) $page_modified : '';
+$pageSection = isset($page_section) ? (string) $page_section : '';
+$pageSchemaExtra = isset($page_schema_extra) && is_array($page_schema_extra) ? $page_schema_extra : [];
 
 $schema = [
     [
@@ -48,7 +52,7 @@ if (count($breadcrumbs) > 1) {
 }
 
 if ($metaType === 'Article') {
-    $schema[] = [
+    $articleSchema = [
         '@context' => 'https://schema.org',
         '@type' => 'Article',
         'headline' => $metaTitle,
@@ -62,6 +66,24 @@ if ($metaType === 'Article') {
             'logo' => ['@type' => 'ImageObject', 'url' => absolute_url(asset('img/logo-full.svg'))],
         ],
     ];
+
+    if ($pagePublished !== '') {
+        $articleSchema['datePublished'] = $pagePublished;
+    }
+    if ($pageModified !== '') {
+        $articleSchema['dateModified'] = $pageModified;
+    }
+    if ($pageSection !== '') {
+        $articleSchema['articleSection'] = $pageSection;
+    }
+
+    $schema[] = $articleSchema;
+}
+
+foreach ($pageSchemaExtra as $schemaExtra) {
+    if (is_array($schemaExtra) && $schemaExtra !== []) {
+        $schema[] = $schemaExtra;
+    }
 }
 ?>
 <!doctype html>

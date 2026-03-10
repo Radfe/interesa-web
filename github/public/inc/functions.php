@@ -448,6 +448,42 @@ if (!function_exists('extract_article_description')) {
     }
 }
 
+if (!function_exists('go_link_map')) {
+    function go_link_map(): array {
+        static $map = null;
+        if (is_array($map)) {
+            return $map;
+        }
+
+        $map = [];
+        $file = __DIR__ . '/go-links.php';
+        if (!is_file($file)) {
+            return $map;
+        }
+
+        require_once $file;
+        if (function_exists('go_links')) {
+            $loaded = go_links();
+            if (is_array($loaded)) {
+                foreach ($loaded as $code => $url) {
+                    if (is_string($url) && trim($url) !== '') {
+                        $map[(string) $code] = $url;
+                    }
+                }
+            }
+        }
+
+        return $map;
+    }
+}
+
+if (!function_exists('go_link_available')) {
+    function go_link_available(string $code): bool {
+        $map = go_link_map();
+        return isset($map[$code]);
+    }
+}
+
 if (!function_exists('article_body_html')) {
     function article_body_html(string $slug): string {
         $file = article_file($slug);
@@ -463,11 +499,22 @@ if (!function_exists('article_body_html')) {
         $html = preg_replace('/^\s*<h1\b[^>]*>.*?<\/h1>\s*/isu', '', $html, 1) ?? $html;
         $html = preg_replace('~href=(["\'])/(clanky|kategorie)/([a-z0-9-]+)\.php((?:[#?][^"\']*)?)\1~i', 'href=$1/$2/$3$4$1', $html) ?? $html;
         $html = preg_replace('~href=(["\'])/(kontakt|affiliate|o-nas|zasady-ochrany-osobnych-udajov)\.php((?:[#?][^"\']*)?)\1~i', 'href=$1/$2$3$1', $html) ?? $html;
+        $html = preg_replace_callback(
+            '~<a\b([^>]*?)href=(["\'])/go/([A-Za-z0-9_-]+)\2([^>]*)>(.*?)<\/a>~isu',
+            static function (array $match): string {
+                $code = (string) ($match[3] ?? '');
+                if ($code !== '' && go_link_available($code)) {
+                    return $match[0];
+                }
+
+                return '<span class="pending-affiliate-link" title="Affiliate odkaz doplníme po overení ponuky">' . ($match[5] ?? '') . '</span>';
+            },
+            $html
+        ) ?? $html;
 
         return trim($html);
     }
 }
-
 if (!function_exists('article_mtime')) {
     function article_mtime(string $slug): int {
         $file = article_file($slug);
@@ -479,6 +526,97 @@ if (!function_exists('article_mtime')) {
     }
 }
 
+if (!function_exists('article_word_count')) {
+    function article_word_count(string $slug): int {
+        $text = clean_excerpt_text(article_body_html($slug));
+        if ($text === '') {
+            return 0;
+        }
+
+        if (preg_match_all('/[\p{L}\p{N}]+(?:[-\/][\p{L}\p{N}]+)*/u', $text, $matches)) {
+            return count($matches[0]);
+        }
+
+        return str_word_count($text);
+    }
+}
+
+if (!function_exists('article_reading_time')) {
+    function article_reading_time(string $slug): int {
+        $words = article_word_count($slug);
+        if ($words <= 0) {
+            return 1;
+        }
+
+        return max(1, (int) ceil($words / 180));
+    }
+}
+
+if (!function_exists('article_outline')) {
+    function article_outline(string $slug, int $limit = 6): array {
+        $html = article_body_html($slug);
+        if ($html === '') {
+            return [];
+        }
+
+        preg_match_all('/<(h2|h3)\b([^>]*)>(.*?)<\/\\1>/isu', $html, $matches, PREG_SET_ORDER);
+        $items = [];
+        foreach ($matches as $match) {
+            $text = clean_excerpt_text($match[3] ?? '');
+            if ($text === '') {
+                continue;
+            }
+
+            $lower = function_exists('mb_strtolower') ? mb_strtolower($text, 'UTF-8') : strtolower($text);
+            if (in_array($lower, ['súvisiace', 'súvisiace články', 'často kladené otázky', 'faq'], true)) {
+                continue;
+            }
+
+            $id = '';
+            if (preg_match('/\bid=(["\'])(.*?)\\1/isu', $match[2] ?? '', $idMatch)) {
+                $id = trim((string) ($idMatch[2] ?? ''));
+            }
+
+            $items[] = [
+                'level' => strtolower((string) ($match[1] ?? 'h2')),
+                'text' => $text,
+                'id' => $id,
+            ];
+
+            if (count($items) >= $limit) {
+                break;
+            }
+        }
+
+        return $items;
+    }
+}
+
+if (!function_exists('article_faq_items')) {
+    function article_faq_items(string $slug): array {
+        $html = article_body_html($slug);
+        if ($html === '') {
+            return [];
+        }
+
+        preg_match_all('/<details\b[^>]*>\s*<summary[^>]*>(.*?)<\/summary>(.*?)<\/details>/isu', $html, $matches, PREG_SET_ORDER);
+        $items = [];
+        foreach ($matches as $match) {
+            $question = clean_excerpt_text($match[1] ?? '');
+            $answer = clean_excerpt_text($match[2] ?? '');
+            if ($question === '' || $answer === '') {
+                continue;
+            }
+
+            $items[] = [
+                'question' => $question,
+                'answer' => trim_excerpt($answer, 320),
+            ];
+        }
+
+        return array_slice($items, 0, 8);
+    }
+}
 if (!function_exists('article_registry')) {
     function article_registry(): array {
         static $articles = null;

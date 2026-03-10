@@ -16,10 +16,36 @@ views_track($slug);
 $meta = article_meta($slug);
 $category = $meta['category'] !== '' ? category_meta($meta['category']) : null;
 $relatedArticles = related_articles($slug, 3);
+$readingTime = article_reading_time($slug);
+$outline = article_outline($slug, 6);
+$faqItems = article_faq_items($slug);
+$updatedIso = $meta['mtime'] > 0 ? date('c', (int) $meta['mtime']) : '';
+$updatedLabel = $meta['mtime'] > 0 ? date('d.m.Y', (int) $meta['mtime']) : '';
 $page_title = $meta['title'] . ' | Interesa';
 $page_description = $meta['description'] !== '' ? $meta['description'] : 'Praktický článok a porovnanie na Interesa.';
 $page_type = 'Article';
 $page_image = $meta['image'];
+$page_section = $category['title'] ?? '';
+$page_published = $updatedIso;
+$page_modified = $updatedIso;
+$page_schema_extra = [];
+if ($faqItems) {
+    $page_schema_extra[] = [
+        '@context' => 'https://schema.org',
+        '@type' => 'FAQPage',
+        'mainEntity' => array_map(
+            static fn(array $item): array => [
+                '@type' => 'Question',
+                'name' => $item['question'],
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text' => $item['answer'],
+                ],
+            ],
+            $faqItems
+        ),
+    ];
+}
 include __DIR__ . '/inc/head.php';
 ?>
 <section class="container two-col">
@@ -43,6 +69,36 @@ include __DIR__ . '/inc/head.php';
 
       <h1><?= esc($meta['title']) ?></h1>
       <?php if ($meta['description'] !== ''): ?><p class="lead"><?= esc($meta['description']) ?></p><?php endif; ?>
+
+      <div class="article-meta-strip">
+        <?php if ($updatedLabel !== ''): ?><span>Aktualizované <?= esc($updatedLabel) ?></span><?php endif; ?>
+        <span><?= (int) $readingTime ?> min čítania</span>
+        <span>Redakčný obsah s transparentným označením affiliate odkazov</span>
+      </div>
+
+      <?php if ($outline): ?>
+        <section class="article-summary-card">
+          <div>
+            <span class="eyebrow">Rýchla orientácia</span>
+            <h2>V článku nájdeš</h2>
+            <p class="section-intro">Najdôležitejšie body, cez ktoré sa vieš rýchlo dostať k praktickému záveru.</p>
+          </div>
+
+          <ul class="summary-list">
+            <?php foreach ($outline as $item): ?>
+              <li>
+                <?php if ($item['id'] !== ''): ?>
+                  <a href="#<?= esc($item['id']) ?>"><?= esc($item['text']) ?></a>
+                <?php else: ?>
+                  <span><?= esc($item['text']) ?></span>
+                <?php endif; ?>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+
+          <p class="disclosure-note">Ak článok obsahuje odporúčané odkazy, môžu byť affiliate. Na cene pre návštevníka sa nič nemení.</p>
+        </section>
+      <?php endif; ?>
 
       <div class="article-body">
         <?= article_body_html($slug) ?>
@@ -95,8 +151,8 @@ include __DIR__ . '/inc/head.php';
     <?php include __DIR__ . '/inc/components/latest_articles.php'; ?>
 
     <article class="ad-card info-panel">
-      <h3>V skratke</h3>
-      <p>Na Interesa sa oplatí prechádzať aj súvisiace témy. Často práve vedľajší článok doplní detail, ktorý pri výbere rozhodne.</p>
+      <h3>Ako čítať odporúčania</h3>
+      <p>Najprv porovnaj typ produktu a cieľ použitia. Až potom rieš značku, príchuť alebo cenu.</p>
     </article>
 
     <article class="ad-card">

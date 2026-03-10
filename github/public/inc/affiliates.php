@@ -13,6 +13,10 @@ function aff_detect_delim(string $headerLine): string {
     return ',';
 }
 
+function aff_is_placeholder_link(string $link): bool {
+    return str_contains($link, 'REPLACE_') || str_contains($link, 'example.com');
+}
+
 function aff_load_map(): array {
     static $cache = null;
     if (is_array($cache)) {
@@ -47,14 +51,14 @@ function aff_load_map(): array {
 
         $delimiter = aff_detect_delim($first);
         rewind($handle);
-        $headers = fgetcsv($handle, 0, $delimiter) ?: [];
+        $headers = fgetcsv($handle, 0, $delimiter, '"', '') ?: [];
 
         $codeIndex = null;
         $linkIndex = null;
         foreach ($headers as $index => $header) {
             $header = strtolower(trim((string) $header, " \t\n\r\0\x0B\"'"));
             if ($header === 'code') { $codeIndex = $index; }
-            if ($header === 'deeplink') { $linkIndex = $index; }
+            if ($header === 'deeplink' || $header === 'url') { $linkIndex = $index; }
         }
 
         if ($codeIndex === null || $linkIndex === null) {
@@ -62,14 +66,14 @@ function aff_load_map(): array {
             $linkIndex = 1;
         }
 
-        while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+        while (($row = fgetcsv($handle, 0, $delimiter, '"', '')) !== false) {
             if (!is_array($row)) {
                 continue;
             }
 
             $code = trim((string) ($row[$codeIndex] ?? ''));
             $link = trim((string) ($row[$linkIndex] ?? ''));
-            if ($code === '' || $link === '' || !preg_match('~^https?://~i', $link)) {
+            if ($code === '' || $link === '' || aff_is_placeholder_link($link) || !preg_match('~^https?://~i', $link)) {
                 continue;
             }
 
