@@ -18,8 +18,8 @@ $ART += [
     'proteiny'
   ],
   'srvatkovy-protein-vs-izolat-vs-hydro' => [
-    'Srvátkový proteín vs. izolát vs. hydro – čo sa oplatí?',
-    'WPC vs. WPI vs. Hydro: rozdiely v laktóze, rýchlosti vstrebávania, cene a použití.',
+    'Srvátkový proteín vs. izolát vs. hydrolyzát – čo sa oplatí?',
+    'WPC, WPI a hydrolyzát v praxi: rozdiely v laktóze, cene, použití a tom, kedy má zmysel platiť za čistejšiu formu.',
     'proteiny'
   ],
   'veganske-proteiny-top-vyber-2025' => [
@@ -33,8 +33,8 @@ $ART += [
     'mineraly'
   ],
   'imunita-prirodne-latky-ktore-funguju' => [
-    'Imunita – 5 prírodných látok, ktoré fungujú',
-    'Vedecky overené doplnky pre obranyschopnosť: D3+K2, C, zinok, echinacea, betaglukány.',
+    'Imunita – ktoré prírodné látky majú zmysel?',
+    'D3, zinok, vitamín C, betaglukány a probiotiká: čo má pri podpore imunity reálny zmysel a čo je skôr marketing.',
     'imunita'
   ],
   'proteiny-na-chudnutie' => [
@@ -48,8 +48,13 @@ $ART += [
     'kreatin'
   ],
   'kolagen-recenzia' => [
-    'Kolagén – recenzie a výber (typ I/II/III)',
-    'Čo sledovať pri kolagéne: forma, typy, gramáž a pridaný vitamín C.',
+    'Kolagén – recenzia a výber podľa typu I, II a III',
+    'Ako vybrať kolagén na kĺby, pokožku a vlasy: rozdiel medzi typmi I, II a III, dávkovanie aj praktické chyby pri kúpe.',
     'klby-koza'
+  ],
+  'vitamin-d3' => [
+    'Vitamín D3 – dávkovanie, formy a praktický výber',
+    'Koľko vitamínu D3 býva praktické, či ho kombinovať s K2 a akú formu zvoliť pri bežnej suplementácii.',
+    'mineraly'
   ],
 ];
