@@ -733,6 +733,199 @@ if (!function_exists('category_articles')) {
     }
 }
 
+if (!function_exists('category_hub_registry')) {
+    function category_hub_registry(): array {
+        return [
+            'proteiny' => [
+                'eyebrow' => 'Obsahový hub',
+                'intro' => 'Ak riešiš proteín prvýkrát, najskôr si ujasni cieľ: chudnutie, doplnenie bielkovín, citlivejšie trávenie alebo rastlinná alternatíva. Až potom má zmysel porovnávať konkrétne typy a značky.',
+                'questions' => [
+                    'Kedy stačí obyčajný WPC a kedy sa oplatí izolát?',
+                    'Aký proteín sa hodí pri chudnutí a ktorý skôr na bežné doplnenie bielkovín?',
+                    'Má clear protein alebo rastlinný proteín reálne výhody, alebo je to len preferencia?',
+                ],
+                'featured' => ['najlepsie-proteiny-2025', 'srvatkovy-protein-vs-izolat-vs-hydro', 'protein-na-chudnutie'],
+                'related' => ['chudnutie', 'vyziva', 'aminokyseliny'],
+            ],
+            'vyziva' => [
+                'eyebrow' => 'Začni základom',
+                'intro' => 'Táto kategória je pre ľudí, ktorí nechcú len jeden doplnok, ale chcú pochopiť, čo z celého sveta výživy naozaj dáva zmysel v bežnom živote.',
+                'questions' => [
+                    'Ktoré doplnky majú zmysel ako rozumný základ a ktoré nie?',
+                    'Ako odlíšiť praktický produkt od marketingového balastu?',
+                    'Kde sa oplatí začať, ak nechceš nakúpiť desať vecí naraz?',
+                ],
+                'featured' => ['doplnky-vyzivy'],
+                'related' => ['mineraly', 'imunita', 'proteiny'],
+            ],
+            'mineraly' => [
+                'eyebrow' => 'Mikroživiny bez chaosu',
+                'intro' => 'Minerály a vitamíny sú typická téma, kde obal a čísla často prehlušia to podstatné. V tejto kategórii nájdeš praktické články, ktoré vysvetľujú formy, dávkovanie a typické chyby pri výbere.',
+                'questions' => [
+                    'Ktorá forma horčíka je vhodná na spánok a ktorá skôr na deň?',
+                    'Koľko D3 alebo zinku býva praktické a kedy netreba preháňať?',
+                    'Na ktoré formy a zloženie sa oplatí pozerať skôr než na veľké čísla na etikete?',
+                ],
+                'featured' => ['horcik-ktory-je-najlepsi-a-preco', 'vitamin-d3', 'zinek'],
+                'related' => ['imunita', 'vyziva', 'klby-koza'],
+            ],
+            'imunita' => [
+                'eyebrow' => 'Dlhodobý základ',
+                'intro' => 'Pri imunite dáva väčší zmysel dlhodobý základ a rozumný výber látok než rýchle „boostre“. Táto kategória prepája D3, zinok, vitamín C aj probiotiká do jedného zrozumiteľného celku.',
+                'questions' => [
+                    'Čo má pri imunite reálny zmysel a čo je skôr reklama?',
+                    'Kedy riešiť D3, zinok alebo probiotiká a kedy stačí upraviť základy?',
+                    'Ako sa pozerať na doplnky pre obranyschopnosť bez prehnaných očakávaní?',
+                ],
+                'featured' => ['imunita-prirodne-latky-ktore-funguju', 'vitamin-d3', 'zinek'],
+                'related' => ['mineraly', 'probiotika-travenie', 'vyziva'],
+            ],
+            'klby-koza' => [
+                'eyebrow' => 'Kĺby, pokožka a regenerácia',
+                'intro' => 'Ak riešiš kolagén, kĺby alebo pokožku, dôležité je najprv rozlíšiť cieľ. Iné produkty sa hodia na kĺby a iné na vzhľad pokožky či vlasov.',
+                'questions' => [
+                    'Aký je rozdiel medzi typmi kolagénu I, II a III?',
+                    'Kedy má zmysel produkt na kĺby a kedy skôr hydrolyzovaný kolagén?',
+                    'Na ktoré dávky a typy sa oplatí pozerať pred kúpou?',
+                ],
+                'featured' => ['kolagen-recenzia', 'kolagen-na-klby-porovnanie', 'klby-a-kolagen'],
+                'related' => ['mineraly', 'vyziva', 'imunita'],
+            ],
+            'kreatin' => [
+                'eyebrow' => 'Výkon bez mýtov',
+                'intro' => 'Kreatín je jedna z najpraktickejších tém na webe, lebo práve tu sa dá veľmi ľahko preplatiť. Stačí vedieť, kedy sa oplatí monohydrát, kedy HCl a prečo nie je nutné komplikovať dávkovanie.',
+                'questions' => [
+                    'Kedy stačí obyčajný monohydrát a kedy uvažovať o HCl?',
+                    'Koľko kreatínu denne stačí a je potrebné nasycovanie?',
+                    'Na čo sa pozerať pri kúpe, aby si neplatil za marketing?',
+                ],
+                'featured' => ['kreatin-porovnanie', 'kedy-brat-kreatin-a-kolko', 'kreatin-monohydrat-vs-hcl'],
+                'related' => ['sila', 'pre-workout', 'vyziva'],
+            ],
+            'probiotika-travenie' => [
+                'eyebrow' => 'Črevo a praktický výber',
+                'intro' => 'Probiotiká sú typická téma, kde nestačí pozrieť len na počet CFU. Tu nájdeš praktický pohľad na kmene, skladovanie, dĺžku užívania a to, čo od probiotík realisticky čakať.',
+                'questions' => [
+                    'Ako vyberať probiotiká podľa kmeňov, CFU a stability?',
+                    'Kedy majú probiotiká zmysel a po akom čase ich hodnotiť?',
+                    'Ako súvisí trávenie s imunitou a prečo nestačí riešiť len kapsulu?',
+                ],
+                'featured' => ['probiotika-ako-vybrat', 'probiotika-a-travenie'],
+                'related' => ['imunita', 'vyziva', 'mineraly'],
+            ],
+            'chudnutie' => [
+                'eyebrow' => 'Redukcia bez skratiek',
+                'intro' => 'Táto kategória prepája témy, ktoré ľudia riešia pri redukcii najčastejšie: proteín, sýtosť, doplnky a realistické očakávania od produktov označených ako „na chudnutie“.',
+                'questions' => [
+                    'Ktorý proteín sa hodí do redukcie a kedy je izolát zbytočný?',
+                    'Majú spaľovače tukov reálny efekt alebo len marketingovú úlohu?',
+                    'Čo pomáha pri chudnutí viac než „dietne“ názvy na obale?',
+                ],
+                'featured' => ['protein-na-chudnutie', 'proteiny-na-chudnutie', 'spalovace-tukov-realita'],
+                'related' => ['proteiny', 'vyziva', 'mineraly'],
+            ],
+            'aminokyseliny' => [
+                'eyebrow' => 'BCAA a EAA zrozumiteľne',
+                'intro' => 'Aminokyseliny pôsobia zložito hlavne na etikete. V tejto kategórii si vieš rýchlo ujasniť, čo znamená BCAA, EAA a kedy ich vôbec riešiť.',
+                'questions' => [
+                    'Aký je rozdiel medzi BCAA a EAA?',
+                    'Kedy aminokyseliny dávajú zmysel a kedy skôr nie?',
+                ],
+                'featured' => ['aminokyseliny-bcaa-eaa', 'bcaa-vs-eaa'],
+                'related' => ['proteiny', 'sila', 'kreatin'],
+            ],
+            'pre-workout' => [
+                'eyebrow' => 'Predtréningovky bez preháňania',
+                'intro' => 'Predtréningovky vedia byť užitočné, ale ľahko sa predávajú cez silné názvy a menej cez obsah. Cieľom tejto kategórie je oddeliť funkčný výber od lacného hype-u.',
+                'questions' => [
+                    'Kedy má pre-workout zmysel a kedy nie?',
+                    'Na ktoré zložky a dávky sa oplatí pozerať?',
+                ],
+                'featured' => ['pre-workout', 'pre-workout-ako-vybrat'],
+                'related' => ['kreatin', 'sila', 'aminokyseliny'],
+            ],
+            'sila' => [
+                'eyebrow' => 'Výkon a regenerácia',
+                'intro' => 'Táto téma prepája výkonové články z kreatínu, predtréningoviek a aminokyselín. Je vhodná najmä vtedy, keď nehľadáš jeden produkt, ale širší prehľad toho, čo má pri výkone reálny zmysel.',
+                'questions' => [
+                    'Ktoré doplnky majú najlepší pomer cena/výkon pri sile a výkone?',
+                    'Kde začať, ak chceš zlepšiť výkon bez zbytočného stacku?',
+                ],
+                'featured' => ['kreatin-porovnanie', 'kedy-brat-kreatin-a-kolko', 'pre-workout-ako-vybrat'],
+                'related' => ['kreatin', 'pre-workout', 'aminokyseliny'],
+            ],
+        ];
+    }
+}
+
+if (!function_exists('category_hub_data')) {
+    function category_hub_data(string $slug): array {
+        $normalized = normalize_category_slug($slug);
+        $category = category_meta($normalized);
+        if ($category === null) {
+            return [];
+        }
+
+        $registry = category_hub_registry();
+        $row = $registry[$normalized] ?? [];
+        $allArticles = category_articles($normalized);
+        $featured = [];
+        $featuredSlugs = [];
+
+        foreach (($row['featured'] ?? []) as $articleSlug) {
+            $file = article_file((string) $articleSlug);
+            if (!is_file($file)) {
+                continue;
+            }
+
+            $item = article_meta((string) $articleSlug);
+            $item['url'] = article_url((string) $articleSlug);
+            $item['image'] = article_img((string) $articleSlug);
+            $item['category_title'] = $category['title'];
+            $item['category_url'] = category_url($category['slug']);
+            $featured[] = $item;
+            $featuredSlugs[$item['slug']] = true;
+        }
+
+        if ($featured === []) {
+            $featured = array_slice($allArticles, 0, 3);
+            foreach ($featured as $item) {
+                $featuredSlugs[$item['slug']] = true;
+            }
+        }
+
+        $remainingArticles = array_values(array_filter(
+            $allArticles,
+            static fn(array $item): bool => !isset($featuredSlugs[$item['slug'] ?? ''])
+        ));
+
+        $relatedCategories = [];
+        foreach (($row['related'] ?? []) as $relatedSlug) {
+            $relatedMeta = category_meta((string) $relatedSlug);
+            if ($relatedMeta === null) {
+                continue;
+            }
+
+            $relatedCategories[] = [
+                'slug' => $relatedMeta['slug'],
+                'title' => $relatedMeta['title'],
+                'description' => $relatedMeta['description'],
+                'url' => category_url($relatedMeta['slug']),
+                'count' => count(category_articles($relatedMeta['slug'])),
+            ];
+        }
+
+        return [
+            'eyebrow' => (string) ($row['eyebrow'] ?? 'Obsahový hub'),
+            'intro' => (string) ($row['intro'] ?? $category['description']),
+            'questions' => array_values(array_filter(array_map('strval', (array) ($row['questions'] ?? [])))),
+            'featured_articles' => $featured,
+            'articles' => $remainingArticles,
+            'related_categories' => $relatedCategories,
+            'article_count' => count($allArticles),
+        ];
+    }
+}
 if (!function_exists('latest_article_items')) {
     function latest_article_items(int $limit = 6, ?string $excludeSlug = null, ?string $category = null): array {
         $items = [];
