@@ -66,15 +66,7 @@ if ($path === '/kategorie') {
 }
 
 if (preg_match('~^/kategorie/([a-z0-9-]+)$~', $path, $m)) {
-    $slug = $m[1];
-    $file = __DIR__ . '/kategorie/' . $slug . '.php';
-
-    if (is_file($file)) {
-        require $file;
-        exit;
-    }
-
-    $_GET['slug'] = $slug;
+    $_GET['slug'] = $m[1];
     require __DIR__ . '/category.php';
     exit;
 }

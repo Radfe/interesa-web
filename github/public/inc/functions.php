@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
 
-if (defined('INTERESA_FUNCS_V5')) { return; }
-define('INTERESA_FUNCS_V5', 1);
+if (defined('INTERESA_FUNCS_V7')) { return; }
+define('INTERESA_FUNCS_V7', 1);
 
 if (!function_exists('esc')) {
     function esc(null|string $value): string {
@@ -152,45 +152,6 @@ if (!function_exists('page_image')) {
     }
 }
 
-if (!function_exists('breadcrumb_items')) {
-    function breadcrumb_items(): array {
-        $path = trim(current_path(), '/');
-        if ($path === '') {
-            return [
-                ['name' => 'Domov', 'url' => absolute_url('/')],
-            ];
-        }
-
-        $items = [
-            ['name' => 'Domov', 'url' => absolute_url('/')],
-        ];
-
-        $segments = explode('/', $path);
-        $accumulator = '';
-        foreach ($segments as $segment) {
-            $accumulator .= '/' . $segment;
-            $items[] = [
-                'name' => humanize_slug($segment),
-                'url' => absolute_url($accumulator),
-            ];
-        }
-
-        return $items;
-    }
-}
-
-if (!function_exists('cta_href')) {
-    function cta_href(string $code): string {
-        return '/go/' . rawurlencode($code);
-    }
-}
-
-if (!function_exists('cta_attrs')) {
-    function cta_attrs(): string {
-        return 'rel="nofollow sponsored" target="_blank"';
-    }
-}
-
 if (!function_exists('humanize_slug')) {
     function humanize_slug(string $slug): string {
         $title = str_replace(['-', '_'], ' ', trim($slug));
@@ -218,7 +179,10 @@ if (!function_exists('normalize_category_slug')) {
         $aliases = [
             'probiotika' => 'probiotika-travenie',
             'vitaminy-mineraly' => 'mineraly',
+            'vitaminy-a-mineraly' => 'mineraly',
             'klby-a-kolagen' => 'klby-koza',
+            'klby-a-koza' => 'klby-koza',
+            'vykon' => 'sila',
         ];
 
         return $aliases[$slug] ?? $slug;
@@ -264,6 +228,70 @@ if (!function_exists('category_icon')) {
 
         $normalized = normalize_category_slug($slug);
         return asset($map[$normalized] ?? 'img/og-default.jpg');
+    }
+}
+
+if (!function_exists('breadcrumb_label')) {
+    function breadcrumb_label(array $segments, int $index): string {
+        $segment = $segments[$index] ?? '';
+
+        if ($index === 0) {
+            return match ($segment) {
+                'clanky' => 'Články',
+                'kategorie' => 'Kategórie',
+                default => humanize_slug($segment),
+            };
+        }
+
+        $parent = $segments[$index - 1] ?? '';
+        if ($parent === 'kategorie') {
+            return category_meta($segment)['title'] ?? humanize_slug($segment);
+        }
+
+        if ($parent === 'clanky') {
+            return article_meta($segment)['title'] ?? humanize_slug($segment);
+        }
+
+        return humanize_slug($segment);
+    }
+}
+
+if (!function_exists('breadcrumb_items')) {
+    function breadcrumb_items(): array {
+        $path = trim(current_path(), '/');
+        if ($path === '') {
+            return [
+                ['name' => 'Domov', 'url' => absolute_url('/')],
+            ];
+        }
+
+        $items = [
+            ['name' => 'Domov', 'url' => absolute_url('/')],
+        ];
+
+        $segments = array_values(array_filter(explode('/', $path)));
+        $accumulator = '';
+        foreach ($segments as $index => $segment) {
+            $accumulator .= '/' . $segment;
+            $items[] = [
+                'name' => breadcrumb_label($segments, $index),
+                'url' => absolute_url($accumulator),
+            ];
+        }
+
+        return $items;
+    }
+}
+
+if (!function_exists('cta_href')) {
+    function cta_href(string $code): string {
+        return '/go/' . rawurlencode($code);
+    }
+}
+
+if (!function_exists('cta_attrs')) {
+    function cta_attrs(): string {
+        return 'rel="nofollow sponsored" target="_blank"';
     }
 }
 
@@ -329,14 +357,125 @@ if (!function_exists('guess_article_category')) {
     }
 }
 
+if (!function_exists('article_file')) {
+    function article_file(string $slug): string {
+        return __DIR__ . '/../content/articles/' . $slug . '.html';
+    }
+}
+
+if (!function_exists('clean_excerpt_text')) {
+    function clean_excerpt_text(string $html): string {
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = str_replace(["\xc2\xa0", '&nbsp;'], ' ', $text);
+        return trim(preg_replace('~\s+~u', ' ', $text) ?? $text);
+    }
+}
+
+if (!function_exists('trim_excerpt')) {
+    function trim_excerpt(string $text, int $limit = 170): string {
+        $text = trim($text);
+        if ($text === '') {
+            return '';
+        }
+
+        if (function_exists('mb_strlen') && function_exists('mb_substr')) {
+            if (mb_strlen($text, 'UTF-8') <= $limit) {
+                return $text;
+            }
+
+            $snippet = mb_substr($text, 0, $limit + 1, 'UTF-8');
+            $snippet = preg_replace('~\s+\S*$~u', '', $snippet) ?? $snippet;
+            return rtrim($snippet, " \t\n\r\0\x0B,.;:-") . '…';
+        }
+
+        if (strlen($text) <= $limit) {
+            return $text;
+        }
+
+        $snippet = substr($text, 0, $limit + 1);
+        $snippet = preg_replace('~\s+\S*$~', '', $snippet) ?? $snippet;
+        return rtrim($snippet, " \t\n\r\0\x0B,.;:-") . '...';
+    }
+}
+
 if (!function_exists('extract_article_title')) {
     function extract_article_title(string $file, string $slug): string {
         $html = @file_get_contents($file);
-        if ($html !== false && preg_match('/<h1[^>]*>(.*?)<\/h1>/is', $html, $match)) {
-            return trim(strip_tags($match[1]));
+        if ($html !== false && preg_match('/<h1[^>]*>(.*?)<\/h1>/isu', $html, $match)) {
+            $title = clean_excerpt_text($match[1]);
+            if ($title !== '') {
+                return $title;
+            }
         }
 
         return humanize_slug($slug);
+    }
+}
+
+if (!function_exists('extract_article_description')) {
+    function extract_article_description(string $file): string {
+        $html = @file_get_contents($file);
+        if ($html === false || trim($html) === '') {
+            return '';
+        }
+
+        $patterns = [
+            '/<p[^>]*class=(?:"[^"]*\bperex\b[^"]*"|\'[^\']*\bperex\b[^\']*\')[^>]*>(.*?)<\/p>/isu',
+            '/<p[^>]*>(.*?)<\/p>/isu',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (!preg_match_all($pattern, $html, $matches)) {
+                continue;
+            }
+
+            foreach ($matches[1] as $fragment) {
+                $text = clean_excerpt_text($fragment);
+                if ($text === '') {
+                    continue;
+                }
+
+                $lower = function_exists('mb_strtolower') ? mb_strtolower($text, 'UTF-8') : strtolower($text);
+                if (str_contains($lower, 'informácie slúžia') || str_contains($lower, 'nenahrádzajú odporúčanie')) {
+                    continue;
+                }
+
+                return trim_excerpt($text, 170);
+            }
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('article_body_html')) {
+    function article_body_html(string $slug): string {
+        $file = article_file($slug);
+        if (!is_file($file)) {
+            return '<p>Obsah pre túto tému ešte pripravujeme.</p>';
+        }
+
+        $html = (string) file_get_contents($file);
+        if (trim($html) === '') {
+            return '<p>Obsah pre túto tému ešte pripravujeme.</p>';
+        }
+
+        $html = preg_replace('/^\s*<h1\b[^>]*>.*?<\/h1>\s*/isu', '', $html, 1) ?? $html;
+        $html = preg_replace('~href=(["\'])/(clanky|kategorie)/([a-z0-9-]+)\.php((?:[#?][^"\']*)?)\1~i', 'href=$1/$2/$3$4$1', $html) ?? $html;
+        $html = preg_replace('~href=(["\'])/(kontakt|affiliate|o-nas|zasady-ochrany-osobnych-udajov)\.php((?:[#?][^"\']*)?)\1~i', 'href=$1/$2$3$1', $html) ?? $html;
+
+        return trim($html);
+    }
+}
+
+if (!function_exists('article_mtime')) {
+    function article_mtime(string $slug): int {
+        $file = article_file($slug);
+        if (!is_file($file)) {
+            return 0;
+        }
+
+        return (int) (filemtime($file) ?: 0);
     }
 }
 
@@ -355,9 +494,22 @@ if (!function_exists('article_registry')) {
         foreach (glob(__DIR__ . '/../content/articles/*.html') ?: [] as $file) {
             $slug = basename($file, '.html');
             $row = $articles[$slug] ?? [];
-            $title = $row[0] ?? extract_article_title($file, $slug);
-            $description = $row[1] ?? '';
-            $category = normalize_category_slug($row[2] ?? guess_article_category($slug));
+            $title = trim((string) ($row[0] ?? ''));
+            $description = trim((string) ($row[1] ?? ''));
+            $category = normalize_category_slug((string) ($row[2] ?? guess_article_category($slug)));
+
+            if ($title === '') {
+                $title = extract_article_title($file, $slug);
+            }
+
+            if ($description === '') {
+                $description = extract_article_description($file);
+            }
+
+            if ($category === '') {
+                $category = guess_article_category($slug);
+            }
+
             $articles[$slug] = [$title, $description, $category];
         }
 
@@ -370,12 +522,19 @@ if (!function_exists('article_meta')) {
     function article_meta(string $slug): array {
         $articles = article_registry();
         $row = $articles[$slug] ?? [humanize_slug($slug), '', ''];
+        $description = trim((string) ($row[1] ?? ''));
+        if ($description === '') {
+            $description = extract_article_description(article_file($slug));
+        }
 
         return [
             'slug' => $slug,
-            'title' => $row[0] ?? humanize_slug($slug),
-            'description' => $row[1] ?? '',
-            'category' => normalize_category_slug($row[2] ?? ''),
+            'title' => trim((string) ($row[0] ?? humanize_slug($slug))) ?: humanize_slug($slug),
+            'description' => $description,
+            'category' => normalize_category_slug((string) ($row[2] ?? '')),
+            'url' => article_url($slug),
+            'image' => article_img($slug),
+            'mtime' => article_mtime($slug),
         ];
     }
 }
@@ -402,20 +561,112 @@ if (!function_exists('category_articles')) {
         $items = [];
 
         foreach (article_registry() as $articleSlug => $row) {
-            $articleCategory = normalize_category_slug($row[2] ?? '');
+            $articleCategory = normalize_category_slug((string) ($row[2] ?? ''));
             if ($articleCategory !== $normalized) {
                 continue;
             }
 
-            $items[$articleSlug] = [
+            $description = trim((string) ($row[1] ?? ''));
+            if ($description === '') {
+                $description = extract_article_description(article_file($articleSlug));
+            }
+
+            $items[] = [
                 'slug' => $articleSlug,
-                'title' => $row[0] ?? humanize_slug($articleSlug),
-                'description' => $row[1] ?? '',
+                'title' => trim((string) ($row[0] ?? humanize_slug($articleSlug))) ?: humanize_slug($articleSlug),
+                'description' => $description,
                 'category' => $articleCategory,
+                'url' => article_url($articleSlug),
+                'image' => article_img($articleSlug),
+                'mtime' => article_mtime($articleSlug),
             ];
         }
 
+        usort($items, static function (array $a, array $b): int {
+            $timeCompare = ($b['mtime'] ?? 0) <=> ($a['mtime'] ?? 0);
+            if ($timeCompare !== 0) {
+                return $timeCompare;
+            }
+
+            return strcmp((string) ($a['title'] ?? ''), (string) ($b['title'] ?? ''));
+        });
+
         return $items;
+    }
+}
+
+if (!function_exists('latest_article_items')) {
+    function latest_article_items(int $limit = 6, ?string $excludeSlug = null, ?string $category = null): array {
+        $items = [];
+        $normalizedCategory = normalize_category_slug($category ?? '');
+
+        foreach (article_registry() as $slug => $row) {
+            if ($excludeSlug !== null && $slug === $excludeSlug) {
+                continue;
+            }
+
+            $articleCategory = normalize_category_slug((string) ($row[2] ?? ''));
+            if ($normalizedCategory !== '' && $articleCategory !== $normalizedCategory) {
+                continue;
+            }
+
+            $description = trim((string) ($row[1] ?? ''));
+            if ($description === '') {
+                $description = extract_article_description(article_file($slug));
+            }
+
+            $items[] = [
+                'slug' => $slug,
+                'title' => trim((string) ($row[0] ?? humanize_slug($slug))) ?: humanize_slug($slug),
+                'description' => $description,
+                'category' => $articleCategory,
+                'category_title' => category_meta($articleCategory)['title'] ?? 'Článok',
+                'category_url' => $articleCategory !== '' ? category_url($articleCategory) : '/kategorie/',
+                'url' => article_url($slug),
+                'image' => article_img($slug),
+                'mtime' => article_mtime($slug),
+            ];
+        }
+
+        usort($items, static function (array $a, array $b): int {
+            $timeCompare = ($b['mtime'] ?? 0) <=> ($a['mtime'] ?? 0);
+            if ($timeCompare !== 0) {
+                return $timeCompare;
+            }
+
+            return strcmp((string) ($a['title'] ?? ''), (string) ($b['title'] ?? ''));
+        });
+
+        return array_slice($items, 0, max(0, $limit));
+    }
+}
+
+if (!function_exists('related_articles')) {
+    function related_articles(string $slug, int $limit = 3): array {
+        $meta = article_meta($slug);
+        $items = [];
+        $seen = [$slug => true];
+
+        foreach (latest_article_items($limit, $slug, $meta['category']) as $item) {
+            $items[] = $item;
+            $seen[$item['slug']] = true;
+        }
+
+        if (count($items) < $limit) {
+            foreach (latest_article_items($limit * 3, $slug) as $item) {
+                if (isset($seen[$item['slug']])) {
+                    continue;
+                }
+
+                $items[] = $item;
+                $seen[$item['slug']] = true;
+                if (count($items) >= $limit) {
+                    break;
+                }
+            }
+        }
+
+        return array_slice($items, 0, $limit);
     }
 }
 

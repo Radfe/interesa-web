@@ -5,7 +5,7 @@ require_once __DIR__ . '/inc/functions.php';
 require_once __DIR__ . '/inc/metrics.php';
 
 $slug = preg_replace('~[^a-z0-9\-_]+~i', '', (string) ($_GET['slug'] ?? ''));
-$file = __DIR__ . '/content/articles/' . $slug . '.html';
+$file = article_file($slug);
 if ($slug === '' || !is_file($file)) {
     http_response_code(404);
     require __DIR__ . '/404.php';
@@ -15,10 +15,11 @@ if ($slug === '' || !is_file($file)) {
 views_track($slug);
 $meta = article_meta($slug);
 $category = $meta['category'] !== '' ? category_meta($meta['category']) : null;
+$relatedArticles = related_articles($slug, 3);
 $page_title = $meta['title'] . ' | Interesa';
 $page_description = $meta['description'] !== '' ? $meta['description'] : 'Praktický článok a porovnanie na Interesa.';
 $page_type = 'Article';
-$page_image = article_img($slug);
+$page_image = $meta['image'];
 include __DIR__ . '/inc/head.php';
 ?>
 <section class="container two-col">
@@ -44,7 +45,7 @@ include __DIR__ . '/inc/head.php';
       <?php if ($meta['description'] !== ''): ?><p class="lead"><?= esc($meta['description']) ?></p><?php endif; ?>
 
       <div class="article-body">
-        <?php readfile($file); ?>
+        <?= article_body_html($slug) ?>
       </div>
 
       <section class="article-actions">
@@ -59,6 +60,34 @@ include __DIR__ . '/inc/head.php';
           <a class="btn btn-ghost" href="/clanky/">Ďalšie články</a>
         </div>
       </section>
+
+      <?php if ($relatedArticles): ?>
+        <section class="related-reading">
+          <div class="section-heading section-heading-tight">
+            <div>
+              <span class="eyebrow">Súvisiace čítanie</span>
+              <h2>Na túto tému nadväzujú aj ďalšie praktické články</h2>
+              <p class="section-intro">Ak chceš lepší kontext pred výberom produktu, toto sú najlepšie ďalšie kroky.</p>
+            </div>
+          </div>
+
+          <div class="grid-cards related-grid">
+            <?php foreach ($relatedArticles as $item): ?>
+              <article class="post-card post-card-compact">
+                <a href="<?= esc($item['url']) ?>">
+                  <img class="thumb" src="<?= esc($item['image']) ?>" alt="<?= esc($item['title']) ?>" loading="lazy" decoding="async">
+                </a>
+                <div class="post-card-body">
+                  <a class="chip" href="<?= esc($item['category_url']) ?>"><?= esc($item['category_title']) ?></a>
+                  <h3><a href="<?= esc($item['url']) ?>"><?= esc($item['title']) ?></a></h3>
+                  <?php if ($item['description'] !== ''): ?><p><?= esc($item['description']) ?></p><?php endif; ?>
+                  <a class="card-link" href="<?= esc($item['url']) ?>">Otvoriť článok</a>
+                </div>
+              </article>
+            <?php endforeach; ?>
+          </div>
+        </section>
+      <?php endif; ?>
     </article>
   </div>
 

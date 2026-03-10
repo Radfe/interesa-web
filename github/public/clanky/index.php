@@ -8,21 +8,7 @@ $page_description = 'Prehľad článkov, recenzií a porovnaní o proteínoch, v
 $page_type = 'CollectionPage';
 include __DIR__ . '/../inc/head.php';
 
-$items = [];
-foreach (article_registry() as $slug => $meta) {
-    $category = category_meta($meta[2] ?? '');
-    $items[] = [
-        'slug' => $slug,
-        'title' => $meta[0] ?? humanize_slug($slug),
-        'description' => $meta[1] ?? '',
-        'url' => article_url($slug),
-        'image' => article_img($slug),
-        'category_title' => $category['title'] ?? 'Článok',
-        'category_url' => $category ? category_url($category['slug']) : '/kategorie/',
-    ];
-}
-
-usort($items, static fn(array $a, array $b): int => strcmp($a['title'], $b['title']));
+$items = latest_article_items(200);
 ?>
 <section class="container content-stack">
   <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -55,7 +41,7 @@ usort($items, static fn(array $a, array $b): int => strcmp($a['title'], $b['titl
           <div class="post-card-body">
             <a class="chip" href="<?= esc($item['category_url']) ?>"><?= esc($item['category_title']) ?></a>
             <h3><a href="<?= esc($item['url']) ?>"><?= esc($item['title']) ?></a></h3>
-            <p><?= esc($item['description']) ?></p>
+            <?php if ($item['description'] !== ''): ?><p><?= esc($item['description']) ?></p><?php endif; ?>
             <a class="btn btn-ghost" href="<?= esc($item['url']) ?>">Čítať článok</a>
           </div>
         </article>

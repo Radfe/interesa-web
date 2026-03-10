@@ -40,11 +40,11 @@ $ART += [
   'kreatin-porovnanie' => [
     'Kreatín – porovnanie a výber (Creapure, monohydrát, HCl)',
     'Najlepší pomer cena/výkon, dávkovanie a nasycovanie – potrebné či nie?',
-    'sila'
+    'kreatin'
   ],
   'kolagen-recenzia' => [
     'Kolagén – recenzie a výber (typ I/II/III)',
     'Čo sledovať pri kolagéne: forma, typy, gramáž a pridaný vitamín C.',
-    'klby-koža'
+    'klby-koza'
   ],
 ];

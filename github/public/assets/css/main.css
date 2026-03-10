@@ -360,3 +360,17 @@ a:hover{color:#0954aa}
   .hero-home .hero-copy h1{font-size:clamp(2.3rem,8vw,3.6rem)}
   .hero-home .hero-copy p{font-size:1.02rem}
 }
+.article-body .perex{font-size:1.08rem;line-height:1.75;color:#24324a;margin:0 0 .2rem}
+.article-body h2{margin:1.4rem 0 .3rem;line-height:1.2}
+.article-body ul,.article-body ol{padding-left:1.2rem}
+.article-body .compare{overflow:hidden;border-radius:14px}
+.related-reading{display:grid;gap:1rem}
+.section-heading-tight{align-items:flex-start;margin-bottom:0}
+.section-heading-tight h2{margin-bottom:.35rem}
+.related-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.post-card-compact .thumb{height:180px}
+.post-card-compact .post-card-body{gap:.7rem}
+.post-card-compact .card-link{font-weight:700}
+@media (max-width:920px){
+  .related-grid{grid-template-columns:1fr}
+}
