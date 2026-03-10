@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../inc/functions.php';
 
-$page_title = 'Clanky | Interesa';
-$page_description = 'Prehlad clankov o proteinoch, vyzive, vitaminoch a mineraloch.';
+$page_title = 'Články | Interesa';
+$page_description = 'Prehľad článkov o proteínoch, výžive, vitamínoch a mineráloch.';
 include __DIR__ . '/../inc/head.php';
 
 $items = [];
@@ -22,9 +22,9 @@ usort($items, static fn($a, $b) => strcmp($a['title'], $b['title']));
 <section class="container two-col">
   <div class="content">
     <article class="card">
-      <h1>Clanky</h1>
+      <h1>Články</h1>
       <?php if (!$items): ?>
-        <p class="note">Zatial tu nie je ziaden clanok.</p>
+        <p class="note">Zatiaľ tu nie je žiaden článok.</p>
       <?php else: ?>
         <ul class="article-list">
           <?php foreach ($items as $item): ?>
@@ -38,12 +38,6 @@ usort($items, static fn($a, $b) => strcmp($a['title'], $b['title']));
     </article>
   </div>
 
-  <aside class="sidebar" aria-label="Pravy panel">
-    <?php include __DIR__ . '/../inc/components/latest_articles.php'; ?>
-    <article class="ad-card">
-      <h3>Heureka vyhladavanie</h3>
-      <div class="heureka-affiliate-searchpanel" data-trixam-positionid="67512" data-trixam-codetype="iframe" data-trixam-linktarget="top"></div>
-    </article>
-  </aside>
+  <?php include __DIR__ . '/../inc/sidebar.php'; ?>
 </section>
-<?php include __DIR__ . '/../inc/footer.php';
+<?php include __DIR__ . '/../inc/footer.php'; ?>

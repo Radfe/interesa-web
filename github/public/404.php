@@ -4,7 +4,7 @@ require_once __DIR__ . '/inc/functions.php';
 http_response_code(404);
 
 $page_title = '404 – Stránka sa nenašla';
-$page_description = 'Je nám ľúto, stránka sa nenašla. Pozrite si hlavné kategórie a články.';
+$page_description = 'Je nám ľúto, stránka sa nenašla. Pozri si hlavné kategórie a články.';
 
 include __DIR__ . '/inc/head.php';
 ?>
@@ -12,7 +12,7 @@ include __DIR__ . '/inc/head.php';
   <div class="content">
     <article class="card">
       <h1>Stránka sa nenašla (404)</h1>
-      <p>Mrzí nás to – adresa neexistuje alebo bola presunutá.</p>
+      <p>Adresa neexistuje alebo bola presunutá.</p>
       <h2>Kam ďalej?</h2>
       <ul class="article-list">
         <li><a href="/">Domov</a></li>
@@ -21,11 +21,7 @@ include __DIR__ . '/inc/head.php';
       </ul>
     </article>
   </div>
-  <aside class="sidebar" aria-label="Pravý panel">
-    <div class="heureka-affiliate-search"
-         data-trixam-positionid="67512"
-         data-trixam-codetype="iframe"
-         data-trixam-linktarget="blank"></div>
-  </aside>
+
+  <?php include __DIR__ . '/inc/sidebar.php'; ?>
 </section>
 <?php include __DIR__ . '/inc/footer.php'; ?>

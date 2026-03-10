@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../inc/functions.php';
-$page_title = 'Vitamíny & minerály – Interesa';
-$page_description = 'Horčík, zinok, vitamíny D3/C a ďalšie mikroživiny. Ako sa zorientovať a čo funguje.';
+$page_title = 'Vitamíny a minerály | Interesa';
+$page_description = 'Horčík, zinok, vitamín D3/C a ďalšie mikroživiny. Ako sa zorientovať a čo funguje.';
 include __DIR__ . '/../inc/head.php';
 ?>
 <section class="container two-col">
   <div class="content">
     <article class="card">
-      <h1>Vitamíny &amp; minerály</h1>
+      <h1>Vitamíny a minerály</h1>
       <p>Praktické návody a výber produktov pre imunitu, energiu aj regeneráciu.</p>
       <h2>Odporúčané články</h2>
       <ul class="article-list">
@@ -21,9 +21,6 @@ include __DIR__ . '/../inc/head.php';
       </ul>
     </article>
   </div>
-  <aside class="sidebar" aria-label="Pravý panel">
-    <div class="heureka-affiliate-search" data-trixam-positionid="67512" data-trixam-codetype="iframe" data-trixam-linktarget="blank"></div>
-    <div class="heureka-affiliate-category" data-trixam-positionid="40746" data-trixam-categoryid="5526" data-trixam-codetype="iframe" data-trixam-linktarget="blank"></div>
-  </aside>
+  <?php include __DIR__ . '/../inc/sidebar.php'; ?>
 </section>
 <?php include __DIR__ . '/../inc/footer.php'; ?>

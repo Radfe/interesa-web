@@ -1,17 +1,11 @@
 <?php
 declare(strict_types=1);
 
-/**
- * Najnovšie články – číta súbory z /content/articles/,
- * zoradí podľa času úpravy a vypíše posledných 6.
- * Žiadne závislosti – funguje aj keď helpery nie sú dostupné.
- */
-
 $dir = __DIR__ . '/../../content/articles';
 $items = [];
 
 if (is_dir($dir)) {
-    foreach (glob($dir . '/*.html') as $file) {
+    foreach (glob($dir . '/*.html') ?: [] as $file) {
         $slug  = basename($file, '.html');
         $title = ucwords(str_replace(['-', '_'], [' ', ' '], $slug));
         $html  = @file_get_contents($file);
@@ -25,33 +19,31 @@ if (is_dir($dir)) {
         }
 
         $items[] = [
-            'slug'  => $slug,
+            'slug' => $slug,
             'title' => $title,
             'mtime' => @filemtime($file) ?: time(),
         ];
     }
 }
 
-usort($items, static fn($a,$b) => $b['mtime'] <=> $a['mtime']);
+usort($items, static fn($a, $b) => $b['mtime'] <=> $a['mtime']);
 $items = array_slice($items, 0, 6);
 
 echo '<article class="ad-card latest-articles">';
 echo '<h3>Najnovšie články</h3>';
 
 if (!$items) {
-    echo '<p class="muted">Zatiaľ nemáme žiadne články.</p>';
+    echo '<p class="muted">Zatiaľ tu nie sú žiadne články.</p>';
     echo '</article>';
     return;
 }
 
 echo '<ul class="latest-list">';
-foreach ($items as $it) {
-    $url  = '/clanky/' . $it['slug'];
-    $date = date('d.m.Y', (int)$it['mtime']);
+foreach ($items as $item) {
+    $url  = '/clanky/' . $item['slug'];
+    $date = date('d.m.Y', (int) $item['mtime']);
     echo '<li>';
-    echo '<a href="' . htmlspecialchars($url, ENT_QUOTES) . '">'
-       . htmlspecialchars($it['title'], ENT_QUOTES)
-       . '</a>';
+    echo '<a href="' . htmlspecialchars($url, ENT_QUOTES) . '">' . htmlspecialchars($item['title'], ENT_QUOTES) . '</a>';
     echo '<span class="date">' . htmlspecialchars($date, ENT_QUOTES) . '</span>';
     echo '</li>';
 }

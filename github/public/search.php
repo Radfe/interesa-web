@@ -4,8 +4,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/inc/functions.php';
 
 $q = trim((string) ($_GET['q'] ?? ''));
-$page_title = ($q !== '' ? 'Hladat: ' . $q : 'Hladat clanky') . ' | Interesa';
-$page_description = 'Vyhladavanie clankov na Interesa.sk';
+$page_title = ($q !== '' ? 'Hľadať: ' . $q : 'Hľadať články') . ' | Interesa';
+$page_description = 'Vyhľadávanie článkov na Interesa.sk';
 include __DIR__ . '/inc/head.php';
 
 function match_article_result(string $slug, array $meta, string $query): ?array {
@@ -41,11 +41,11 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
 <section class="container two-col">
   <div class="content">
     <article class="card">
-      <h1>Hladat</h1>
+      <h1>Hľadať</h1>
       <?php if ($q === ''): ?>
-        <p class="note">Zadaj vyraz do vyhladavania.</p>
+        <p class="note">Zadaj výraz do vyhľadávania.</p>
       <?php else: ?>
-        <p class="note">Vysledky pre: <strong><?= esc($q) ?></strong></p>
+        <p class="note">Výsledky pre: <strong><?= esc($q) ?></strong></p>
         <div class="card-grid">
           <?php
           $hits = [];
@@ -57,13 +57,13 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
           }
           usort($hits, static fn($a, $b) => $b[0] <=> $a[0]);
           if (!$hits) {
-              echo '<p class="note">Nenasli sa ziadne clanky.</p>';
+              echo '<p class="note">Nenašli sa žiadne články.</p>';
           }
           foreach ($hits as [$score, $title, $description, $url]): ?>
             <article class="card">
               <h3><a href="<?= esc($url) ?>"><?= esc($title) ?></a></h3>
               <?php if ($description !== ''): ?><div class="meta"><?= esc($description) ?></div><?php endif; ?>
-              <div class="actions"><a class="btn" href="<?= esc($url) ?>">Citat</a></div>
+              <div class="actions"><a class="btn" href="<?= esc($url) ?>">Čítať</a></div>
             </article>
           <?php endforeach; ?>
         </div>
@@ -71,8 +71,6 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
     </article>
   </div>
 
-  <aside class="sidebar" aria-label="Pravy panel">
-    <?php include __DIR__ . '/inc/components/latest_articles.php'; ?>
-  </aside>
+  <?php include __DIR__ . '/inc/sidebar.php'; ?>
 </section>
-<?php include __DIR__ . '/inc/footer.php';
+<?php include __DIR__ . '/inc/footer.php'; ?>
