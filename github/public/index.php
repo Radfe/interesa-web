@@ -2,43 +2,43 @@
 declare(strict_types=1);
 require_once __DIR__ . '/inc/functions.php';
 
-$page_title = 'Interesa.sk – výživa, proteíny, vitamíny a minerály';
-$page_description = 'Kvalitný obsahový web o doplnkoch, výžive a zdravom výbere produktov. Porovnania, návody, recenzie a praktické odporúčania.';
+$page_title = 'Interesa.sk – výživa, doplnky a praktické porovnania';
+$page_description = 'Praktický sprievodca výživou, doplnkami a funkčnými produktmi. Prehľadné porovnania, recenzie a články, v ktorých sa dá rýchlo zorientovať.';
 $page_type = 'WebSite';
 $page_image = asset('img/hero/hero-1.webp');
 
 $featuredCategories = [
-    ['slug' => 'proteiny', 'article' => 'najlepsie-proteiny-2025', 'label' => 'Najpredávanejšia téma'],
-    ['slug' => 'vyziva', 'article' => 'doplnky-vyzivy', 'label' => 'Každodenné návyky'],
+    ['slug' => 'proteiny', 'article' => 'najlepsie-proteiny-2025', 'label' => 'Najčítanejšia téma'],
+    ['slug' => 'vyziva', 'article' => 'doplnky-vyzivy', 'label' => 'Každodenný výber'],
     ['slug' => 'mineraly', 'article' => 'vitamin-d3', 'label' => 'Silný evergreen'],
 ];
 
 include __DIR__ . '/inc/head.php';
 ?>
-<section class="hero">
+<section class="hero hero-home">
   <div class="container hero-inner">
     <div class="hero-copy">
-      <span class="eyebrow">Obsahový web zameraný na organiku a affiliate</span>
-      <h1>Pomáhame ľuďom vybrať lepšie doplnky, výživu a funkčné produkty bez marketingového balastu.</h1>
-      <p>Interesa prepája kvalitný obsah, prehľadné porovnania a praktické odporúčania. Cieľom je prinášať návštevnosť z vyhľadávania a meniť ju na dôveryhodné kliky na affiliate ponuky.</p>
+      <span class="eyebrow">Praktický sprievodca výživou a doplnkami</span>
+      <h1>Vyber si doplnky a výživu, ktoré naozaj dávajú zmysel.</h1>
+      <p>Na Interesa nájdeš zrozumiteľné porovnania, recenzie a praktické návody. Cieľ je jednoduchý: pomôcť rýchlo sa zorientovať a vybrať si to, čo je pre teba vhodné.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary" href="/clanky/najlepsie-proteiny-2025">Pozrieť top odporúčania</a>
-        <a class="btn btn-ghost" href="/clanky/">Prejsť všetky články</a>
+        <a class="btn btn-primary" href="/clanky/najlepsie-proteiny-2025">Pozrieť top výbery</a>
+        <a class="btn btn-ghost" href="/clanky/">Prejsť články</a>
       </div>
       <ul class="hero-badges">
-        <li>SEO články s praktickým zámerom</li>
-        <li>Čisté kategórie a interné prelinkovanie</li>
-        <li>Affiliate monetizácia cez odporúčania</li>
+        <li>Prehľadné porovnania bez zbytočného balastu</li>
+        <li>Kategórie podľa cieľa a typu produktu</li>
+        <li>Obsah pre otázky, ktoré ľudia riešia najčastejšie</li>
       </ul>
     </div>
 
     <div class="hero-media">
-      <figure class="hero-figure">
+      <figure class="hero-figure hero-visual-card">
         <picture>
           <source srcset="<?= asset('img/hero/hero-1.webp') ?>" type="image/webp">
-          <img src="<?= asset('img/og-default.jpg') ?>" alt="Prehľad kvalitných doplnkov a výživy" width="1920" height="1080" loading="eager" fetchpriority="high" style="aspect-ratio:16/9;object-fit:cover;">
+          <img src="<?= asset('img/og-default.jpg') ?>" alt="Miska s ovocím a zdravou výživou" width="1920" height="1080" loading="eager" fetchpriority="high" style="aspect-ratio:16/9;object-fit:cover;">
         </picture>
-        <figcaption>Obsah, ktorý buduje dôveru aj návštevnosť z vyhľadávania.</figcaption>
+        <figcaption>Obsah, v ktorom sa dá rýchlo zorientovať.</figcaption>
       </figure>
     </div>
   </div>
@@ -46,24 +46,25 @@ include __DIR__ . '/inc/head.php';
 
 <section class="container trust-strip">
   <article class="trust-card">
-    <strong>Poctivé porovnania</strong>
-    <p>Žiadne generické texty. Každá téma smeruje k jasnému výberu, čo kúpiť a pre koho.</p>
+    <strong>Zrozumiteľné vysvetlenie</strong>
+    <p>Každá téma má čitateľovi pomôcť pochopiť rozdiely a rozhodnúť sa bez chaosu.</p>
   </article>
   <article class="trust-card">
-    <strong>Silné money témy</strong>
-    <p>Proteíny, kreatín, horčík, vitamín D3, kolagén a ďalšie kategórie s vysokým potenciálom vyhľadávania.</p>
+    <strong>Praktický výber</strong>
+    <p>Namiesto všeobecných fráz ukazujeme, čo sa hodí na konkrétny cieľ alebo situáciu.</p>
   </article>
   <article class="trust-card">
-    <strong>Obsah + výkon</strong>
-    <p>Web je navrhnutý tak, aby bol rýchly, indexovateľný a pripravený pre ďalšiu CRO optimalizáciu.</p>
+    <strong>Prepojený obsah</strong>
+    <p>Články, kategórie a odporúčania sú navrhnuté tak, aby na seba prirodzene nadväzovali.</p>
   </article>
 </section>
 
 <section class="container content-stack">
   <div class="section-heading">
     <div>
-      <span class="eyebrow">Najdôležitejšie vstupné stránky</span>
-      <h2>Začíname témami, ktoré majú najväčší obchodný potenciál</h2>
+      <span class="eyebrow">Najdôležitejšie témy</span>
+      <h2>Začíname tam, kde ľudia hľadajú najviac odpovedí</h2>
+      <p class="section-intro">Proteíny, zdravá výživa a vitamíny sú témy, kde sa oplatí mať poruke jasné porovnania aj praktické odporúčania.</p>
     </div>
     <a class="btn btn-ghost" href="/kategorie/">Pozrieť všetky kategórie</a>
   </div>
@@ -71,9 +72,6 @@ include __DIR__ . '/inc/head.php';
   <div class="hub-grid">
     <?php foreach ($featuredCategories as $item): $category = category_meta($item['slug']); ?>
       <article class="hub-card">
-        <div class="hub-icon-wrap">
-          <img src="<?= esc(category_icon($item['slug'])) ?>" alt="<?= esc($category['title']) ?>" width="48" height="48">
-        </div>
         <span class="hub-label"><?= esc($item['label']) ?></span>
         <h3><?= esc($category['title']) ?></h3>
         <p><?= esc($category['description']) ?></p>
@@ -91,7 +89,7 @@ include __DIR__ . '/inc/head.php';
     <img src="<?= asset('img/cards/proteiny.webp') ?>" alt="Proteíny a výber na chudnutie" width="1200" height="800" loading="lazy" style="object-fit:cover;">
     <div class="card-body">
       <h3>Proteíny na chudnutie</h3>
-      <p>Najčastejší nákupný intent, kde ľudia hľadajú jasné odporúčanie, nie len všeobecné rady.</p>
+      <p>Téma, kde ľudia hľadajú jasné odporúčanie a rýchle porovnanie jednotlivých typov.</p>
       <a class="card-link" href="/clanky/protein-na-chudnutie">Zobraziť článok</a>
     </div>
   </article>
@@ -100,7 +98,7 @@ include __DIR__ . '/inc/head.php';
     <img src="<?= asset('img/cards/vyziva.webp') ?>" alt="Zdravá výživa a každodenné produkty" width="1200" height="800" loading="lazy" style="object-fit:cover;">
     <div class="card-body">
       <h3>Zdravá výživa</h3>
-      <p>Obsah pre širší long-tail: snacky, kaše, orechy, raňajky a funkčné potraviny.</p>
+      <p>Praktické články o snackoch, kašiach, orechoch a produktoch do bežného dňa.</p>
       <a class="card-link" href="/kategorie/vyziva">Prejsť do kategórie</a>
     </div>
   </article>
@@ -109,7 +107,7 @@ include __DIR__ . '/inc/head.php';
     <img src="<?= asset('img/cards/vitaminy.webp') ?>" alt="Vitamíny a minerály" width="1200" height="800" loading="lazy" style="object-fit:cover;">
     <div class="card-body">
       <h3>Vitamíny a minerály</h3>
-      <p>Evergreen dotazy s vysokou šancou na organickú návštevnosť aj opakované konverzie.</p>
+      <p>Evergreen témy, pri ktorých ľudia riešia dávkovanie, rozdiely medzi formami aj vhodný výber.</p>
       <a class="card-link" href="/kategorie/mineraly">Zistiť viac</a>
     </div>
   </article>
@@ -118,13 +116,12 @@ include __DIR__ . '/inc/head.php';
 <section class="container two-col">
   <div class="content content-stack">
     <article class="lead-article">
-      <span class="eyebrow">Redakčný prístup</span>
-      <h2>Čo musí robiť obsahový affiliate web, aby zarábal</h2>
-      <p class="meta">Nie len publikovať články, ale systematicky pokrývať témy s reálnym nákupným zámerom.</p>
-      <p>Najlepšie fungujú stránky, ktoré ľuďom pomôžu vybrať konkrétny produkt, vysvetlia rozdiely medzi variantmi a zároveň im dajú dôvod veriť odporúčaniu. Preto Interesa stojí na troch pilieroch: kvalitný obsah, čisté kategórie a zmysluplné CTA prvky.</p>
-      <p>V praxi to znamená kombinovať recenzie, porovnania, FAQ články a evergreen články s vysokým dopytom. Tieto stránky potom podporujú hlavné money pages ako „najlepšie proteíny“, „aký horčík vybrať“ alebo „ktorý kolagén kúpiť“.</p>
+      <span class="eyebrow">Ako používať tento web</span>
+      <h2>Začni témou, ktorá ťa zaujíma, a pokračuj cez porovnania a súvisiace články</h2>
+      <p class="meta">Interesa je postavená tak, aby sa dalo rýchlo prejsť z kategórie na konkrétny problém alebo výber produktu.</p>
+      <p>Ak vieš, čo hľadáš, začni vo vyhľadávaní. Ak sa ešte len orientuješ, najrýchlejšia cesta je prejsť cez kategórie a následne si otvoriť články, ktoré riešia konkrétnu otázku, napríklad ktorý proteín zvoliť, aký horčík vybrať alebo kedy má zmysel kreatín.</p>
       <div class="article-actions compact-actions">
-        <a class="btn btn-primary" href="/clanky/najlepsie-proteiny-2025">Pozrieť top money článok</a>
+        <a class="btn btn-primary" href="/clanky/najlepsie-proteiny-2025">Otvoriť top článok</a>
         <a class="btn btn-ghost" href="/search?q=protein">Vyskúšať vyhľadávanie</a>
       </div>
     </article>
@@ -134,11 +131,11 @@ include __DIR__ . '/inc/head.php';
     <?php include __DIR__ . '/inc/components/latest_articles.php'; ?>
 
     <article class="ad-card info-panel">
-      <h3>Prečo tento web môže zarábať</h3>
+      <h3>Ako sa tu nestratiť</h3>
       <ul class="bullet-list">
-        <li>Obsah rieši konkrétny problém a nákupnú otázku.</li>
-        <li>Každý článok smeruje na ďalší krok alebo odporúčanie.</li>
-        <li>Kategórie sa dajú rozširovať o nové long-tail články.</li>
+        <li>Začni kategóriou, ak ešte len zbieraš prehľad.</li>
+        <li>Choď do konkrétneho článku, ak riešiš jeden problém.</li>
+        <li>Pri výbere si vždy otvor aj súvisiace porovnania.</li>
       </ul>
     </article>
 

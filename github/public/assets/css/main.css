@@ -292,3 +292,71 @@ a:hover{color:#0954aa}
   .article-actions{padding:1rem}
   .post-card .thumb{height:200px}
 }
+/* Phase 2 header, navigation and content polish */
+.site-header{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.94);backdrop-filter:blur(16px);border-bottom:1px solid rgba(15,23,42,.08);box-shadow:0 8px 24px rgba(15,23,42,.04)}
+.header-top{display:grid;grid-template-columns:auto minmax(280px,1fr) auto auto;align-items:center;gap:18px;padding:1rem 0 .9rem}
+.nav-toggle{display:none}
+.nav-toggle-btn{display:none;margin-left:0}
+.nav-shell{border-top:1px solid rgba(15,23,42,.06)}
+.nav-shell-inner{padding:.7rem 0 .9rem}
+.brand{display:flex;align-items:center;gap:.85rem;min-width:0}
+.brand-icon{width:44px;height:44px;flex:0 0 auto;border-radius:14px;background:#f4faf6;padding:.25rem;border:1px solid rgba(17,169,109,.12)}
+.brand-copy{display:grid;gap:.08rem;min-width:0}
+.brand-copy strong{font-size:1.3rem;line-height:1;color:#0f172a;letter-spacing:-.02em}
+.brand-copy span{font-size:.92rem;color:var(--muted)}
+.header-search-wrap{width:100%;max-width:560px}
+.header-tools{margin-left:0}
+.site-search{display:flex;align-items:center;gap:.55rem;width:100%;padding:.38rem .42rem .38rem .85rem;background:#f5f7f5;border:1px solid rgba(15,23,42,.08);border-radius:999px;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+.search-input{min-width:0}
+.search-btn{padding:.72rem 1rem;border-radius:999px}
+.header-cta{padding:.78rem 1.15rem;background:#dff0e6;color:#0f8f5b;border:1px solid rgba(17,169,109,.14)}
+.header-cta:hover{background:#cfe8d9;color:#0c7b4e}
+.main-nav{margin-left:0}
+.menu-root{display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;justify-content:flex-start}
+.menu-root>li>a,.menu-root>li>a:hover{color:#10203a}
+.menu-root>li>a{padding:.72rem 1rem;border-radius:999px;border:1px solid rgba(15,23,42,.08);background:#f7faf8;font-weight:700;line-height:1.1}
+.menu-root>li>a:hover{background:#10203a;border-color:#10203a;color:#fff}
+.menu-root>li>a::before,.menu-root>li>a::after,.mega-caret{display:none !important;content:none !important}
+.menu-root>li,.has-mega>.mega,.mega-toggle{all:unset}
+.menu-root>li{display:list-item}
+.hero-home{padding-top:2.2rem}
+.hero-home .hero-copy h1{max-width:12ch;font-size:clamp(2.9rem,4vw + 1rem,5rem);line-height:1.04}
+.hero-home .hero-copy p{font-size:1.15rem;max-width:60ch}
+.hero-visual-card{background:linear-gradient(180deg,#eef6ef 0%,#ffffff 100%)}
+.eyebrow{font-size:.8rem;letter-spacing:.12em}
+.hero-badges{gap:.7rem;margin-top:1.2rem}
+.hero-badges li{font-size:1.02rem}
+.trust-strip{margin-top:.25rem}
+.section-heading{align-items:flex-end}
+.breadcrumbs{display:flex;flex-wrap:wrap;align-items:center;gap:.55rem;color:#64748b;font-size:.95rem}
+.breadcrumbs a{color:#0f6ad6}
+.breadcrumbs span:last-child{color:#0f172a;font-weight:600}
+.article-actions{background:linear-gradient(135deg,rgba(17,169,109,.08),rgba(255,255,255,.88));border:1px solid rgba(17,169,109,.14)}
+.info-panel{background:linear-gradient(180deg,#fbfdfb 0%,#ffffff 100%)}
+.hub-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.category-grid-simple .hub-card{min-height:100%}
+.hub-label{background:#ecf7ef;color:#0f8f5b}
+.footer-grid{padding-top:2.2rem}
+.brand-footer .brand-copy strong{font-size:1.2rem}
+@media (max-width:1180px){
+  .header-top{grid-template-columns:auto minmax(220px,1fr) auto}
+  .header-cta{display:none}
+}
+@media (max-width:920px){
+  .header-top{grid-template-columns:auto 1fr auto;gap:14px}
+  .header-search-wrap{grid-column:1 / -1;order:4;max-width:none}
+  .nav-toggle-btn{display:grid}
+  .nav-shell{display:none;border-top:0}
+  .nav-toggle:checked ~ .nav-shell{display:block}
+  .nav-shell-inner{padding:.4rem 0 .9rem}
+  .main-nav{padding-top:.2rem}
+  .menu-root{flex-direction:column;align-items:stretch;gap:.5rem}
+  .menu-root>li>a{display:block;border-radius:16px;padding:.95rem 1rem;background:#fff}
+  .hero-home .hero-copy h1{max-width:none}
+}
+@media (max-width:720px){
+  .brand-copy span{display:none}
+  .hero-home{padding-top:1.5rem}
+  .hero-home .hero-copy h1{font-size:clamp(2.3rem,8vw,3.6rem)}
+  .hero-home .hero-copy p{font-size:1.02rem}
+}

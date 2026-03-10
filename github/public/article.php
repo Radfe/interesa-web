@@ -23,14 +23,19 @@ include __DIR__ . '/inc/head.php';
 ?>
 <section class="container two-col">
   <div class="content content-stack">
-    <article class="lead-article article-shell">
-      <nav class="muted" aria-label="Breadcrumb">
-        <a href="/">Domov</a> &rsaquo; <a href="/clanky/">Články</a>
-        <?php if ($category !== null): ?>
-          &rsaquo; <a href="<?= esc(category_url($category['slug'])) ?>"><?= esc($category['title']) ?></a>
-        <?php endif; ?>
-      </nav>
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/">Domov</a>
+      <span aria-hidden="true">/</span>
+      <a href="/clanky/">Články</a>
+      <?php if ($category !== null): ?>
+        <span aria-hidden="true">/</span>
+        <a href="<?= esc(category_url($category['slug'])) ?>"><?= esc($category['title']) ?></a>
+      <?php endif; ?>
+      <span aria-hidden="true">/</span>
+      <span><?= esc($meta['title']) ?></span>
+    </nav>
 
+    <article class="lead-article article-shell">
       <?php if ($category !== null): ?>
         <a class="chip" href="<?= esc(category_url($category['slug'])) ?>"><?= esc($category['title']) ?></a>
       <?php endif; ?>
@@ -44,8 +49,8 @@ include __DIR__ . '/inc/head.php';
 
       <section class="article-actions">
         <div>
-          <h2>Chceš pokračovať vo výbere?</h2>
-          <p>Prejdi na ďalšie tematické články alebo otvor kategóriu s podobným obsahom a porovnaniami.</p>
+          <h2>Pokračovať v téme</h2>
+          <p>Ak si chceš porovnať ďalšie varianty alebo prejsť širší kontext, pokračuj do súvisiacej kategórie alebo ďalších článkov.</p>
         </div>
         <div class="action-row">
           <?php if ($category !== null): ?>
@@ -61,8 +66,8 @@ include __DIR__ . '/inc/head.php';
     <?php include __DIR__ . '/inc/components/latest_articles.php'; ?>
 
     <article class="ad-card info-panel">
-      <h3>Tip pre výber</h3>
-      <p>Najlepšie fungujú stránky, ktoré čitateľa posunú ďalej: na porovnanie, kategóriu alebo konkrétne odporúčanie.</p>
+      <h3>V skratke</h3>
+      <p>Na Interesa sa oplatí prechádzať aj súvisiace témy. Často práve vedľajší článok doplní detail, ktorý pri výbere rozhodne.</p>
     </article>
 
     <article class="ad-card">

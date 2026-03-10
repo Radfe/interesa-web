@@ -101,69 +101,46 @@ if ($metaType === 'Article') {
   <a class="skip-link" href="#obsah">Preskočiť na obsah</a>
 
   <header class="site-header">
-    <div class="container header-inner">
+    <div class="container header-top">
       <a class="brand" href="/" aria-label="Domovská stránka Interesa">
-        <img src="<?= asset('img/logo-full.svg') ?>" alt="Interesa.sk" width="148" height="32" />
+        <img class="brand-icon" src="<?= asset('img/logo-icon.svg') ?>" alt="" width="44" height="44" aria-hidden="true" />
+        <span class="brand-copy">
+          <strong>Interesa</strong>
+          <span>Výživa a doplnky bez chaosu</span>
+        </span>
       </a>
 
-      <div class="header-tools">
+      <div class="header-search-wrap">
         <form class="site-search" action="/search" method="get" role="search" aria-label="Vyhľadávanie na webe">
           <label class="sr-only" for="site-search-input">Hľadať články</label>
-          <input id="site-search-input" class="search-input" type="search" name="q" value="<?= esc($searchQuery) ?>" placeholder="Hľadať články, porovnania a tipy" />
+          <input id="site-search-input" class="search-input" type="search" name="q" value="<?= esc($searchQuery) ?>" placeholder="Hľadať články, recenzie a porovnania" />
           <button class="search-btn" type="submit">Hľadať</button>
         </form>
-        <a class="header-cta" href="/clanky/najlepsie-proteiny-2025">Top výber</a>
       </div>
 
-      <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
+      <a class="header-cta" href="/clanky/najlepsie-proteiny-2025">Top výbery</a>
       <label for="nav-toggle" class="nav-toggle-btn" aria-label="Zobraziť menu" aria-controls="hlavne-menu" aria-expanded="false">
         <span class="bar"></span><span class="bar"></span><span class="bar"></span>
       </label>
+    </div>
 
-      <nav id="hlavne-menu" class="main-nav" aria-label="Hlavná navigácia">
-        <ul class="menu-root">
-          <li class="has-mega">
-            <a href="/kategorie/proteiny" data-mega="proteiny">Proteíny</a>
-            <input type="checkbox" id="mm-proteiny" class="mega-toggle" aria-hidden="true" />
-            <label class="mega-caret" for="mm-proteiny" aria-label="Rozbaliť menu Proteíny"></label>
-            <div class="mega" role="region" aria-label="Proteíny podmenu">
-              <div class="mega-col">
-                <h3>Typy</h3>
-                <ul>
-                  <li><a href="/kategorie/proteiny#srvatkove">Srvátkové WPC/WPI</a></li>
-                  <li><a href="/kategorie/proteiny#rastlinne">Rastlinné</a></li>
-                  <li><a href="/kategorie/proteiny#vegan">Vegan blend</a></li>
-                </ul>
-              </div>
-              <div class="mega-col">
-                <h3>Ciele</h3>
-                <ul>
-                  <li><a href="/kategorie/proteiny#chudnutie">Chudnutie</a></li>
-                  <li><a href="/kategorie/proteiny#regeneracia">Regenerácia</a></li>
-                  <li><a href="/kategorie/proteiny#rychly-snack">Rýchly snack</a></li>
-                </ul>
-              </div>
-              <div class="mega-col">
-                <h3>Money články</h3>
-                <ul>
-                  <li><a href="/clanky/najlepsie-proteiny-2025">Najlepšie proteíny 2025</a></li>
-                  <li><a href="/clanky/protein-na-chudnutie">Proteín na chudnutie</a></li>
-                  <li><a href="/clanky/srvatkovy-protein-vs-izolat-vs-hydro">WPC vs. izolát vs. hydro</a></li>
-                </ul>
-              </div>
-            </div>
-          </li>
-          <li><a href="/kategorie/vyziva">Zdravá výživa</a></li>
-          <li><a href="/kategorie/mineraly">Vitamíny a minerály</a></li>
-          <li><a href="/kategorie/imunita">Imunita</a></li>
-          <li><a href="/kategorie/sila">Sila a výkon</a></li>
-          <li><a href="/kategorie/klby-koza">Kĺby a koža</a></li>
-          <li><a href="/clanky/">Články</a></li>
-          <li><a href="/kontakt">Kontakt</a></li>
-        </ul>
-      </nav>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
+
+    <div class="nav-shell">
+      <div class="container nav-shell-inner">
+        <nav id="hlavne-menu" class="main-nav" aria-label="Hlavná navigácia">
+          <ul class="menu-root">
+            <li><a href="/clanky/">Porovnania</a></li>
+            <li><a href="/kategorie/proteiny">Proteíny</a></li>
+            <li><a href="/kategorie/vyziva">Zdravá výživa</a></li>
+            <li><a href="/kategorie/mineraly">Vitamíny</a></li>
+            <li><a href="/kategorie/sila">Výkon</a></li>
+            <li><a href="/kategorie/klby-koza">Kĺby</a></li>
+            <li><a href="/kontakt">Kontakt</a></li>
+          </ul>
+        </nav>
+      </div>
     </div>
   </header>
 
-  <div id="megaTray" class="mega-tray" aria-hidden="true"></div>
   <main id="obsah">

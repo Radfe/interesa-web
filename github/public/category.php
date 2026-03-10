@@ -19,8 +19,16 @@ include __DIR__ . '/inc/head.php';
 ?>
 <section class="container two-col">
   <div class="content content-stack">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/">Domov</a>
+      <span aria-hidden="true">/</span>
+      <a href="/kategorie/">Kategórie</a>
+      <span aria-hidden="true">/</span>
+      <span><?= esc($category['title']) ?></span>
+    </nav>
+
     <article class="lead-article category-hero">
-      <span class="eyebrow">Obsahový hub</span>
+      <span class="eyebrow">Prehľad témy</span>
       <h1><?= esc($category['title']) ?></h1>
       <p class="lead"><?= esc($category['description']) ?></p>
       <div class="article-actions compact-actions">
@@ -32,7 +40,7 @@ include __DIR__ . '/inc/head.php';
     <?php if (!$articles): ?>
       <article class="card legal-card">
         <h2>Obsah pre túto kategóriu pripravujeme</h2>
-        <p>Najbližší krok je doplniť sériu článkov, ktoré pokryjú výber, porovnania aj časté otázky používateľov.</p>
+        <p>Najbližší krok je doplniť sériu článkov, ktoré pokryjú výber, porovnania aj časté otázky.</p>
       </article>
     <?php else: ?>
       <div class="grid-cards article-card-grid">
@@ -56,8 +64,8 @@ include __DIR__ . '/inc/head.php';
   <aside class="sidebar" aria-label="Pravý panel">
     <?php include __DIR__ . '/inc/components/latest_articles.php'; ?>
     <article class="ad-card info-panel">
-      <h3>Ako zarába táto kategória</h3>
-      <p>Najsilnejšie stránky v kategórii kombinujú evergreen SEO otázky, nákupné porovnania a jasné prelinkovanie na ďalšie relevantné témy.</p>
+      <h3>Čo tu nájdeš</h3>
+      <p>Prehľad článkov, ktoré sa točia okolo jednej témy a pomáhajú zorientovať sa krok po kroku.</p>
     </article>
     <article class="ad-card">
       <h3>Heureka vyhľadávanie</h3>

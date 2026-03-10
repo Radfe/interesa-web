@@ -2,12 +2,18 @@
 <footer class="site-footer">
   <div class="container footer-grid">
     <div class="footer-col footer-branding">
-      <img src="<?= asset('img/logo-full.svg') ?>" alt="Interesa" width="148" height="32" />
-      <p class="footer-note">Interesa je obsahový web o výžive, doplnkoch a výbere produktov. Staviame na zrozumiteľnom vysvetlení, praktických porovnaniach a poctivých odporúčaniach.</p>
+      <a class="brand brand-footer" href="/" aria-label="Domovská stránka Interesa">
+        <img class="brand-icon" src="<?= asset('img/logo-icon.svg') ?>" alt="" width="44" height="44" aria-hidden="true" />
+        <span class="brand-copy">
+          <strong>Interesa</strong>
+          <span>Výživa a doplnky bez chaosu</span>
+        </span>
+      </a>
+      <p class="footer-note">Interesa prináša prehľadné články, porovnania a praktické návody, aby sa človek vedel rýchlo zorientovať vo výžive a doplnkoch.</p>
     </div>
 
     <div class="footer-col">
-      <h3>Najdôležitejšie sekcie</h3>
+      <h3>Obsah</h3>
       <ul class="link-list">
         <li><a href="/clanky/">Články</a></li>
         <li><a href="/kategorie/">Kategórie</a></li>
@@ -29,7 +35,7 @@
 
   <div class="container footer-bottom">
     <p>&copy; <span id="year"></span> Interesa. Všetky práva vyhradené.</p>
-    <p>Niektoré odkazy môžu byť affiliate. Pri nákupe cez ne sa cena pre teba nemení, ale web tým získava províziu.</p>
+    <p>Niektoré odkazy môžu byť affiliate. Na cene pre návštevníka sa nič nemení.</p>
   </div>
 </footer>
 
