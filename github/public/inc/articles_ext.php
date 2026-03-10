@@ -8,9 +8,14 @@ if (!isset($ART) || !is_array($ART)) { $ART = []; }
 
 $ART += [
   'doplnky-vyzivy' => [
-    'Doplnky výživy – top výber 2025',
-    'Najpoužívanejšie doplnky: kreatín, D3+K2, magnézium, kolagén a omega-3. Výber podľa cieľa, dávky a kvality.',
+    'Doplnky výživy – ktoré majú zmysel a ako vybrať rozumný základ',
+    'Praktický sprievodca doplnkami výživy: čo má zmysel, ako skladať jednoduchý základ a ako odfiltrovať marketingový balast.',
     'vyziva'
+  ],
+  'najlepsie-proteiny-2025' => [
+    'Najlepšie proteíny 2025 – ako vybrať správny typ podľa cieľa',
+    'Praktický prehľad proteínov podľa cieľa: WPC, WPI, clear protein aj rastlinné varianty bez zbytočného marketingového balastu.',
+    'proteiny'
   ],
   'srvatkovy-protein-vs-izolat-vs-hydro' => [
     'Srvátkový proteín vs. izolát vs. hydro – čo sa oplatí?',
@@ -24,7 +29,7 @@ $ART += [
   ],
   'horcik-ktory-je-najlepsi-a-preco' => [
     'Horčík – ktorý je najlepší a prečo?',
-    'Porovnali sme rôzne formy Mg a ich vstrebateľnosť: bisglycinát, citrát, malát, oxid.',
+    'Bisglycinát, citrát, malát a oxid: ktorá forma horčíka sa hodí na spánok, trávenie alebo bežné denné užívanie.',
     'mineraly'
   ],
   'imunita-prirodne-latky-ktore-funguju' => [
@@ -38,8 +43,8 @@ $ART += [
     'proteiny'
   ],
   'kreatin-porovnanie' => [
-    'Kreatín – porovnanie a výber (Creapure, monohydrát, HCl)',
-    'Najlepší pomer cena/výkon, dávkovanie a nasycovanie – potrebné či nie?',
+    'Kreatín – porovnanie foriem, dávkovanie a výber',
+    'Monohydrát, Creapure a HCl: čo sa oplatí, ako dávkovať kreatín a kedy nemá zmysel preplácať drahšie verzie.',
     'kreatin'
   ],
   'kolagen-recenzia' => [
