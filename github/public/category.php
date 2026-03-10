@@ -14,6 +14,29 @@ if ($slug === '' || $category === null) {
 $articles = category_articles($slug);
 $page_title = $category['title'] . ' | Interesa';
 $page_description = $category['description'];
+$page_canonical = category_url($category['slug']);
+$page_image = asset('img/og-default.jpg');
+$page_og_type = 'website';
+$page_schema = [
+    breadcrumb_schema([
+        ['name' => 'Domov', 'url' => '/'],
+        ['name' => 'Kategórie', 'url' => '/kategorie'],
+        ['name' => $category['title'], 'url' => $page_canonical],
+    ]),
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'CollectionPage',
+        'name' => $category['title'],
+        'description' => $category['description'],
+        'url' => absolute_url($page_canonical),
+        'isPartOf' => [
+            '@type' => 'WebSite',
+            'name' => 'Interesa',
+            'url' => absolute_url('/'),
+        ],
+    ],
+];
+
 include __DIR__ . '/inc/head.php';
 ?>
 <section class="container two-col">

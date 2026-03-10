@@ -4,6 +4,7 @@ require_once __DIR__ . '/inc/functions.php';
 
 $page_title = 'Odkaz do e-shopu sa nenašiel';
 $page_description = 'Je nám ľúto, ale affiliate kód neexistuje alebo nie je zatiaľ priradený.';
+$page_robots = 'noindex,nofollow';
 
 include __DIR__ . '/inc/head.php';
 ?>

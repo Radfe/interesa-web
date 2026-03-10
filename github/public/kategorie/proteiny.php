@@ -1,8 +1,26 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../inc/functions.php';
+
 $page_title = 'Zdravé proteíny | Interesa';
 $page_description = 'Srvátkové WPC/WPI, vegánske a clear proteíny. Ako vybrať, dávkovanie a najlepšie tipy.';
+$page_canonical = '/kategorie/proteiny';
+$page_image = asset('img/og-default.jpg');
+$page_og_type = 'website';
+$page_schema = [
+    breadcrumb_schema([
+        ['name' => 'Domov', 'url' => '/'],
+        ['name' => 'Kategórie', 'url' => '/kategorie'],
+        ['name' => 'Zdravé proteíny', 'url' => '/kategorie/proteiny'],
+    ]),
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'CollectionPage',
+        'name' => 'Zdravé proteíny',
+        'description' => $page_description,
+        'url' => absolute_url('/kategorie/proteiny'),
+    ],
+];
 include __DIR__ . '/../inc/head.php';
 ?>
 <section class="container two-col">

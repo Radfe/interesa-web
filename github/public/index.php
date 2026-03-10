@@ -4,6 +4,29 @@ require_once __DIR__ . '/inc/functions.php';
 
 $page_title = 'Interesa.sk – výživa, proteíny, vitamíny a minerály';
 $page_description = 'Nezávislé porovnania, návody a tipy pre doplnky výživy, proteíny, vitamíny a zdravší výber.';
+$page_canonical = '/';
+$page_image = asset('img/og-default.jpg');
+$page_og_type = 'website';
+$page_schema = [
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebSite',
+        'name' => 'Interesa',
+        'url' => absolute_url('/'),
+        'potentialAction' => [
+            '@type' => 'SearchAction',
+            'target' => absolute_url('/search?q={search_term_string}'),
+            'query-input' => 'required name=search_term_string',
+        ],
+    ],
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebPage',
+        'name' => 'Interesa.sk',
+        'description' => $page_description,
+        'url' => absolute_url('/'),
+    ],
+];
 
 include __DIR__ . '/inc/head.php';
 ?>

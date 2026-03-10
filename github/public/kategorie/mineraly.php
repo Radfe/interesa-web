@@ -1,8 +1,26 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../inc/functions.php';
+
 $page_title = 'Vitamíny a minerály | Interesa';
 $page_description = 'Horčík, zinok, vitamín D3/C a ďalšie mikroživiny. Ako sa zorientovať a čo funguje.';
+$page_canonical = '/kategorie/mineraly';
+$page_image = asset('img/og-default.jpg');
+$page_og_type = 'website';
+$page_schema = [
+    breadcrumb_schema([
+        ['name' => 'Domov', 'url' => '/'],
+        ['name' => 'Kategórie', 'url' => '/kategorie'],
+        ['name' => 'Vitamíny a minerály', 'url' => '/kategorie/mineraly'],
+    ]),
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'CollectionPage',
+        'name' => 'Vitamíny a minerály',
+        'description' => $page_description,
+        'url' => absolute_url('/kategorie/mineraly'),
+    ],
+];
 include __DIR__ . '/../inc/head.php';
 ?>
 <section class="container two-col">

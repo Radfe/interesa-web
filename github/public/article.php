@@ -15,8 +15,44 @@ if ($slug === '' || !is_file($file)) {
 
 $meta = article_meta($slug);
 $commerce = interessa_article_commerce($slug);
+$categoryMeta = $meta['category'] !== '' ? category_meta($meta['category']) : null;
 $page_title = $meta['title'] . ' | Interesa';
-$page_description = $meta['description'];
+$page_description = $meta['description'] !== '' ? $meta['description'] : $meta['title'];
+$page_canonical = article_url($slug);
+$page_image = article_img($slug);
+$page_og_type = 'article';
+
+$breadcrumbs = [
+    ['name' => 'Domov', 'url' => '/'],
+    ['name' => 'Články', 'url' => '/clanky'],
+];
+if ($categoryMeta !== null) {
+    $breadcrumbs[] = ['name' => $categoryMeta['title'], 'url' => category_url($categoryMeta['slug'])];
+}
+$breadcrumbs[] = ['name' => $meta['title'], 'url' => $page_canonical];
+
+$page_schema = [
+    breadcrumb_schema($breadcrumbs),
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'Article',
+        'headline' => $meta['title'],
+        'description' => $page_description,
+        'url' => absolute_url($page_canonical),
+        'mainEntityOfPage' => absolute_url($page_canonical),
+        'image' => page_image_url(),
+        'articleSection' => $categoryMeta['title'] ?? 'Články',
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => 'Interesa',
+            'logo' => [
+                '@type' => 'ImageObject',
+                'url' => absolute_url(asset('img/logo-full.svg')),
+            ],
+        ],
+    ],
+];
+
 include __DIR__ . '/inc/head.php';
 ?>
 <section class="container two-col">
@@ -24,8 +60,8 @@ include __DIR__ . '/inc/head.php';
     <article class="lead-article article-shell">
       <nav class="muted" aria-label="Breadcrumb">
         <a href="/">Domov</a> &rsaquo; <a href="/clanky/">Články</a>
-        <?php if ($meta['category'] !== ''): ?>
-          &rsaquo; <a href="<?= esc(category_url($meta['category'])) ?>"><?= esc(category_meta($meta['category'])['title'] ?? humanize_slug($meta['category'])) ?></a>
+        <?php if ($categoryMeta !== null): ?>
+          &rsaquo; <a href="<?= esc(category_url($categoryMeta['slug'])) ?>"><?= esc($categoryMeta['title']) ?></a>
         <?php endif; ?>
       </nav>
       <h1><?= esc($meta['title']) ?></h1>

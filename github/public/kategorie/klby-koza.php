@@ -1,8 +1,26 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../inc/functions.php';
+
 $page_title = 'Kĺby a koža | Interesa';
 $page_description = 'Kolagén a kĺbová výživa. Porovnania, recenzie a ako vybrať čo funguje.';
+$page_canonical = '/kategorie/klby-koza';
+$page_image = asset('img/og-default.jpg');
+$page_og_type = 'website';
+$page_schema = [
+    breadcrumb_schema([
+        ['name' => 'Domov', 'url' => '/'],
+        ['name' => 'Kategórie', 'url' => '/kategorie'],
+        ['name' => 'Kĺby a koža', 'url' => '/kategorie/klby-koza'],
+    ]),
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'CollectionPage',
+        'name' => 'Kĺby a koža',
+        'description' => $page_description,
+        'url' => absolute_url('/kategorie/klby-koza'),
+    ],
+];
 include __DIR__ . '/../inc/head.php';
 ?>
 <section class="container two-col">

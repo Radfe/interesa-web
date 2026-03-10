@@ -14,7 +14,6 @@ if (!headers_sent()) {
 
 ini_set('default_charset', 'UTF-8');
 $env = (string) ($_GET['env'] ?? 'prod');
-$strict = defined('E_STRICT') ? E_STRICT : 0;
 
 if ($env !== 'prod') {
     ini_set('display_errors', '1');
@@ -23,5 +22,5 @@ if ($env !== 'prod') {
 } else {
     ini_set('display_errors', '0');
     ini_set('display_startup_errors', '0');
-    error_reporting(E_ALL & ~E_NOTICE & ~$strict & ~E_DEPRECATED);
+    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_USER_DEPRECATED);
 }

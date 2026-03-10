@@ -1,8 +1,26 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../inc/functions.php';
+
 $page_title = 'Imunita | Interesa';
 $page_description = 'Základy aj praktické tipy pre podporu imunity: D3, C, zinok a probiotiká.';
+$page_canonical = '/kategorie/imunita';
+$page_image = asset('img/og-default.jpg');
+$page_og_type = 'website';
+$page_schema = [
+    breadcrumb_schema([
+        ['name' => 'Domov', 'url' => '/'],
+        ['name' => 'Kategórie', 'url' => '/kategorie'],
+        ['name' => 'Imunita', 'url' => '/kategorie/imunita'],
+    ]),
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'CollectionPage',
+        'name' => 'Imunita',
+        'description' => $page_description,
+        'url' => absolute_url('/kategorie/imunita'),
+    ],
+];
 include __DIR__ . '/../inc/head.php';
 ?>
 <section class="container two-col">

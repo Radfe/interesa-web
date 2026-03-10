@@ -6,6 +6,18 @@ require_once __DIR__ . '/inc/functions.php';
 $q = trim((string) ($_GET['q'] ?? ''));
 $page_title = ($q !== '' ? 'Hľadať: ' . $q : 'Hľadať články') . ' | Interesa';
 $page_description = 'Vyhľadávanie článkov na Interesa.sk';
+$page_canonical = '/search';
+$page_robots = 'noindex,follow';
+$page_og_type = 'website';
+$page_schema = [
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'SearchResultsPage',
+        'name' => $q !== '' ? 'Hľadať: ' . $q : 'Hľadať články',
+        'description' => $page_description,
+        'url' => absolute_url('/search' . ($q !== '' ? '?q=' . rawurlencode($q) : '')),
+    ],
+];
 include __DIR__ . '/inc/head.php';
 
 function match_article_result(string $slug, array $meta, string $query): ?array {
@@ -15,18 +27,18 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
 
     $title = $meta[0] ?? humanize_slug($slug);
     $description = $meta[1] ?? '';
-    $haystack = mb_strtolower($title . ' ' . $description);
-    $needle = mb_strtolower($query);
+    $haystack = $title . ' ' . $description;
+    $needle = $query;
     $score = 0;
 
-    if (mb_strpos($haystack, $needle) !== false) {
+    if (interessa_contains($haystack, $needle)) {
         $score += 5;
     }
 
     $file = __DIR__ . '/content/articles/' . $slug . '.html';
     if (is_file($file)) {
-        $text = mb_strtolower(strip_tags((string) file_get_contents($file)));
-        if (mb_strpos($text, $needle) !== false) {
+        $text = strip_tags((string) file_get_contents($file));
+        if (interessa_contains($text, $needle)) {
             $score += 3;
         }
     }

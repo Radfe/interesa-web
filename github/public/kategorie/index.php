@@ -4,8 +4,9 @@ require_once __DIR__ . '/../inc/functions.php';
 
 $page_title = 'Kategórie – Interesa';
 $page_description = 'Prehľad kategórií: proteíny, výživa, vitamíny & minerály, imunita, sila, kĺby & koža.';
-
-include __DIR__ . '/../inc/head.php';
+$page_canonical = '/kategorie';
+$page_image = asset('img/og-default.jpg');
+$page_og_type = 'website';
 
 $cats = [
   ['slug'=>'proteiny','title'=>'Zdravé proteíny','desc'=>'Porovnania WPC/WPI, Clear, vegánske proteíny, dávkovanie.'],
@@ -15,6 +16,22 @@ $cats = [
   ['slug'=>'sila','title'=>'Sila a výkon','desc'=>'Kreatín, pre-workout, regenerácia a doplnky pre výkon.'],
   ['slug'=>'klby-koza','title'=>'Kĺby & koža','desc'=>'Kolagén, kĺbové výživy a ako ich vybrať.'],
 ];
+
+$page_schema = [
+    breadcrumb_schema([
+        ['name' => 'Domov', 'url' => '/'],
+        ['name' => 'Kategórie', 'url' => '/kategorie'],
+    ]),
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'CollectionPage',
+        'name' => 'Kategórie',
+        'description' => $page_description,
+        'url' => absolute_url('/kategorie'),
+    ],
+];
+
+include __DIR__ . '/../inc/head.php';
 ?>
 <section class="container">
   <article class="card">

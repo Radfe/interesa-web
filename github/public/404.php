@@ -5,6 +5,7 @@ http_response_code(404);
 
 $page_title = '404 – Stránka sa nenašla';
 $page_description = 'Je nám ľúto, stránka sa nenašla. Pozri si hlavné kategórie a články.';
+$page_robots = 'noindex,nofollow';
 
 include __DIR__ . '/inc/head.php';
 ?>

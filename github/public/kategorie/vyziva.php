@@ -1,8 +1,26 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../inc/functions.php';
+
 $page_title = 'Zdravá výživa | Interesa';
 $page_description = 'Snacky, raňajky, zloženie produktov a praktické tipy pre každodennú zdravšiu výživu.';
+$page_canonical = '/kategorie/vyziva';
+$page_image = asset('img/og-default.jpg');
+$page_og_type = 'website';
+$page_schema = [
+    breadcrumb_schema([
+        ['name' => 'Domov', 'url' => '/'],
+        ['name' => 'Kategórie', 'url' => '/kategorie'],
+        ['name' => 'Zdravá výživa', 'url' => '/kategorie/vyziva'],
+    ]),
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'CollectionPage',
+        'name' => 'Zdravá výživa',
+        'description' => $page_description,
+        'url' => absolute_url('/kategorie/vyziva'),
+    ],
+];
 include __DIR__ . '/../inc/head.php';
 ?>
 <section class="container two-col">

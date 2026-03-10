@@ -6,11 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title><?= page_title() ?></title>
   <meta name="description" content="<?= page_description() ?>" />
+  <meta name="robots" content="<?= esc(page_robots()) ?>" />
+  <link rel="canonical" href="<?= esc(page_canonical()) ?>" />
 
-  <meta property="og:type" content="website" />
+  <meta property="og:type" content="<?= esc(page_og_type()) ?>" />
+  <meta property="og:site_name" content="Interesa" />
+  <meta property="og:url" content="<?= esc(page_canonical()) ?>" />
   <meta property="og:title" content="<?= page_title() ?>" />
   <meta property="og:description" content="<?= page_description() ?>" />
-  <meta property="og:image" content="<?= asset('img/og-default.jpg') ?>" />
+  <meta property="og:image" content="<?= esc(page_image_url()) ?>" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="<?= page_title() ?>" />
+  <meta name="twitter:description" content="<?= page_description() ?>" />
+  <meta name="twitter:image" content="<?= esc(page_image_url()) ?>" />
 
   <link rel="icon" href="<?= asset('img/logo-full.svg') ?>" type="image/svg+xml" />
   <link rel="stylesheet" href="<?= asset('css/main.css') ?>" />
@@ -18,6 +27,7 @@
   <link rel="stylesheet" href="<?= asset('css/sidebar.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/patch.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/home-b12.css') ?>" />
+  <?= schema_script_tags() ?>
 </head>
 <body>
   <a class="skip-link" href="#obsah">Preskocit na obsah</a>

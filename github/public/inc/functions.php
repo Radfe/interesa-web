@@ -306,3 +306,146 @@ if (!function_exists('article_img')) {
         return asset('img/placeholder-16x9.svg');
     }
 }
+if (!function_exists('request_path')) {
+    function request_path(): string {
+        $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+        return $path === '' ? '/' : $path;
+    }
+}
+
+if (!function_exists('site_base_url')) {
+    function site_base_url(): string {
+        $scheme = 'http';
+        if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            $scheme = 'https';
+        } elseif ((string) ($_SERVER['REQUEST_SCHEME'] ?? '') === 'https') {
+            $scheme = 'https';
+        } elseif ((string) ($_SERVER['SERVER_PORT'] ?? '') === '443') {
+            $scheme = 'https';
+        }
+
+        $host = (string) ($_SERVER['HTTP_HOST'] ?? '127.0.0.1:5000');
+        return $scheme . '://' . $host;
+    }
+}
+
+if (!function_exists('absolute_url')) {
+    function absolute_url(string $path = '/'): string {
+        if (preg_match('~^https?://~i', $path)) {
+            return $path;
+        }
+
+        return rtrim(site_base_url(), '/') . site_url($path);
+    }
+}
+
+if (!function_exists('page_canonical')) {
+    function page_canonical(): string {
+        global $page_canonical, $PAGE_CANONICAL;
+        $path = (string) ($page_canonical ?? $PAGE_CANONICAL ?? request_path());
+        return absolute_url($path);
+    }
+}
+
+if (!function_exists('page_image_url')) {
+    function page_image_url(): string {
+        global $page_image, $PAGE_IMAGE;
+        $image = (string) ($page_image ?? $PAGE_IMAGE ?? asset('img/og-default.jpg'));
+        return absolute_url($image);
+    }
+}
+
+if (!function_exists('page_robots')) {
+    function page_robots(): string {
+        global $page_robots, $PAGE_ROBOTS;
+        return (string) ($page_robots ?? $PAGE_ROBOTS ?? 'index,follow');
+    }
+}
+
+if (!function_exists('page_og_type')) {
+    function page_og_type(): string {
+        global $page_og_type, $PAGE_OG_TYPE;
+        return (string) ($page_og_type ?? $PAGE_OG_TYPE ?? 'website');
+    }
+}
+
+if (!function_exists('page_schema_nodes')) {
+    function page_schema_nodes(): array {
+        global $page_schema, $PAGE_SCHEMA;
+        $schema = $page_schema ?? $PAGE_SCHEMA ?? [];
+        if ($schema === []) {
+            return [];
+        }
+
+        if (isset($schema['@type'])) {
+            return [$schema];
+        }
+
+        return array_values(array_filter(is_array($schema) ? $schema : [], 'is_array'));
+    }
+}
+
+if (!function_exists('schema_script_tags')) {
+    function schema_script_tags(): string {
+        $chunks = [];
+        foreach (page_schema_nodes() as $node) {
+            if (!isset($node['@context'])) {
+                $node = ['@context' => 'https://schema.org'] + $node;
+            }
+
+            $json = json_encode($node, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            if (is_string($json)) {
+                $chunks[] = '<script type="application/ld+json">' . $json . '</script>';
+            }
+        }
+
+        return implode("\n", $chunks);
+    }
+}
+
+if (!function_exists('breadcrumb_schema')) {
+    function breadcrumb_schema(array $items): array {
+        $list = [];
+        $position = 1;
+
+        foreach ($items as $item) {
+            $name = trim((string) ($item['name'] ?? ''));
+            $url = trim((string) ($item['url'] ?? ''));
+            if ($name === '' || $url === '') {
+                continue;
+            }
+
+            $list[] = [
+                '@type' => 'ListItem',
+                'position' => $position++,
+                'name' => $name,
+                'item' => absolute_url($url),
+            ];
+        }
+
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => $list,
+        ];
+    }
+}
+if (!function_exists('interesa_lowercase')) {
+    function interessa_lowercase(string $value): string {
+        if (function_exists('mb_strtolower')) {
+            return mb_strtolower($value, 'UTF-8');
+        }
+
+        return strtolower($value);
+    }
+}
+
+if (!function_exists('interesa_contains')) {
+    function interessa_contains(string $haystack, string $needle): bool {
+        if ($needle === '') {
+            return false;
+        }
+
+        return strpos(interessa_lowercase($haystack), interessa_lowercase($needle)) !== false;
+    }
+}
