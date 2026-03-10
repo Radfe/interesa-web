@@ -1,0 +1,24 @@
+# Interesa.sk — čisté URL (Apache + mod_rewrite)
+Options -Indexes
+RewriteEngine On
+
+# Nepretláčaj existujúce súbory/priečinky
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Admin mimo routera
+RewriteRule ^_admin/ - [L]
+
+# /go/<kod> -> go.php?code=<kod>
+RewriteRule ^go/([A-Za-z0-9_-]+)/?$ go.php?code=$1 [QSA,L]
+
+# Sekcie
+RewriteRule ^(clanky)(/.*)?$ router.php [QSA,L]
+RewriteRule ^(kategorie)(/.*)?$ router.php [QSA,L]
+
+# Domov
+RewriteRule ^$ index.php [L]
+
+# Všetko ostatné na router
+RewriteRule ^.*$ router.php [QSA,L]

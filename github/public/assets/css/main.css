@@ -1,0 +1,191 @@
+/* Interesa – svetlá “Testado” téma (vyladená) */
+
+:root{
+  --bg:#f6faf8;
+  --surface:#fff;
+  --text:#0f172a;
+  --muted:#5b6672;
+  --line:#e7ecf0;
+
+  --shadow:0 8px 28px rgba(16,24,40,.08);
+  --shadow-lg:0 14px 40px rgba(16,24,40,.10);
+
+  --primary:#11a96d;
+  --primary-600:#0f8f5b;
+  --ring:0 0 0 3px rgba(17,169,109,.22);
+
+  --radius:16px;
+  --radius-sm:12px;
+  --radius-lg:22px;
+  --maxw:1160px;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans",Ubuntu,Cantarell,"Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";
+  color:var(--text); line-height:1.6;
+  background:linear-gradient(180deg,#eefaf4 0%,#fff 56%) no-repeat,var(--bg);
+}
+img{max-width:100%;height:auto;display:block}
+a{color:#0f6ad6;text-decoration:none}
+a:hover{color:#0954aa}
+.container{width:min(var(--maxw),92vw);margin-inline:auto}
+.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{left:1rem;top:1rem;width:auto;height:auto;padding:.5rem .75rem;background:#111;color:#fff;border-radius:10px}
+
+/* Header & nav */
+.site-header{position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(16,24,40,.02)}
+.header-inner{display:flex;align-items:center;gap:1rem;min-height:66px;padding-block:.4rem}
+.brand{display:flex;align-items:center;gap:.5rem}
+.nav-toggle{display:none}
+.nav-toggle-btn{
+  margin-left:auto;width:44px;height:38px;border-radius:12px;display:none;place-content:center;cursor:pointer;
+  border:1px solid var(--line);background:#fbfcfd
+}
+.nav-toggle-btn .bar{display:block;height:2px;width:22px;background:#1f2937;margin:5px auto;border-radius:2px}
+.main-nav{margin-left:auto}
+.menu-root{list-style:none;display:flex;gap:.25rem;margin:0;padding:0}
+.menu-root>li{position:relative}
+
+/* ---- NAV IKONY (väčšie 22px) ---- */
+.menu-root>li>a{
+  position:relative;display:block;
+  padding:.7rem .9rem .7rem 2.55rem; /* miesto pre 22px ikonu */
+  border-radius:12px;color:#111;font-weight:600;
+}
+.menu-root>li>a::before{
+  content:"";position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  width:22px;height:22px;background-size:contain;background-position:center;background-repeat:no-repeat;opacity:.95
+}
+/* mapovanie ikon */
+.menu-root>li>a[href="/kategorie/proteiny"]::before{background-image:url("/assets/img/icons/proteiny.png")}
+.menu-root>li>a[href="/kategorie/vyziva"]::before{background-image:url("/assets/img/icons/vyziva.png")}
+.menu-root>li>a[href="/kategorie/mineraly"]::before{background-image:url("/assets/img/icons/vitaminy.png")}
+.menu-root>li>a[href="/kategorie/imunita"]::before{background-image:url("/assets/img/icons/imunita.png")}
+.menu-root>li>a[href="/kategorie/sila"]::before{background-image:url("/assets/img/icons/sila.png")}
+.menu-root>li>a[href="/kategorie/klby-koza"]::before{background-image:url("/assets/img/icons/klby-koza.png")}
+
+/* hover underline */
+.menu-root>li>a::after{
+  content:"";position:absolute;left:12px;right:12px;bottom:6px;height:3px;background:var(--primary);
+  border-radius:3px;transform:scaleX(0);transform-origin:left;transition:transform .18s ease
+}
+.menu-root>li>a:hover{background:#f4f7fa}
+.menu-root>li>a:hover::after{transform:scaleX(1)}
+
+.mega-caret{display:none;position:absolute;right:.35rem;top:50%;translate:0 -50%;width:18px;height:18px;cursor:pointer}
+.mega-caret::before{content:"";width:8px;height:8px;display:block;border-right:2px solid #8c97a3;border-bottom:2px solid #8c97a3;rotate:45deg;margin:4px auto 0}
+.mega-toggle{display:none}
+.has-mega>.mega{display:none}
+
+/* Hero */
+.hero{padding:clamp(1.6rem,3.5vw + 1rem,4.5rem) 0}
+.hero-inner{display:grid;grid-template-columns:1.2fr .8fr;gap:2rem;align-items:center}
+.hero-copy h1{font-size:clamp(2.2rem,3.2vw + 1rem,3.2rem);line-height:1.12;margin:0 0 .7rem;letter-spacing:-.015em}
+.hero-copy p{color:var(--muted);margin:0 0 1.2rem;max-width:56ch}
+.hero-cta{display:flex;gap:.75rem;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1rem;border-radius:12px;font-weight:700;border:1px solid transparent;
+  transition:transform .06s ease,background .2s ease,border-color .2s ease
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:focus-visible{outline:none;box-shadow:var(--ring)}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-600)}
+.btn-ghost{color:#0f172a;border-color:#d7dee4;background:#fff}
+.btn-ghost:hover{background:#f7fafc}
+.hero-figure{overflow:hidden;border-radius:var(--radius-lg);border:1px solid var(--line);box-shadow:var(--shadow)}
+.hero-figure figcaption{font-size:.88rem;color:#6b7280;padding:.55rem .8rem;background:#fff;border-top:1px solid var(--line)}
+
+/* Cards */
+.promo-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:12px auto 24px}
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow);display:flex;flex-direction:column;
+  transition:transform .12s ease,box-shadow .18s ease,border-color .18s ease
+}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:#dfe6eb}
+
+/* jednotná výška náhľadu – responsívne */
+.card>img{width:100%;height:clamp(180px,22vw,240px);object-fit:cover}
+
+/* telo karty */
+.card-body{padding:1rem;display:grid;gap:.45rem}
+.card-body h3{margin:.15rem 0;line-height:1.25}
+.card-body p{color:var(--muted);margin:0}
+
+/* 2-riadkový clamp */
+@supports (-webkit-line-clamp:2){
+  .card-body h3{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+  .card-body p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+}
+
+/* CTA v kartách – s malou šípkou */
+.card-link{
+  align-self:start;display:inline-flex;align-items:center;gap:.45rem;
+  padding:.45rem .7rem;border:1px solid #d7dee4;border-radius:10px;color:#0f172a;background:#fff
+}
+.card-link::after{content:"→";font-weight:700;translate:0 1px}
+.card-link:hover{background:#f7fafc}
+
+/* Two-column */
+.two-col{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;margin-bottom:34px}
+.content .lead-article{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.2rem;box-shadow:var(--shadow)}
+.lead-article .meta{color:var(--muted);margin-top:0}
+.inline-figure{margin:1rem 0 0;border-radius:14px;overflow:hidden}
+
+/* Sidebar / Heureka + Najnovšie články */
+.sidebar{display:grid;gap:16px}
+.sidebar .ad-card{
+  background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:12px
+}
+.sidebar .ad-card h3{margin:0 0 10px;font-size:15px;color:#0f172a}
+.sidebar .ad-card>div[class^="heureka-"]{min-height:150px}
+
+/* Najnovšie články */
+.latest-articles .latest-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.latest-articles .latest-list li{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.latest-articles .latest-list a{color:#0f172a}
+.latest-articles .latest-list a:hover{text-decoration:underline}
+.latest-articles .date{color:var(--muted);font-size:.85rem;white-space:nowrap}
+
+/* Footer */
+.site-footer{border-top:1px solid var(--line);background:#fff}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;padding:1rem 0;gap:1rem;flex-wrap:wrap}
+.site-footer nav a{color:#4b5563;margin-right:.75rem}
+.site-footer nav a:hover{color:#111}
+
+/* Responsive */
+@media (max-width:980px){
+  .hero-inner{grid-template-columns:1fr}
+  .promo-cards{grid-template-columns:1fr 1fr}
+  .two-col{grid-template-columns:1fr}
+  .sidebar{order:-1}
+}
+@media (max-width:860px){
+  .nav-toggle-btn{display:grid}
+  .main-nav{
+    position:fixed;inset:66px 0 auto 0;background:#fff;border-bottom:1px solid var(--line);
+    transform:translateY(-16px);opacity:0;pointer-events:none;transition:transform .2s ease,opacity .2s ease;
+    box-shadow:0 12px 30px rgba(16,24,40,.08)
+  }
+  .nav-toggle:checked ~ .nav-toggle-btn{outline:none;box-shadow:var(--ring)}
+  .nav-toggle:checked ~ .main-nav{transform:translateY(0);opacity:1;pointer-events:auto}
+  .menu-root{flex-direction:column;padding:.5rem;gap:.25rem}
+  .menu-root>li>a{padding:.85rem 1rem .85rem 2.35rem} /* miesto pre ~20px ikonu */
+  .menu-root>li>a::before{width:20px;height:20px}
+  .menu-root>li>a::after{display:none}
+  .mega-caret{display:block}
+  .has-mega>.mega{
+    position:static;display:none;width:auto;max-width:none;box-shadow:none;margin:.25rem 0 .5rem;
+    border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff
+  }
+  .mega-toggle:checked ~ .mega{display:grid;grid-template-columns:1fr}
+}
+
+/* Doplnenia pre SVG (ak by si ich použil) */
+.svg-hero{display:block;width:100%;height:auto}
+.svg-cover{aspect-ratio:3/2;display:block}
+.svg-cover svg{display:block;width:100%;height:100%}
