@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/inc/functions.php';
+require_once __DIR__ . '/inc/article-commerce.php';
+require_once __DIR__ . '/inc/top-products.php';
 
 $slug = preg_replace('~[^a-z0-9\-_]+~i', '', (string) ($_GET['slug'] ?? ''));
 $file = __DIR__ . '/content/articles/' . $slug . '.html';
@@ -12,6 +14,7 @@ if ($slug === '' || !is_file($file)) {
 }
 
 $meta = article_meta($slug);
+$commerce = interessa_article_commerce($slug);
 $page_title = $meta['title'] . ' | Interesa';
 $page_description = $meta['description'];
 include __DIR__ . '/inc/head.php';
@@ -30,6 +33,15 @@ include __DIR__ . '/inc/head.php';
       <div class="article-body">
         <?php readfile($file); ?>
       </div>
+      <?php
+      if ($commerce !== null) {
+          interessa_render_top_products(
+              $commerce['products'] ?? [],
+              $commerce['title'] ?? 'Odporúčané produkty',
+              $commerce['intro'] ?? null
+          );
+      }
+      ?>
     </article>
   </div>
 

@@ -1,88 +1,106 @@
 <?php
 declare(strict_types=1);
 
-/**
- * Render “Top produkty” v článku.
- *
- * Očakáva pole $TOP_PRODUCTS = [
- *   [
- *     'name'   => 'Názov',
- *     'subtitle' => 'Krátky benefit',
- *     'rating' => 4.7,                // 0–5 (float)
- *     'img'    => '/assets/img/products/mg-bisglycinate.webp'  // alebo absolútna URL
- *     'code'   => 'horcik-ktory-je-najlepsi-a-preco-aktin',    // affiliate kód
- *     'url'    => 'https://.../produkt'                        // Fallback URL, ak kód chýba
- *   ],
- *   ...
- * ];
- *
- * CTA logika:
- * - ak $GO_LINKS[$code] EXISTUJE => použije sa /go/<code> (rel="nofollow sponsored")
- * - ak NEEXISTUJE a je 'url' => použije sa 'url' (rel="nofollow") + odznak “bez affiliate”
- * - ak nie je nič => tlačidlo disabled
- */
+require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/affiliates.php';
+
+if (!function_exists('interessa_top_product_link')) {
+    function interessa_top_product_link(array $row): array {
+        $code = trim((string) ($row['code'] ?? ''));
+        $fallback = trim((string) ($row['url'] ?? ''));
+
+        if ($code !== '' && aff_resolve($code) !== null) {
+            return [
+                'href' => '/go/' . rawurlencode($code),
+                'rel' => 'nofollow sponsored',
+                'label' => 'Do obchodu',
+                'note' => 'Affiliate odkaz',
+            ];
+        }
+
+        if ($fallback !== '') {
+            return [
+                'href' => $fallback,
+                'rel' => 'nofollow',
+                'label' => 'Pozrieť produkt',
+                'note' => 'Priamy odkaz',
+            ];
+        }
+
+        return [
+            'href' => '',
+            'rel' => '',
+            'label' => 'Čoskoro',
+            'note' => '',
+        ];
+    }
+}
+
+if (!function_exists('interessa_render_stars')) {
+    function interessa_render_stars(float $rating): string {
+        $rating = max(0.0, min(5.0, $rating));
+        $filled = (int) round($rating);
+        $stars = str_repeat('★', $filled) . str_repeat('☆', max(0, 5 - $filled));
+        return '<span class="top-product-stars" aria-hidden="true">' . esc($stars) . '</span><span class="top-product-score">' . esc(number_format($rating, 1)) . '/5</span>';
+    }
+}
 
 if (!function_exists('interessa_render_top_products')) {
-  function interessa_render_top_products(array $TOP_PRODUCTS, string $title = 'Top produkty'): void {
-    // Načítaj mapu affiliate odkazov (z CSV/ PHP)
-    $GO_LINKS = [];
-    @include __DIR__ . '/go-links.php';
-    if (isset($GO_LINKS) && is_array($GO_LINKS) && !$GO_LINKS) {
-      // ak include nenaplnil, skús funkciu
-      if (function_exists('interessa_go_links')) {
-        $GO_LINKS = interessa_go_links();
-      }
+    function interessa_render_top_products(array $products, string $title = 'Top produkty', ?string $intro = null): void {
+        if ($products === []) {
+            return;
+        }
+
+        echo '<section class="topbox">';
+        echo '<div class="topbox-head">';
+        echo '<h2>' . esc($title) . '</h2>';
+        if ($intro !== null && $intro !== '') {
+            echo '<p class="topbox-intro">' . esc($intro) . '</p>';
+        }
+        echo '</div>';
+        echo '<div class="top-products-grid">';
+
+        foreach ($products as $index => $row) {
+            $name = trim((string) ($row['name'] ?? ''));
+            $subtitle = trim((string) ($row['subtitle'] ?? ''));
+            $merchant = trim((string) ($row['merchant'] ?? ''));
+            $rating = (float) ($row['rating'] ?? 0);
+            $img = trim((string) ($row['img'] ?? ''));
+            $link = interessa_top_product_link($row);
+
+            if ($img === '') {
+                $img = '/assets/img/placeholder-16x9.svg';
+            }
+
+            echo '<article class="top-product-card">';
+            echo '<div class="top-product-rank">#' . (int) ($index + 1) . '</div>';
+            echo '<img class="top-product-image" src="' . esc($img) . '" alt="' . esc($name) . '" loading="lazy">';
+            echo '<div class="top-product-body">';
+            echo '<h3>' . esc($name) . '</h3>';
+            if ($subtitle !== '') {
+                echo '<p class="top-product-subtitle">' . esc($subtitle) . '</p>';
+            }
+            if ($rating > 0) {
+                echo '<div class="top-product-rating">' . interessa_render_stars($rating) . '</div>';
+            }
+            if ($merchant !== '') {
+                echo '<div class="top-product-merchant">Obchod: ' . esc($merchant) . '</div>';
+            }
+            echo '</div>';
+            echo '<div class="top-product-actions">';
+            if ($link['href'] !== '') {
+                echo '<a class="btn" href="' . esc($link['href']) . '" target="_blank" rel="' . esc($link['rel']) . '">' . esc($link['label']) . '</a>';
+            } else {
+                echo '<button class="btn" type="button" disabled>' . esc($link['label']) . '</button>';
+            }
+            if ($link['note'] !== '') {
+                echo '<div class="top-product-note">' . esc($link['note']) . '</div>';
+            }
+            echo '</div>';
+            echo '</article>';
+        }
+
+        echo '</div>';
+        echo '</section>';
     }
-
-    echo '<section class="topbox">';
-    echo '<h2>' . htmlspecialchars($title, ENT_QUOTES) . '</h2>';
-    echo '<table class="top-products">';
-    foreach ($TOP_PRODUCTS as $row) {
-      $name     = trim((string)($row['name'] ?? ''));
-      $subtitle = trim((string)($row['subtitle'] ?? ''));
-      $rating   = (float)($row['rating'] ?? 0);
-      $img      = trim((string)($row['img'] ?? ''));
-      $code     = trim((string)($row['code'] ?? ''));
-      $url      = trim((string)($row['url'] ?? '')); // fallback
-
-      if ($img === '') $img = '/assets/img/placeholder-16x9.svg';
-
-      // CTA rozhodnutie
-      $href     = '';
-      $rel      = 'nofollow';
-      $badge    = '';
-      if ($code !== '' && !empty($GO_LINKS[$code])) {
-        $href = '/go/' . rawurlencode($code);
-        $rel  = 'nofollow sponsored';
-      } elseif ($url !== '') {
-        $href = $url;
-        $badge = '<span class="muted" style="font-size:12px;margin-left:8px">bez affiliate</span>';
-      }
-
-      echo '<tr>';
-      echo '  <td class="pimg"><img src="' . htmlspecialchars($img, ENT_QUOTES) . '" alt="' . htmlspecialchars($name, ENT_QUOTES) . '" loading="lazy"></td>';
-      echo '  <td>';
-      echo '    <div class="pname">' . htmlspecialchars($name, ENT_QUOTES) . '</div>';
-      if ($subtitle !== '') {
-        echo '  <div class="pattrs">' . htmlspecialchars($subtitle, ENT_QUOTES) . '</div>';
-      }
-      // hviezdičky
-      if ($rating > 0) {
-        $w = max(0, min(100, round(($rating/5)*100)));
-        echo '  <div class="stars"><span class="stars-bg">★★★★★</span><span class="stars-fg" style="width:'.$w.'%">★★★★★</span></div>';
-      }
-      echo '  </td>';
-
-      echo '  <td class="pcta">';
-      if ($href !== '') {
-        echo '<a class="btn" href="' . htmlspecialchars($href, ENT_QUOTES) . '" target="_blank" rel="' . $rel . '">Do obchodu</a>' . $badge;
-      } else {
-        echo '<button class="btn" style="opacity:.5" disabled>Čoskoro</button>';
-      }
-      echo '  </td>';
-      echo '</tr>';
-    }
-    echo '</table>';
-    echo '</section>';
-  }
 }

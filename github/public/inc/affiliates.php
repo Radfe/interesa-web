@@ -54,7 +54,7 @@ function aff_load_map(): array {
         foreach ($headers as $index => $header) {
             $header = strtolower(trim((string) $header, " \t\n\r\0\x0B\"'"));
             if ($header === 'code') { $codeIndex = $index; }
-            if ($header === 'deeplink') { $linkIndex = $index; }
+            if ($header === 'deeplink' || $header === 'url') { $linkIndex = $index; }
         }
 
         if ($codeIndex === null || $linkIndex === null) {
@@ -70,6 +70,10 @@ function aff_load_map(): array {
             $code = trim((string) ($row[$codeIndex] ?? ''));
             $link = trim((string) ($row[$linkIndex] ?? ''));
             if ($code === '' || $link === '' || !preg_match('~^https?://~i', $link)) {
+                continue;
+            }
+
+            if (str_contains($link, 'REPLACE_')) {
                 continue;
             }
 
