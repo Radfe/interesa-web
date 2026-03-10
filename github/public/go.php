@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/inc/bootstrap.php';
 require_once __DIR__ . '/inc/affiliates.php';
 
 header('X-Robots-Tag: noindex, nofollow', true);
@@ -10,17 +11,15 @@ $code = $_GET['code'] ?? '';
 $code = is_string($code) ? trim($code) : '';
 
 if ($code === '' || !preg_match('~^[A-Za-z0-9_-]+$~', $code)) {
-    http_response_code(302);
-    header('Location: /affiliate-missing.php');
+    header('Location: /affiliate-missing.php', true, 302);
     exit;
 }
 
-if ($url = aff_resolve($code)) {
-    http_response_code(302);
-    header('Location: ' . $url);
+$url = aff_resolve($code);
+if ($url !== null) {
+    header('Location: ' . $url, true, 302);
     exit;
 }
 
-http_response_code(302);
-header('Location: /affiliate-missing.php?code=' . rawurlencode($code));
+header('Location: /affiliate-missing.php?code=' . rawurlencode($code), true, 302);
 exit;

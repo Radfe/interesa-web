@@ -1,41 +1,57 @@
-<?php declare(strict_types=1);
-$ROOT = __DIR__;
-require_once $ROOT . '/inc/functions.php';
+<?php
+declare(strict_types=1);
 
-$CATS = [
-  'proteiny'   => ['Proteíny','🥤'],
-  'vyziva'     => ['Výživa','🍎'],
-  'mineraly'   => ['Minerály','🧪'],
-  'imunita'    => ['Imunita','🛡️'],
-  'sila'       => ['Sila','🏋️'],
-  'klby-koža' => ['Kĺby & pokožka','🧍'],
-];
+require_once __DIR__ . '/inc/functions.php';
 
-$ART = [];
-@include $ROOT . '/inc/articles.php';
-@include $ROOT . '/inc/articles_ext.php';
+$slug = preg_replace('~[^a-z0-9\-_]+~i', '', (string) ($_GET['slug'] ?? ''));
+$category = category_meta($slug);
+if ($slug === '' || $category === null) {
+    http_response_code(404);
+    require __DIR__ . '/404.php';
+    return;
+}
 
-$slug = preg_replace('~[^a-z0-9\-\_]+~i', '', (string)($_GET['slug'] ?? ''));
-if (!isset($CATS[$slug])) { http_response_code(404); echo 'Not Found'; exit; }
-
-[$catName] = $CATS[$slug];
-$PAGE_TITLE = $catName . ' | Interesa.sk';
-require $ROOT . '/inc/head.php';
+$articles = category_articles($slug);
+$page_title = $category['title'] . ' | Interesa';
+$page_description = $category['description'];
+include __DIR__ . '/inc/head.php';
 ?>
-<h1><?= esc($catName) ?></h1>
+<section class="container two-col">
+  <div class="content">
+    <article class="card">
+      <h1><?= esc($category['title']) ?></h1>
+      <p class="meta"><?= esc($category['description']) ?></p>
 
-<div class="grid">
-<?php foreach($ART as $s=>$row): if (($row[2] ?? '') !== $slug) continue;
-  $title = $row[0]; $perex = $row[1] ?? ''; $url = '/clanky/'.$s; ?>
-  <article class="card">
-    <a class="thumb" href="<?= $url ?>"><img src="/assets/img/placeholder-16x9.svg" data-src="<?= esc(article_img($s)) ?>" alt="<?= esc($title) ?>" loading="lazy"></a>
-    <div class="inner">
-      <h3><a href="<?= $url ?>"><?= esc($title) ?></a></h3>
-      <?php if($perex): ?><div class="meta"><?= esc($perex) ?></div><?php endif; ?>
-    </div>
-    <div class="actions"><a class="btn" href="<?= $url ?>">Čítať</a></div>
-  </article>
-<?php endforeach; ?>
-</div>
+      <?php if (!$articles): ?>
+        <p class="note">V tejto kategorii zatial nemame ziadne clanky.</p>
+      <?php else: ?>
+        <div class="grid-cards">
+          <?php foreach ($articles as $item): ?>
+            <article class="post-card">
+              <a href="<?= esc(article_url($item['slug'])) ?>">
+                <img class="thumb" loading="lazy" decoding="async" src="<?= esc(article_img($item['slug'])) ?>" alt="<?= esc($item['title']) ?>">
+              </a>
+              <a class="chip" href="<?= esc(category_url($category['slug'])) ?>"><?= esc($category['title']) ?></a>
+              <h3><a href="<?= esc(article_url($item['slug'])) ?>"><?= esc($item['title']) ?></a></h3>
+              <?php if ($item['description'] !== ''): ?><p class="meta"><?= esc($item['description']) ?></p><?php endif; ?>
+              <a class="btn" href="<?= esc(article_url($item['slug'])) ?>">Citat</a>
+            </article>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+    </article>
+  </div>
 
-<?php require $ROOT . '/inc/footer.php';
+  <aside class="sidebar" aria-label="Pravy panel">
+    <?php include __DIR__ . '/inc/components/latest_articles.php'; ?>
+    <article class="ad-card">
+      <h3>Heureka vyhladavanie</h3>
+      <div class="heureka-affiliate-searchpanel" data-trixam-positionid="67512" data-trixam-codetype="iframe" data-trixam-linktarget="top"></div>
+    </article>
+    <article class="ad-card">
+      <h3>Vitaminy a mineraly</h3>
+      <div class="heureka-affiliate-category" data-trixam-positionid="40743" data-trixam-categoryid="731" data-trixam-codetype="iframe" data-trixam-linktarget="top"></div>
+    </article>
+  </aside>
+</section>
+<?php include __DIR__ . '/inc/footer.php';

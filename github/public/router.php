@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 declare(strict_types=1);
 
 require_once __DIR__ . '/inc/functions.php';
@@ -16,85 +16,56 @@ if (PHP_SAPI === 'cli-server') {
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 $path = rtrim($path, '/');
 
-if ($path === '') {
-    require_once __DIR__ . '/index.php';
-    exit;
-}
-
 $send404 = static function (): void {
     http_response_code(404);
-    $file = __DIR__ . '/404.php';
-
-    if (is_file($file)) {
-        require_once $file;
-    } else {
-        include __DIR__ . '/inc/head.php';
-        echo '<main id="obsah"><article class="container"><h1>Stranka sa nenasla (404)</h1></article></main>';
-        include __DIR__ . '/inc/footer.php';
-    }
-
+    require __DIR__ . '/404.php';
     exit;
 };
 
+if ($path === '') {
+    require __DIR__ . '/index.php';
+    exit;
+}
+
 if (preg_match('~^/go/([A-Za-z0-9_-]+)$~', $path, $m)) {
     $_GET['code'] = $m[1];
-    require_once __DIR__ . '/go.php';
+    require __DIR__ . '/go.php';
     exit;
 }
 
 if ($path === '/search') {
-    require_once __DIR__ . '/search.php';
+    require __DIR__ . '/search.php';
     exit;
 }
 
 if ($path === '/clanky') {
-    $file = __DIR__ . '/clanky/index.php';
-    is_file($file) ? require_once $file : $send404();
+    require __DIR__ . '/clanky/index.php';
     exit;
 }
 
 if (preg_match('~^/clanky/([a-z0-9-]+)$~', $path, $m)) {
-    $slug = $m[1];
-    $html = __DIR__ . "/content/articles/{$slug}.html";
-    $php = __DIR__ . "/clanky/{$slug}.php";
-
-    if (is_file($html)) {
-        $meta = article_meta($slug);
-        $page_title = $meta['title'] . ' | Interesa';
-        $page_description = $meta['description'];
-
-        include __DIR__ . '/inc/head.php';
-        echo '<article class="container article-body">';
-        readfile($html);
-        echo '</article>';
-        include __DIR__ . '/inc/footer.php';
-        exit;
-    }
-
-    if (is_file($php)) {
-        require_once $php;
-        exit;
-    }
-
-    $send404();
+    $_GET['slug'] = $m[1];
+    require __DIR__ . '/article.php';
+    exit;
 }
 
 if ($path === '/kategorie') {
-    $file = __DIR__ . '/kategorie/index.php';
-    is_file($file) ? require_once $file : $send404();
+    require __DIR__ . '/kategorie/index.php';
     exit;
 }
 
 if (preg_match('~^/kategorie/([a-z0-9-]+)$~', $path, $m)) {
     $slug = $m[1];
-    $php = __DIR__ . "/kategorie/{$slug}.php";
+    $file = __DIR__ . '/kategorie/' . $slug . '.php';
 
-    if (is_file($php)) {
-        require_once $php;
+    if (is_file($file)) {
+        require $file;
         exit;
     }
 
-    $send404();
+    $_GET['slug'] = $slug;
+    require __DIR__ . '/category.php';
+    exit;
 }
 
 $send404();

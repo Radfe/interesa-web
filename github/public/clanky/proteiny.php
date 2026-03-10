@@ -1,4 +1,5 @@
 <?php
 declare(strict_types=1);
-$ARTICLE_SLUG = 'proteiny';
+
+$slug = 'proteiny';
 require __DIR__ . '/../article-template.php';
