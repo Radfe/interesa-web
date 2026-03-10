@@ -14,43 +14,54 @@ if ($slug === '' || $category === null) {
 $articles = category_articles($slug);
 $page_title = $category['title'] . ' | Interesa';
 $page_description = $category['description'];
+$page_type = 'CollectionPage';
 include __DIR__ . '/inc/head.php';
 ?>
 <section class="container two-col">
-  <div class="content">
-    <article class="card">
+  <div class="content content-stack">
+    <article class="lead-article category-hero">
+      <span class="eyebrow">Obsahový hub</span>
       <h1><?= esc($category['title']) ?></h1>
-      <p class="meta"><?= esc($category['description']) ?></p>
+      <p class="lead"><?= esc($category['description']) ?></p>
+      <div class="article-actions compact-actions">
+        <a class="btn btn-primary" href="/clanky/">Pozrieť súvisiace články</a>
+        <a class="btn btn-ghost" href="/search?q=<?= rawurlencode($category['title']) ?>">Vyhľadať tému</a>
+      </div>
+    </article>
 
-      <?php if (!$articles): ?>
-        <p class="note">V tejto kategorii zatial nemame ziadne clanky.</p>
-      <?php else: ?>
-        <div class="grid-cards">
-          <?php foreach ($articles as $item): ?>
-            <article class="post-card">
-              <a href="<?= esc(article_url($item['slug'])) ?>">
-                <img class="thumb" loading="lazy" decoding="async" src="<?= esc(article_img($item['slug'])) ?>" alt="<?= esc($item['title']) ?>">
-              </a>
+    <?php if (!$articles): ?>
+      <article class="card legal-card">
+        <h2>Obsah pre túto kategóriu pripravujeme</h2>
+        <p>Najbližší krok je doplniť sériu článkov, ktoré pokryjú výber, porovnania aj časté otázky používateľov.</p>
+      </article>
+    <?php else: ?>
+      <div class="grid-cards article-card-grid">
+        <?php foreach ($articles as $item): ?>
+          <article class="post-card">
+            <a href="<?= esc(article_url($item['slug'])) ?>">
+              <img class="thumb" loading="lazy" decoding="async" src="<?= esc(article_img($item['slug'])) ?>" alt="<?= esc($item['title']) ?>">
+            </a>
+            <div class="post-card-body">
               <a class="chip" href="<?= esc(category_url($category['slug'])) ?>"><?= esc($category['title']) ?></a>
               <h3><a href="<?= esc(article_url($item['slug'])) ?>"><?= esc($item['title']) ?></a></h3>
-              <?php if ($item['description'] !== ''): ?><p class="meta"><?= esc($item['description']) ?></p><?php endif; ?>
-              <a class="btn" href="<?= esc(article_url($item['slug'])) ?>">Citat</a>
-            </article>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
-    </article>
+              <?php if ($item['description'] !== ''): ?><p><?= esc($item['description']) ?></p><?php endif; ?>
+              <a class="btn btn-ghost" href="<?= esc(article_url($item['slug'])) ?>">Čítať článok</a>
+            </div>
+          </article>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
   </div>
 
-  <aside class="sidebar" aria-label="Pravy panel">
+  <aside class="sidebar" aria-label="Pravý panel">
     <?php include __DIR__ . '/inc/components/latest_articles.php'; ?>
-    <article class="ad-card">
-      <h3>Heureka vyhladavanie</h3>
-      <div class="heureka-affiliate-searchpanel" data-trixam-positionid="67512" data-trixam-codetype="iframe" data-trixam-linktarget="top"></div>
+    <article class="ad-card info-panel">
+      <h3>Ako zarába táto kategória</h3>
+      <p>Najsilnejšie stránky v kategórii kombinujú evergreen SEO otázky, nákupné porovnania a jasné prelinkovanie na ďalšie relevantné témy.</p>
     </article>
     <article class="ad-card">
-      <h3>Vitaminy a mineraly</h3>
-      <div class="heureka-affiliate-category" data-trixam-positionid="40743" data-trixam-categoryid="731" data-trixam-codetype="iframe" data-trixam-linktarget="top"></div>
+      <h3>Heureka vyhľadávanie</h3>
+      <div class="heureka-affiliate-searchpanel" data-trixam-positionid="67512" data-trixam-codetype="iframe" data-trixam-linktarget="top"></div>
     </article>
   </aside>
 </section>

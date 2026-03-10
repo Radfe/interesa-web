@@ -2,35 +2,49 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../inc/functions.php';
 
-$page_title = 'Kategórie – Interesa';
-$page_description = 'Prehľad kategórií: proteíny, výživa, vitamíny & minerály, imunita, sila, kĺby & koža.';
-
+$page_title = 'Kategórie | Interesa';
+$page_description = 'Tematické huby pre proteíny, zdravú výživu, vitamíny, minerály, imunitu, výkon a ďalšie oblasti s vysokým SEO potenciálom.';
+$page_type = 'CollectionPage';
 include __DIR__ . '/../inc/head.php';
 
-$cats = [
-  ['slug'=>'proteiny','title'=>'Zdravé proteíny','desc'=>'Porovnania WPC/WPI, Clear, vegánske proteíny, dávkovanie.'],
-  ['slug'=>'vyziva','title'=>'Zdravá výživa','desc'=>'Snacky, kaše, orechy & maslá, recepty a praktické tipy.'],
-  ['slug'=>'mineraly','title'=>'Vitamíny & minerály','desc'=>'Horčík, zinok, vitamín D3/C a ďalšie mikroživiny.'],
-  ['slug'=>'imunita','title'=>'Imunita','desc'=>'Komplexy pre obranyschopnosť, D3, C, zinok, probiotiká.'],
-  ['slug'=>'sila','title'=>'Sila a výkon','desc'=>'Kreatín, pre-workout, regenerácia a doplnky pre výkon.'],
-  ['slug'=>'klby-koza','title'=>'Kĺby & koža','desc'=>'Kolagén, kĺbové výživy a ako ich vybrať.'],
-];
+$preferredOrder = ['proteiny', 'vyziva', 'mineraly', 'imunita', 'sila', 'klby-koza', 'kreatin', 'pre-workout', 'aminokyseliny', 'probiotika-travenie', 'chudnutie'];
+$cats = category_registry();
+$items = [];
+foreach ($preferredOrder as $slug) {
+    if (!isset($cats[$slug])) {
+        continue;
+    }
+
+    $items[] = [
+        'slug' => $slug,
+        'title' => $cats[$slug]['title'],
+        'description' => $cats[$slug]['description'],
+        'url' => category_url($slug),
+        'icon' => category_icon($slug),
+    ];
+}
 ?>
-<section class="container">
-  <article class="card">
-    <h1>Kategórie</h1>
-    <div class="promo-cards" style="margin:0;">
-      <?php foreach ($cats as $c): ?>
-        <a class="card" href="/kategorie/<?= esc($c['slug']) ?>" style="text-decoration:none;">
-          <img src="<?= asset('img/og-default.jpg') ?>" alt="<?= esc($c['title']) ?>" loading="lazy" width="600" height="400">
-          <div class="card-body">
-            <h3><?= esc($c['title']) ?></h3>
-            <p><?= esc($c['desc']) ?></p>
-            <span class="card-link">Zobraziť kategóriu</span>
-          </div>
-        </a>
-      <?php endforeach; ?>
+<section class="container content-stack">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Tematické huby</span>
+      <h1>Kategórie, ktoré budú ťahať rast webu</h1>
+      <p class="section-intro">Každá kategória funguje ako obsahový hub. Z nej sa bude vetviť séria SEO článkov, porovnaní a nákupných tém s vysokým potenciálom návštevnosti.</p>
     </div>
-  </article>
+  </div>
+
+  <div class="hub-grid">
+    <?php foreach ($items as $item): ?>
+      <article class="hub-card category-hub-card">
+        <div class="hub-icon-wrap">
+          <img src="<?= esc($item['icon']) ?>" alt="<?= esc($item['title']) ?>" width="48" height="48">
+        </div>
+        <h2><?= esc($item['title']) ?></h2>
+        <p><?= esc($item['description']) ?></p>
+        <a class="btn btn-primary" href="<?= esc($item['url']) ?>">Otvoriť kategóriu</a>
+      </article>
+    <?php endforeach; ?>
+  </div>
 </section>
+
 <?php include __DIR__ . '/../inc/footer.php'; ?>

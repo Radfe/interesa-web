@@ -1,8 +1,6 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/inc/functions.php';
-
 if (PHP_SAPI === 'cli-server') {
     $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
     $resolved = realpath(__DIR__ . $uriPath);
@@ -12,6 +10,8 @@ if (PHP_SAPI === 'cli-server') {
         return false;
     }
 }
+
+require_once __DIR__ . '/inc/functions.php';
 
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 $path = rtrim($path, '/');
@@ -24,6 +24,17 @@ $send404 = static function (): void {
 
 if ($path === '') {
     require __DIR__ . '/index.php';
+    exit;
+}
+
+$staticPages = [
+    '/affiliate' => __DIR__ . '/stranky/affiliate.php',
+    '/kontakt' => __DIR__ . '/stranky/kontakt.php',
+    '/o-nas' => __DIR__ . '/stranky/o-nas.php',
+    '/ochrana-osobnych-udajov' => __DIR__ . '/stranky/zasady-ochrany-osobnych-udajov.php',
+];
+if (isset($staticPages[$path])) {
+    require $staticPages[$path];
     exit;
 }
 

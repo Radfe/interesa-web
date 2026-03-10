@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
 
-if (defined('INTERESA_FUNCS_V4')) { return; }
-define('INTERESA_FUNCS_V4', 1);
+if (defined('INTERESA_FUNCS_V5')) { return; }
+define('INTERESA_FUNCS_V5', 1);
 
 if (!function_exists('esc')) {
     function esc(null|string $value): string {
@@ -39,22 +39,143 @@ if (!function_exists('asset')) {
     }
 }
 
+if (!function_exists('raw_page_title')) {
+    function raw_page_title(): string {
+        global $page_title, $PAGE_TITLE, $page;
+        return (string) ($page_title ?? $PAGE_TITLE ?? ($page['title'] ?? null) ?? 'Interesa');
+    }
+}
+
 if (!function_exists('page_title')) {
     function page_title(): string {
-        global $page_title, $PAGE_TITLE, $page;
-        $title = $page_title ?? $PAGE_TITLE ?? ($page['title'] ?? null) ?? 'Interesa';
-        return esc($title);
+        return esc(raw_page_title());
+    }
+}
+
+if (!function_exists('raw_page_description')) {
+    function raw_page_description(): string {
+        global $page_description, $PAGE_DESCRIPTION, $page;
+        return (string) ($page_description
+            ?? $PAGE_DESCRIPTION
+            ?? ($page['description'] ?? null)
+            ?? 'Interesa je obsahový magazín o výžive, doplnkoch a zmysluplnom výbere produktov.');
     }
 }
 
 if (!function_exists('page_description')) {
     function page_description(): string {
-        global $page_description, $PAGE_DESCRIPTION, $page;
-        $description = $page_description
-            ?? $PAGE_DESCRIPTION
-            ?? ($page['description'] ?? null)
-            ?? 'Interesa - magazin o zdravej vyzive. Testy, porovnania a navody.';
-        return esc($description);
+        return esc(raw_page_description());
+    }
+}
+
+if (!function_exists('request_scheme')) {
+    function request_scheme(): string {
+        $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https'
+            || (string) ($_SERVER['REQUEST_SCHEME'] ?? '') === 'https'
+            || (int) ($_SERVER['SERVER_PORT'] ?? 80) === 443;
+
+        return $https ? 'https' : 'http';
+    }
+}
+
+if (!function_exists('base_url')) {
+    function base_url(): string {
+        $host = (string) ($_SERVER['HTTP_HOST'] ?? '127.0.0.1:5000');
+        return request_scheme() . '://' . $host;
+    }
+}
+
+if (!function_exists('absolute_url')) {
+    function absolute_url(string $path = '/'): string {
+        if (preg_match('~^https?://~i', $path)) {
+            return $path;
+        }
+
+        return rtrim(base_url(), '/') . '/' . ltrim($path, '/');
+    }
+}
+
+if (!function_exists('current_path')) {
+    function current_path(): string {
+        $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+        if ($path === '') {
+            return '/';
+        }
+
+        return $path;
+    }
+}
+
+if (!function_exists('canonical_url')) {
+    function canonical_url(): string {
+        global $page_canonical, $page;
+        $candidate = $page_canonical ?? ($page['canonical'] ?? null) ?? current_path();
+        return absolute_url(site_url((string) $candidate));
+    }
+}
+
+if (!function_exists('page_robots')) {
+    function page_robots(): string {
+        global $page_robots, $page;
+        return (string) ($page_robots ?? ($page['robots'] ?? null) ?? 'index,follow,max-image-preview:large');
+    }
+}
+
+if (!function_exists('page_type')) {
+    function page_type(): string {
+        global $page_type;
+        if (is_string($page_type) && $page_type !== '') {
+            return $page_type;
+        }
+
+        $path = current_path();
+        if ($path === '/') {
+            return 'WebSite';
+        }
+        if (str_starts_with($path, '/clanky/')) {
+            return 'Article';
+        }
+        if (str_starts_with($path, '/kategorie/')) {
+            return 'CollectionPage';
+        }
+
+        return 'WebPage';
+    }
+}
+
+if (!function_exists('page_image')) {
+    function page_image(): string {
+        global $page_image, $page;
+        $candidate = (string) ($page_image ?? ($page['image'] ?? null) ?? asset('img/og-default.jpg'));
+        return absolute_url($candidate);
+    }
+}
+
+if (!function_exists('breadcrumb_items')) {
+    function breadcrumb_items(): array {
+        $path = trim(current_path(), '/');
+        if ($path === '') {
+            return [
+                ['name' => 'Domov', 'url' => absolute_url('/')],
+            ];
+        }
+
+        $items = [
+            ['name' => 'Domov', 'url' => absolute_url('/')],
+        ];
+
+        $segments = explode('/', $path);
+        $accumulator = '';
+        foreach ($segments as $segment) {
+            $accumulator .= '/' . $segment;
+            $items[] = [
+                'name' => humanize_slug($segment),
+                'url' => absolute_url($accumulator),
+            ];
+        }
+
+        return $items;
     }
 }
 
@@ -112,21 +233,37 @@ if (!function_exists('category_registry')) {
         }
 
         $categories = [
-            'proteiny' => ['title' => 'Zdrave proteiny', 'description' => 'Srvatkove WPC/WPI, veganske a clear proteiny. Ako vybrat, davkovanie a najlepsie tipy.'],
-            'vyziva' => ['title' => 'Zdrava vyziva', 'description' => 'Snacky, ranajky, zmysluplne zlozenie a prakticke tipy pre zdravu vyzivu.'],
-            'mineraly' => ['title' => 'Vitaminy a mineraly', 'description' => 'Horcik, zinok, vitamin D3/C a dalsie mikro-ziviny. Ako sa zorientovat a co funguje.'],
-            'imunita' => ['title' => 'Imunita', 'description' => 'Zaklady aj prakticke tipy pre podporu imunity: D3, C, zinok a probiotika.'],
-            'sila' => ['title' => 'Sila a vykon', 'description' => 'Kreatin, pre-workout a regeneracia. Ako ich pouzivat a co vybrat.'],
-            'klby-koza' => ['title' => 'Klby a koza', 'description' => 'Kolagen a klbova vyziva. Porovnania, recenzie a ako vybrat co funguje.'],
-            'aminokyseliny' => ['title' => 'Aminokyseliny', 'description' => 'BCAA, EAA a aminokyseliny pre regeneraciu, vykon a trening.'],
-            'chudnutie' => ['title' => 'Chudnutie', 'description' => 'Tipy na redukciu tuku, proteiny na chudnutie a realita okolo spalovacov.'],
-            'doplnkove-prislusenstvo' => ['title' => 'Doplnkove prislusenstvo', 'description' => 'Pomocne doplnky, vybava a prakticke odporucania.'],
-            'kreatin' => ['title' => 'Kreatin', 'description' => 'Monohydrat, HCl, davkovanie, nasycovanie a porovnanie kreatinov.'],
-            'pre-workout' => ['title' => 'Pre-workout', 'description' => 'Ako vybrat predtreningovku, kedy ju brat a co sledovat v zlozeni.'],
-            'probiotika-travenie' => ['title' => 'Probiotika a travenie', 'description' => 'Probiotika, travenie a ako si vybrat vhodny produkt.'],
+            'proteiny' => ['title' => 'Zdravé proteíny', 'description' => 'Srvátkové WPC/WPI, clear proteíny aj rastlinné varianty. Výber, dávkovanie a praktické odporúčania.'],
+            'vyziva' => ['title' => 'Zdravá výživa', 'description' => 'Snacky, raňajky, orechy, kaše a funkčné potraviny pre lepší jedálniček bez balastu.'],
+            'mineraly' => ['title' => 'Vitamíny a minerály', 'description' => 'Horčík, zinok, vitamín D3, vitamín C a ďalšie mikroživiny s dôrazom na použiteľné rady.'],
+            'imunita' => ['title' => 'Imunita', 'description' => 'D3, vitamín C, zinok, probiotiká a ďalšie základy podpory imunity zrozumiteľne a vecne.'],
+            'sila' => ['title' => 'Sila a výkon', 'description' => 'Kreatín, pre-workout, regenerácia a doplnky pre lepší výkon bez marketingového nánosu.'],
+            'klby-koza' => ['title' => 'Kĺby a koža', 'description' => 'Kolagén, kĺbová výživa a doplnky pre pohybový aparát aj lepší vzhľad pokožky.'],
+            'aminokyseliny' => ['title' => 'Aminokyseliny', 'description' => 'BCAA, EAA a aminokyseliny pre regeneráciu, tréning a orientáciu v zložení.'],
+            'chudnutie' => ['title' => 'Chudnutie', 'description' => 'Proteíny na chudnutie, spaľovače tukov a realistické tipy pre redukciu tuku.'],
+            'doplnkove-prislusenstvo' => ['title' => 'Doplnkové príslušenstvo', 'description' => 'Praktické príslušenstvo a pomocné doplnky, ktoré dávajú zmysel pri každodennom používaní.'],
+            'kreatin' => ['title' => 'Kreatín', 'description' => 'Monohydrát, HCl, dávkovanie, nasýtenie a výber kreatínu bez mýtov.'],
+            'pre-workout' => ['title' => 'Pre-workout', 'description' => 'Ako vybrať predtréningovku, kedy ju brať a na čo si dať pozor v zložení.'],
+            'probiotika-travenie' => ['title' => 'Probiotiká a trávenie', 'description' => 'Probiotiká, trávenie a výber produktov podľa zloženia a reálnych potrieb.'],
         ];
 
         return $categories;
+    }
+}
+
+if (!function_exists('category_icon')) {
+    function category_icon(string $slug): string {
+        $map = [
+            'proteiny' => 'img/icons/proteiny.png',
+            'vyziva' => 'img/icons/vyziva.png',
+            'mineraly' => 'img/icons/vitaminy.png',
+            'imunita' => 'img/icons/imunita.png',
+            'sila' => 'img/icons/sila.png',
+            'klby-koza' => 'img/icons/klby-koza.png',
+        ];
+
+        $normalized = normalize_category_slug($slug);
+        return asset($map[$normalized] ?? 'img/og-default.jpg');
     }
 }
 

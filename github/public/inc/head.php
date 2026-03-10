@@ -1,16 +1,93 @@
 <?php declare(strict_types=1); ?>
+<?php
+$metaTitle = raw_page_title();
+$metaDescription = raw_page_description();
+$metaCanonical = canonical_url();
+$metaImage = page_image();
+$metaType = page_type();
+$metaRobots = page_robots();
+$searchQuery = trim((string) ($_GET['q'] ?? ''));
+
+$schema = [
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'Organization',
+        'name' => 'Interesa',
+        'url' => absolute_url('/'),
+        'logo' => absolute_url(asset('img/logo-full.svg')),
+    ],
+    [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebSite',
+        'name' => 'Interesa',
+        'url' => absolute_url('/'),
+        'potentialAction' => [
+            '@type' => 'SearchAction',
+            'target' => absolute_url('/search?q={search_term_string}'),
+            'query-input' => 'required name=search_term_string',
+        ],
+    ],
+];
+
+$breadcrumbs = breadcrumb_items();
+if (count($breadcrumbs) > 1) {
+    $schema[] = [
+        '@context' => 'https://schema.org',
+        '@type' => 'BreadcrumbList',
+        'itemListElement' => array_map(
+            static fn(array $item, int $index): array => [
+                '@type' => 'ListItem',
+                'position' => $index + 1,
+                'name' => $item['name'],
+                'item' => $item['url'],
+            ],
+            $breadcrumbs,
+            array_keys($breadcrumbs)
+        ),
+    ];
+}
+
+if ($metaType === 'Article') {
+    $schema[] = [
+        '@context' => 'https://schema.org',
+        '@type' => 'Article',
+        'headline' => $metaTitle,
+        'description' => $metaDescription,
+        'image' => [$metaImage],
+        'mainEntityOfPage' => $metaCanonical,
+        'author' => ['@type' => 'Organization', 'name' => 'Redakcia Interesa'],
+        'publisher' => [
+            '@type' => 'Organization',
+            'name' => 'Interesa',
+            'logo' => ['@type' => 'ImageObject', 'url' => absolute_url(asset('img/logo-full.svg'))],
+        ],
+    ];
+}
+?>
 <!doctype html>
 <html lang="sk">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title><?= page_title() ?></title>
-  <meta name="description" content="<?= page_description() ?>" />
+  <meta name="robots" content="<?= esc($metaRobots) ?>" />
+  <meta name="theme-color" content="#0f8f5b" />
+  <meta name="format-detection" content="telephone=no" />
+  <title><?= esc($metaTitle) ?></title>
+  <meta name="description" content="<?= esc($metaDescription) ?>" />
+  <link rel="canonical" href="<?= esc($metaCanonical) ?>" />
 
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="<?= page_title() ?>" />
-  <meta property="og:description" content="<?= page_description() ?>" />
-  <meta property="og:image" content="<?= asset('img/og-default.jpg') ?>" />
+  <meta property="og:locale" content="sk_SK" />
+  <meta property="og:type" content="<?= $metaType === 'Article' ? 'article' : 'website' ?>" />
+  <meta property="og:title" content="<?= esc($metaTitle) ?>" />
+  <meta property="og:description" content="<?= esc($metaDescription) ?>" />
+  <meta property="og:url" content="<?= esc($metaCanonical) ?>" />
+  <meta property="og:image" content="<?= esc($metaImage) ?>" />
+  <meta property="og:site_name" content="Interesa" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="<?= esc($metaTitle) ?>" />
+  <meta name="twitter:description" content="<?= esc($metaDescription) ?>" />
+  <meta name="twitter:image" content="<?= esc($metaImage) ?>" />
 
   <link rel="icon" href="<?= asset('img/logo-full.svg') ?>" type="image/svg+xml" />
   <link rel="stylesheet" href="<?= asset('css/main.css') ?>" />
@@ -18,33 +95,43 @@
   <link rel="stylesheet" href="<?= asset('css/sidebar.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/patch.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/home-b12.css') ?>" />
+  <script type="application/ld+json"><?= json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?></script>
 </head>
 <body>
-  <a class="skip-link" href="#obsah">Preskocit na obsah</a>
+  <a class="skip-link" href="#obsah">Preskočiť na obsah</a>
 
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="/" aria-label="Domov">
-        <img src="<?= asset('img/logo-full.svg') ?>" alt="Interesa.sk logo" width="148" height="32" />
+      <a class="brand" href="/" aria-label="Domovská stránka Interesa">
+        <img src="<?= asset('img/logo-full.svg') ?>" alt="Interesa.sk" width="148" height="32" />
       </a>
 
+      <div class="header-tools">
+        <form class="site-search" action="/search" method="get" role="search" aria-label="Vyhľadávanie na webe">
+          <label class="sr-only" for="site-search-input">Hľadať články</label>
+          <input id="site-search-input" class="search-input" type="search" name="q" value="<?= esc($searchQuery) ?>" placeholder="Hľadať články, porovnania a tipy" />
+          <button class="search-btn" type="submit">Hľadať</button>
+        </form>
+        <a class="header-cta" href="/clanky/najlepsie-proteiny-2025">Top výber</a>
+      </div>
+
       <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
-      <label for="nav-toggle" class="nav-toggle-btn" aria-label="Zobrazit menu" aria-controls="hlavne-menu" aria-expanded="false">
+      <label for="nav-toggle" class="nav-toggle-btn" aria-label="Zobraziť menu" aria-controls="hlavne-menu" aria-expanded="false">
         <span class="bar"></span><span class="bar"></span><span class="bar"></span>
       </label>
 
-      <nav id="hlavne-menu" class="main-nav" aria-label="Hlavna navigacia">
+      <nav id="hlavne-menu" class="main-nav" aria-label="Hlavná navigácia">
         <ul class="menu-root">
           <li class="has-mega">
-            <a href="/kategorie/proteiny" data-mega="proteiny">Zdrave proteiny</a>
+            <a href="/kategorie/proteiny" data-mega="proteiny">Proteíny</a>
             <input type="checkbox" id="mm-proteiny" class="mega-toggle" aria-hidden="true" />
-            <label class="mega-caret" for="mm-proteiny" aria-label="Rozbalit menu Zdrave proteiny"></label>
-            <div class="mega" role="region" aria-label="Zdrave proteiny podmenu">
+            <label class="mega-caret" for="mm-proteiny" aria-label="Rozbaliť menu Proteíny"></label>
+            <div class="mega" role="region" aria-label="Proteíny podmenu">
               <div class="mega-col">
                 <h3>Typy</h3>
                 <ul>
-                  <li><a href="/kategorie/proteiny#srvate">Srvatkove (WPC/WPI)</a></li>
-                  <li><a href="/kategorie/proteiny#rastlinne">Rastlinne</a></li>
+                  <li><a href="/kategorie/proteiny#srvatkove">Srvátkové WPC/WPI</a></li>
+                  <li><a href="/kategorie/proteiny#rastlinne">Rastlinné</a></li>
                   <li><a href="/kategorie/proteiny#vegan">Vegan blend</a></li>
                 </ul>
               </div>
@@ -52,86 +139,27 @@
                 <h3>Ciele</h3>
                 <ul>
                   <li><a href="/kategorie/proteiny#chudnutie">Chudnutie</a></li>
-                  <li><a href="/kategorie/proteiny#regeneracia">Regeneracia</a></li>
-                  <li><a href="/kategorie/proteiny#rychly-snack">Rychly snack</a></li>
+                  <li><a href="/kategorie/proteiny#regeneracia">Regenerácia</a></li>
+                  <li><a href="/kategorie/proteiny#rychly-snack">Rýchly snack</a></li>
                 </ul>
               </div>
               <div class="mega-col">
-                <h3>Tipy a clanky</h3>
+                <h3>Money články</h3>
                 <ul>
-                  <li><a href="/clanky/">Poradna</a></li>
-                  <li><a href="/clanky/#recepty">Recepty s proteinom</a></li>
-                  <li><a href="/clanky/#najcastejsie-otazky">FAQ</a></li>
+                  <li><a href="/clanky/najlepsie-proteiny-2025">Najlepšie proteíny 2025</a></li>
+                  <li><a href="/clanky/protein-na-chudnutie">Proteín na chudnutie</a></li>
+                  <li><a href="/clanky/srvatkovy-protein-vs-izolat-vs-hydro">WPC vs. izolát vs. hydro</a></li>
                 </ul>
               </div>
             </div>
           </li>
-          <li class="has-mega">
-            <a href="/kategorie/vyziva" data-mega="vyziva">Zdrava vyziva</a>
-            <input type="checkbox" id="mm-vyziva" class="mega-toggle" aria-hidden="true" />
-            <label class="mega-caret" for="mm-vyziva" aria-label="Rozbalit menu Zdrava vyziva"></label>
-            <div class="mega" role="region" aria-label="Zdrava vyziva podmenu">
-              <div class="mega-col">
-                <h3>Jedla a snacky</h3>
-                <ul>
-                  <li><a href="/kategorie/vyziva#granola">Granola a kase</a></li>
-                  <li><a href="/kategorie/vyziva#orechy">Orechy a masla</a></li>
-                  <li><a href="/kategorie/vyziva#tycinky">Tycinky</a></li>
-                </ul>
-              </div>
-              <div class="mega-col">
-                <h3>Specialne</h3>
-                <ul>
-                  <li><a href="/kategorie/vyziva#bezlepkove">Bezlepkove</a></li>
-                  <li><a href="/kategorie/vyziva#bezlaktozy">Bez laktozy</a></li>
-                  <li><a href="/kategorie/vyziva#keto">Keto</a></li>
-                </ul>
-              </div>
-              <div class="mega-col">
-                <h3>Nastroje</h3>
-                <ul>
-                  <li><a href="/clanky/#jedalnicky">Jedalnicky</a></li>
-                  <li><a href="/clanky/#makra">Vypocet makier</a></li>
-                  <li><a href="/clanky/#hydratacia">Hydratacia</a></li>
-                </ul>
-              </div>
-            </div>
-          </li>
-          <li class="has-mega">
-            <a href="/kategorie/mineraly" data-mega="mineraly">Vitaminy a mineraly</a>
-            <input type="checkbox" id="mm-mineraly" class="mega-toggle" aria-hidden="true" />
-            <label class="mega-caret" for="mm-mineraly" aria-label="Rozbalit menu Vitaminy a mineraly"></label>
-            <div class="mega" role="region" aria-label="Vitaminy a mineraly podmenu">
-              <div class="mega-col">
-                <h3>Vitaminy</h3>
-                <ul>
-                  <li><a href="/kategorie/mineraly#vitamin-c">Vitamin C</a></li>
-                  <li><a href="/kategorie/mineraly#vitamin-d3">Vitamin D3</a></li>
-                  <li><a href="/kategorie/mineraly#b-komplex">B-komplex</a></li>
-                </ul>
-              </div>
-              <div class="mega-col">
-                <h3>Mineraly</h3>
-                <ul>
-                  <li><a href="/kategorie/mineraly#zinok">Zinok</a></li>
-                  <li><a href="/kategorie/mineraly#horcik">Horcik</a></li>
-                  <li><a href="/kategorie/mineraly#zelezo">Zelezo</a></li>
-                </ul>
-              </div>
-              <div class="mega-col">
-                <h3>Balicky</h3>
-                <ul>
-                  <li><a href="/kategorie/mineraly#imunita">Balicek imunita</a></li>
-                  <li><a href="/kategorie/mineraly#energia">Balicek energia</a></li>
-                  <li><a href="/kategorie/mineraly#wellbeing">Balicek wellbeing</a></li>
-                </ul>
-              </div>
-            </div>
-          </li>
+          <li><a href="/kategorie/vyziva">Zdravá výživa</a></li>
+          <li><a href="/kategorie/mineraly">Vitamíny a minerály</a></li>
           <li><a href="/kategorie/imunita">Imunita</a></li>
-          <li><a href="/kategorie/sila">Sila</a></li>
-          <li><a href="/kategorie/klby-koza">Klby a koza</a></li>
-          <li><a href="/clanky/">Clanky</a></li>
+          <li><a href="/kategorie/sila">Sila a výkon</a></li>
+          <li><a href="/kategorie/klby-koza">Kĺby a koža</a></li>
+          <li><a href="/clanky/">Články</a></li>
+          <li><a href="/kontakt">Kontakt</a></li>
         </ul>
       </nav>
     </div>
