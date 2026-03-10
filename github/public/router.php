@@ -1,8 +1,6 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/inc/functions.php';
-
 if (PHP_SAPI === 'cli-server') {
     $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
     $resolved = realpath(__DIR__ . $uriPath);
@@ -12,6 +10,8 @@ if (PHP_SAPI === 'cli-server') {
         return false;
     }
 }
+
+require_once __DIR__ . '/inc/functions.php';
 
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 $path = rtrim($path, '/');
