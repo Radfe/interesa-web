@@ -53,6 +53,18 @@ $page_schema = [
     ],
 ];
 
+if ($commerce !== null) {
+    $commerceSchema = interessa_top_products_schema(
+        $commerce['products'] ?? [],
+        $commerce['title'] ?? 'Odporúčané produkty',
+        $page_canonical
+    );
+
+    if ($commerceSchema !== null) {
+        $page_schema[] = $commerceSchema;
+    }
+}
+
 include __DIR__ . '/inc/head.php';
 ?>
 <section class="container two-col">

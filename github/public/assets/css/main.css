@@ -231,3 +231,4 @@ a:hover{color:#0954aa}
 .top-product-actions{display:grid;gap:.45rem}
 .top-product-actions .btn{width:100%}
 .top-product-note{font-size:.8rem;color:var(--muted)}
+.topbox-disclosure{margin:0;color:var(--muted);font-size:.92rem;line-height:1.55}

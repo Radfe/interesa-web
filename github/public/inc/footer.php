@@ -11,6 +11,7 @@
 </footer>
 
 <script src="<?= asset('js/app.js') ?>" defer></script>
+<?= script_tags(page_script_urls()) ?>
 
 </body>
 </html>

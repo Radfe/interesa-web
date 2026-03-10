@@ -449,3 +449,50 @@ if (!function_exists('interesa_contains')) {
         return strpos(interessa_lowercase($haystack), interessa_lowercase($needle)) !== false;
     }
 }
+if (!function_exists('page_style_urls')) {
+    function page_style_urls(): array {
+        global $page_styles, $PAGE_STYLES;
+        $styles = $page_styles ?? $PAGE_STYLES ?? [];
+        return array_values(array_filter(is_array($styles) ? $styles : [], 'is_string'));
+    }
+}
+
+if (!function_exists('page_script_urls')) {
+    function page_script_urls(): array {
+        global $page_scripts, $PAGE_SCRIPTS;
+        $scripts = $page_scripts ?? $PAGE_SCRIPTS ?? [];
+        return array_values(array_filter(is_array($scripts) ? $scripts : [], 'is_string'));
+    }
+}
+
+if (!function_exists('stylesheet_tags')) {
+    function stylesheet_tags(array $styles): string {
+        $tags = [];
+        foreach ($styles as $href) {
+            $href = trim($href);
+            if ($href === '') {
+                continue;
+            }
+
+            $tags[] = '<link rel="stylesheet" href="' . esc($href) . '" />';
+        }
+
+        return implode("\n  ", $tags);
+    }
+}
+
+if (!function_exists('script_tags')) {
+    function script_tags(array $scripts): string {
+        $tags = [];
+        foreach ($scripts as $src) {
+            $src = trim($src);
+            if ($src === '') {
+                continue;
+            }
+
+            $tags[] = '<script src="' . esc($src) . '" defer></script>';
+        }
+
+        return implode("\n", $tags);
+    }
+}

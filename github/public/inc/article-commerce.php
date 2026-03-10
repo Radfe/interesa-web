@@ -34,6 +34,96 @@ if (!function_exists('interessa_article_commerce_sections')) {
                     ],
                 ],
             ],
+            'srvatkovy-protein-vs-izolat-vs-hydro' => [
+                'title' => 'Top voľby podľa typu srvátky',
+                'intro' => 'Ak riešiš rozdiel medzi WPC, WPI a hydrolyzátom, nižšie máš rýchly nákupný výber podľa najčastejšieho použitia.',
+                'products' => [
+                    [
+                        'name' => 'WPC koncentrát / value voľba',
+                        'subtitle' => 'Najlepšia voľba pre bežné dopĺňanie bielkovín a rozumný rozpočet.',
+                        'rating' => 4.7,
+                        'code' => 'srvatkovy-protein-vs-izolat-vs-hydro-gymbeam',
+                        'url' => 'https://gymbeam.sk/',
+                        'merchant' => 'GymBeam',
+                    ],
+                    [
+                        'name' => 'WPI izolát / čistejší profil',
+                        'subtitle' => 'Vhodný pri diéte, nižšej tolerancii laktózy a dôraze na čisté zloženie.',
+                        'rating' => 4.8,
+                        'code' => 'srvatkovy-protein-vs-izolat-vs-hydro-aktin',
+                        'url' => 'https://www.aktin.sk/',
+                        'merchant' => 'Aktin',
+                    ],
+                    [
+                        'name' => 'Hydrolyzát / rýchle vstrebávanie',
+                        'subtitle' => 'Špecifickejšia voľba po tréningu alebo keď chceš čo najrýchlejšie vstrebávanie.',
+                        'rating' => 4.4,
+                        'code' => 'srvatkovy-protein-vs-izolat-vs-hydro-myprotein',
+                        'url' => 'https://www.myprotein.sk/',
+                        'merchant' => 'Myprotein',
+                    ],
+                ],
+            ],
+            'protein-na-chudnutie' => [
+                'title' => 'Proteíny vhodné pri chudnutí',
+                'intro' => 'Pri redukcii väčšinou funguje jednoduchý výber: čistejší WPI, rozumný WPC alebo nízkokalorický clear protein podľa preferencie.',
+                'products' => [
+                    [
+                        'name' => 'WPI izolát / nižšie kalórie',
+                        'subtitle' => 'Najlepšia voľba, ak chceš menej laktózy a čistejší nutričný profil.',
+                        'rating' => 4.8,
+                        'code' => 'protein-na-chudnutie-aktin',
+                        'url' => 'https://www.aktin.sk/',
+                        'merchant' => 'Aktin',
+                    ],
+                    [
+                        'name' => 'WPC koncentrát / value cut',
+                        'subtitle' => 'Dobrá voľba, ak chceš udržať cenu nižšie a stále mať praktický proteín na každý deň.',
+                        'rating' => 4.6,
+                        'code' => 'protein-na-chudnutie-gymbeam',
+                        'url' => 'https://gymbeam.sk/',
+                        'merchant' => 'GymBeam',
+                    ],
+                    [
+                        'name' => 'Clear protein / ľahší drink',
+                        'subtitle' => 'Praktický variant, ak ti nevyhovujú hutné mliečne shake-y.',
+                        'rating' => 4.5,
+                        'code' => 'protein-na-chudnutie-myprotein',
+                        'url' => 'https://www.myprotein.sk/',
+                        'merchant' => 'Myprotein',
+                    ],
+                ],
+            ],
+            'najlepsi-protein-na-chudnutie-wpc-vs-wpi' => [
+                'title' => 'WPC vs WPI: odporúčané voľby',
+                'intro' => 'Ak sa rozhoduješ medzi koncentrátom a izolátom, nižšie máš jednoduchý shortlist podľa rozpočtu a citlivosti na laktózu.',
+                'products' => [
+                    [
+                        'name' => 'WPI izolát / redukcia a čistota',
+                        'subtitle' => 'Silná voľba do diétnej fázy a pri potrebe nižšej laktózy.',
+                        'rating' => 4.8,
+                        'code' => 'najlepsi-protein-na-chudnutie-wpc-vs-wpi-aktin',
+                        'url' => 'https://www.aktin.sk/',
+                        'merchant' => 'Aktin',
+                    ],
+                    [
+                        'name' => 'WPC koncentrát / výhodná cena',
+                        'subtitle' => 'Najlepšia voľba, ak chceš držať rozpočet a nepotrebuješ ultra čistý profil.',
+                        'rating' => 4.6,
+                        'code' => 'najlepsi-protein-na-chudnutie-wpc-vs-wpi-gymbeam',
+                        'url' => 'https://gymbeam.sk/',
+                        'merchant' => 'GymBeam',
+                    ],
+                    [
+                        'name' => 'WPI blend / športovejší variant',
+                        'subtitle' => 'Dobrá voľba pri tréningu a vyššom dôraze na bielkoviny na dávku.',
+                        'rating' => 4.5,
+                        'code' => 'najlepsi-protein-na-chudnutie-wpc-vs-wpi-myprotein',
+                        'url' => 'https://www.myprotein.sk/',
+                        'merchant' => 'Myprotein',
+                    ],
+                ],
+            ],
             'kreatin-porovnanie' => [
                 'title' => 'Top kreatín produkty',
                 'intro' => 'Pre väčšinu ľudí dáva zmysel začať kvalitným monohydrátom. HCl má význam skôr ako špecifická alternatíva.',
@@ -59,6 +149,66 @@ if (!function_exists('interessa_article_commerce_sections')) {
                         'subtitle' => 'Alternatíva, ak chceš menšie dávky alebo lepšiu rozpustnosť.',
                         'rating' => 4.4,
                         'code' => 'kreatin-monohydrat-vs-hcl-myprotein',
+                        'url' => 'https://www.myprotein.sk/',
+                        'merchant' => 'Myprotein',
+                    ],
+                ],
+            ],
+            'horcik-ktory-je-najlepsi-a-preco' => [
+                'title' => 'Najlepšie formy horčíka',
+                'intro' => 'Pri horčíku je kľúčová forma. Najčastejšie dáva zmysel bisglycinát na toleranciu, citrát ako univerzál a malát na dennú energiu.',
+                'products' => [
+                    [
+                        'name' => 'Horčík bisglycinát',
+                        'subtitle' => 'Najlepšia tolerancia a večerné použitie pri strese alebo spánku.',
+                        'rating' => 4.8,
+                        'code' => 'horcik-ktory-je-najlepsi-a-preco-aktin',
+                        'url' => 'https://www.aktin.sk/',
+                        'merchant' => 'Aktin',
+                    ],
+                    [
+                        'name' => 'Horčík citrát',
+                        'subtitle' => 'Univerzálna voľba pre väčšinu ľudí, ak ti sedí aj tráviaco.',
+                        'rating' => 4.7,
+                        'code' => 'horcik-ktory-je-najlepsi-a-preco-gymbeam',
+                        'url' => 'https://gymbeam.sk/',
+                        'merchant' => 'GymBeam',
+                    ],
+                    [
+                        'name' => 'Horčík malát',
+                        'subtitle' => 'Rozumná voľba na deň, ak chceš energickejší profil bez večernej ospalosti.',
+                        'rating' => 4.5,
+                        'code' => 'horcik-ktory-je-najlepsi-a-preco-myprotein',
+                        'url' => 'https://www.myprotein.sk/',
+                        'merchant' => 'Myprotein',
+                    ],
+                ],
+            ],
+            'kolagen-na-klby-porovnanie' => [
+                'title' => 'Kolagény na kĺby: top výber',
+                'intro' => 'Pri kĺboch pozeraj typ kolagénu, dávku na porciu a to, či má produkt zmysluplne doplnený vitamín C alebo ďalšie podporné látky.',
+                'products' => [
+                    [
+                        'name' => 'Kolagén typ II / kĺbový fokus',
+                        'subtitle' => 'Dobrá voľba, ak cieliš primárne na kĺby, šľachy a pravidelné dlhodobé používanie.',
+                        'rating' => 4.7,
+                        'code' => 'kolagen-na-klby-porovnanie-aktin',
+                        'url' => 'https://www.aktin.sk/',
+                        'merchant' => 'Aktin',
+                    ],
+                    [
+                        'name' => 'Kolagén + vitamín C',
+                        'subtitle' => 'Praktický variant do každodenného stacku bez potreby ďalšieho kombinovania.',
+                        'rating' => 4.6,
+                        'code' => 'kolagen-na-klby-porovnanie-gymbeam',
+                        'url' => 'https://gymbeam.sk/',
+                        'merchant' => 'GymBeam',
+                    ],
+                    [
+                        'name' => 'Hydrolyzovaný kolagén peptides',
+                        'subtitle' => 'Čistá voľba, ak chceš jednoducho sledovať dávku a cenu za gram.',
+                        'rating' => 4.5,
+                        'code' => 'kolagen-na-klby-porovnanie-myprotein',
                         'url' => 'https://www.myprotein.sk/',
                         'merchant' => 'Myprotein',
                     ],
@@ -91,6 +241,66 @@ if (!function_exists('interessa_article_commerce_sections')) {
                         'code' => 'kolagen-proteinsk',
                         'url' => 'https://www.protein.sk/',
                         'merchant' => 'Protein.sk',
+                    ],
+                ],
+            ],
+            'pre-workout-ako-vybrat' => [
+                'title' => 'Pre-workout: odporúčané voľby',
+                'intro' => 'Pri predtréningovke sleduj hlavne kofeín, citrulín a beta-alanín. Výber nižšie pokrýva balanced stim, silnejší stimulant aj non-stim pumpu.',
+                'products' => [
+                    [
+                        'name' => 'Balanced stim pre-workout',
+                        'subtitle' => 'Najlepšia voľba pre väčšinu ľudí, ak chceš výkon bez extrémneho nakopnutia.',
+                        'rating' => 4.7,
+                        'code' => 'pre-workout-ako-vybrat-aktin',
+                        'url' => 'https://www.aktin.sk/',
+                        'merchant' => 'Aktin',
+                    ],
+                    [
+                        'name' => 'High-stim pre-workout',
+                        'subtitle' => 'Silnejšia voľba do náročných tréningov, ak dobre toleruješ stimulanty.',
+                        'rating' => 4.6,
+                        'code' => 'pre-workout-ako-vybrat-gymbeam',
+                        'url' => 'https://gymbeam.sk/',
+                        'merchant' => 'GymBeam',
+                    ],
+                    [
+                        'name' => 'Non-stim pump formula',
+                        'subtitle' => 'Rozumná voľba, ak trénuješ večer alebo sa chceš vyhnúť kofeínu.',
+                        'rating' => 4.5,
+                        'code' => 'pre-workout-ako-vybrat-myprotein',
+                        'url' => 'https://www.myprotein.sk/',
+                        'merchant' => 'Myprotein',
+                    ],
+                ],
+            ],
+            'probiotika-ako-vybrat' => [
+                'title' => 'Probiotiká: top výber',
+                'intro' => 'Pri probiotikách sleduj konkrétne kmene, počet CFU pri expiracii a jednoduché dávkovanie. Nižšie je shortlist praktických volieb.',
+                'products' => [
+                    [
+                        'name' => 'Multi-strain probiotiká',
+                        'subtitle' => 'Dobrá voľba na každodenné užívanie, ak chceš širší kmeňový profil.',
+                        'rating' => 4.7,
+                        'code' => 'probiotika-ako-vybrat-aktin',
+                        'url' => 'https://www.aktin.sk/',
+                        'merchant' => 'Aktin',
+                    ],
+                    [
+                        'name' => 'Everyday digestion probiotiká',
+                        'subtitle' => 'Praktický variant pri dlhšom pravidelnom užívaní a citlivejšom trávení.',
+                        'rating' => 4.6,
+                        'code' => 'probiotika-ako-vybrat-gymbeam',
+                        'url' => 'https://gymbeam.sk/',
+                        'merchant' => 'GymBeam',
+                    ],
+                    [
+                        'name' => 'Capsules / cestovná voľba',
+                        'subtitle' => 'Rozumný variant, ak chceš jednoduché dávkovanie a praktické balenie.',
+                        'rating' => 4.4,
+                        'code' => 'probiotika-ako-vybrat-myprotein',
+                        'url' => 'https://www.myprotein.sk/',
+                        'merchant' => 'Myprotein',
                     ],
                 ],
             ],
@@ -131,6 +341,20 @@ if (!function_exists('interessa_article_commerce_sections')) {
 if (!function_exists('interessa_article_commerce')) {
     function interessa_article_commerce(string $slug): ?array {
         $sections = interessa_article_commerce_sections();
-        return $sections[$slug] ?? null;
+        $aliases = [
+            'proteiny-na-chudnutie' => 'protein-na-chudnutie',
+            'veganske-proteiny-top' => 'veganske-proteiny-top-vyber-2025',
+        ];
+
+        if (isset($sections[$slug])) {
+            return $sections[$slug];
+        }
+
+        $canonicalSlug = $aliases[$slug] ?? null;
+        if ($canonicalSlug === null) {
+            return null;
+        }
+
+        return $sections[$canonicalSlug] ?? null;
     }
 }

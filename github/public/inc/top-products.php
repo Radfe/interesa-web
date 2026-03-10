@@ -36,6 +36,29 @@ if (!function_exists('interessa_top_product_link')) {
     }
 }
 
+if (!function_exists('interessa_top_product_has_affiliate')) {
+    function interessa_top_product_has_affiliate(array $row): bool {
+        $code = trim((string) ($row['code'] ?? ''));
+        return $code !== '' && aff_resolve($code) !== null;
+    }
+}
+
+if (!function_exists('interessa_top_product_absolute_url')) {
+    function interessa_top_product_absolute_url(array $row): ?string {
+        $link = interessa_top_product_link($row);
+        $href = trim((string) ($link['href'] ?? ''));
+        if ($href === '') {
+            return null;
+        }
+
+        if (preg_match('~^https?://~i', $href)) {
+            return $href;
+        }
+
+        return absolute_url($href);
+    }
+}
+
 if (!function_exists('interessa_render_stars')) {
     function interessa_render_stars(float $rating): string {
         $rating = max(0.0, min(5.0, $rating));
@@ -45,10 +68,80 @@ if (!function_exists('interessa_render_stars')) {
     }
 }
 
+if (!function_exists('interessa_top_products_schema')) {
+    function interessa_top_products_schema(array $products, string $title, string $pagePath): ?array {
+        $items = [];
+
+        foreach ($products as $index => $row) {
+            $name = trim((string) ($row['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $product = [
+                '@type' => 'Product',
+                'name' => $name,
+            ];
+
+            $subtitle = trim((string) ($row['subtitle'] ?? ''));
+            if ($subtitle !== '') {
+                $product['description'] = $subtitle;
+            }
+
+            $img = trim((string) ($row['img'] ?? ''));
+            if ($img !== '') {
+                $product['image'] = absolute_url($img);
+            }
+
+            $url = interessa_top_product_absolute_url($row);
+            if ($url !== null) {
+                $product['url'] = $url;
+            }
+
+            $rating = (float) ($row['rating'] ?? 0);
+            if ($rating > 0) {
+                $product['aggregateRating'] = [
+                    '@type' => 'AggregateRating',
+                    'ratingValue' => number_format($rating, 1, '.', ''),
+                    'bestRating' => '5',
+                    'ratingCount' => '1',
+                ];
+            }
+
+            $items[] = [
+                '@type' => 'ListItem',
+                'position' => (int) ($index + 1),
+                'item' => $product,
+            ];
+        }
+
+        if ($items === []) {
+            return null;
+        }
+
+        return [
+            '@context' => 'https://schema.org',
+            '@type' => 'ItemList',
+            'name' => $title,
+            'url' => absolute_url($pagePath),
+            'numberOfItems' => count($items),
+            'itemListElement' => $items,
+        ];
+    }
+}
+
 if (!function_exists('interessa_render_top_products')) {
     function interessa_render_top_products(array $products, string $title = 'Top produkty', ?string $intro = null): void {
         if ($products === []) {
             return;
+        }
+
+        $hasAffiliate = false;
+        foreach ($products as $row) {
+            if (interessa_top_product_has_affiliate($row)) {
+                $hasAffiliate = true;
+                break;
+            }
         }
 
         echo '<section class="topbox">';
@@ -56,6 +149,9 @@ if (!function_exists('interessa_render_top_products')) {
         echo '<h2>' . esc($title) . '</h2>';
         if ($intro !== null && $intro !== '') {
             echo '<p class="topbox-intro">' . esc($intro) . '</p>';
+        }
+        if ($hasAffiliate) {
+            echo '<p class="topbox-disclosure">Niektoré odkazy nižšie sú affiliate. Ak cez ne nakúpiš, web môže získať províziu bez navýšenia ceny pre teba.</p>';
         }
         echo '</div>';
         echo '<div class="top-products-grid">';

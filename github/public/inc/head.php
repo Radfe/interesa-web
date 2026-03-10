@@ -26,7 +26,7 @@
   <link rel="stylesheet" href="<?= asset('css/compat.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/sidebar.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/patch.css') ?>" />
-  <link rel="stylesheet" href="<?= asset('css/home-b12.css') ?>" />
+  <?= stylesheet_tags(page_style_urls()) ?>
   <?= schema_script_tags() ?>
 </head>
 <body>

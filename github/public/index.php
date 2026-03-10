@@ -7,6 +7,7 @@ $page_description = 'Nezávislé porovnania, návody a tipy pre doplnky výživy
 $page_canonical = '/';
 $page_image = asset('img/og-default.jpg');
 $page_og_type = 'website';
+$page_styles = [asset('css/home-b12.css')];
 $page_schema = [
     [
         '@context' => 'https://schema.org',
