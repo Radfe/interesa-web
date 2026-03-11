@@ -33,6 +33,45 @@ if (!function_exists('dognet_helper_detect_delimiter')) {
     }
 }
 
+if (!function_exists('dognet_helper_mark_row_status')) {
+    function dognet_helper_mark_row_status(array $row): array {
+        $row['_is_complete'] = trim((string) ($row['deeplink_url'] ?? '')) !== '';
+        $row['_status'] = !empty($row['_is_complete']) ? 'hotovo' : 'caka';
+        return $row;
+    }
+}
+
+if (!function_exists('dognet_helper_propagate_shared_product_links')) {
+    function dognet_helper_propagate_shared_product_links(array $rows): array {
+        $deeplinksByProduct = [];
+
+        foreach ($rows as $row) {
+            $productSlug = trim((string) ($row['product_slug'] ?? ''));
+            $deeplink = trim((string) ($row['deeplink_url'] ?? ''));
+            if ($productSlug === '' || $deeplink === '' || !preg_match('~^https?://~i', $deeplink)) {
+                continue;
+            }
+
+            $deeplinksByProduct[$productSlug] = $deeplink;
+        }
+
+        foreach ($rows as $index => $row) {
+            $productSlug = trim((string) ($row['product_slug'] ?? ''));
+            $deeplink = trim((string) ($row['deeplink_url'] ?? ''));
+            if ($productSlug === '' || $deeplink !== '' || !isset($deeplinksByProduct[$productSlug])) {
+                $rows[$index] = dognet_helper_mark_row_status($row);
+                continue;
+            }
+
+            $row['deeplink_url'] = $deeplinksByProduct[$productSlug];
+            $row['link_type'] = 'affiliate';
+            $rows[$index] = dognet_helper_mark_row_status($row);
+        }
+
+        return $rows;
+    }
+}
+
 if (!function_exists('dognet_helper_load_rows')) {
     function dognet_helper_load_rows(): array {
         $path = dognet_helper_csv_path();
@@ -74,12 +113,11 @@ if (!function_exists('dognet_helper_load_rows')) {
                 $assoc['link_type'] = 'affiliate';
             }
 
-            $assoc['_is_complete'] = (($assoc['deeplink_url'] ?? '') !== '');
-            $assoc['_status'] = $assoc['_is_complete'] ? 'hotovo' : 'caka';
-            $rows[] = $assoc;
+            $rows[] = dognet_helper_mark_row_status($assoc);
         }
 
         fclose($handle);
+        $rows = dognet_helper_propagate_shared_product_links($rows);
         return ['headers' => $headers, 'rows' => $rows];
     }
 }
@@ -173,8 +211,7 @@ if (!function_exists('dognet_helper_save_deeplink')) {
 
             $row['deeplink_url'] = $deeplinkUrl;
             $row['link_type'] = 'affiliate';
-            $row['_is_complete'] = true;
-            $row['_status'] = 'hotovo';
+            $row = dognet_helper_mark_row_status($row);
             $found = true;
             break;
         }
@@ -184,6 +221,7 @@ if (!function_exists('dognet_helper_save_deeplink')) {
             throw new RuntimeException('Produktovy kod sa v helperi nenasiel.');
         }
 
+        $rows = dognet_helper_propagate_shared_product_links($rows);
         dognet_helper_write_rows($headers, $rows);
         dognet_helper_sync_overrides($rows);
     }

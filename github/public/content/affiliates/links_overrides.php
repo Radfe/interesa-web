@@ -2,12 +2,39 @@
 declare(strict_types=1);
 
 return array (
+  'doplnky-vyzivy-gymbeam' => 
+  array (
+    'url' => 'https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Fkreatin-monohydrate-gymbeam.html',
+    'merchant' => 'GymBeam',
+    'merchant_slug' => 'gymbeam',
+    'product_slug' => 'gymbeam-creatine-monohydrate-real',
+    'link_type' => 'affiliate',
+    'source' => 'dognet-helper',
+  ),
   'horcik-ktory-je-najlepsi-a-preco-gymbeam' => 
   array (
     'url' => 'https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Fmagnezium-citrat-caps-gymbeam.html',
     'merchant' => 'GymBeam',
     'merchant_slug' => 'gymbeam',
     'product_slug' => 'gymbeam-magnesium-citrate-caps',
+    'link_type' => 'affiliate',
+    'source' => 'dognet-helper',
+  ),
+  'kolagen-na-klby-porovnanie-gymbeam' => 
+  array (
+    'url' => 'https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Fhydrolyzovany-kolagen-runcollgr-gymbeam.html',
+    'merchant' => 'GymBeam',
+    'merchant_slug' => 'gymbeam',
+    'product_slug' => 'gymbeam-runcollg-collagen',
+    'link_type' => 'affiliate',
+    'source' => 'dognet-helper',
+  ),
+  'kolagen-recenzia-gymbeam' => 
+  array (
+    'url' => 'https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Fhydrolyzovany-kolagen-runcollgr-gymbeam.html',
+    'merchant' => 'GymBeam',
+    'merchant_slug' => 'gymbeam',
+    'product_slug' => 'gymbeam-runcollg-collagen',
     'link_type' => 'affiliate',
     'source' => 'dognet-helper',
   ),
@@ -74,40 +101,13 @@ return array (
     'link_type' => 'affiliate',
     'source' => 'dognet-manual-full',
   ),
-  'doplnky-vyzivy-gymbeam' => 
-  array (
-    'url' => 'https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Fkreatin-monohydrate-gymbeam.html',
-    'merchant' => 'GymBeam',
-    'merchant_slug' => 'gymbeam',
-    'product_slug' => 'gymbeam-creatine-monohydrate-real',
-    'link_type' => 'affiliate',
-    'source' => 'dognet-clone-kreatin',
-  ),
-  'kolagen-na-klby-porovnanie-gymbeam' => 
-  array (
-    'url' => 'https://gymbeam.sk/hydrolyzovany-kolagen-runcollgr-gymbeam.html',
-    'merchant' => 'GymBeam',
-    'merchant_slug' => 'gymbeam',
-    'product_slug' => 'gymbeam-runcollg-collagen',
-    'link_type' => 'product',
-    'source' => 'gymbeam-feed-seed',
-  ),
-  'kolagen-recenzia-gymbeam' => 
-  array (
-    'url' => 'https://gymbeam.sk/hydrolyzovany-kolagen-runcollgr-gymbeam.html',
-    'merchant' => 'GymBeam',
-    'merchant_slug' => 'gymbeam',
-    'product_slug' => 'gymbeam-runcollg-collagen',
-    'link_type' => 'product',
-    'source' => 'gymbeam-feed-seed',
-  ),
   'veganske-proteiny-top-vyber-2025-gymbeam' => 
   array (
-    'url' => 'https://gymbeam.sk/protein-vegan-blend-gymbeam.html',
+    'url' => 'https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Fprotein-vegan-blend-gymbeam.html',
     'merchant' => 'GymBeam',
     'merchant_slug' => 'gymbeam',
     'product_slug' => 'gymbeam-vegan-blend',
-    'link_type' => 'product',
-    'source' => 'gymbeam-feed-seed',
+    'link_type' => 'affiliate',
+    'source' => 'dognet-helper',
   ),
-); 
+);

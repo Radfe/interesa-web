@@ -120,12 +120,16 @@ if (!function_exists('interessa_resolve_product_reference')) {
         }
 
         $normalized = interessa_normalize_product($product);
+        $catalogName = trim((string) ($normalized['name'] ?? ''));
+        $catalogSummary = trim((string) ($normalized['summary'] ?? ''));
         $merged = array_replace($normalized, $row);
         $merged['code'] = trim((string) ($merged['code'] ?? $normalized['affiliate_code'] ?? ''));
         $merged['url'] = trim((string) ($merged['url'] ?? $normalized['fallback_url'] ?? ''));
         $merged['subtitle'] = trim((string) ($merged['subtitle'] ?? $normalized['summary'] ?? ''));
         $merged['merchant'] = trim((string) ($merged['merchant'] ?? $normalized['merchant'] ?? ''));
         $merged['slug'] = trim((string) ($merged['slug'] ?? $normalized['slug'] ?? ''));
+        $merged['product_name'] = $catalogName !== '' ? $catalogName : trim((string) ($merged['name'] ?? ''));
+        $merged['product_summary'] = $catalogSummary;
         $merged['pros'] = is_array($merged['pros'] ?? null) ? array_values($merged['pros']) : $normalized['pros'];
         $merged['cons'] = is_array($merged['cons'] ?? null) ? array_values($merged['cons']) : $normalized['cons'];
         $merged['best_for'] = trim((string) ($merged['best_for'] ?? ''));

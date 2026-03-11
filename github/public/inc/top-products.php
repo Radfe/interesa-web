@@ -39,7 +39,7 @@ if (!function_exists('interessa_top_products_schema')) {
 
         foreach ($products as $index => $row) {
             $resolved = interessa_resolve_product_reference($row);
-            $name = trim((string) ($resolved['name'] ?? ''));
+            $name = trim((string) ($resolved['product_name'] ?? $resolved['name'] ?? ''));
             if ($name === '') {
                 continue;
             }
@@ -49,7 +49,7 @@ if (!function_exists('interessa_top_products_schema')) {
                 'name' => $name,
             ];
 
-            $subtitle = trim((string) ($resolved['subtitle'] ?? $resolved['summary'] ?? ''));
+            $subtitle = trim((string) ($resolved['product_summary'] ?? $resolved['subtitle'] ?? $resolved['summary'] ?? ''));
             if ($subtitle !== '') {
                 $product['description'] = $subtitle;
             }
@@ -118,6 +118,8 @@ if (!function_exists('interessa_render_top_products')) {
 
         foreach ($resolvedProducts as $index => $row) {
             $name = trim((string) ($row['name'] ?? ''));
+            $productName = trim((string) ($row['product_name'] ?? ''));
+            $showProductName = $productName !== '' && strcasecmp($productName, $name) !== 0;
             $subtitle = trim((string) ($row['subtitle'] ?? $row['summary'] ?? ''));
             $merchant = trim((string) ($row['merchant'] ?? ''));
             $bestFor = trim((string) ($row['best_for'] ?? ''));
@@ -134,8 +136,11 @@ if (!function_exists('interessa_render_top_products')) {
             if ($subtitle !== '') {
                 echo '<p class="top-product-subtitle">' . esc($subtitle) . '</p>';
             }
+            if ($showProductName) {
+                echo '<p class="top-product-product-name"><span>Produkt v obchode:</span> ' . esc($productName) . '</p>';
+            }
             if ($bestFor !== '') {
-                echo '<div class="top-product-bestfor"><span>Najlepsie pre:</span> ' . esc($bestFor) . '</div>';
+                echo '<div class="top-product-bestfor"><span>Najlepšie pre:</span> ' . esc($bestFor) . '</div>';
             }
             if ($rating > 0) {
                 echo '<div class="top-product-rating">' . interessa_render_stars($rating) . '</div>';
@@ -153,7 +158,7 @@ if (!function_exists('interessa_render_top_products')) {
                     echo '</ul></div>';
                 }
                 if ($cons !== []) {
-                    echo '<div class="top-product-list is-cons"><div class="top-product-list-title">Minusy</div><ul>';
+                    echo '<div class="top-product-list is-cons"><div class="top-product-list-title">Mínusy</div><ul>';
                     foreach ($cons as $item) {
                         echo '<li>' . esc((string) $item) . '</li>';
                     }

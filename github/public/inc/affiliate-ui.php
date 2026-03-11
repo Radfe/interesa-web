@@ -5,7 +5,7 @@ require_once __DIR__ . '/products.php';
 
 if (!function_exists('interessa_affiliate_disclosure_text')) {
     function interessa_affiliate_disclosure_text(): string {
-        return 'Niektore odkazy na tejto stranke mozu byt komercne. Ak cez ne nakupis, web moze ziskat proviziu bez navysenia ceny pre teba.';
+        return 'Niektoré odkazy na tejto stránke vedú na partnerské obchody. Ak cez ne nakúpiš, web môže získať províziu bez navýšenia ceny pre teba.';
     }
 }
 
@@ -25,7 +25,7 @@ if (!function_exists('interessa_affiliate_cta_html')) {
         $row = interessa_resolve_product_reference($row);
         $target = interessa_affiliate_target($row);
         $class = trim((string) ($options['class'] ?? 'btn btn-cta')) ?: 'btn btn-cta';
-        $label = trim((string) ($options['label'] ?? $target['label'] ?? 'Pozriet ponuku')) ?: 'Pozriet ponuku';
+        $label = trim((string) ($options['label'] ?? $target['label'] ?? 'Pozrieť ponuku')) ?: 'Pozrieť ponuku';
 
         if ($target['href'] === '') {
             return '<button class="' . esc($class) . '" type="button" disabled>' . esc($label) . '</button>';
@@ -45,6 +45,8 @@ if (!function_exists('interessa_render_product_box')) {
 
         $image = is_array($row['_image'] ?? null) ? $row['_image'] : null;
         $summary = trim((string) ($row['subtitle'] ?? ''));
+        $productName = trim((string) ($row['product_name'] ?? ''));
+        $showProductName = $productName !== '' && strcasecmp($productName, $name) !== 0;
         $bestFor = trim((string) ($row['best_for'] ?? ''));
         $pros = is_array($row['pros'] ?? null) ? array_values($row['pros']) : [];
         $cons = is_array($row['cons'] ?? null) ? array_values($row['cons']) : [];
@@ -60,8 +62,11 @@ if (!function_exists('interessa_render_product_box')) {
         if ($summary !== '') {
             $html .= '<p class="affiliate-product-summary">' . esc($summary) . '</p>';
         }
+        if ($showProductName) {
+            $html .= '<p class="affiliate-product-product-name"><strong>Produkt v obchode:</strong> ' . esc($productName) . '</p>';
+        }
         if ($bestFor !== '') {
-            $html .= '<p class="affiliate-product-bestfor"><strong>Najlepsie pre:</strong> ' . esc($bestFor) . '</p>';
+            $html .= '<p class="affiliate-product-bestfor"><strong>Najlepšie pre:</strong> ' . esc($bestFor) . '</p>';
         }
         if ($merchant !== '') {
             $html .= '<p class="affiliate-product-merchant">Obchod: ' . esc($merchant) . '</p>';
@@ -76,7 +81,7 @@ if (!function_exists('interessa_render_product_box')) {
                 $html .= '</ul></div>';
             }
             if ($cons !== []) {
-                $html .= '<div><h4>Minusy</h4><ul>';
+                $html .= '<div><h4>Mínusy</h4><ul>';
                 foreach ($cons as $item) {
                     $html .= '<li>' . esc((string) $item) . '</li>';
                 }
@@ -96,7 +101,7 @@ if (!function_exists('interessa_render_product_box')) {
 
 if (!function_exists('interessa_render_recommended_product')) {
     function interessa_render_recommended_product(array $row, array $options = []): string {
-        $badge = trim((string) ($options['badge'] ?? 'Odporucame')) ?: 'Odporucame';
+        $badge = trim((string) ($options['badge'] ?? 'Odporúčame')) ?: 'Odporúčame';
         $content = interessa_render_product_box($row, $options);
         if ($content === '') {
             return '';

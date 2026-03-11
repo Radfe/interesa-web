@@ -1,4 +1,4 @@
-/* Interesa – svetlá “Testado” téma (vyladená) */
+/* Interesa Ă˘â‚¬â€ś svetlÄ‚Ë‡ Ă˘â‚¬Ĺ›TestadoĂ˘â‚¬ĹĄ tÄ‚Â©ma (vyladenÄ‚Ë‡) */
 
 :root{
   --bg:#f6faf8;
@@ -36,8 +36,8 @@ a:hover{color:#0954aa}
 .skip-link:focus{left:1rem;top:1rem;width:auto;height:auto;padding:.5rem .75rem;background:#111;color:#fff;border-radius:10px}
 
 /* Header & nav */
-.site-header{position:sticky;top:0;z-index:50;background:var(--surface);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(16,24,40,.02)}
-.header-inner{display:flex;align-items:center;gap:1rem;min-height:66px;padding-block:.4rem}
+.site-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(16,24,40,.02)}
+.header-inner{display:flex;align-items:center;gap:1rem;min-height:68px;padding-block:.45rem}
 .brand{display:flex;align-items:center;gap:.5rem}
 .nav-toggle{display:none}
 .nav-toggle-btn{
@@ -46,39 +46,42 @@ a:hover{color:#0954aa}
 }
 .nav-toggle-btn .bar{display:block;height:2px;width:22px;background:#1f2937;margin:5px auto;border-radius:2px}
 .main-nav{margin-left:auto}
-.menu-root{list-style:none;display:flex;gap:.25rem;margin:0;padding:0}
-.menu-root>li{position:relative}
-
-/* ---- NAV IKONY (väčšie 22px) ---- */
-.menu-root>li>a{
-  position:relative;display:block;
-  padding:.7rem .9rem .7rem 2.55rem; /* miesto pre 22px ikonu */
-  border-radius:12px;color:#111;font-weight:600;
+.menu-root{list-style:none;display:flex;align-items:center;gap:.35rem;margin:0;padding:0}
+.menu-item{position:relative}
+.main-nav__link{
+  position:relative;display:flex;align-items:center;padding:.72rem .95rem;border-radius:14px;
+  color:#10202d;font-weight:700;letter-spacing:-.01em;transition:background .18s ease,color .18s ease
 }
-.menu-root>li>a::before{
-  content:"";position:absolute;left:10px;top:50%;transform:translateY(-50%);
-  width:22px;height:22px;background-size:contain;background-position:center;background-repeat:no-repeat;opacity:.95
+.main-nav__link::after{
+  content:"";position:absolute;left:14px;right:14px;bottom:8px;height:3px;background:var(--primary);
+  border-radius:999px;transform:scaleX(0);transform-origin:left;transition:transform .18s ease
 }
-/* mapovanie ikon */
-.menu-root>li>a[href="/kategorie/proteiny"]::before{background-image:url("/assets/img/icons/proteiny.png")}
-.menu-root>li>a[href="/kategorie/vyziva"]::before{background-image:url("/assets/img/icons/vyziva.png")}
-.menu-root>li>a[href="/kategorie/mineraly"]::before{background-image:url("/assets/img/icons/vitaminy.png")}
-.menu-root>li>a[href="/kategorie/imunita"]::before{background-image:url("/assets/img/icons/imunita.png")}
-.menu-root>li>a[href="/kategorie/sila"]::before{background-image:url("/assets/img/icons/sila.png")}
-.menu-root>li>a[href="/kategorie/klby-koza"]::before{background-image:url("/assets/img/icons/klby-koza.png")}
-
-/* hover underline */
-.menu-root>li>a::after{
-  content:"";position:absolute;left:12px;right:12px;bottom:6px;height:3px;background:var(--primary);
-  border-radius:3px;transform:scaleX(0);transform-origin:left;transition:transform .18s ease
-}
-.menu-root>li>a:hover{background:#f4f7fa}
-.menu-root>li>a:hover::after{transform:scaleX(1)}
-
-.mega-caret{display:none;position:absolute;right:.35rem;top:50%;translate:0 -50%;width:18px;height:18px;cursor:pointer}
+.main-nav__link:hover,
+.menu-item:hover>.main-nav__link,
+.menu-item:focus-within>.main-nav__link{background:#f2f8f5;color:#0c5b52}
+.main-nav__link:hover::after,
+.menu-item:hover>.main-nav__link::after,
+.menu-item:focus-within>.main-nav__link::after{transform:scaleX(1)}
+.has-mega>.main-nav__link{padding-right:1.7rem}
+.mega-caret{display:none;position:absolute;right:.45rem;top:50%;translate:0 -50%;width:18px;height:18px;cursor:pointer}
 .mega-caret::before{content:"";width:8px;height:8px;display:block;border-right:2px solid #8c97a3;border-bottom:2px solid #8c97a3;rotate:45deg;margin:4px auto 0}
 .mega-toggle{display:none}
-.has-mega>.mega{display:none}
+.mega{
+  display:none;position:absolute;top:calc(100% + 12px);left:0;z-index:60;min-width:min(760px,78vw);
+  padding:1rem 1rem 1.05rem;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;background:#fff;
+  border:1px solid #dce9e2;border-radius:20px;box-shadow:0 18px 44px rgba(16,24,40,.12)
+}
+.mega::before{
+  content:"";position:absolute;top:-7px;left:28px;width:14px;height:14px;background:#fff;
+  border-left:1px solid #dce9e2;border-top:1px solid #dce9e2;transform:rotate(45deg)
+}
+.has-mega:hover>.mega,
+.has-mega:focus-within>.mega{display:grid}
+.mega-col{display:grid;gap:.65rem;align-content:start}
+.mega-col h3{margin:0;font-size:.94rem;letter-spacing:-.01em;color:#10202d}
+.mega-col ul{list-style:none;margin:0;padding:0;display:grid;gap:.35rem}
+.mega-link{display:block;padding:.45rem .55rem;border-radius:12px;color:#254255;line-height:1.4}
+.mega-link:hover{background:#f4faf7;color:#0f6ad6}
 
 /* Hero */
 .hero{padding:clamp(1.6rem,3.5vw + 1rem,4.5rem) 0}
@@ -108,7 +111,7 @@ a:hover{color:#0954aa}
 }
 .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:#dfe6eb}
 
-/* jednotná výška náhľadu – responsívne */
+/* jednotnÄ‚Ë‡ vÄ‚ËťÄąË‡ka nÄ‚Ë‡hĂ„Äľadu Ă˘â‚¬â€ś responsÄ‚Â­vne */
 .card>img{width:100%;height:clamp(180px,22vw,240px);object-fit:cover}
 
 /* telo karty */
@@ -116,13 +119,13 @@ a:hover{color:#0954aa}
 .card-body h3{margin:.15rem 0;line-height:1.25}
 .card-body p{color:var(--muted);margin:0}
 
-/* 2-riadkový clamp */
+/* 2-riadkovÄ‚Ëť clamp */
 @supports (-webkit-line-clamp:2){
   .card-body h3{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
   .card-body p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 }
 
-/* CTA v kartách – s malou šípkou */
+/* CTA v kartÄ‚Ë‡ch Ă˘â‚¬â€ś s malou ÄąË‡Ä‚Â­pkou */
 .card-link{
   align-self:start;display:inline-flex;align-items:center;gap:.45rem;
   padding:.45rem .7rem;border:1px solid #d7dee4;border-radius:10px;color:#0f172a;background:#fff
@@ -136,7 +139,7 @@ a:hover{color:#0954aa}
 .lead-article .meta{color:var(--muted);margin-top:0}
 .inline-figure{margin:1rem 0 0;border-radius:14px;overflow:hidden}
 
-/* Sidebar / Heureka + Najnovšie články */
+/* Sidebar / Heureka + NajnovÄąË‡ie Ă„Ĺ¤lÄ‚Ë‡nky */
 .sidebar{display:grid;gap:16px}
 .sidebar .ad-card{
   background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:12px
@@ -144,7 +147,7 @@ a:hover{color:#0954aa}
 .sidebar .ad-card h3{margin:0 0 10px;font-size:15px;color:#0f172a}
 .sidebar .ad-card>div[class^="heureka-"]{min-height:150px}
 
-/* Najnovšie články */
+/* NajnovÄąË‡ie Ă„Ĺ¤lÄ‚Ë‡nky */
 .latest-articles .latest-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .latest-articles .latest-list li{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .latest-articles .latest-list a{color:#0f172a}
@@ -173,19 +176,26 @@ a:hover{color:#0954aa}
   }
   .nav-toggle:checked ~ .nav-toggle-btn{outline:none;box-shadow:var(--ring)}
   .nav-toggle:checked ~ .main-nav{transform:translateY(0);opacity:1;pointer-events:auto}
-  .menu-root{flex-direction:column;padding:.5rem;gap:.25rem}
-  .menu-root>li>a{padding:.85rem 1rem .85rem 2.35rem} /* miesto pre ~20px ikonu */
-  .menu-root>li>a::before{width:20px;height:20px}
-  .menu-root>li>a::after{display:none}
-  .mega-caret{display:block}
-  .has-mega>.mega{
-    position:static;display:none;width:auto;max-width:none;box-shadow:none;margin:.25rem 0 .5rem;
-    border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff
+  .menu-root{flex-direction:column;align-items:stretch;padding:.6rem;gap:.35rem}
+  .main-nav__link{padding:.95rem 1rem;border-radius:12px}
+  .main-nav__link::after{display:none}
+  .has-mega>.main-nav__link{padding-right:2.8rem}
+  .mega-caret{
+    display:flex;align-items:center;justify-content:center;position:absolute;right:.75rem;top:.92rem;translate:none;
+    width:22px;height:22px;border-radius:999px;background:#f3f7f5
   }
-  .mega-toggle:checked ~ .mega{display:grid;grid-template-columns:1fr}
+  .mega-caret::before{margin:0;width:7px;height:7px}
+  .has-mega>.mega{
+    position:static;display:none;min-width:0;margin:.2rem 0 .8rem;padding:.15rem 0 0 .25rem;
+    grid-template-columns:1fr;gap:.35rem;border:none;box-shadow:none;background:transparent;border-radius:0
+  }
+  .has-mega>.mega::before{display:none}
+  .mega-col h3{font-size:.88rem;color:#5b6672;padding:.1rem .5rem}
+  .mega-link{padding:.55rem .6rem}
+  .mega-toggle:checked ~ .mega{display:grid}
 }
 
-/* Doplnenia pre SVG (ak by si ich použil) */
+/* Doplnenia pre SVG (ak by si ich pouÄąÄľil) */
 .svg-hero{display:block;width:100%;height:auto}
 .svg-cover{aspect-ratio:3/2;display:block}
 .svg-cover svg{display:block;width:100%;height:100%}
@@ -239,7 +249,7 @@ a:hover{color:#0954aa}
 .hub-eyebrow{margin:0;color:var(--primary);font-size:.82rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .hub-checklist{list-style:none;padding:0;margin:0;display:grid;gap:.7rem}
 .hub-checklist li{position:relative;padding-left:1.2rem;color:var(--text)}
-.hub-checklist li::before{content:'•';position:absolute;left:0;top:0;color:var(--primary);font-weight:800}
+.hub-checklist li::before{content:'✓';position:absolute;left:0;top:0;color:var(--primary);font-weight:800}
 .hub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
 .hub-card{display:grid;gap:.85rem;background:#fff;border:1px solid var(--line);border-radius:14px;padding:1rem;box-shadow:var(--shadow)}
 .hub-card-image{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;background:#eef4f2}
@@ -284,3 +294,7 @@ a:hover{color:#0954aa}
   .affiliate-product-box{grid-template-columns:1fr}
   .affiliate-product-columns{grid-template-columns:1fr}
 }
+.top-product-product-name{margin:0;padding:.55rem .7rem;border-radius:12px;background:#f7fbf9;color:#35524a;font-size:.9rem;line-height:1.5}
+.top-product-product-name span{font-weight:700}
+.affiliate-product-product-name{margin:0;padding:.55rem .7rem;border-radius:12px;background:#f7fbf9;color:#35524a;font-size:.92rem;line-height:1.55}
+

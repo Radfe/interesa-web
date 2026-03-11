@@ -112,18 +112,18 @@ if (!function_exists('category_registry')) {
         }
 
         $categories = [
-            'proteiny' => ['title' => 'Zdrave proteiny', 'description' => 'Srvatkove WPC/WPI, veganske a clear proteiny. Ako vybrat, davkovanie a najlepsie tipy.'],
-            'vyziva' => ['title' => 'Zdrava vyziva', 'description' => 'Snacky, ranajky, zmysluplne zlozenie a prakticke tipy pre zdravu vyzivu.'],
-            'mineraly' => ['title' => 'Vitaminy a mineraly', 'description' => 'Horcik, zinok, vitamin D3/C a dalsie mikro-ziviny. Ako sa zorientovat a co funguje.'],
-            'imunita' => ['title' => 'Imunita', 'description' => 'Zaklady aj prakticke tipy pre podporu imunity: D3, C, zinok a probiotika.'],
-            'sila' => ['title' => 'Sila a vykon', 'description' => 'Kreatin, pre-workout a regeneracia. Ako ich pouzivat a co vybrat.'],
-            'klby-koza' => ['title' => 'Klby a koza', 'description' => 'Kolagen a klbova vyziva. Porovnania, recenzie a ako vybrat co funguje.'],
-            'aminokyseliny' => ['title' => 'Aminokyseliny', 'description' => 'BCAA, EAA a aminokyseliny pre regeneraciu, vykon a trening.'],
-            'chudnutie' => ['title' => 'Chudnutie', 'description' => 'Tipy na redukciu tuku, proteiny na chudnutie a realita okolo spalovacov.'],
-            'doplnkove-prislusenstvo' => ['title' => 'Doplnkove prislusenstvo', 'description' => 'Pomocne doplnky, vybava a prakticke odporucania.'],
-            'kreatin' => ['title' => 'Kreatin', 'description' => 'Monohydrat, HCl, davkovanie, nasycovanie a porovnanie kreatinov.'],
-            'pre-workout' => ['title' => 'Pre-workout', 'description' => 'Ako vybrat predtreningovku, kedy ju brat a co sledovat v zlozeni.'],
-            'probiotika-travenie' => ['title' => 'Probiotika a travenie', 'description' => 'Probiotika, travenie a ako si vybrat vhodny produkt.'],
+            'proteiny' => ['title' => 'Zdravé proteíny', 'description' => 'Srvátkové WPC/WPI, vegánske aj clear proteíny. Ako vybrať, dávkovanie a najlepšie tipy.'],
+            'vyziva' => ['title' => 'Zdravá výživa', 'description' => 'Snacky, raňajky, zmysluplné zloženie a praktické tipy pre zdravšiu výživu.'],
+            'mineraly' => ['title' => 'Vitamíny a minerály', 'description' => 'Horčík, zinok, vitamín D3/C a ďalšie mikroživiny. Ako sa zorientovať a čo funguje.'],
+            'imunita' => ['title' => 'Imunita', 'description' => 'Základy aj praktické tipy pre podporu imunity: D3, C, zinok a probiotiká.'],
+            'sila' => ['title' => 'Sila a výkon', 'description' => 'Kreatín, pre-workout a regenerácia. Ako ich používať a čo vybrať.'],
+            'klby-koza' => ['title' => 'Kĺby a koža', 'description' => 'Kolagén a kĺbová výživa. Porovnania, recenzie a ako vybrať to, čo funguje.'],
+            'aminokyseliny' => ['title' => 'Aminokyseliny', 'description' => 'BCAA, EAA a aminokyseliny pre regeneráciu, výkon a tréning.'],
+            'chudnutie' => ['title' => 'Chudnutie', 'description' => 'Tipy na redukciu tuku, proteíny na chudnutie a realita okolo spaľovačov.'],
+            'doplnkove-prislusenstvo' => ['title' => 'Doplnkové príslušenstvo', 'description' => 'Pomocné doplnky, výbava a praktické odporúčania.'],
+            'kreatin' => ['title' => 'Kreatín', 'description' => 'Monohydrát, HCl, dávkovanie, nasýcovanie a porovnanie kreatínov.'],
+            'pre-workout' => ['title' => 'Pre-workout', 'description' => 'Ako vybrať predtréningovku, kedy ju brať a čo sledovať v zložení.'],
+            'probiotika-travenie' => ['title' => 'Probiotiká a trávenie', 'description' => 'Probiotiká, trávenie a ako si vybrať vhodný produkt.'],
         ];
 
         return $categories;
@@ -232,11 +232,16 @@ if (!function_exists('article_registry')) {
 if (!function_exists('article_meta')) {
     function article_meta(string $slug): array {
         $articles = article_registry();
-        $row = $articles[$slug] ?? [humanize_slug($slug), '', ''];
+        $aliases = [
+            'proteiny-na-chudnutie' => 'protein-na-chudnutie',
+            'veganske-proteiny-top' => 'veganske-proteiny-top-vyber-2025',
+        ];
+        $canonicalSlug = $aliases[$slug] ?? $slug;
+        $row = $articles[$canonicalSlug] ?? $articles[$slug] ?? [humanize_slug($canonicalSlug), '', ''];
 
         return [
             'slug' => $slug,
-            'title' => $row[0] ?? humanize_slug($slug),
+            'title' => $row[0] ?? humanize_slug($canonicalSlug),
             'description' => $row[1] ?? '',
             'category' => normalize_category_slug($row[2] ?? ''),
         ];

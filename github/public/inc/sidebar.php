@@ -23,7 +23,7 @@
   </section>
 
   <section class="widget">
-    <h3>Affiliate informácia</h3>
-    <p class="muted">Obsah môže obsahovať affiliate odkazy. Na webe používame vlastné <code>/go/</code> presmerovania, aby sme mali odkazy pod kontrolou a vedeli ich neskôr napojiť na Dognet deeplinky.</p>
+    <h3>Ako fungujú odkazy</h3>
+    <p class="muted">Niektoré odkazy vedú na partnerské obchody. Ak cez ne nakúpiš, web môže získať províziu bez navýšenia ceny pre teba. Interná adresa <code>/go/</code> nám umožňuje odkazy spravovať centrálne a priebežne ich aktualizovať.</p>
   </section>
 </aside>
