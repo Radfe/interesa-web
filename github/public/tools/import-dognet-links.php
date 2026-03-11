@@ -23,6 +23,19 @@ function dognet_links_detect_delimiter(string $line): string {
     return ',';
 }
 
+function dognet_links_detect_type(string $url, string $explicit = ''): string {
+    $explicit = trim(strtolower($explicit));
+    if ($explicit === 'affiliate' || $explicit === 'product') {
+        return $explicit;
+    }
+
+    if (str_contains($url, 'dognet') || str_contains($url, 'utm_term=dognet')) {
+        return 'affiliate';
+    }
+
+    return 'affiliate';
+}
+
 $handle = fopen($source, 'r');
 if ($handle === false) {
     fwrite(STDERR, "Unable to open CSV file.\n");
@@ -49,7 +62,7 @@ while (($row = fgetcsv($handle, 0, $delimiter, '"', '\\')) !== false) {
 
     $record = array_combine($headers, array_pad($row, count($headers), '')) ?: [];
     $code = trim((string) ($record['code'] ?? ''));
-    $url = trim((string) ($record['url'] ?? $record['deeplink'] ?? ''));
+    $url = trim((string) ($record['deeplink_url'] ?? $record['deeplink'] ?? $record['url'] ?? ''));
     $merchantSlug = trim((string) ($record['merchant_slug'] ?? ''));
     if ($merchantFilter !== '' && $merchantFilter !== $merchantSlug) {
         continue;
@@ -63,6 +76,7 @@ while (($row = fgetcsv($handle, 0, $delimiter, '"', '\\')) !== false) {
         'merchant_slug' => $merchantSlug,
         'merchant' => trim((string) ($record['merchant'] ?? '')),
         'product_slug' => trim((string) ($record['product_slug'] ?? '')),
+        'link_type' => dognet_links_detect_type($url, (string) ($record['link_type'] ?? '')),
         'source' => basename($source),
     ];
 }

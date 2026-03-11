@@ -11,10 +11,20 @@ if (!function_exists('interessa_product_catalog')) {
             return $catalog;
         }
 
-        $file = dirname(__DIR__) . '/content/products/catalog.php';
-        $catalog = is_file($file) ? include $file : [];
-        if (!is_array($catalog)) {
-            $catalog = [];
+        $baseDir = dirname(__DIR__) . '/content/products';
+        $files = [
+            $baseDir . '/catalog.php',
+            $baseDir . '/catalog_overrides.php',
+        ];
+
+        $catalog = [];
+        foreach ($files as $file) {
+            $data = is_file($file) ? include $file : [];
+            if (!is_array($data)) {
+                continue;
+            }
+
+            $catalog = array_replace($catalog, $data);
         }
 
         ksort($catalog);
@@ -133,13 +143,15 @@ if (!function_exists('interessa_affiliate_target')) {
         $row = interessa_resolve_product_reference($row);
         $code = trim((string) ($row['code'] ?? $row['affiliate_code'] ?? ''));
         $fallback = trim((string) ($row['fallback_url'] ?? $row['url'] ?? ''));
+        $record = $code !== '' ? aff_record($code) : null;
 
-        if ($code !== '' && aff_resolve($code) !== null) {
+        if ($record !== null && aff_resolve($code) !== null) {
+            $linkType = aff_link_type($record);
             return [
                 'href' => '/go/' . rawurlencode($code),
-                'rel' => 'nofollow sponsored',
-                'label' => 'Do obchodu',
-                'note' => 'Affiliate odkaz',
+                'rel' => $linkType === 'affiliate' ? 'nofollow sponsored' : 'nofollow',
+                'label' => $linkType === 'affiliate' ? 'Do obchodu' : 'Pozriet produkt',
+                'note' => $linkType === 'affiliate' ? 'Affiliate odkaz' : 'Produktovy odkaz',
             ];
         }
 

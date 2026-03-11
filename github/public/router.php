@@ -33,6 +33,11 @@ if (preg_match('~^/go/([A-Za-z0-9_-]+)$~', $path, $m)) {
     exit;
 }
 
+if ($path === '/dognet-helper') {
+    require __DIR__ . '/dognet-helper.php';
+    exit;
+}
+
 if ($path === '/search') {
     require __DIR__ . '/search.php';
     exit;

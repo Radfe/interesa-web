@@ -150,3 +150,15 @@ When you get a new approved Dognet campaign:
 2. add or import deeplinks into `public/content/affiliates/links.php`
 3. connect selected products in `public/content/products/catalog.php`
 4. use only internal `/go/<code>` links in content and UI
+## Dognet helper page
+
+For GymBeam there is now a local semi-automatic helper page:
+- `/dognet-helper`
+- project launcher: `open-dognet-helper.vbs`
+
+The helper:
+- shows the next pending product
+- copies the product URL to clipboard
+- opens the Dognet campaign page
+- lets you paste the generated deeplink
+- saves it back into the CSV template and syncs `links_overrides.php`

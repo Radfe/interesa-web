@@ -185,6 +185,30 @@ if (!function_exists('interessa_build_image_meta')) {
     }
 }
 
+if (!function_exists('interessa_remote_image_meta')) {
+    function interessa_remote_image_meta(array $config, string $fallbackAlt, string $sizes, string $loading = 'lazy'): ?array {
+        $src = trim((string) ($config['remote_src'] ?? $config['src'] ?? ''));
+        if ($src === '' || !preg_match('~^https?://~i', $src)) {
+            return null;
+        }
+
+        $width = (int) ($config['width'] ?? 0);
+        $height = (int) ($config['height'] ?? 0);
+
+        return [
+            'src' => $src,
+            'alt' => trim((string) ($config['alt'] ?? $fallbackAlt)),
+            'width' => $width > 0 ? $width : null,
+            'height' => $height > 0 ? $height : null,
+            'srcset' => null,
+            'sizes' => trim((string) ($config['sizes'] ?? $sizes)) ?: null,
+            'loading' => trim((string) ($config['loading'] ?? $loading)) ?: $loading,
+            'decoding' => trim((string) ($config['decoding'] ?? 'async')) ?: 'async',
+            'fetchpriority' => trim((string) ($config['fetchpriority'] ?? '')) ?: null,
+        ];
+    }
+}
+
 if (!function_exists('interessa_article_image_meta')) {
     function interessa_article_image_meta(string $slug, string $variant = 'thumb', bool $allowFallback = true): ?array {
         $registry = interessa_media_registry()['articles'][$slug] ?? [];
@@ -257,6 +281,8 @@ if (!function_exists('interessa_category_image_meta')) {
 if (!function_exists('interessa_product_image_meta')) {
     function interessa_product_image_meta(string $slug, array $config = [], bool $allowFallback = true): ?array {
         $slug = trim($slug);
+        $alt = trim((string) ($config['alt'] ?? humanize_slug($slug)));
+        $sizes = (string) ($config['sizes'] ?? '(min-width: 1100px) 280px, 50vw');
         $variants = [];
 
         if (isset($config['asset'])) {
@@ -273,9 +299,18 @@ if (!function_exists('interessa_product_image_meta')) {
             ]);
         }
 
+        if ($variants === []) {
+            $remote = interessa_remote_image_meta($config, $alt, $sizes);
+            if ($remote !== null) {
+                return $remote;
+            }
+        }
+
         return interessa_build_image_meta($variants, [
-            'alt' => trim((string) ($config['alt'] ?? humanize_slug($slug))),
-            'sizes' => $config['sizes'] ?? '(min-width: 1100px) 280px, 50vw',
+            'alt' => $alt,
+            'sizes' => $sizes,
+            'width' => $config['width'] ?? null,
+            'height' => $config['height'] ?? null,
         ], 'product', $allowFallback);
     }
 }

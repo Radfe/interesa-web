@@ -6,7 +6,10 @@ const AFF_DIRS = [
     __DIR__ . '/..',
 ];
 const AFF_FILES = ['affiliate_simple_edit.csv', 'affiliate_links.csv'];
-const AFF_REGISTRY_FILE = __DIR__ . '/../content/affiliates/links.php';
+const AFF_REGISTRY_FILES = [
+    __DIR__ . '/../content/affiliates/links.php',
+    __DIR__ . '/../content/affiliates/links_overrides.php',
+];
 const AFF_MERCHANTS_FILE = __DIR__ . '/../content/affiliates/merchants.php';
 
 function aff_detect_delim(string $headerLine): string {
@@ -24,6 +27,28 @@ function aff_slugify_merchant(string $value): string {
     $value = str_replace([' ', '.', '/', '&'], '-', $value);
     $value = preg_replace('~[^a-z0-9-]+~', '', $value) ?? '';
     return trim($value, '-');
+}
+
+function aff_detect_link_type_from_url(string $url, string $default = 'affiliate'): string {
+    $url = trim($url);
+    if ($url === '') {
+        return $default;
+    }
+
+    if (str_contains($url, 'dognet') || str_contains($url, 'utm_term=dognet')) {
+        return 'affiliate';
+    }
+
+    return $default;
+}
+
+function aff_normalize_link_type(mixed $value, string $url = '', string $default = 'affiliate'): string {
+    $type = trim(strtolower((string) $value));
+    if ($type === 'affiliate' || $type === 'product') {
+        return $type;
+    }
+
+    return aff_detect_link_type_from_url($url, $default);
 }
 
 function aff_load_merchants(): array {
@@ -53,13 +78,14 @@ function aff_merge_merchant_meta(array $record): array {
         $merchantSlug = aff_slugify_merchant((string) $record['merchant']);
     }
 
+    $record['merchant_slug'] = $merchantSlug;
+    $record['link_type'] = aff_normalize_link_type($record['link_type'] ?? '', (string) ($record['url'] ?? ''), 'affiliate');
+
     $merchantMeta = $merchantSlug !== '' ? aff_merchant($merchantSlug) : null;
     if ($merchantMeta === null) {
-        $record['merchant_slug'] = $merchantSlug;
         return $record;
     }
 
-    $record['merchant_slug'] = $merchantSlug;
     $record['merchant'] = trim((string) ($record['merchant'] ?? $merchantMeta['name'] ?? ''));
     $record['merchant_meta'] = $merchantMeta;
     return $record;
@@ -72,30 +98,40 @@ function aff_load_registry(): array {
     }
 
     $registry = [];
-    if (is_file(AFF_REGISTRY_FILE)) {
-        $data = include AFF_REGISTRY_FILE;
-        if (is_array($data)) {
-            foreach ($data as $code => $row) {
-                $code = trim((string) $code);
-                if ($code === '') {
-                    continue;
-                }
+    foreach (AFF_REGISTRY_FILES as $registryFile) {
+        if (!is_file($registryFile)) {
+            continue;
+        }
 
-                $row = is_array($row) ? $row : [];
-                $url = trim((string) ($row['url'] ?? ''));
-                if ($url !== '' && !preg_match('~^https?://~i', $url)) {
-                    $url = '';
-                }
+        $data = include $registryFile;
+        if (!is_array($data)) {
+            continue;
+        }
 
-                $registry[$code] = aff_merge_merchant_meta([
-                    'code' => $code,
-                    'url' => $url,
-                    'merchant' => trim((string) ($row['merchant'] ?? '')),
-                    'merchant_slug' => trim((string) ($row['merchant_slug'] ?? '')),
-                    'product_slug' => trim((string) ($row['product_slug'] ?? '')),
-                    'source' => trim((string) ($row['source'] ?? 'php-registry')),
-                ]);
+        foreach ($data as $code => $row) {
+            $code = trim((string) $code);
+            if ($code === '') {
+                continue;
             }
+
+            $row = is_array($row) ? $row : [];
+            $url = trim((string) ($row['url'] ?? ''));
+            if ($url !== '' && !preg_match('~^https?://~i', $url)) {
+                $url = '';
+            }
+
+            $existing = $registry[$code] ?? [];
+            $record = aff_merge_merchant_meta([
+                'code' => $code,
+                'url' => $url,
+                'merchant' => trim((string) ($row['merchant'] ?? ($existing['merchant'] ?? ''))),
+                'merchant_slug' => trim((string) ($row['merchant_slug'] ?? ($existing['merchant_slug'] ?? ''))),
+                'product_slug' => trim((string) ($row['product_slug'] ?? ($existing['product_slug'] ?? ''))),
+                'link_type' => $row['link_type'] ?? ($existing['link_type'] ?? ''),
+                'source' => trim((string) ($row['source'] ?? basename($registryFile))),
+            ]);
+
+            $registry[$code] = array_replace($existing, $record);
         }
     }
 
@@ -130,10 +166,19 @@ function aff_load_registry(): array {
 
         $codeIndex = null;
         $linkIndex = null;
+        $merchantIndex = null;
+        $merchantSlugIndex = null;
+        $productSlugIndex = null;
+        $linkTypeIndex = null;
+
         foreach ($headers as $index => $header) {
             $header = strtolower(trim((string) $header, " \t\n\r\0\x0B\"'"));
             if ($header === 'code') { $codeIndex = $index; }
-            if ($header === 'deeplink' || $header === 'url') { $linkIndex = $index; }
+            if ($header === 'deeplink' || $header === 'deeplink_url' || $header === 'url') { $linkIndex = $index; }
+            if ($header === 'merchant') { $merchantIndex = $index; }
+            if ($header === 'merchant_slug') { $merchantSlugIndex = $index; }
+            if ($header === 'product_slug') { $productSlugIndex = $index; }
+            if ($header === 'link_type') { $linkTypeIndex = $index; }
         }
 
         if ($codeIndex === null || $linkIndex === null) {
@@ -160,9 +205,22 @@ function aff_load_registry(): array {
                 'merchant' => '',
                 'merchant_slug' => '',
                 'product_slug' => '',
+                'link_type' => 'affiliate',
                 'source' => basename($path),
             ];
+
+            $merchant = $merchantIndex !== null ? trim((string) ($row[$merchantIndex] ?? '')) : trim((string) ($current['merchant'] ?? ''));
+            $merchantSlug = $merchantSlugIndex !== null ? trim((string) ($row[$merchantSlugIndex] ?? '')) : trim((string) ($current['merchant_slug'] ?? ''));
+            $productSlug = $productSlugIndex !== null ? trim((string) ($row[$productSlugIndex] ?? '')) : trim((string) ($current['product_slug'] ?? ''));
+            $linkType = $linkTypeIndex !== null
+                ? aff_normalize_link_type((string) ($row[$linkTypeIndex] ?? ''), $link, 'affiliate')
+                : aff_detect_link_type_from_url($link, 'affiliate');
+
             $current['url'] = $link;
+            $current['merchant'] = $merchant;
+            $current['merchant_slug'] = $merchantSlug;
+            $current['product_slug'] = $productSlug;
+            $current['link_type'] = $linkType;
             $current['source'] = basename($path);
             $registry[$code] = aff_merge_merchant_meta($current);
         }
@@ -186,6 +244,27 @@ function aff_record(string $code): ?array {
 
     $registry = aff_load_registry();
     return $registry[$code] ?? null;
+}
+
+function aff_link_type(?array $record): string {
+    if (!is_array($record)) {
+        return 'affiliate';
+    }
+
+    return aff_normalize_link_type($record['link_type'] ?? '', (string) ($record['url'] ?? ''), 'affiliate');
+}
+
+function aff_is_affiliate_record(?array $record): bool {
+    if (!is_array($record)) {
+        return false;
+    }
+
+    $url = trim((string) ($record['url'] ?? ''));
+    if ($url === '') {
+        return false;
+    }
+
+    return aff_link_type($record) === 'affiliate';
 }
 
 function aff_load_map(): array {
