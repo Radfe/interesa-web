@@ -61,6 +61,91 @@
   border: 1px solid #f0dfb4;
 }
 
+.hero-helper-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: .75rem;
+  margin-bottom: 1.2rem;
+}
+
+.hero-summary-card {
+  display: grid;
+  gap: .2rem;
+  padding: .9rem 1rem;
+  border-radius: 16px;
+  border: 1px solid #d8e0d9;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.hero-summary-card strong {
+  font-size: .96rem;
+}
+
+.hero-summary-card span {
+  color: #56625d;
+  font-size: .88rem;
+}
+
+.hero-helper-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) minmax(200px, 1fr) repeat(2, auto) auto;
+  gap: .8rem;
+  align-items: end;
+  margin-bottom: 1.5rem;
+}
+
+.hero-filter {
+  display: grid;
+  gap: .35rem;
+}
+
+.hero-filter span {
+  font-size: .88rem;
+  font-weight: 700;
+  color: #43514a;
+}
+
+.hero-filter input[type="search"],
+.hero-filter select {
+  min-width: 0;
+  padding: .8rem .9rem;
+  border-radius: 14px;
+  border: 1px solid #d8e0d9;
+  background: #fff;
+  font: inherit;
+}
+
+.hero-filter-check {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .8rem .95rem;
+  border-radius: 14px;
+  border: 1px solid #d8e0d9;
+  background: #fff;
+}
+
+.hero-filter-check span {
+  font-size: .95rem;
+}
+
+.hero-filter-results {
+  min-width: 118px;
+  padding: .8rem .95rem;
+  border-radius: 14px;
+  border: 1px solid #d8e0d9;
+  background: #f6f8f5;
+  text-align: center;
+}
+
+.hero-filter-results strong {
+  display: block;
+  font-size: 1.25rem;
+}
+
 .hero-helper-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -79,6 +164,11 @@
 
 .hero-card.is-webp {
   border-color: #bfd8c2;
+}
+
+.hero-card.is-priority {
+  border-color: #f0d58d;
+  box-shadow: 0 14px 44px rgba(126, 93, 12, .10);
 }
 
 .hero-card-image {
@@ -129,6 +219,11 @@
   color: #5b4f86;
 }
 
+.hero-badge.is-priority {
+  background: #fff3d1;
+  color: #7a5a00;
+}
+
 .hero-card h2 {
   margin: 0 0 .4rem;
   font-size: 1.08rem;
@@ -172,6 +267,11 @@
 @media (max-width: 900px) {
   .hero-helper-head {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-helper-toolbar {
+    grid-template-columns: 1fr;
     align-items: stretch;
   }
 }
