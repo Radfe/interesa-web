@@ -1,8 +1,8 @@
 <?php declare(strict_types=1); ?>
 <footer class="site-footer">
   <div class="container footer-inner">
-    <p>&copy; <span id="year"></span> Interesa. Všetky pr&aacute;va vyhraden&eacute;. Niektor&eacute; odkazy môžu viesť na partnersk&eacute; obchody.</p>
-    <nav aria-label="Sekund&aacute;rna navig&aacute;cia">
+    <p>&copy; <span id="year"></span> Interesa. Všetky práva vyhradené. Niektoré odkazy môžu viesť na partnerské obchody.</p>
+    <nav aria-label="Sekundárna navigácia">
       <a href="/clanky/">Články</a>
       <a href="/kategorie/imunita">Imunita</a>
       <a href="/kategorie/klby-koza">Kĺby a koža</a>
