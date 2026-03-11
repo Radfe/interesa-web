@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="800" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f6f2ee"/>
+      <stop offset="1" stop-color="#fffaf6"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="690" rx="340" ry="58" fill="#f4e5d5"/>
+  <circle cx="182" cy="150" r="88" fill="#f1d3b8" opacity="0.55"/>
+  <circle cx="1030" cy="132" r="64" fill="#f1d3b8" opacity="0.45"/>
+  <path d="M65 565c86-116 198-165 336-146 99 14 171 55 253 46 83-9 125-72 222-86 89-13 181 17 259 98v174H65V565z" fill="#ffffff" opacity="0.55"/>
+  <g filter="url(#shadow)">
+    <rect x="514" y="134" width="102" height="56" rx="18" fill="#ede9e2"/>
+    <rect x="416" y="190" width="300" height="396" rx="54" fill="#fbfaf8" stroke="#d9d2c8" stroke-width="3"/>
+    <rect x="458" y="285" width="216" height="166" rx="30" fill="#f1d3b8" stroke="#d8b89a" stroke-opacity="0.4" stroke-width="3"/>
+  </g>
+  <g filter="url(#shadow)">
+    <path d="M760 288 L940 288 L915 558 L785 558 Z" fill="#fbfaf8" stroke="#d7d1c8" stroke-width="3"/>
+    <rect x="760" y="260" width="180" height="34" rx="16" fill="#d8b89a"/>
+    <rect x="792" y="352" width="115" height="92" rx="22" fill="#f1d3b8" stroke="#d8b89a" stroke-width="3" stroke-opacity="0.35"/>
+  </g>
+  <g transform="rotate(18 334 586)" filter="url(#shadow)">
+    <ellipse cx="334" cy="586" rx="66" ry="28" fill="#fbfaf8" stroke="#d7d1c8" stroke-width="3"/>
+    <rect x="384" y="576" width="118" height="20" rx="10" fill="#d8b89a"/>
+    <ellipse cx="334" cy="580" rx="50" ry="16" fill="#f1d3b8"/>
+  </g>
+</svg>

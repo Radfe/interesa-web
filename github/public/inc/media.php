@@ -229,13 +229,22 @@ if (!function_exists('interessa_article_image_meta')) {
 
         if ($variants === []) {
             $variants = interessa_collect_asset_candidates([
+                'img/articles/heroes/' . $slug,
+                'img/articles/' . $slug . '/hero',
                 'img/articles/' . $slug . '/' . $variant,
                 'img/articles/' . $slug,
+                'img/articles/' . $slug . '-hero',
             ]);
+        }
+
+        if ($variants === [] && !empty($meta['category'])) {
+            return interessa_category_image_meta((string) $meta['category'], 'hero', $allowFallback);
         }
 
         return interessa_build_image_meta($variants, [
             'alt' => $alt,
+            'width' => $entry['width'] ?? 1200,
+            'height' => $entry['height'] ?? 800,
             'sizes' => $entry['sizes'] ?? null,
             'loading' => $variant === 'hero' ? 'eager' : 'lazy',
             'fetchpriority' => $variant === 'hero' ? 'high' : null,

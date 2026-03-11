@@ -1,52 +1,22 @@
 # Image Backlog
 
-Toto je prvá prioritná sada vlastných hero vizuálov, ktoré majú najväčší dopad na kvalitu webu.
+Aktuálne má každý článok vlastný SVG hero fallback v `public/assets/img/articles/heroes/`.
+Finálny stav je nahradiť najdôležitejšie články realistickými WebP vizuálmi z Canvy alebo iného grafického nástroja.
 
 ## Priorita 1
+- `protein-na-chudnutie.webp`
+- `kreatin-porovnanie.webp`
+- `kolagen-recenzia.webp`
+- `horcik-ktory-je-najlepsi-a-preco.webp`
+- `imunita-prirodne-latky-ktore-funguju.webp`
+- `pre-workout-ako-vybrat.webp`
+- `probiotika-ako-vybrat.webp`
+- `veganske-proteiny-top-vyber-2025.webp`
+- `najlepsie-proteiny-2025.webp`
+- `najlepsi-protein-na-chudnutie-wpc-vs-wpi.webp`
 
-- homepage hero
-  - cieľ: editorial cover obrázok pre výživu a doplnky
-  - formát: `public/assets/img/hero/hero-1.webp`
-  - poznámka: po dodaní nahradí aktuálny fallback alebo legacy vizuál
-
-- `najlepsie-proteiny-2025`
-  - cieľ: prehľad proteínov, dojem porovnania a shortlistu
-  - cesta: `public/assets/img/articles/najlepsie-proteiny-2025/hero.webp`
-
-- `kreatin-porovnanie`
-  - cieľ: čistý silový suplement vizuál s dojmom výkonu
-  - cesta: `public/assets/img/articles/kreatin-porovnanie/hero.webp`
-
-- `kolagen-recenzia`
-  - cieľ: kolagén, kĺby a pokožka bez beauty-slop estetiky
-  - cesta: `public/assets/img/articles/kolagen-recenzia/hero.webp`
-
-- `veganske-proteiny-top-vyber-2025`
-  - cieľ: rastlinný proteín, prirodzený a moderný vizuál
-  - cesta: `public/assets/img/articles/veganske-proteiny-top-vyber-2025/hero.webp`
-
-## Priorita 2
-
-- `protein-na-chudnutie`
-- `horcik-ktory-je-najlepsi-a-preco`
-- `probiotika-ako-vybrat`
-- `pre-workout-ako-vybrat`
-- `doplnky-vyzivy`
-
-## Kategóriové vizuály na doladenie
-
-- `proteiny`
-- `vyziva`
-- `mineraly`
-- `sila`
-- `klby-koza`
-- `imunita`
-
-## Štýlový smer
-
-- svetlé pozadie
-- jemná zelená, piesková a neutrálna paleta
-- jeden dominantný objekt
-- minimum textu v obrázku
-- editorial, nie agresívny banner
-- pri produktoch preferovať čisté packshoty pred AI kolážou
+## Workflow
+1. Vytvor hero obrázok podľa promptu zo shotlistu.
+2. Exportuj WebP približne 1200x800 a pod 350 KB.
+3. Ulož súbor do `public/assets/img/articles/heroes/` presne podľa slug názvu.
+4. Obnov článok v prehliadači. WebP automaticky nahradí dočasný SVG fallback.

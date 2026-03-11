@@ -1,100 +1,30 @@
-# Obrázky a ikony na webe Interesa
+# Obrázky a ikony
 
-Tento web už má pripravený technický základ pre obrázky v `public/inc/media.php` a registry v `public/content/media`.
+Web teraz používa jednotný workflow pre hero obrázky článkov.
 
-## Čo vieme robiť priamo v projekte
+## Hero obrázky článkov
+- cieľový priečinok: `public/assets/img/articles/heroes/`
+- finálny formát: `webp`
+- dočasný fallback: `svg` generovaný automaticky pre každý článok
+- názov súboru: slug článku, napr. `kolagen-recenzia.webp`
+- odporúčané rozlíšenie: približne `1200x800`
+- cieľová veľkosť: do `350 KB`
+- bez textu v obrázku
+- jednotný štýl: svetlé minimalistické pozadie, jemné pastelové farby, moderný health/fitness look
 
-- jednotne renderovať hero obrázky článkov a kategórií
-- používať fallback placeholder, keď obrázok ešte chýba
-- dopĺňať `alt`, `width`, `height`, `loading` a `fetchpriority`
-- držať reálne produktové obrázky z merchant feedov alebo vzdialených URL
-- napájať články na kategóriové fallback vizuály, keď ešte nemajú vlastný hero obrázok
+## Ako to funguje
+1. Web najprv hľadá `public/assets/img/articles/heroes/<slug>.webp`.
+2. Ak WebP ešte neexistuje, použije automaticky vygenerovaný `svg` fallback pre daný článok.
+3. Keď nahráš finálny `webp`, začne sa používať automaticky bez ďalšej úpravy kódu.
 
-## Kde ukladať obrázky
+## Alt text
+- alt text sa berie automaticky z názvu článku
+- netreba ho ručne dopisovať do šablón
 
-- články: `public/assets/img/articles/<slug>/`
-- kategórie: `public/assets/img/categories/<slug>/`
-- produkty: `public/assets/img/products/<merchant>/`
-- brand: `public/assets/img/brand/`
-- placeholdery: `public/assets/img/placeholders/`
-- SVG ikony: `public/assets/img/icons/`
+## Canva workflow
+- zadania a prompty sú v `docs/article-hero-shotlist-sk.md` a `docs/article-hero-shotlist.csv`
+- po exporte WebP len nahraj súbor do `public/assets/img/articles/heroes/` a obnov stránku
 
-## Názvy súborov
-
-Používaj vždy:
-
-- malé písmená
-- bez diakritiky
-- slová oddeľované pomlčkami
-- ideálne SEO názov podľa článku alebo produktu
-
-Príklady:
-
-- `protein-na-chudnutie-hero.webp`
-- `veganske-proteiny-thumb.webp`
-- `gymbeam-true-whey.webp`
-- `horcik-citrat-kapsuly.webp`
-
-## Odporúčaný štýl obrázkov
-
-### Ilustračné článkové obrázky
-
-Drž jeden konzistentný smer:
-
-- čisté svetlé pozadie
-- jeden dominantný objekt alebo tému
-- minimum textu priamo v obrázku
-- jemná zelená alebo neutrálna farebnosť ako na webe
-- radšej jednoduchý produktový alebo ingredienčný vizuál než generický chaos
-
-### Produktové obrázky
-
-Pri produktoch preferuj:
-
-- reálny packshot z feedu alebo merchant webu
-- transparentné alebo čisté svetlé pozadie
-- rovnaký pomer strán v rámci jednej sekcie
-- neprepisovať produkt zbytočnou grafikou
-
-## Ikony a menu
-
-Aktuálny smer webu je textová navigácia bez veľkých ilustračných ikon v hlavnom menu.
-
-To znamená:
-
-- horné menu nechávame čisté a textové
-- staré PNG ikonky v `public/assets/img/icons/` ber ako legacy assety
-- ak budeme pridávať nové ikony, preferované sú jednoduché SVG pre mikro UI, nie veľké farebné obrázky v navigácii
-- kategórie a huby môžu používať jemné inline SVG badge ikony, aby vizuál pôsobil jednotne
-
-## Kedy použiť čo
-
-- hero článku: ilustračný obrázok k téme
-- top produkty a porovnania: reálny produktový packshot
-- kategória bez vlastného vizuálu: fallback na kategóriový hero obrázok
-- menu a mikro UI: jednoduché jednofarebné SVG ikony
-
-## Ako to robiť prakticky
-
-1. Obrázok priprav mimo kódu v grafickom nástroji alebo generátore.
-2. Ulož ho do správneho priečinka v `public/assets/img/...`.
-3. Ak ide o článok alebo kategóriu, doplň meta záznam do `public/content/media/articles.php` alebo `public/content/media/categories.php`.
-4. Ak ide o produkt, doplň obrázok do produktového katalógu alebo cez merchant feed.
-5. Potom ho web vie renderovať jednotne cez media helper.
-
-## Dôležitá poznámka
-
-Codex vie veľmi dobre pomôcť s:
-
-- architektúrou assetov
-- SVG ikonami
-- naming convention
-- render helpermi
-- napojením obrázkov do šablón
-
-Pri samotných hero ilustráciách je najlepší workflow tento:
-
-- obrázok vytvoriť alebo doladiť v externom nástroji
-- potom ho sem len zaradiť, pomenovať a napojiť do existujúceho systému
-
-To je najspoľahlivejšia cesta, ako držať konzistentný vizuál bez chaosu.
+## Ikony
+- hlavné menu ostáva textové
+- staré PNG/SVG ikonky sa berú len ako legacy assety, nie ako nový smer vizuálu

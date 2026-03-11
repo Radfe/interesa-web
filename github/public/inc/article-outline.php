@@ -5,15 +5,22 @@ if (!function_exists('interessa_ascii_slugify')) {
     function interessa_ascii_slugify(string $text): string {
         $text = strip_tags($text);
         $text = interessa_fix_mojibake(trim($text));
-        $text = strtr($text, [
-            'Ăˇ' => 'a', 'Ă¤' => 'a', 'ÄŤ' => 'c', 'ÄŹ' => 'd', 'Ă©' => 'e', 'Ä›' => 'e',
-            'Ă­' => 'i', 'Äş' => 'l', 'Äľ' => 'l', 'Ĺ' => 'n', 'Ăł' => 'o', 'Ă´' => 'o',
-            'Ĺ•' => 'r', 'Ĺ™' => 'r', 'Ĺˇ' => 's', 'ĹĄ' => 't', 'Ăş' => 'u', 'ĹŻ' => 'u',
-            'Ă˝' => 'y', 'Ĺľ' => 'z', 'Ă' => 'a', 'Ă„' => 'a', 'ÄŚ' => 'c', 'ÄŽ' => 'd',
-            'Ă‰' => 'e', 'Äš' => 'e', 'ĂŤ' => 'i', 'Äą' => 'l', 'Ä˝' => 'l', 'Ĺ‡' => 'n',
-            'Ă“' => 'o', 'Ă”' => 'o', 'Ĺ”' => 'r', 'Ĺ' => 'r', 'Ĺ ' => 's', 'Ĺ¤' => 't',
-            'Ăš' => 'u', 'Ĺ®' => 'u', 'Ăť' => 'y', 'Ĺ˝' => 'z',
-        ]);
+
+        $transliterated = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text);
+        if (is_string($transliterated) && $transliterated !== '') {
+            $text = $transliterated;
+        } else {
+            $text = strtr($text, [
+                'á' => 'a', 'ä' => 'a', 'č' => 'c', 'ď' => 'd', 'é' => 'e', 'ě' => 'e',
+                'í' => 'i', 'ĺ' => 'l', 'ľ' => 'l', 'ň' => 'n', 'ó' => 'o', 'ô' => 'o',
+                'ŕ' => 'r', 'ř' => 'r', 'š' => 's', 'ť' => 't', 'ú' => 'u', 'ů' => 'u',
+                'ý' => 'y', 'ž' => 'z', 'Á' => 'a', 'Ä' => 'a', 'Č' => 'c', 'Ď' => 'd',
+                'É' => 'e', 'Ě' => 'e', 'Í' => 'i', 'Ĺ' => 'l', 'Ľ' => 'l', 'Ň' => 'n',
+                'Ó' => 'o', 'Ô' => 'o', 'Ŕ' => 'r', 'Ř' => 'r', 'Š' => 's', 'Ť' => 't',
+                'Ú' => 'u', 'Ů' => 'u', 'Ý' => 'y', 'Ž' => 'z',
+            ]);
+        }
+
         $text = strtolower($text);
         $text = preg_replace('~[^a-z0-9]+~', '-', $text) ?? $text;
         return trim($text, '-') ?: 'sekcia';
