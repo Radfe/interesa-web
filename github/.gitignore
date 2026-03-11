@@ -1,1 +1,3 @@
 .codex-local/
+public/storage/dognet/raw/*.xml
+!public/storage/dognet/raw/.gitkeep
