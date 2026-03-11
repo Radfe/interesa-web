@@ -2,59 +2,31 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/functions.php';
-require_once __DIR__ . '/affiliates.php';
+require_once __DIR__ . '/affiliate-ui.php';
 
 if (!function_exists('interessa_top_product_link')) {
     function interessa_top_product_link(array $row): array {
-        $code = trim((string) ($row['code'] ?? ''));
-        $fallback = trim((string) ($row['url'] ?? ''));
-
-        if ($code !== '' && aff_resolve($code) !== null) {
-            return [
-                'href' => '/go/' . rawurlencode($code),
-                'rel' => 'nofollow sponsored',
-                'label' => 'Do obchodu',
-                'note' => 'Affiliate odkaz',
-            ];
-        }
-
-        if ($fallback !== '') {
-            return [
-                'href' => $fallback,
-                'rel' => 'nofollow',
-                'label' => 'Pozrieť produkt',
-                'note' => 'Priamy odkaz',
-            ];
-        }
-
-        return [
-            'href' => '',
-            'rel' => '',
-            'label' => 'Čoskoro',
-            'note' => '',
-        ];
+        return interessa_affiliate_target($row);
     }
 }
 
 if (!function_exists('interessa_top_product_has_affiliate')) {
     function interessa_top_product_has_affiliate(array $row): bool {
-        $code = trim((string) ($row['code'] ?? ''));
-        return $code !== '' && aff_resolve($code) !== null;
+        $target = interessa_affiliate_target($row);
+        return str_contains((string) ($target['rel'] ?? ''), 'sponsored');
     }
 }
 
 if (!function_exists('interessa_top_product_absolute_url')) {
     function interessa_top_product_absolute_url(array $row): ?string {
-        $link = interessa_top_product_link($row);
-        $href = trim((string) ($link['href'] ?? ''));
+        $target = interessa_affiliate_target($row);
+        $href = trim((string) ($target['href'] ?? ''));
         if ($href === '') {
             return null;
         }
-
         if (preg_match('~^https?://~i', $href)) {
             return $href;
         }
-
         return absolute_url($href);
     }
 }
@@ -73,7 +45,8 @@ if (!function_exists('interessa_top_products_schema')) {
         $items = [];
 
         foreach ($products as $index => $row) {
-            $name = trim((string) ($row['name'] ?? ''));
+            $resolved = interessa_resolve_product_reference($row);
+            $name = trim((string) ($resolved['name'] ?? ''));
             if ($name === '') {
                 continue;
             }
@@ -83,22 +56,22 @@ if (!function_exists('interessa_top_products_schema')) {
                 'name' => $name,
             ];
 
-            $subtitle = trim((string) ($row['subtitle'] ?? ''));
+            $subtitle = trim((string) ($resolved['subtitle'] ?? $resolved['summary'] ?? ''));
             if ($subtitle !== '') {
                 $product['description'] = $subtitle;
             }
 
-            $img = trim((string) ($row['img'] ?? ''));
-            if ($img !== '') {
-                $product['image'] = absolute_url($img);
+            $image = is_array($resolved['_image'] ?? null) ? $resolved['_image'] : null;
+            if ($image !== null && !empty($image['src'])) {
+                $product['image'] = absolute_url((string) $image['src']);
             }
 
-            $url = interessa_top_product_absolute_url($row);
+            $url = interessa_top_product_absolute_url($resolved);
             if ($url !== null) {
                 $product['url'] = $url;
             }
 
-            $rating = (float) ($row['rating'] ?? 0);
+            $rating = (float) ($resolved['rating'] ?? 0);
             if ($rating > 0) {
                 $product['aggregateRating'] = [
                     '@type' => 'AggregateRating',
@@ -136,11 +109,13 @@ if (!function_exists('interessa_render_top_products')) {
             return;
         }
 
+        $resolvedProducts = [];
         $hasAffiliate = false;
         foreach ($products as $row) {
-            if (interessa_top_product_has_affiliate($row)) {
+            $resolved = interessa_resolve_product_reference($row);
+            $resolvedProducts[] = $resolved;
+            if (interessa_top_product_has_affiliate($resolved)) {
                 $hasAffiliate = true;
-                break;
             }
         }
 
@@ -151,30 +126,31 @@ if (!function_exists('interessa_render_top_products')) {
             echo '<p class="topbox-intro">' . esc($intro) . '</p>';
         }
         if ($hasAffiliate) {
-            echo '<p class="topbox-disclosure">Niektoré odkazy nižšie sú affiliate. Ak cez ne nakúpiš, web môže získať províziu bez navýšenia ceny pre teba.</p>';
+            echo interessa_render_affiliate_disclosure(null, 'topbox-disclosure');
         }
         echo '</div>';
         echo '<div class="top-products-grid">';
 
-        foreach ($products as $index => $row) {
+        foreach ($resolvedProducts as $index => $row) {
             $name = trim((string) ($row['name'] ?? ''));
-            $subtitle = trim((string) ($row['subtitle'] ?? ''));
+            $subtitle = trim((string) ($row['subtitle'] ?? $row['summary'] ?? ''));
             $merchant = trim((string) ($row['merchant'] ?? ''));
+            $bestFor = trim((string) ($row['best_for'] ?? ''));
             $rating = (float) ($row['rating'] ?? 0);
-            $img = trim((string) ($row['img'] ?? ''));
-            $link = interessa_top_product_link($row);
-
-            if ($img === '') {
-                $img = '/assets/img/placeholder-16x9.svg';
-            }
+            $pros = is_array($row['pros'] ?? null) ? array_values($row['pros']) : [];
+            $cons = is_array($row['cons'] ?? null) ? array_values($row['cons']) : [];
+            $image = is_array($row['_image'] ?? null) ? $row['_image'] : interessa_product_image_meta(trim((string) ($row['slug'] ?? '')), [], true);
 
             echo '<article class="top-product-card">';
             echo '<div class="top-product-rank">#' . (int) ($index + 1) . '</div>';
-            echo '<img class="top-product-image" src="' . esc($img) . '" alt="' . esc($name) . '" loading="lazy">';
+            echo interessa_render_image($image, ['class' => 'top-product-image']);
             echo '<div class="top-product-body">';
             echo '<h3>' . esc($name) . '</h3>';
             if ($subtitle !== '') {
                 echo '<p class="top-product-subtitle">' . esc($subtitle) . '</p>';
+            }
+            if ($bestFor !== '') {
+                echo '<div class="top-product-bestfor"><span>Najlepšie pre:</span> ' . esc($bestFor) . '</div>';
             }
             if ($rating > 0) {
                 echo '<div class="top-product-rating">' . interessa_render_stars($rating) . '</div>';
@@ -182,15 +158,26 @@ if (!function_exists('interessa_render_top_products')) {
             if ($merchant !== '') {
                 echo '<div class="top-product-merchant">Obchod: ' . esc($merchant) . '</div>';
             }
+            if ($pros !== [] || $cons !== []) {
+                echo '<div class="top-product-highlights">';
+                if ($pros !== []) {
+                    echo '<div class="top-product-list is-pros"><div class="top-product-list-title">Plusy</div><ul>';
+                    foreach ($pros as $item) { echo '<li>' . esc((string) $item) . '</li>'; }
+                    echo '</ul></div>';
+                }
+                if ($cons !== []) {
+                    echo '<div class="top-product-list is-cons"><div class="top-product-list-title">Mínusy</div><ul>';
+                    foreach ($cons as $item) { echo '<li>' . esc((string) $item) . '</li>'; }
+                    echo '</ul></div>';
+                }
+                echo '</div>';
+            }
             echo '</div>';
             echo '<div class="top-product-actions">';
-            if ($link['href'] !== '') {
-                echo '<a class="btn" href="' . esc($link['href']) . '" target="_blank" rel="' . esc($link['rel']) . '">' . esc($link['label']) . '</a>';
-            } else {
-                echo '<button class="btn" type="button" disabled>' . esc($link['label']) . '</button>';
-            }
-            if ($link['note'] !== '') {
-                echo '<div class="top-product-note">' . esc($link['note']) . '</div>';
+            echo interessa_affiliate_cta_html($row, ['class' => 'btn']);
+            $target = interessa_affiliate_target($row);
+            if (($target['note'] ?? '') !== '') {
+                echo '<div class="top-product-note">' . esc((string) $target['note']) . '</div>';
             }
             echo '</div>';
             echo '</article>';

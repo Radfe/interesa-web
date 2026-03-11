@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/article-review-details.php';
+
 if (!function_exists('interessa_article_commerce_sections')) {
     function interessa_article_commerce_sections(): array {
         return [
@@ -154,7 +156,36 @@ if (!function_exists('interessa_article_commerce_sections')) {
                     ],
                 ],
             ],
-            'horcik-ktory-je-najlepsi-a-preco' => [
+            'doplnky-vyzivy' => [
+                'title' => 'Odporúčané doplnky výživy',
+                'intro' => 'Ak chceš rýchly shortlist bez prechádzania celej tabuľky, nižšie máš základné typy doplnkov podľa najčastejšieho cieľa: výkon, imunita, regenerácia, spánok a každodenný základ.',
+                'products' => [
+                    [
+                        'name' => 'Multivitamín pre aktívnych',
+                        'subtitle' => 'Praktický základ, ak chceš pokryť mikroživiny bez zbytočne komplikovaného stacku.',
+                        'rating' => 4.6,
+                        'code' => 'doplnky-vyzivy-aktin',
+                        'url' => 'https://www.aktin.sk/',
+                        'merchant' => 'Aktin',
+                    ],
+                    [
+                        'name' => 'Kreatín monohydrát / výkon',
+                        'subtitle' => 'Najsilnejšia voľba z pohľadu dôkazov, ak riešiš silu, výbušnosť a progres v tréningu.',
+                        'rating' => 4.9,
+                        'code' => 'doplnky-vyzivy-gymbeam',
+                        'url' => 'https://gymbeam.sk/',
+                        'merchant' => 'GymBeam',
+                    ],
+                    [
+                        'name' => 'Vitamín D3 + K2 / imunita a kosti',
+                        'subtitle' => 'Rozumná voľba najmä mimo leta, keď chceš riešiť základ podpory imunity a kostí.',
+                        'rating' => 4.7,
+                        'code' => 'doplnky-vyzivy-myprotein',
+                        'url' => 'https://www.myprotein.sk/',
+                        'merchant' => 'Myprotein',
+                    ],
+                ],
+            ],            'horcik-ktory-je-najlepsi-a-preco' => [
                 'title' => 'Najlepšie formy horčíka',
                 'intro' => 'Pri horčíku je kľúčová forma. Najčastejšie dáva zmysel bisglycinát na toleranciu, citrát ako univerzál a malát na dennú energiu.',
                 'products' => [
@@ -346,15 +377,28 @@ if (!function_exists('interessa_article_commerce')) {
             'veganske-proteiny-top' => 'veganske-proteiny-top-vyber-2025',
         ];
 
-        if (isset($sections[$slug])) {
-            return $sections[$slug];
-        }
-
-        $canonicalSlug = $aliases[$slug] ?? null;
-        if ($canonicalSlug === null) {
+        $canonicalSlug = isset($sections[$slug]) ? $slug : ($aliases[$slug] ?? null);
+        if ($canonicalSlug === null || !isset($sections[$canonicalSlug])) {
             return null;
         }
 
-        return $sections[$canonicalSlug] ?? null;
+        $section = $sections[$canonicalSlug];
+        $reviewDetails = interessa_article_review_details();
+        $sectionDetails = $reviewDetails[$canonicalSlug] ?? [];
+
+        if ($sectionDetails === []) {
+            return $section;
+        }
+
+        foreach ($section['products'] as $index => $product) {
+            $code = trim((string) ($product['code'] ?? ''));
+            if ($code === '' || !isset($sectionDetails[$code])) {
+                continue;
+            }
+
+            $section['products'][$index] = array_merge($product, $sectionDetails[$code]);
+        }
+
+        return $section;
     }
 }
