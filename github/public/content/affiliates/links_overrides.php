@@ -74,4 +74,40 @@ return array (
     'link_type' => 'affiliate',
     'source' => 'dognet-manual-full',
   ),
-);
+  'doplnky-vyzivy-gymbeam' => 
+  array (
+    'url' => 'https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Fkreatin-monohydrate-gymbeam.html',
+    'merchant' => 'GymBeam',
+    'merchant_slug' => 'gymbeam',
+    'product_slug' => 'gymbeam-creatine-monohydrate-real',
+    'link_type' => 'affiliate',
+    'source' => 'dognet-clone-kreatin',
+  ),
+  'kolagen-na-klby-porovnanie-gymbeam' => 
+  array (
+    'url' => 'https://gymbeam.sk/hydrolyzovany-kolagen-runcollgr-gymbeam.html',
+    'merchant' => 'GymBeam',
+    'merchant_slug' => 'gymbeam',
+    'product_slug' => 'gymbeam-runcollg-collagen',
+    'link_type' => 'product',
+    'source' => 'gymbeam-feed-seed',
+  ),
+  'kolagen-recenzia-gymbeam' => 
+  array (
+    'url' => 'https://gymbeam.sk/hydrolyzovany-kolagen-runcollgr-gymbeam.html',
+    'merchant' => 'GymBeam',
+    'merchant_slug' => 'gymbeam',
+    'product_slug' => 'gymbeam-runcollg-collagen',
+    'link_type' => 'product',
+    'source' => 'gymbeam-feed-seed',
+  ),
+  'veganske-proteiny-top-vyber-2025-gymbeam' => 
+  array (
+    'url' => 'https://gymbeam.sk/protein-vegan-blend-gymbeam.html',
+    'merchant' => 'GymBeam',
+    'merchant_slug' => 'gymbeam',
+    'product_slug' => 'gymbeam-vegan-blend',
+    'link_type' => 'product',
+    'source' => 'gymbeam-feed-seed',
+  ),
+); 

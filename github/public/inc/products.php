@@ -151,7 +151,7 @@ if (!function_exists('interessa_affiliate_target')) {
                 'href' => '/go/' . rawurlencode($code),
                 'rel' => $linkType === 'affiliate' ? 'nofollow sponsored' : 'nofollow',
                 'label' => $linkType === 'affiliate' ? 'Do obchodu' : 'Pozriet produkt',
-                'note' => $linkType === 'affiliate' ? 'Affiliate odkaz' : 'Produktovy odkaz',
+                'note' => '',
             ];
         }
 
@@ -160,7 +160,7 @@ if (!function_exists('interessa_affiliate_target')) {
                 'href' => $fallback,
                 'rel' => 'nofollow',
                 'label' => 'Pozriet produkt',
-                'note' => 'Priamy odkaz',
+                'note' => '',
             ];
         }
 
