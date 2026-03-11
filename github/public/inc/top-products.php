@@ -137,28 +137,28 @@ if (!function_exists('interessa_render_top_products')) {
                 echo '<p class="top-product-subtitle">' . esc($subtitle) . '</p>';
             }
             if ($showProductName) {
-                echo '<p class="top-product-product-name"><span>Produkt v obchode:</span> ' . esc($productName) . '</p>';
+                echo '<p class="top-product-product-name"><span>' . esc(interessa_text('Produkt v obchode:')) . '</span> ' . esc($productName) . '</p>';
             }
             if ($bestFor !== '') {
-                echo '<div class="top-product-bestfor"><span>Najlepšie pre:</span> ' . esc($bestFor) . '</div>';
+                echo '<div class="top-product-bestfor"><span>' . esc(interessa_text('Najlepšie pre:')) . '</span> ' . esc($bestFor) . '</div>';
             }
             if ($rating > 0) {
                 echo '<div class="top-product-rating">' . interessa_render_stars($rating) . '</div>';
             }
             if ($merchant !== '') {
-                echo '<div class="top-product-merchant">Obchod: ' . esc($merchant) . '</div>';
+                echo '<div class="top-product-merchant">' . esc(interessa_text('Obchod:')) . ' ' . esc($merchant) . '</div>';
             }
             if ($pros !== [] || $cons !== []) {
                 echo '<div class="top-product-highlights">';
                 if ($pros !== []) {
-                    echo '<div class="top-product-list is-pros"><div class="top-product-list-title">Plusy</div><ul>';
+                    echo '<div class="top-product-list is-pros"><div class="top-product-list-title">' . esc(interessa_text('Plusy')) . '</div><ul>';
                     foreach ($pros as $item) {
                         echo '<li>' . esc((string) $item) . '</li>';
                     }
                     echo '</ul></div>';
                 }
                 if ($cons !== []) {
-                    echo '<div class="top-product-list is-cons"><div class="top-product-list-title">Mínusy</div><ul>';
+                    echo '<div class="top-product-list is-cons"><div class="top-product-list-title">' . esc(interessa_text('Mínusy')) . '</div><ul>';
                     foreach ($cons as $item) {
                         echo '<li>' . esc((string) $item) . '</li>';
                     }

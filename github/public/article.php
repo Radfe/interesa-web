@@ -36,7 +36,7 @@ $page_og_type = 'article';
 
 $breadcrumbs = [
     ['name' => 'Domov', 'url' => '/'],
-    ['name' => 'Clanky', 'url' => '/clanky'],
+    ['name' => 'Články', 'url' => '/clanky'],
 ];
 if ($categoryMeta !== null) {
     $breadcrumbs[] = ['name' => $categoryMeta['title'], 'url' => category_url($categoryMeta['slug'])];
@@ -51,7 +51,7 @@ $articleSchema = [
     'url' => absolute_url($page_canonical),
     'mainEntityOfPage' => absolute_url($page_canonical),
     'image' => page_image_url(),
-    'articleSection' => $categoryMeta['title'] ?? 'Clanky',
+    'articleSection' => $categoryMeta['title'] ?? 'Články',
     'publisher' => [
         '@type' => 'Organization',
         'name' => 'Interesa',
@@ -73,7 +73,7 @@ $page_schema = [
 if ($commerce !== null) {
     $commerceSchema = interessa_top_products_schema(
         $commerce['products'] ?? [],
-        $commerce['title'] ?? 'Odporucane produkty',
+        $commerce['title'] ?? 'Odporúčané produkty',
         $page_canonical
     );
 
@@ -93,7 +93,7 @@ include __DIR__ . '/inc/head.php';
   <div class="content">
     <article class="lead-article article-shell">
       <nav class="muted" aria-label="Breadcrumb">
-        <a href="/">Domov</a> &rsaquo; <a href="/clanky/">Clanky</a>
+        <a href="/">Domov</a> &rsaquo; <a href="/clanky/">Články</a>
         <?php if ($categoryMeta !== null): ?>
           &rsaquo; <a href="<?= esc(category_url($categoryMeta['slug'])) ?>"><?= esc($categoryMeta['title']) ?></a>
         <?php endif; ?>
@@ -104,9 +104,9 @@ include __DIR__ . '/inc/head.php';
           <span class="article-meta-chip"><?= esc($categoryMeta['title']) ?></span>
         <?php endif; ?>
         <?php if ($updatedMeta !== null): ?>
-          <span class="article-meta-chip">Aktualizovane: <?= esc($updatedMeta['date']) ?></span>
+          <span class="article-meta-chip">Aktualizované: <?= esc($updatedMeta['date']) ?></span>
         <?php endif; ?>
-        <span class="article-meta-chip"><?= esc((string) $readingTime) ?> min citania</span>
+        <span class="article-meta-chip"><?= esc((string) $readingTime) ?> min čítania</span>
       </div>
 
       <h1><?= esc($meta['title']) ?></h1>
@@ -129,7 +129,7 @@ include __DIR__ . '/inc/head.php';
       if ($commerce !== null) {
           interessa_render_top_products(
               $commerce['products'] ?? [],
-              $commerce['title'] ?? 'Odporucane produkty',
+              $commerce['title'] ?? 'Odporúčané produkty',
               $commerce['intro'] ?? null
           );
       }

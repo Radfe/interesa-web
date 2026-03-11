@@ -39,6 +39,7 @@ foreach ($featuredGuides as $guide) {
 }
 
 $categoryArticles = array_values(category_articles($slug));
+$articleCount = count($categoryArticles);
 $extraArticles = array_values(array_filter($categoryArticles, static function (array $item) use ($featuredSlugs): bool {
     return !in_array((string) ($item['slug'] ?? ''), $featuredSlugs, true);
 }));
@@ -78,8 +79,15 @@ include dirname(__DIR__) . '/inc/head.php';
         </figure>
       <?php endif; ?>
       <p class="hub-eyebrow">Tematický hub</p>
-      <h1><?= esc($hub['title']) ?></h1>
+      <div class="hub-heading-row">
+        <span class="hub-icon-badge" aria-hidden="true"><?= interessa_category_icon($slug) ?></span>
+        <h1><?= esc($hub['title']) ?></h1>
+      </div>
       <p class="lead"><?= esc($hub['intro']) ?></p>
+      <div class="hub-meta-row">
+        <span class="article-meta-chip"><?= esc((string) $articleCount) ?> článkov v téme</span>
+        <a class="card-link" href="/clanky/?category=<?= esc($slug) ?>">Všetky články v téme</a>
+      </div>
       <?php if (!empty($hub['focus_points'])): ?>
         <ul class="hub-checklist">
           <?php foreach ($hub['focus_points'] as $point): ?>
@@ -111,8 +119,8 @@ include dirname(__DIR__) . '/inc/head.php';
             <article class="hub-card">
               <?= interessa_render_image($guideImage, ['class' => 'hub-card-image', 'alt' => $title]) ?>
               <div class="hub-card-body">
-                <span class="hub-card-label"><?= esc($label) ?></span>
                 <h3><a href="<?= esc(article_url($guideSlug)) ?>"><?= esc($title) ?></a></h3>
+                <span class="hub-card-label"><?= esc($label) ?></span>
                 <?php if ($description !== ''): ?><p><?= esc($description) ?></p><?php endif; ?>
                 <a class="btn" href="<?= esc(article_url($guideSlug)) ?>">Otvoriť článok</a>
               </div>

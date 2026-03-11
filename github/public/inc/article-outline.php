@@ -1,15 +1,28 @@
 <?php
 declare(strict_types=1);
 
-if (!function_exists('interessa_heading_slug')) {
-    function interessa_heading_slug(string $text): string {
+if (!function_exists('interessa_ascii_slugify')) {
+    function interessa_ascii_slugify(string $text): string {
         $text = strip_tags($text);
         $text = interessa_fix_mojibake(trim($text));
-        $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text);
-        $ascii = is_string($ascii) && $ascii !== '' ? $ascii : $text;
-        $ascii = strtolower($ascii);
-        $ascii = preg_replace('~[^a-z0-9]+~', '-', $ascii) ?? $ascii;
-        return trim($ascii, '-') ?: 'sekcia';
+        $text = strtr($text, [
+            'Ăˇ' => 'a', 'Ă¤' => 'a', 'ÄŤ' => 'c', 'ÄŹ' => 'd', 'Ă©' => 'e', 'Ä›' => 'e',
+            'Ă­' => 'i', 'Äş' => 'l', 'Äľ' => 'l', 'Ĺ' => 'n', 'Ăł' => 'o', 'Ă´' => 'o',
+            'Ĺ•' => 'r', 'Ĺ™' => 'r', 'Ĺˇ' => 's', 'ĹĄ' => 't', 'Ăş' => 'u', 'ĹŻ' => 'u',
+            'Ă˝' => 'y', 'Ĺľ' => 'z', 'Ă' => 'a', 'Ă„' => 'a', 'ÄŚ' => 'c', 'ÄŽ' => 'd',
+            'Ă‰' => 'e', 'Äš' => 'e', 'ĂŤ' => 'i', 'Äą' => 'l', 'Ä˝' => 'l', 'Ĺ‡' => 'n',
+            'Ă“' => 'o', 'Ă”' => 'o', 'Ĺ”' => 'r', 'Ĺ' => 'r', 'Ĺ ' => 's', 'Ĺ¤' => 't',
+            'Ăš' => 'u', 'Ĺ®' => 'u', 'Ăť' => 'y', 'Ĺ˝' => 'z',
+        ]);
+        $text = strtolower($text);
+        $text = preg_replace('~[^a-z0-9]+~', '-', $text) ?? $text;
+        return trim($text, '-') ?: 'sekcia';
+    }
+}
+
+if (!function_exists('interessa_heading_slug')) {
+    function interessa_heading_slug(string $text): string {
+        return interessa_ascii_slugify($text);
     }
 }
 
@@ -75,8 +88,8 @@ if (!function_exists('interessa_render_article_outline')) {
 
         echo '<section class="article-outline">';
         echo '<div class="section-head">';
-        echo '<h2>Obsah clanku</h2>';
-        echo '<p class="meta">Odhad citania: ' . esc((string) $readingTime) . ' min.</p>';
+        echo '<h2>Obsah článku</h2>';
+        echo '<p class="meta">Odhad čítania: ' . esc((string) $readingTime) . ' min.</p>';
         echo '</div>';
 
         if ($headings !== []) {

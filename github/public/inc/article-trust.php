@@ -26,33 +26,33 @@ if (!function_exists('interessa_article_methodology_points')) {
     function interessa_article_methodology_points(string $slug, array $meta, ?array $commerce): array {
         $category = trim((string) ($meta['category'] ?? ''));
         $points = [
-            'Obsah porovnavame podla ciela, zlozenia, formy produktu a praktickeho pouzitia.',
-            'Kratke shortlisty maju zjednodusit orientaciu, nie nahradit vlastne rozhodnutie podla potrieb.',
+            'Obsah porovnávame podľa cieľa, zloženia, formy produktu a praktického použitia.',
+            'Krátke shortlisty majú zjednodušiť orientáciu, nie nahradiť vlastné rozhodnutie podľa potrieb.',
         ];
 
         if ($commerce !== null) {
-            $points[] = 'Produkty v nakupnych boxoch vyberame podla relevancie k teme clanku a citatelskemu zameru.';
-            $points[] = 'Odkazy do obchodov spravujeme centralne cez interne /go/ route, takze ich vieme aktualizovat bez zasahu do textu clanku.';
+            $points[] = 'Produkty v nákupných boxoch vyberáme podľa relevancie k téme článku a čitateľskému zámeru.';
+            $points[] = 'Odkazy do obchodov spravujeme centrálne cez interné /go/ route, takže ich vieme aktualizovať bez zásahu do textu článku.';
         }
 
         switch ($category) {
             case 'proteiny':
-                $points[] = 'Pri proteinoch sledujeme typ suroviny, mnozstvo bielkovin na davku, toleranciu laktozy a pomer cena-vykon.';
+                $points[] = 'Pri proteínoch sledujeme typ suroviny, množstvo bielkovín na dávku, toleranciu laktózy a pomer cena-výkon.';
                 break;
             case 'kreatin':
             case 'sila':
-                $points[] = 'Pri vykonnostnych doplnkoch davame doraz na formu latky, davkovanie a to, ci ma produkt oporu v beznej praxi.';
+                $points[] = 'Pri výkonnostných doplnkoch dávame dôraz na formu látky, dávkovanie a to, či má produkt oporu v bežnej praxi.';
                 break;
             case 'mineraly':
             case 'imunita':
-                $points[] = 'Pri vitaminoch a mineraloch sledujeme najma formu, davku a realne pouzitie, nie len marketingove tvrdenia.';
+                $points[] = 'Pri vitamínoch a mineráloch sledujeme najmä formu, dávku a reálne použitie, nie len marketingové tvrdenia.';
                 break;
             case 'probiotika-travenie':
             case 'vyziva':
-                $points[] = 'Pri traveni a vyzive sledujeme zlozenie, citatelnost etikety a to, ci produkt riesi realny problem, nie len trend.';
+                $points[] = 'Pri trávení a výžive sledujeme zloženie, čitateľnosť etikety a to, či produkt rieši reálny problém, nie len trend.';
                 break;
             case 'klby-koza':
-                $points[] = 'Pri kolagene a klbovej vyzive sledujeme typ kolagenu, davku na porciu a dlhodobe prakticke pouzitie.';
+                $points[] = 'Pri kolagéne a kĺbovej výžive sledujeme typ kolagénu, dávku na porciu a dlhodobé praktické použitie.';
                 break;
         }
 
@@ -68,15 +68,15 @@ if (!function_exists('interessa_render_article_trust_box')) {
         $categoryTitle = trim((string) ($categoryMeta['title'] ?? ''));
         $disclosure = interessa_affiliate_disclosure_text();
 
-        echo '<section class="article-trust" aria-label="Redakcne poznamky">';
+        echo '<section class="article-trust" aria-label="Redakčné poznámky">';
         echo '<div class="section-head">';
-        echo '<h2>Ako s clankom pracovat</h2>';
-        echo '<p class="meta">Kratke vysvetlenie, ako je obsah pripraveny, ako funguju odkazy a kedy bol naposledy kontrolovany.</p>';
+        echo '<h2>Ako s článkom pracovať</h2>';
+        echo '<p class="meta">Krátke vysvetlenie, ako je obsah pripravený, ako fungujú odkazy a kedy bol naposledy kontrolovaný.</p>';
         echo '</div>';
         echo '<div class="article-trust-grid">';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>Ako hodnotime</h3>';
+        echo '<h3>Ako hodnotíme</h3>';
         echo '<ul class="article-trust-list">';
         foreach ($points as $point) {
             echo '<li>' . esc($point) . '</li>';
@@ -85,20 +85,20 @@ if (!function_exists('interessa_render_article_trust_box')) {
         echo '</article>';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>Ako funguju odkazy</h3>';
+        echo '<h3>Ako fungujú odkazy</h3>';
         echo '<p>' . esc($commerce !== null
             ? $disclosure
-            : 'Aj pri informacnych clankoch zachovavame ciste interne odkazy a priebezne upratujeme strukturu tak, aby bol obsah dlhodobo udrziavatelny.') . '</p>';
-        echo '<p class="article-meta-inline"><strong>Forma odkazov:</strong> interne <code>/go/</code> route a centralna sprava partnerov.</p>';
+            : 'Aj pri informačných článkoch zachovávame čisté interné odkazy a priebežne upratujeme štruktúru tak, aby bol obsah dlhodobo udržateľný.') . '</p>';
+        echo '<p class="article-meta-inline"><strong>Forma odkazov:</strong> interné <code>/go/</code> route a centrálna správa partnerov.</p>';
         echo '</article>';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>Posledna kontrola</h3>';
+        echo '<h3>Posledná kontrola</h3>';
         if ($updated !== null) {
-            echo '<p class="article-meta-inline"><strong>Obsah skontrolovany:</strong> ' . esc($updated['date']) . '</p>';
+            echo '<p class="article-meta-inline"><strong>Obsah skontrolovaný:</strong> ' . esc($updated['date']) . '</p>';
         }
         if ($categoryTitle !== '') {
-            echo '<p class="article-meta-inline"><strong>Tema:</strong> ' . esc($categoryTitle) . '</p>';
+            echo '<p class="article-meta-inline"><strong>Téma:</strong> ' . esc($categoryTitle) . '</p>';
         }
         echo '<p class="article-meta-inline"><strong>Slug:</strong> ' . esc(canonical_article_slug($slug)) . '</p>';
         echo '</article>';

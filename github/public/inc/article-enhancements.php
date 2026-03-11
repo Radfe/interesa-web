@@ -6,122 +6,122 @@ if (!function_exists('interessa_article_enhancements_registry')) {
         return [
             'doplnky-vyzivy' => [
                 'audience' => [
-                    'Ak si chces upratat zakladne doplnky a neist po kazdom novom trende.',
-                    'Ak riesis rozumny startovaci stack pre energiu, regeneraciu a kazdodennu rutinu.',
-                    'Ak chces vediet, ktore doplnky davaju zmysel skor nez zacnes riesit drahe speciality.',
+                    'Ak si chceš upratať základné doplnky a neísť po každom novom trende.',
+                    'Ak riešiš rozumný štartovací stack pre energiu, regeneráciu a každodennú rutinu.',
+                    'Ak chceš vedieť, ktoré doplnky dávajú zmysel skôr než začneš riešiť drahé špeciality.',
                 ],
                 'faq' => [
-                    ['q' => 'Musim brat vela doplnkov naraz?', 'a' => 'Nie. Pre vacsinu ludi dava vacsi zmysel par zakladnych doplnkov podla ciela nez dlhy a drahy stack.'],
-                    ['q' => 'Je kreatin vhodny aj mimo siloveho treningu?', 'a' => 'Ano, ak riesis vykon a pravidelny trening. Nie je vsak nutny pre kazdeho, kto chce len zlepsit bezny jedalnicek.'],
-                    ['q' => 'Ktory doplnok ma najlepsi pomer cena a prinos?', 'a' => 'Zavisi od ciela. Casto davaju najvacsi zmysel kreatin, vitamin D3 podla sezony a horcik vo vhodnej forme.'],
+                    ['q' => 'Musím brať veľa doplnkov naraz?', 'a' => 'Nie. Pre väčšinu ľudí dáva väčší zmysel pár základných doplnkov podľa cieľa než dlhý a drahý stack.'],
+                    ['q' => 'Je kreatín vhodný aj mimo silového tréningu?', 'a' => 'Áno, ak riešiš výkon a pravidelný tréning. Nie je však nutný pre každého, kto chce len zlepšiť bežný jedálniček.'],
+                    ['q' => 'Ktorý doplnok má najlepší pomer cena a prínos?', 'a' => 'Závisí od cieľa. Často dávajú najväčší zmysel kreatín, vitamín D3 podľa sezóny a horčík vo vhodnej forme.'],
                 ],
             ],
             'najlepsie-proteiny-2025' => [
                 'audience' => [
-                    'Ak chces rychly shortlist najlepsich proteinov bez dlheho porovnavania e-shopov.',
-                    'Ak hladis univerzalny protein po treningu aj pocas dna.',
-                    'Ak sa chces zorientovat medzi value WPC, cistejsim izolatom a sportovejsim blendom.',
+                    'Ak chceš rýchly shortlist najlepších proteínov bez dlhého porovnávania e-shopov.',
+                    'Ak hľadáš univerzálny proteín po tréningu aj počas dňa.',
+                    'Ak sa chceš zorientovať medzi value WPC, čistejším izolátom a športovejším blendom.',
                 ],
                 'faq' => [
-                    ['q' => 'Je lepsi koncentrat alebo izolat?', 'a' => 'Pre vacsinu ludi staci kvalitny koncentrat. Izolat dava vacsi zmysel pri nizsej tolerancii laktozy alebo pri doraze na cistejsi profil.'],
-                    ['q' => 'Ma zmysel riesit protein, ak viem bielkoviny dojest?', 'a' => 'Protein nie je povinny. Je to hlavne prakticky sposob, ako si ulahcit doplnenie bielkovin v dnoch, ked ich stravou nestihas.'],
-                    ['q' => 'Kedy sa oplati platit viac za drahsi protein?', 'a' => 'Najma ked riesis nizsi obsah laktozy, vyssi komfort travenia alebo cistejsie zlozenie pocas diety.'],
+                    ['q' => 'Je lepší koncentrát alebo izolát?', 'a' => 'Pre väčšinu ľudí stačí kvalitný koncentrát. Izolát dáva väčší zmysel pri nižšej tolerancii laktózy alebo pri dôraze na čistejší profil.'],
+                    ['q' => 'Má zmysel riešiť proteín, ak viem bielkoviny dojesť?', 'a' => 'Proteín nie je povinný. Je to hlavne praktický spôsob, ako si uľahčiť doplnenie bielkovín v dňoch, keď ich stravou nestíhaš.'],
+                    ['q' => 'Kedy sa oplatí platiť viac za drahší proteín?', 'a' => 'Najmä keď riešiš nižší obsah laktózy, vyšší komfort trávenia alebo čistejšie zloženie počas diéty.'],
                 ],
             ],
             'protein-na-chudnutie' => [
                 'audience' => [
-                    'Ak chces protein do redukcie bez zbytocne vysokych kalorii navyse.',
-                    'Ak sa rozhodujes medzi WPC, WPI a clear proteinom pri chudnuti.',
-                    'Ak chces vediet, ci sa pri diete naozaj oplati platit viac za izolat.',
+                    'Ak chceš proteín do redukcie bez zbytočne vysokých kalórií navyše.',
+                    'Ak sa rozhoduješ medzi WPC, WPI a clear proteínom pri chudnutí.',
+                    'Ak chceš vedieť, či sa pri diéte naozaj oplatí platiť viac za izolát.',
                 ],
                 'faq' => [
-                    ['q' => 'Je pri chudnuti vzdy najlepsi izolat?', 'a' => 'Nie vzdy. Izolat je prakticky pri nizsej laktoze a cistejsom profile, ale pri dobre nastavenom jedalnicku moze stacit aj kvalitny koncentrat.'],
-                    ['q' => 'Pomoze mi protein schudnut sam o sebe?', 'a' => 'Nie. Protein pomaha hlavne so sytostou a doplnenim bielkovin, ale o chudnuti stale rozhoduje celkovy prijem energie a dlhodoby rezim.'],
-                    ['q' => 'Je clear protein lepsi na leto alebo do diety?', 'a' => 'Pre niektorych ano, lebo je lahsi na pitie a menej hutny. Nutricne to vsak nie je automaticky lepsia volba pre kazdeho.'],
+                    ['q' => 'Je pri chudnutí vždy najlepší izolát?', 'a' => 'Nie vždy. Izolát je praktický pri nižšej laktóze a čistejšom profile, ale pri dobre nastavenom jedálničku môže stačiť aj kvalitný koncentrát.'],
+                    ['q' => 'Pomôže mi proteín schudnúť sám o sebe?', 'a' => 'Nie. Proteín pomáha hlavne so sýtosťou a doplnením bielkovín, ale o chudnutí stále rozhoduje celkový príjem energie a dlhodobý režim.'],
+                    ['q' => 'Je clear proteín lepší na leto alebo do diéty?', 'a' => 'Pre niektorých áno, lebo je ľahší na pitie a menej hutný. Nutrične to však nie je automaticky lepšia voľba pre každého.'],
                 ],
             ],
             'kreatin-porovnanie' => [
                 'audience' => [
-                    'Ak chces zistit, ci ti staci obycajny monohydrat alebo riesit aj HCl a ine formy.',
-                    'Ak hladis kreatin s najlepsim pomerom dokazy, cena a prakticke pouzitie.',
-                    'Ak si nie si isty davkovanim, nasycovanim alebo tym, kedy kreatin brat.',
+                    'Ak chceš zistiť, či ti stačí obyčajný monohydrát alebo riešiť aj HCl a iné formy.',
+                    'Ak hľadáš kreatín s najlepším pomerom dôkazy, cena a praktické použitie.',
+                    'Ak si nie si istý dávkovaním, nasycovaním alebo tým, kedy kreatín brať.',
                 ],
                 'faq' => [
-                    ['q' => 'Musim robit nasycovaciu fazu?', 'a' => 'Nie. Pre vacsinu ludi staci pravidelnych 3 az 5 gramov denne a efekt sa dostavi aj bez nasycovania.'],
-                    ['q' => 'Je HCl lepsi nez monohydrat?', 'a' => 'Nie vseobecne. Monohydrat ma najlepsie data a cenu. HCl je skor alternativa pre ludi, ktori chcu mensiu davku alebo lepsiu rozpustnost.'],
-                    ['q' => 'Kedy je najlepsi cas na kreatin?', 'a' => 'Dolezitejsia nez presny cas je pravidelnost. Kreatin mozes brat kedykolvek pocas dna, ked sa ti to da dlhodobo drzat.'],
+                    ['q' => 'Musím robiť nasycovaciu fázu?', 'a' => 'Nie. Pre väčšinu ľudí stačí pravidelných 3 až 5 gramov denne a efekt sa dostaví aj bez nasycovania.'],
+                    ['q' => 'Je HCl lepší než monohydrát?', 'a' => 'Nie všeobecne. Monohydrát má najlepšie dáta a cenu. HCl je skôr alternatíva pre ľudí, ktorí chcú menšiu dávku alebo lepšiu rozpustnosť.'],
+                    ['q' => 'Kedy je najlepší čas na kreatín?', 'a' => 'Dôležitejšia než presný čas je pravidelnosť. Kreatín môžeš brať kedykoľvek počas dňa, keď sa ti to dá dlhodobo držať.'],
                 ],
             ],
             'horcik-ktory-je-najlepsi-a-preco' => [
                 'audience' => [
-                    'Ak sa stracas medzi bisglycinatom, citratom, malatom a oxidom horecnatym.',
-                    'Ak chces vybrat horcik podla ciela, nie podla najhlasnejsieho marketingu.',
-                    'Ak riesis stres, spanok, krce alebo bezne denne doplnanie mineralov.',
+                    'Ak sa strácaš medzi bisglycinátom, citrátom, malátom a oxidom horečnatým.',
+                    'Ak chceš vybrať horčík podľa cieľa, nie podľa najhlasnejšieho marketingu.',
+                    'Ak riešiš stres, spánok, kŕče alebo bežné denné dopĺňanie minerálov.',
                 ],
                 'faq' => [
-                    ['q' => 'Ktora forma horcika je najsetrnejsia?', 'a' => 'Casto dobre vychadza bisglycinat, najma ak riesis toleranciu a vecerne pouzitie.'],
-                    ['q' => 'Je citrat zly, ked ho ma vela znaciek?', 'a' => 'Nie. Citrat je casto dobra univerzalna volba, len u citlivejsich ludi moze viac rozhybat travenie.'],
-                    ['q' => 'Oplati sa kupovat lacny oxid horecnaty?', 'a' => 'Skor nie ako prvu volbu. Pri praktickom pouzivani zvyknu davat viac zmysel lepsie vstrebatelne formy.'],
+                    ['q' => 'Ktorá forma horčíka je najšetrnejšia?', 'a' => 'Často dobre vychádza bisglycinát, najmä ak riešiš toleranciu a večerné použitie.'],
+                    ['q' => 'Je citrát zlý, keď ho má veľa značiek?', 'a' => 'Nie. Citrát je často dobrá univerzálna voľba, len u citlivejších ľudí môže viac rozhýbať trávenie.'],
+                    ['q' => 'Oplatí sa kupovať lacný oxid horečnatý?', 'a' => 'Skôr nie ako prvú voľbu. Pri praktickom používaní zvyknú dávať viac zmysel lepšie vstrebateľné formy.'],
                 ],
             ],
             'kolagen-recenzia' => [
                 'audience' => [
-                    'Ak chces rozlisit kolagen na pokozku od kolagenu orientovaneho viac na klby.',
-                    'Ak nevies, ci sledovat typ kolagenu, davku alebo pridany vitamin C.',
-                    'Ak hladis jednoduchy kolagen do kazdodennej rutiny bez marketingoveho chaosu.',
+                    'Ak chceš rozlíšiť kolagén na pokožku od kolagénu orientovaného viac na kĺby.',
+                    'Ak nevieš, či sledovať typ kolagénu, dávku alebo pridaný vitamín C.',
+                    'Ak hľadáš jednoduchý kolagén do každodennej rutiny bez marketingového chaosu.',
                 ],
                 'faq' => [
-                    ['q' => 'Ma pri kolagene zmysel vitamin C?', 'a' => 'Ano, casto je to rozumny doplnok, lebo vitamin C suvisi s tvorbou kolagenu. Nie vzdy vsak musi byt priamo v tom istom produkte.'],
-                    ['q' => 'Je dolezitejsi typ kolagenu alebo davka?', 'a' => 'V praxi treba sledovat oboje. Typ ti napovie ucel produktu a davka zas to, ci ma pouzivanie vobec sancu davat zmysel.'],
-                    ['q' => 'Pomoze kolagen okamzite?', 'a' => 'Nie. Pri kolagene je dolezitejsia dlhodobost a pravidelnost nez rychly efekt po par dnoch.'],
+                    ['q' => 'Má pri kolagéne zmysel vitamín C?', 'a' => 'Áno, často je to rozumný doplnok, lebo vitamín C súvisí s tvorbou kolagénu. Nie vždy však musí byť priamo v tom istom produkte.'],
+                    ['q' => 'Je dôležitejší typ kolagénu alebo dávka?', 'a' => 'V praxi treba sledovať oboje. Typ ti napovie účel produktu a dávka zas to, či má používanie vôbec šancu dávať zmysel.'],
+                    ['q' => 'Pomôže kolagén okamžite?', 'a' => 'Nie. Pri kolagéne je dôležitejšia dlhodobosť a pravidelnosť než rýchly efekt po pár dňoch.'],
                 ],
             ],
             'kolagen-na-klby-porovnanie' => [
                 'audience' => [
-                    'Ak riesis kolagen cielene na klby, slachy alebo dlhodobu podporu pohyboveho aparatu.',
-                    'Ak chces vediet, co ma pri klboch vacsi vyznam nez len pekna etiketa.',
-                    'Ak si potrebujes vybrat medzi jednoduchym kolagenom a komplexnejsim klbovym produktom.',
+                    'Ak riešiš kolagén cielene na kĺby, šľachy alebo dlhodobú podporu pohybového aparátu.',
+                    'Ak chceš vedieť, čo má pri kĺboch väčší význam než len pekná etiketa.',
+                    'Ak si potrebuješ vybrať medzi jednoduchým kolagénom a komplexnejším kĺbovým produktom.',
                 ],
                 'faq' => [
-                    ['q' => 'Je na klby lepsi specificky typ kolagenu?', 'a' => 'Casto ano, preto sa pri tejto teme oplati sledovat typ kolagenu a nie len marketingovy nazov produktu.'],
-                    ['q' => 'Pomaha vyssia davka automaticky viac?', 'a' => 'Nie vzdy. Dolezite je, aby davala zmysel forma, ciel pouzitia a dlhodoba konzistencia.'],
-                    ['q' => 'Ma zmysel brat kolagen len obcas?', 'a' => 'Skor nie. Pri tejto kategorii byva dolezitejsia pravidelnost a dlhsi horizont pouzivania.'],
+                    ['q' => 'Je na kĺby lepší špecifický typ kolagénu?', 'a' => 'Často áno, preto sa pri tejto téme oplatí sledovať typ kolagénu a nie len marketingový názov produktu.'],
+                    ['q' => 'Pomáha vyššia dávka automaticky viac?', 'a' => 'Nie vždy. Dôležité je, aby dávala zmysel forma, cieľ použitia a dlhodobá konzistencia.'],
+                    ['q' => 'Má zmysel brať kolagén len občas?', 'a' => 'Skôr nie. Pri tejto kategórii býva dôležitejšia pravidelnosť a dlhší horizont používania.'],
                 ],
             ],
             'pre-workout-ako-vybrat' => [
                 'audience' => [
-                    'Ak chces predtreningovku, ale nevies odhadnut vhodnu silu stimulantov.',
-                    'Ak si chces vybrat medzi balanced stim, high-stim a non-stim variantom.',
-                    'Ak trenujes vecer alebo si citlivejsi na kofein a nechces si rozhodit spanok.',
+                    'Ak chceš predtréningovku, ale nevieš odhadnúť vhodnú silu stimulantov.',
+                    'Ak si chceš vybrať medzi balanced stim, high-stim a non-stim variantom.',
+                    'Ak trénuješ večer alebo si citlivejší na kofeín a nechceš si rozhodit spánok.',
                 ],
                 'faq' => [
-                    ['q' => 'Je silnejsi pre-workout automaticky lepsi?', 'a' => 'Nie. Pre vacsinu ludi dava vacsi zmysel balanced stim, ktory zlepsi trening bez zbytocne prestreleneho kofeinu.'],
-                    ['q' => 'Ma zmysel non-stim pre-workout?', 'a' => 'Ano, najma pri vecernom treningu alebo ak sa chces vyhnut kofeinu a riesis skor pumpu a fokus.'],
-                    ['q' => 'Na co sa mam v zlozeni pozerat ako prve?', 'a' => 'Najpraktickejsie je sledovat kofein, citrulin a beta-alanin a nie len pocet zloziek na etikete.'],
+                    ['q' => 'Je silnejší pre-workout automaticky lepší?', 'a' => 'Nie. Pre väčšinu ľudí dáva väčší zmysel balanced stim, ktorý zlepší tréning bez zbytočne prestreleného kofeínu.'],
+                    ['q' => 'Má zmysel non-stim pre-workout?', 'a' => 'Áno, najmä pri večernom tréningu alebo ak sa chceš vyhnúť kofeínu a riešiš skôr pumpu a fokus.'],
+                    ['q' => 'Na čo sa mám v zložení pozerať ako prvé?', 'a' => 'Najpraktickejšie je sledovať kofeín, citrulín a beta-alanín a nie len počet zložiek na etikete.'],
                 ],
             ],
             'probiotika-ako-vybrat' => [
                 'audience' => [
-                    'Ak si chces vybrat probiotika podla pouzitia, nie len podla velkeho cisla CFU na obale.',
-                    'Ak riesis travenie, dlhodobejsiu rutinu alebo citlivejsie brucho.',
-                    'Ak chces vediet, co sledovat pri kmenoch, davkovani a praktickom pouzivani.',
+                    'Ak si chceš vybrať probiotiká podľa použitia, nie len podľa veľkého čísla CFU na obale.',
+                    'Ak riešiš trávenie, dlhodobejšiu rutinu alebo citlivejšie brucho.',
+                    'Ak chceš vedieť, čo sledovať pri kmeňoch, dávkovaní a praktickom používaní.',
                 ],
                 'faq' => [
-                    ['q' => 'Je viac CFU automaticky lepsie?', 'a' => 'Nie. Dolezite su aj konkretne kmene, ciel pouzitia a to, ci produkt vies uzivat pravidelne.'],
-                    ['q' => 'Ma zmysel brat probiotika len narazovo?', 'a' => 'Pri vela situaciach vacsi zmysel dava konzistentne pouzivanie nez nahodny jednorazovy nakup.'],
-                    ['q' => 'Su dolezite konkretne kmene?', 'a' => 'Ano. Pri probiotikach je casto uzitocnejsie sledovat konkretny kmen a pouzitie nez len marketingovy opis produktu.'],
+                    ['q' => 'Je viac CFU automaticky lepšie?', 'a' => 'Nie. Dôležité sú aj konkrétne kmene, cieľ použitia a to, či produkt vieš užívať pravidelne.'],
+                    ['q' => 'Má zmysel brať probiotiká len nárazovo?', 'a' => 'Pri veľa situáciách väčší zmysel dáva konzistentné používanie než náhodný jednorazový nákup.'],
+                    ['q' => 'Sú dôležité konkrétne kmene?', 'a' => 'Áno. Pri probiotikách je často užitočnejšie sledovať konkrétny kmeň a použitie než len marketingový opis produktu.'],
                 ],
             ],
             'veganske-proteiny-top-vyber-2025' => [
                 'audience' => [
-                    'Ak chces rastlinny protein bez zbytocneho tapania medzi hrachom, ryzou a blendmi.',
-                    'Ak riesis vegansku alternativu ku klasickemu srvatkovemu proteinu.',
-                    'Ak chces protein, ktory sa da pouzivat aj do smoothie, kasi alebo beznej rutiny.',
+                    'Ak chceš rastlinný proteín bez zbytočného tápania medzi hrachom, ryžou a blendmi.',
+                    'Ak riešiš vegánsku alternatívu ku klasickému srvátkovému proteínu.',
+                    'Ak chceš proteín, ktorý sa dá používať aj do smoothie, kaší alebo bežnej rutiny.',
                 ],
                 'faq' => [
-                    ['q' => 'Je vegansky protein automaticky slabsi nez srvatka?', 'a' => 'Nie automaticky. Vela zavisi od kombinacie zdrojov bielkovin, pouzitia a toho, ci ti chuti a vies ho dlhodobo pouzivat.'],
-                    ['q' => 'Je lepsi blend alebo cisty hrachovy protein?', 'a' => 'Blend byva univerzalnejsi, ale pri niektorych ludoch moze davat zmysel aj jednoduchsi produkt s cistejsim zlozenim.'],
-                    ['q' => 'Hodi sa vegansky protein aj do receptov?', 'a' => 'Ano. Prave pri rastlinnych proteinoch byva kuchynske pouzitie casto jedna z najpraktickejsich vyhod.'],
+                    ['q' => 'Je vegánsky proteín automaticky slabší než srvátka?', 'a' => 'Nie automaticky. Veľa závisí od kombinácie zdrojov bielkovín, použitia a toho, či ti chutí a vieš ho dlhodobo používať.'],
+                    ['q' => 'Je lepší blend alebo čistý hrachový proteín?', 'a' => 'Blend býva univerzálnejší, ale pri niektorých ľuďoch môže dávať zmysel aj jednoduchší produkt s čistejším zložením.'],
+                    ['q' => 'Hodí sa vegánsky proteín aj do receptov?', 'a' => 'Áno. Práve pri rastlinných proteínoch býva kuchynské použitie často jedna z najpraktickejších výhod.'],
                 ],
             ],
         ];
@@ -197,8 +197,8 @@ if (!function_exists('interessa_render_article_audience_box')) {
 
         echo '<section class="article-audience">';
         echo '<div class="section-head">';
-        echo '<h2>Pre koho je clanok</h2>';
-        echo '<p class="meta">Rychla orientacia, ci je tento clanok relevantny pre tvoju situaciu.</p>';
+        echo '<h2>Pre koho je článok</h2>';
+        echo '<p class="meta">Rýchla orientácia, či je tento článok relevantný pre tvoju situáciu.</p>';
         echo '</div>';
         echo '<div class="article-audience-box">';
         echo '<ul class="article-audience-list">';
@@ -220,8 +220,8 @@ if (!function_exists('interessa_render_article_faq_box')) {
 
         echo '<section class="article-faq">';
         echo '<div class="section-head">';
-        echo '<h2>Caste otazky</h2>';
-        echo '<p class="meta">Kratke odpovede na veci, ktore si citatelia pri tejto teme riesia najcastejsie.</p>';
+        echo '<h2>Časté otázky</h2>';
+        echo '<p class="meta">Krátke odpovede na veci, ktoré si čitatelia pri tejto téme riešia najčastejšie.</p>';
         echo '</div>';
         echo '<div class="article-faq-list">';
         foreach ($faq as $item) {

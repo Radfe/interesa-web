@@ -12,6 +12,7 @@ if ($slug === '' || $category === null) {
 }
 
 $articles = category_articles($slug);
+$articleCount = count($articles);
 $categoryHero = interessa_category_image_meta($slug, 'hero', true);
 $page_title = $category['title'] . ' | Interesa';
 $page_description = $category['description'];
@@ -48,23 +49,32 @@ include __DIR__ . '/inc/head.php';
           <?= interessa_render_image($categoryHero, ['class' => 'hub-card-image', 'loading' => 'eager']) ?>
         </figure>
       <?php endif; ?>
-      <h1><?= esc($category['title']) ?></h1>
+      <div class="hub-heading-row">
+        <span class="hub-icon-badge" aria-hidden="true"><?= interessa_category_icon((string) $category['slug']) ?></span>
+        <h1><?= esc($category['title']) ?></h1>
+      </div>
       <p class="meta"><?= esc($category['description']) ?></p>
+      <div class="hub-meta-row">
+        <span class="article-meta-chip"><?= esc((string) $articleCount) ?> článkov v téme</span>
+        <a class="card-link" href="/clanky/?category=<?= esc($category['slug']) ?>">Všetky články v téme</a>
+      </div>
 
       <?php if (!$articles): ?>
         <p class="note">V tejto kategórii zatiaľ nemáme žiadne články.</p>
       <?php else: ?>
-        <div class="grid-cards">
+        <div class="hub-grid article-teaser-grid">
           <?php foreach ($articles as $item): ?>
             <?php $articleImage = interessa_article_image_meta($item['slug'], 'thumb', true); ?>
-            <article class="post-card">
+            <article class="hub-card article-teaser-card">
               <a href="<?= esc(article_url($item['slug'])) ?>">
-                <?= interessa_render_image($articleImage, ['class' => 'thumb', 'alt' => $item['title']]) ?>
+                <?= interessa_render_image($articleImage, ['class' => 'hub-card-image', 'alt' => $item['title']]) ?>
               </a>
-              <a class="chip" href="<?= esc(category_url($category['slug'])) ?>"><?= esc($category['title']) ?></a>
-              <h3><a href="<?= esc(article_url($item['slug'])) ?>"><?= esc($item['title']) ?></a></h3>
-              <?php if ($item['description'] !== ''): ?><p class="meta"><?= esc($item['description']) ?></p><?php endif; ?>
-              <a class="btn" href="<?= esc(article_url($item['slug'])) ?>">Čítať</a>
+              <div class="hub-card-body article-teaser-body">
+                <a class="hub-card-label" href="<?= esc(category_url($category['slug'])) ?>"><?= esc($category['title']) ?></a>
+                <h3><a href="<?= esc(article_url($item['slug'])) ?>"><?= esc($item['title']) ?></a></h3>
+                <?php if ($item['description'] !== ''): ?><p><?= esc($item['description']) ?></p><?php endif; ?>
+                <a class="card-link" href="<?= esc(article_url($item['slug'])) ?>">Otvoriť článok</a>
+              </div>
             </article>
           <?php endforeach; ?>
         </div>

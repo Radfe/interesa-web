@@ -1,11 +1,17 @@
 <?php
 declare(strict_types=1);
+
 require_once __DIR__ . '/inc/functions.php';
+
 http_response_code(404);
 
-$page_title = '404 – Stránka sa nenašla';
+$page_title = '404 - Stránka sa nenašla';
 $page_description = 'Je nám ľúto, stránka sa nenašla. Pozri si hlavné kategórie a články.';
 $page_robots = 'noindex,nofollow';
+
+$GLOBALS['page_title'] = $page_title;
+$GLOBALS['page_description'] = $page_description;
+$GLOBALS['page_robots'] = $page_robots;
 
 include __DIR__ . '/inc/head.php';
 ?>

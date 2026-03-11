@@ -67,9 +67,9 @@ if (!function_exists('interessa_render_related_articles')) {
         $categoryMeta = category_meta((string) (article_meta($slug)['category'] ?? ''));
         echo '<section class="article-related">';
         echo '<div class="section-head">';
-        echo '<h2>Suvisiace clanky</h2>';
+        echo '<h2>Súvisiace články</h2>';
         if ($categoryMeta !== null) {
-            echo '<p class="meta">Dalsie navody a porovnania v teme ' . esc($categoryMeta['title']) . '.</p>';
+            echo '<p class="meta">Ďalšie návody a porovnania v téme ' . esc($categoryMeta['title']) . '.</p>';
         }
         echo '</div>';
         echo '<div class="hub-grid article-related-grid">';
@@ -89,7 +89,7 @@ if (!function_exists('interessa_render_related_articles')) {
             if ($itemDescription !== '') {
                 echo '<p>' . esc($itemDescription) . '</p>';
             }
-            echo '<a class="card-link" href="' . esc(article_url($itemSlug)) . '">Citat clanok</a>';
+            echo '<a class="card-link" href="' . esc(article_url($itemSlug)) . '">Čítať článok</a>';
             echo '</div>';
             echo '</article>';
         }

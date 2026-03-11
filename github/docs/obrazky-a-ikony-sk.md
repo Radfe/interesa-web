@@ -1,99 +1,100 @@
-# Obrázky a ikony na webe Interesa
+# Obrazky a ikony na webe Interesa
 
-Tento web už má pripravený technický základ pre obrázky v `public/inc/media.php` a registry v `public/content/media`.
+Tento web uz ma pripraveny technicky zaklad pre obrazky v `public/inc/media.php` a registry v `public/content/media`.
 
-## Čo vieme robiť priamo v projekte
+## Co vieme robit priamo v projekte
 
-- jednotne renderovať hero obrázky článkov a kategórií
-- používať fallback placeholder, keď obrázok ešte chýba
-- dopĺňať `alt`, `width`, `height`, `loading` a `fetchpriority`
-- držať reálne produktové obrázky z merchant feedov alebo vzdialených URL
-- napájať články na kategórické fallback vizuály, keď ešte nemajú vlastný hero obrázok
+- jednotne renderovat hero obrazky clankov a kategorii
+- pouzivat fallback placeholder, ked obrazok este chyba
+- doplnat `alt`, `width`, `height`, `loading` a `fetchpriority`
+- drzat realne produktove obrazky z merchant feedov alebo vzdialenych URL
+- napajat clanky na kategoricke fallback vizualy, ked este nemaju vlastny hero obrazok
 
-## Kde ukladať obrázky
+## Kde ukladat obrazky
 
-- články: `public/assets/img/articles/<slug>/`
-- kategórie: `public/assets/img/categories/<slug>/`
+- clanky: `public/assets/img/articles/<slug>/`
+- kategorie: `public/assets/img/categories/<slug>/`
 - produkty: `public/assets/img/products/<merchant>/`
 - brand: `public/assets/img/brand/`
 - placeholdery: `public/assets/img/placeholders/`
 - SVG ikony: `public/assets/img/icons/`
 
-## Názvy súborov
+## Nazvy suborov
 
-Používaj vždy:
+Pouzivaj vzdy:
 
-- malé písmená
+- male pismena
 - bez diakritiky
-- slová oddeľované pomlčkami
-- ideálne SEO názov podľa článku alebo produktu
+- slova oddelovane pomlckami
+- idealne SEO nazov podla clanku alebo produktu
 
-Príklady:
+Priklady:
 
 - `protein-na-chudnutie-hero.webp`
 - `veganske-proteiny-thumb.webp`
 - `gymbeam-true-whey.webp`
 - `horcik-citrat-kapsuly.webp`
 
-## Odporúčaný štýl obrázkov
+## Odporucany styl obrazkov
 
-### Ilustračné článkové obrázky
+### Ilustracne clankove obrazky
 
-Drž jeden konzistentný smer:
+Drz jeden konzistentny smer:
 
-- čisté svetlé pozadie
-- jeden dominantný objekt alebo tému
-- minimum textu priamo v obrázku
-- jemná zelená alebo neutrálna farebnosť ako na webe
-- radšej jednoduchý produktový alebo ingredienčný vizuál než generický chaos
+- ciste svetle pozadie
+- jeden dominantny objekt alebo temu
+- minimum textu priamo v obrazku
+- jemna zelena alebo neutralna farebnost ako na webe
+- radsej jednoduchy produktovy alebo ingrediencny vizual nez genericky chaos
 
-### Produktové obrázky
+### Produktove obrazky
 
 Pri produktoch preferuj:
 
-- reálny packshot z feedu alebo merchant webu
-- transparentné alebo čisté svetlé pozadie
-- rovnaký pomer strán v rámci jednej sekcie
-- neprepisovať produkt zbytočnou grafikou
+- realny packshot z feedu alebo merchant webu
+- transparentne alebo ciste svetle pozadie
+- rovnaky pomer stran v ramci jednej sekcie
+- neprepisovat produkt zbytocnou grafikou
 
 ## Ikony a menu
 
-Aktuálny smer webu je textová navigácia bez veľkých ilustračných ikon v hlavnom menu.
+Aktualny smer webu je textova navigacia bez velkych ilustracnych ikon v hlavnom menu.
 
-To znamená:
+To znamena:
 
-- horné menu nechávame čisté a textové
-- staré PNG ikonky v `public/assets/img/icons/` ber ako legacy assety
-- ak budeme pridávať nové ikony, preferované sú jednoduché SVG pre mikro UI, nie veľké farebné obrázky v navigácii
+- horne menu nechavame ciste a textove
+- stare PNG ikonky v `public/assets/img/icons/` ber ako legacy assety
+- ak budeme pridavat nove ikony, preferovane su jednoduche SVG pre mikro UI, nie velke farebne obrazky v navigacii
+- kategorie a huby mozu pouzivat jemne inline SVG badge ikony, aby vizual posobil jednotne
 
-## Kedy použiť čo
+## Kedy pouzit co
 
-- hero článku: ilustračný obrázok k téme
-- top produkty a porovnania: reálny produktový packshot
-- kategória bez vlastného vizuálu: fallback na kategórický hero obrázok
-- menu a mikro UI: jednoduché jednofarebné SVG ikony
+- hero clanku: ilustracny obrazok k teme
+- top produkty a porovnania: realny produktovy packshot
+- kategoria bez vlastneho vizualu: fallback na kategoricky hero obrazok
+- menu a mikro UI: jednoduche jednofarebne SVG ikony
 
-## Ako to robiť prakticky
+## Ako to robit prakticky
 
-1. Obrázok priprav mimo kódu v grafickom nástroji alebo generátore.
-2. Ulož ho do správneho priečinka v `public/assets/img/...`.
-3. Ak ide o článok alebo kategóriu, doplň meta záznam do `public/content/media/articles.php` alebo `public/content/media/categories.php`.
-4. Ak ide o produkt, doplň obrázok do produktového katalógu alebo cez merchant feed.
-5. Potom ho web vie renderovať jednotne cez media helper.
+1. Obrazok priprav mimo kodu v grafickom nastroji alebo generatori.
+2. Uloz ho do spravneho priecinka v `public/assets/img/...`.
+3. Ak ide o clanok alebo kategoriu, dopln meta zaznam do `public/content/media/articles.php` alebo `public/content/media/categories.php`.
+4. Ak ide o produkt, dopln obrazok do produktoveho katalogu alebo cez merchant feed.
+5. Potom ho web vie renderovat jednotne cez media helper.
 
-## Dôležitá poznámka
+## Dolezita poznamka
 
-Codex vie veľmi dobre pomôcť s:
+Codex vie velmi dobre pomoct s:
 
-- architektúrou assetov
+- architekturou assetov
 - SVG ikonami
 - naming convention
 - render helpermi
-- napojením obrázkov do šablón
+- napojenim obrazkov do sablon
 
-Pri samotných hero ilustráciách je najlepší workflow tento:
+Pri samotnych hero ilustraciach je najlepsi workflow tento:
 
-- obrázok vytvoriť alebo doladiť v externom nástroji
-- potom ho sem len zaradiť, pomenovať a napojiť do existujúceho systému
+- obrazok vytvorit alebo doladit v externom nastroji
+- potom ho sem len zaradit, pomenovat a napojit do existujuceho systemu
 
-To je najspoľahlivejšia cesta, ako držať konzistentný vizuál bez chaosu.
+To je najspolahlivejsia cesta, ako drzat konzistentny vizual bez chaosu.

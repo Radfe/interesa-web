@@ -15,67 +15,67 @@ if (!function_exists('interessa_primary_navigation_items')) {
         return [
             [
                 'href' => '/kategorie/proteiny',
-                'label' => interessa_nav_category_title('proteiny', 'Zdravé proteíny'),
+                'label' => interessa_nav_category_title('proteiny', interessa_text('Zdrav&eacute; prote&iacute;ny')),
                 'mega_key' => 'proteiny',
                 'sections' => [
-                    ['title' => 'Najdôležitejšie', 'links' => [
-                        ['href' => '/clanky/najlepsie-proteiny-2025', 'label' => 'Najlepšie proteíny 2025'],
-                        ['href' => '/clanky/protein-na-chudnutie', 'label' => 'Proteín na chudnutie'],
-                        ['href' => '/clanky/veganske-proteiny-top-vyber-2025', 'label' => 'Vegánske proteíny'],
+                    ['title' => interessa_text('Najd&ocirc;ležitejšie'), 'links' => [
+                        ['href' => '/clanky/najlepsie-proteiny-2025', 'label' => interessa_text('Najlepšie prote&iacute;ny 2025')],
+                        ['href' => '/clanky/protein-na-chudnutie', 'label' => interessa_text('Prote&iacute;n na chudnutie')],
+                        ['href' => '/clanky/veganske-proteiny-top-vyber-2025', 'label' => interessa_text('Veg&aacute;nske prote&iacute;ny')],
                     ]],
                     ['title' => 'Porovnania', 'links' => [
                         ['href' => '/clanky/srvatkovy-protein-vs-izolat-vs-hydro', 'label' => 'WPC vs WPI vs hydro'],
                         ['href' => '/clanky/najlepsi-protein-na-chudnutie-wpc-vs-wpi', 'label' => 'WPC vs WPI na chudnutie'],
                         ['href' => '/clanky/clear-protein', 'label' => 'Clear protein'],
                     ]],
-                    ['title' => 'Preskúmaj tému', 'links' => [
-                        ['href' => '/kategorie/proteiny', 'label' => 'Hub proteínov'],
-                        ['href' => '/clanky/proteiny', 'label' => 'Základy proteínov'],
-                        ['href' => '/clanky/', 'label' => 'Všetky články'],
+                    ['title' => interessa_text('Presk&uacute;maj t&eacute;mu'), 'links' => [
+                        ['href' => '/kategorie/proteiny', 'label' => interessa_text('Hub prote&iacute;nov')],
+                        ['href' => '/clanky/proteiny', 'label' => interessa_text('Z&aacute;klady prote&iacute;nov')],
+                        ['href' => '/clanky/', 'label' => interessa_text('Všetky články')],
                     ]],
                 ],
             ],
             [
                 'href' => '/kategorie/vyziva',
-                'label' => interessa_nav_category_title('vyziva', 'Zdravá výživa'),
+                'label' => interessa_nav_category_title('vyziva', interessa_text('Zdrav&aacute; v&yacute;živa')),
                 'mega_key' => 'vyziva',
                 'sections' => [
                     ['title' => 'Strava a rutina', 'links' => [
-                        ['href' => '/clanky/doplnky-vyzivy', 'label' => 'Doplnky výživy'],
+                        ['href' => '/clanky/doplnky-vyzivy', 'label' => interessa_text('Doplnky v&yacute;živy')],
                         ['href' => '/clanky/chudnutie-tip', 'label' => 'Tipy na chudnutie'],
-                        ['href' => '/clanky/spalovace-tukov-realita', 'label' => 'Spaľovače tukov: realita'],
+                        ['href' => '/clanky/spalovace-tukov-realita', 'label' => interessa_text('Spaľovače tukov: realita')],
                     ]],
-                    ['title' => 'Trávenie a tolerancia', 'links' => [
-                        ['href' => '/clanky/probiotika-a-travenie', 'label' => 'Probiotiká a trávenie'],
-                        ['href' => '/clanky/probiotika-ako-vybrat', 'label' => 'Ako vybrať probiotiká'],
-                        ['href' => '/kategorie/probiotika-travenie', 'label' => 'Hub trávenia'],
+                    ['title' => interessa_text('Tr&aacute;venie a tolerancia'), 'links' => [
+                        ['href' => '/clanky/probiotika-a-travenie', 'label' => interessa_text('Probiotik&aacute; a tr&aacute;venie')],
+                        ['href' => '/clanky/probiotika-ako-vybrat', 'label' => interessa_text('Ako vybrať probiotik&aacute;')],
+                        ['href' => '/kategorie/probiotika-travenie', 'label' => interessa_text('Hub tr&aacute;venia')],
                     ]],
                     ['title' => 'Ciele', 'links' => [
-                        ['href' => '/kategorie/vyziva', 'label' => 'Zdravá výživa'],
+                        ['href' => '/kategorie/vyziva', 'label' => interessa_text('Zdrav&aacute; v&yacute;živa')],
                         ['href' => '/kategorie/chudnutie', 'label' => 'Chudnutie'],
-                        ['href' => '/kategorie/probiotika', 'label' => 'Probiotiká'],
+                        ['href' => '/kategorie/probiotika', 'label' => interessa_text('Probiotik&aacute;')],
                     ]],
                 ],
             ],
             [
                 'href' => '/kategorie/mineraly',
-                'label' => interessa_nav_category_title('mineraly', 'Vitamíny a minerály'),
+                'label' => interessa_nav_category_title('mineraly', interessa_text('Vitam&iacute;ny a miner&aacute;ly')),
                 'mega_key' => 'mineraly',
                 'sections' => [
-                    ['title' => 'Najčítanejšie', 'links' => [
-                        ['href' => '/clanky/horcik-ktory-je-najlepsi-a-preco', 'label' => 'Aký horčík vybrať'],
-                        ['href' => '/clanky/vitamin-d3-a-imunita', 'label' => 'Vitamín D3 a imunita'],
-                        ['href' => '/clanky/vitamin-c', 'label' => 'Vitamín C'],
+                    ['title' => interessa_text('Najč&iacute;tanejšie'), 'links' => [
+                        ['href' => '/clanky/horcik-ktory-je-najlepsi-a-preco', 'label' => interessa_text('Ak&yacute; horč&iacute;k vybrať')],
+                        ['href' => '/clanky/vitamin-d3-a-imunita', 'label' => interessa_text('Vitam&iacute;n D3 a imunita')],
+                        ['href' => '/clanky/vitamin-c', 'label' => interessa_text('Vitam&iacute;n C')],
                     ]],
-                    ['title' => 'Minerály', 'links' => [
+                    ['title' => interessa_text('Miner&aacute;ly'), 'links' => [
                         ['href' => '/clanky/zinek', 'label' => 'Zinok'],
-                        ['href' => '/clanky/horcik', 'label' => 'Horčík'],
-                        ['href' => '/kategorie/mineraly', 'label' => 'Hub minerálov'],
+                        ['href' => '/clanky/horcik', 'label' => interessa_text('Horč&iacute;k')],
+                        ['href' => '/kategorie/mineraly', 'label' => interessa_text('Hub miner&aacute;lov')],
                     ]],
-                    ['title' => 'Súvisiace témy', 'links' => [
+                    ['title' => interessa_text('S&uacute;visiace t&eacute;my'), 'links' => [
                         ['href' => '/kategorie/imunita', 'label' => 'Imunita'],
-                        ['href' => '/kategorie/vitaminy-mineraly', 'label' => 'Vitamíny a minerály'],
-                        ['href' => '/clanky/imunita-prirodne-latky-ktore-funguju', 'label' => 'Látky pre imunitu'],
+                        ['href' => '/kategorie/vitaminy-mineraly', 'label' => interessa_text('Vitam&iacute;ny a miner&aacute;ly')],
+                        ['href' => '/clanky/imunita-prirodne-latky-ktore-funguju', 'label' => interessa_text('L&aacute;tky pre imunitu')],
                     ]],
                 ],
             ],
@@ -85,15 +85,15 @@ if (!function_exists('interessa_primary_navigation_items')) {
             ],
             [
                 'href' => '/kategorie/sila',
-                'label' => interessa_nav_category_title('sila', 'Sila a výkon'),
+                'label' => interessa_nav_category_title('sila', interessa_text('Sila a v&yacute;kon')),
             ],
             [
                 'href' => '/kategorie/klby-koza',
-                'label' => interessa_nav_category_title('klby-koza', 'Kĺby a koža'),
+                'label' => interessa_nav_category_title('klby-koza', interessa_text('Kĺby a koža')),
             ],
             [
                 'href' => '/clanky/',
-                'label' => 'Články',
+                'label' => interessa_text('Články'),
             ],
         ];
     }
@@ -101,7 +101,7 @@ if (!function_exists('interessa_primary_navigation_items')) {
 
 if (!function_exists('interessa_render_primary_navigation')) {
     function interessa_render_primary_navigation(): string {
-        $html = '<nav id="hlavne-menu" class="main-nav" aria-label="Hlavná navigácia">';
+        $html = '<nav id="hlavne-menu" class="main-nav" aria-label="' . esc(interessa_text('Hlavná navigácia')) . '">';
         $html .= '<ul class="menu-root">';
 
         foreach (interessa_primary_navigation_items() as $item) {
@@ -125,8 +125,8 @@ if (!function_exists('interessa_render_primary_navigation')) {
             if ($hasMega) {
                 $toggleId = 'mm-' . $megaKey;
                 $html .= '<input type="checkbox" id="' . esc($toggleId) . '" class="mega-toggle" aria-hidden="true" />';
-                $html .= '<label class="mega-caret" for="' . esc($toggleId) . '" aria-label="Rozbaliť menu ' . esc($label) . '"></label>';
-                $html .= '<div class="mega" role="region" aria-label="' . esc($label) . ' podmenu">';
+                $html .= '<label class="mega-caret" for="' . esc($toggleId) . '" aria-label="' . esc(interessa_text('Rozbaliť menu')) . ' ' . esc($label) . '"></label>';
+                $html .= '<div class="mega" role="region" aria-label="' . esc($label) . ' ' . esc(interessa_text('podmenu')) . '">';
 
                 foreach ($sections as $section) {
                     $sectionTitle = trim((string) ($section['title'] ?? ''));
