@@ -1,5 +1,5 @@
 <?php
 declare(strict_types=1);
 
-$CATEGORY_SLUG = 'klby-a-kolagen';
-require __DIR__ . '/../category-template.php';
+$category_landing_slug = 'klby-koza';
+require __DIR__ . '/../inc/category-landing.php';

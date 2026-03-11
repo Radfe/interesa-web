@@ -1,43 +1,5 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__ . '/../inc/functions.php';
 
-$page_title = 'Zdravé proteíny | Interesa';
-$page_description = 'Srvátkové WPC/WPI, vegánske a clear proteíny. Ako vybrať, dávkovanie a najlepšie tipy.';
-$page_canonical = '/kategorie/proteiny';
-$page_image = asset('img/og-default.jpg');
-$page_og_type = 'website';
-$page_schema = [
-    breadcrumb_schema([
-        ['name' => 'Domov', 'url' => '/'],
-        ['name' => 'Kategórie', 'url' => '/kategorie'],
-        ['name' => 'Zdravé proteíny', 'url' => '/kategorie/proteiny'],
-    ]),
-    [
-        '@context' => 'https://schema.org',
-        '@type' => 'CollectionPage',
-        'name' => 'Zdravé proteíny',
-        'description' => $page_description,
-        'url' => absolute_url('/kategorie/proteiny'),
-    ],
-];
-include __DIR__ . '/../inc/head.php';
-?>
-<section class="container two-col">
-  <div class="content">
-    <article class="card">
-      <h1>Zdravé proteíny</h1>
-      <p>Všetko o proteínoch: druhy, dávkovanie, mýty a ako vybrať správny produkt podľa cieľa.</p>
-      <h2>Odporúčané články</h2>
-      <ul class="article-list">
-        <li><a href="/clanky/najlepsie-proteiny-2025">Najlepšie proteíny 2025</a></li>
-        <li><a href="/clanky/protein-na-chudnutie">Proteín na chudnutie</a></li>
-        <li><a href="/clanky/clear-protein">Clear proteín – čo to je?</a></li>
-        <li><a href="/clanky/srvatkovy-protein-vs-izolat-vs-hydro">WPC vs WPI vs Hydro</a></li>
-        <li><a href="/clanky/veganske-proteiny-top-vyber-2025">Vegánske proteíny 2025</a></li>
-      </ul>
-    </article>
-  </div>
-  <?php include __DIR__ . '/../inc/sidebar.php'; ?>
-</section>
-<?php include __DIR__ . '/../inc/footer.php'; ?>
+$category_landing_slug = 'proteiny';
+require __DIR__ . '/../inc/category-landing.php';

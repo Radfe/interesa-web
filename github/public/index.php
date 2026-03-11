@@ -2,10 +2,10 @@
 declare(strict_types=1);
 require_once __DIR__ . '/inc/functions.php';
 
-$page_title = 'Interesa.sk – výživa, proteíny, vitamíny a minerály';
-$page_description = 'Nezávislé porovnania, návody a tipy pre doplnky výživy, proteíny, vitamíny a zdravší výber.';
+$page_title = 'Interesa.sk - vyziva, proteiny, vitaminy a mineraly';
+$page_description = 'Nezavisle porovnania, navody a tipy pre doplnky vyzivy, proteiny, vitaminy a zdravsi vyber.';
 $page_canonical = '/';
-$page_image = asset('img/og-default.jpg');
+$page_image = asset('img/brand/og-default.svg');
 $page_og_type = 'website';
 $page_styles = [asset('css/home-b12.css')];
 $page_schema = [
@@ -29,26 +29,36 @@ $page_schema = [
     ],
 ];
 
+$homeHeroImage = interessa_build_image_meta(
+    interessa_collect_asset_candidates(['img/hero/hero-1']),
+    [
+        'alt' => 'Zdrava vyziva a doplnky v jemnom editorial style',
+        'sizes' => '(min-width: 1200px) 540px, 100vw',
+        'loading' => 'eager',
+        'fetchpriority' => 'high',
+    ],
+    'article',
+    true
+);
+$homeLeadImage = interessa_article_image_meta('najlepsi-protein-na-chudnutie-wpc-vs-wpi', 'hero', true);
+
 include __DIR__ . '/inc/head.php';
 ?>
 <section class="hero">
   <div class="container hero-inner">
     <div class="hero-copy">
-      <h1>Vyber si to najlepšie pre svoje zdravie</h1>
-      <p>Praktické porovnania, nákupné návody a prehľadné články o proteínoch, výžive, vitamínoch a regenerácii.</p>
+      <h1>Vyber si to najlepsie pre svoje zdravie</h1>
+      <p>Prakticke porovnania, nakupne navody a prehladne clanky o proteinoch, vyzive, vitaminoch a regeneracii.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary" href="/clanky/najlepsie-proteiny-2025">Pozrieť porovnania</a>
-        <a class="btn btn-ghost" href="/clanky/">Čítať články</a>
+        <a class="btn btn-primary" href="/clanky/najlepsie-proteiny-2025">Pozriet porovnania</a>
+        <a class="btn btn-ghost" href="/clanky/">Citat clanky</a>
       </div>
     </div>
 
     <div class="hero-media">
       <figure class="hero-figure">
-        <picture>
-          <source srcset="/assets/img/hero/hero-1.webp" type="image/webp">
-          <img src="/assets/img/og-default.jpg" alt="Zdravá výživa a doplnky" width="1920" height="1080" loading="eager" fetchpriority="high" style="aspect-ratio:16/9;object-fit:cover;">
-        </picture>
-        <figcaption>Prehľadné odporúčania podľa cieľa.</figcaption>
+        <?= interessa_render_image($homeHeroImage, ['style' => 'aspect-ratio:16/9;object-fit:cover;']) ?>
+        <figcaption>Prehladne odporucania podla ciela.</figcaption>
       </figure>
     </div>
   </div>
@@ -56,29 +66,29 @@ include __DIR__ . '/inc/head.php';
 
 <section class="promo-cards container">
   <article class="card">
-    <img src="/assets/img/cards/proteiny.webp" alt="Proteíny na chudnutie" width="1200" height="800" loading="lazy" style="object-fit:cover;">
+    <?= interessa_render_image(interessa_category_image_meta('proteiny', 'hero', true), ['style' => 'object-fit:cover;']) ?>
     <div class="card-body">
-      <h3>Proteíny na chudnutie</h3>
-      <p>Jasné vysvetlenia, porovnania a tipy na výber podľa cieľa.</p>
-      <a class="card-link" href="/clanky/protein-na-chudnutie">Zobraziť tipy</a>
+      <h3>Proteiny na chudnutie</h3>
+      <p>Jasne vysvetlenia, porovnania a tipy na vyber podla ciela.</p>
+      <a class="card-link" href="/clanky/protein-na-chudnutie">Zobrazit tipy</a>
     </div>
   </article>
 
   <article class="card">
-    <img src="/assets/img/cards/vyziva.webp" alt="Zdravá výživa" width="1200" height="800" loading="lazy" style="object-fit:cover;">
+    <?= interessa_render_image(interessa_category_image_meta('vyziva', 'hero', true), ['style' => 'object-fit:cover;']) ?>
     <div class="card-body">
-      <h3>Zdravá výživa</h3>
-      <p>Praktické odporúčania pre snacky, doplnky a každodenný výber.</p>
-      <a class="card-link" href="/clanky/doplnky-vyzivy">Odporúčané produkty</a>
+      <h3>Zdrava vyziva</h3>
+      <p>Prakticke odporucania pre snacky, doplnky a kazdodenny vyber.</p>
+      <a class="card-link" href="/clanky/doplnky-vyzivy">Odporucane produkty</a>
     </div>
   </article>
 
   <article class="card">
-    <img src="/assets/img/cards/vitaminy.webp" alt="Vitamíny a minerály" width="1200" height="800" loading="lazy" style="object-fit:cover;">
+    <?= interessa_render_image(interessa_category_image_meta('mineraly', 'hero', true), ['style' => 'object-fit:cover;']) ?>
     <div class="card-body">
-      <h3>Vitamíny a minerály</h3>
-      <p>Zrozumiteľný prehľad základných doplnkov pre imunitu, energiu a regeneráciu.</p>
-      <a class="card-link" href="/kategorie/mineraly">Zistiť viac</a>
+      <h3>Vitaminy a mineraly</h3>
+      <p>Zrozumitelny prehlad zakladnych doplnkov pre imunitu, energiu a regeneraciu.</p>
+      <a class="card-link" href="/kategorie/mineraly">Zistit viac</a>
     </div>
   </article>
 </section>
@@ -87,15 +97,15 @@ include __DIR__ . '/inc/head.php';
   <div class="content">
     <article class="lead-article">
       <header>
-        <h2>Najlepší proteín na chudnutie: WPC vs WPI</h2>
-        <p class="meta">Rýchle porovnanie srvátkových proteínov pre redukciu hmotnosti.</p>
+        <h2>Najlepsi protein na chudnutie: WPC vs WPI</h2>
+        <p class="meta">Rychle porovnanie srvatkovych proteinov pre redukciu hmotnosti.</p>
       </header>
 
-      <p>WPC býva dostupnejší a chuťovo príjemnejší. WPI má menej laktózy a viac bielkovín na dávku. Ak riešiš citlivosť na laktózu alebo chceš čistejší profil, WPI dáva väčší zmysel.</p>
-      <p>Ak chceš ísť rovno do nákupných tipov, pozri si naše <a href="/clanky/najlepsie-proteiny-2025">porovnanie proteínov</a>.</p>
+      <p>WPC byva dostupnejsi a chutovo prijemnejsi. WPI ma menej laktozy a viac bielkovin na davku. Ak riesis citlivost na laktozu alebo chces cistejsi profil, WPI dava vacsi zmysel.</p>
+      <p>Ak chces ist rovno do nakupnych tipov, pozri si nase <a href="/clanky/najlepsie-proteiny-2025">porovnanie proteinov</a>.</p>
 
       <figure class="inline-figure">
-        <img src="/assets/img/cards/proteiny.webp" alt="Proteíny a porovnanie" width="1200" height="800" loading="lazy" style="object-fit:cover;">
+        <?= interessa_render_image($homeLeadImage, ['style' => 'object-fit:cover;']) ?>
       </figure>
     </article>
   </div>

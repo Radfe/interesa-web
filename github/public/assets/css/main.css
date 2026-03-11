@@ -232,3 +232,55 @@ a:hover{color:#0954aa}
 .top-product-actions .btn{width:100%}
 .top-product-note{font-size:.8rem;color:var(--muted)}
 .topbox-disclosure{margin:0;color:var(--muted);font-size:.92rem;line-height:1.55}
+
+.section-head{display:grid;gap:.35rem;margin-bottom:1rem}
+.section-head h2{margin:0}
+.hub-hero-card{display:grid;gap:1rem}
+.hub-eyebrow{margin:0;color:var(--primary);font-size:.82rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.hub-checklist{list-style:none;padding:0;margin:0;display:grid;gap:.7rem}
+.hub-checklist li{position:relative;padding-left:1.2rem;color:var(--text)}
+.hub-checklist li::before{content:'•';position:absolute;left:0;top:0;color:var(--primary);font-weight:800}
+.hub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.hub-card{display:grid;gap:.85rem;background:#fff;border:1px solid var(--line);border-radius:14px;padding:1rem;box-shadow:var(--shadow)}
+.hub-card-image{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;background:#eef4f2}
+.hub-card-body{display:grid;gap:.55rem}
+.hub-card-body h3{margin:0;line-height:1.25}
+.hub-card-body p{margin:0;color:var(--muted)}
+.hub-card-label{display:inline-flex;align-items:center;justify-content:center;width:max-content;padding:.28rem .6rem;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:.78rem;font-weight:700}
+.top-product-bestfor{padding:.6rem .75rem;border-radius:12px;background:#f3f8f6;color:#0f172a;font-size:.92rem;line-height:1.5}
+.top-product-bestfor span{font-weight:700}
+.top-product-highlights{display:grid;gap:.75rem}
+.top-product-list{border:1px solid var(--line);border-radius:12px;padding:.75rem .85rem;background:#fcfffe}
+.top-product-list-title{margin:0 0 .55rem;font-size:.82rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.top-product-list ul{margin:0;padding-left:1rem;display:grid;gap:.45rem}
+.top-product-list li{color:var(--text)}
+.top-product-list.is-pros .top-product-list-title{color:#0f766e}
+.top-product-list.is-cons .top-product-list-title{color:#b45309}
+@media (max-width: 900px){
+  .hub-grid{grid-template-columns:1fr}
+}
+.hub-empty{margin:0;color:var(--muted);line-height:1.7}
+.article-list p.meta{margin:.35rem 0 0}
+.article-hero{margin:1rem 0 1.5rem}
+.article-hero-image{width:100%;height:auto;display:block;border-radius:18px;box-shadow:var(--shadow)}
+.hub-hero-media{margin-bottom:.5rem}
+.affiliate-disclosure{margin:0;color:var(--muted);font-size:.92rem;line-height:1.55}
+.affiliate-product-box{display:grid;grid-template-columns:minmax(180px,240px) 1fr;gap:1rem;padding:1rem;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow)}
+.affiliate-product-image{width:100%;height:auto;display:block;border-radius:14px;background:#eef4f2}
+.affiliate-product-body{display:grid;gap:.7rem}
+.affiliate-product-body h3{margin:0}
+.affiliate-product-summary,.affiliate-product-bestfor,.affiliate-product-merchant{margin:0}
+.affiliate-product-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.affiliate-product-columns h4{margin:0 0 .45rem}
+.affiliate-product-columns ul{margin:0;padding-left:1rem;display:grid;gap:.35rem}
+.affiliate-product-actions{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.affiliate-recommended{display:grid;gap:.75rem}
+.affiliate-recommended-badge{display:inline-flex;align-items:center;justify-content:center;width:max-content;padding:.28rem .6rem;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:.78rem;font-weight:700}
+.affiliate-comparison{overflow:auto}
+.affiliate-comparison table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.affiliate-comparison th,.affiliate-comparison td{padding:.85rem 1rem;border-bottom:1px solid var(--line);text-align:left}
+.affiliate-comparison th{background:#f7fbf9;font-weight:700}
+@media (max-width: 900px){
+  .affiliate-product-box{grid-template-columns:1fr}
+  .affiliate-product-columns{grid-template-columns:1fr}
+}

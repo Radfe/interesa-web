@@ -14,12 +14,13 @@ if ($slug === '' || !is_file($file)) {
 }
 
 $meta = article_meta($slug);
+$articleHero = interessa_article_image_meta($slug, 'hero', false);
 $commerce = interessa_article_commerce($slug);
 $categoryMeta = $meta['category'] !== '' ? category_meta($meta['category']) : null;
 $page_title = $meta['title'] . ' | Interesa';
 $page_description = $meta['description'] !== '' ? $meta['description'] : $meta['title'];
 $page_canonical = article_url($slug);
-$page_image = article_img($slug);
+$page_image = $articleHero['src'] ?? article_img($slug);
 $page_og_type = 'article';
 
 $breadcrumbs = [
@@ -47,7 +48,7 @@ $page_schema = [
             'name' => 'Interesa',
             'logo' => [
                 '@type' => 'ImageObject',
-                'url' => absolute_url(asset('img/logo-full.svg')),
+                'url' => absolute_url(asset('img/brand/logo-full.svg')),
             ],
         ],
     ],
@@ -78,6 +79,11 @@ include __DIR__ . '/inc/head.php';
       </nav>
       <h1><?= esc($meta['title']) ?></h1>
       <?php if ($meta['description'] !== ''): ?><p class="lead"><?= esc($meta['description']) ?></p><?php endif; ?>
+      <?php if ($articleHero !== null): ?>
+        <figure class="article-hero">
+          <?= interessa_render_image($articleHero, ['class' => 'article-hero-image']) ?>
+        </figure>
+      <?php endif; ?>
       <div class="article-body">
         <?php readfile($file); ?>
       </div>

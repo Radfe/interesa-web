@@ -303,7 +303,8 @@ if (!function_exists('article_img')) {
             }
         }
 
-        return asset('img/placeholder-16x9.svg');
+        $image = interessa_article_image_meta($slug, 'thumb', true);
+        return $image['src'] ?? asset('img/placeholders/article-16x9.svg');
     }
 }
 if (!function_exists('request_path')) {
@@ -350,7 +351,7 @@ if (!function_exists('page_canonical')) {
 if (!function_exists('page_image_url')) {
     function page_image_url(): string {
         global $page_image, $PAGE_IMAGE;
-        $image = (string) ($page_image ?? $PAGE_IMAGE ?? asset('img/og-default.jpg'));
+        $image = (string) ($page_image ?? $PAGE_IMAGE ?? asset('img/brand/og-default.svg'));
         return absolute_url($image);
     }
 }
@@ -496,3 +497,4 @@ if (!function_exists('script_tags')) {
         return implode("\n", $tags);
     }
 }
+require_once __DIR__ . '/media.php';

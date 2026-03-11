@@ -1,31 +1,24 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../inc/functions.php';
+require_once __DIR__ . '/../inc/category-hubs.php';
 
-$page_title = 'Kategórie – Interesa';
-$page_description = 'Prehľad kategórií: proteíny, výživa, vitamíny & minerály, imunita, sila, kĺby & koža.';
+$page_title = 'Kategorie | Interesa';
+$page_description = 'Tematicke huby pre proteiny, vyzivu, vitaminy a mineraly, imunitu, silu a vykon aj klby a kozu.';
 $page_canonical = '/kategorie';
-$page_image = asset('img/og-default.jpg');
+$page_image = asset('img/brand/og-default.svg');
 $page_og_type = 'website';
-
-$cats = [
-  ['slug'=>'proteiny','title'=>'Zdravé proteíny','desc'=>'Porovnania WPC/WPI, Clear, vegánske proteíny, dávkovanie.'],
-  ['slug'=>'vyziva','title'=>'Zdravá výživa','desc'=>'Snacky, kaše, orechy & maslá, recepty a praktické tipy.'],
-  ['slug'=>'mineraly','title'=>'Vitamíny & minerály','desc'=>'Horčík, zinok, vitamín D3/C a ďalšie mikroživiny.'],
-  ['slug'=>'imunita','title'=>'Imunita','desc'=>'Komplexy pre obranyschopnosť, D3, C, zinok, probiotiká.'],
-  ['slug'=>'sila','title'=>'Sila a výkon','desc'=>'Kreatín, pre-workout, regenerácia a doplnky pre výkon.'],
-  ['slug'=>'klby-koza','title'=>'Kĺby & koža','desc'=>'Kolagén, kĺbové výživy a ako ich vybrať.'],
-];
+$hubs = interessa_category_hubs();
 
 $page_schema = [
     breadcrumb_schema([
         ['name' => 'Domov', 'url' => '/'],
-        ['name' => 'Kategórie', 'url' => '/kategorie'],
+        ['name' => 'Kategorie', 'url' => '/kategorie'],
     ]),
     [
         '@context' => 'https://schema.org',
         '@type' => 'CollectionPage',
-        'name' => 'Kategórie',
+        'name' => 'Kategorie',
         'description' => $page_description,
         'url' => absolute_url('/kategorie'),
     ],
@@ -34,20 +27,24 @@ $page_schema = [
 include __DIR__ . '/../inc/head.php';
 ?>
 <section class="container">
-  <article class="card">
-    <h1>Kategórie</h1>
-    <div class="promo-cards" style="margin:0;">
-      <?php foreach ($cats as $c): ?>
-        <a class="card" href="/kategorie/<?= esc($c['slug']) ?>" style="text-decoration:none;">
-          <img src="<?= asset('img/og-default.jpg') ?>" alt="<?= esc($c['title']) ?>" loading="lazy" width="600" height="400">
-          <div class="card-body">
-            <h3><?= esc($c['title']) ?></h3>
-            <p><?= esc($c['desc']) ?></p>
-            <span class="card-link">Zobraziť kategóriu</span>
-          </div>
-        </a>
-      <?php endforeach; ?>
-    </div>
+  <article class="card hub-hero-card">
+    <p class="hub-eyebrow">Obsahove huby</p>
+    <h1>Kategorie</h1>
+    <p class="lead">Tieto landingy su postavene ako tematicke huby. V kazdej kategorii najdes najdolezitejsie clanky, ktore dava zmysel otvorit ako prve.</p>
   </article>
+
+  <div class="hub-grid" style="margin-top:1rem;">
+    <?php foreach ($hubs as $slug => $hub): ?>
+      <article class="hub-card">
+        <?= interessa_render_image(interessa_category_image_meta($slug, 'hero', true), ['class' => 'hub-card-image', 'alt' => $hub['title']]) ?>
+        <div class="hub-card-body">
+          <span class="hub-card-label"><?= count($hub['featured_guides']) ?> clanky</span>
+          <h3><a href="<?= esc(category_url($slug)) ?>"><?= esc($hub['title']) ?></a></h3>
+          <p><?= esc($hub['description']) ?></p>
+          <a class="btn" href="<?= esc(category_url($slug)) ?>">Zobrazit kategoriu</a>
+        </div>
+      </article>
+    <?php endforeach; ?>
+  </div>
 </section>
 <?php include __DIR__ . '/../inc/footer.php'; ?>

@@ -12,15 +12,16 @@ if ($slug === '' || $category === null) {
 }
 
 $articles = category_articles($slug);
+$categoryHero = interessa_category_image_meta($slug, 'hero', true);
 $page_title = $category['title'] . ' | Interesa';
 $page_description = $category['description'];
 $page_canonical = category_url($category['slug']);
-$page_image = asset('img/og-default.jpg');
+$page_image = $categoryHero['src'] ?? asset('img/brand/og-default.svg');
 $page_og_type = 'website';
 $page_schema = [
     breadcrumb_schema([
         ['name' => 'Domov', 'url' => '/'],
-        ['name' => 'Kategórie', 'url' => '/kategorie'],
+        ['name' => 'Kategorie', 'url' => '/kategorie'],
         ['name' => $category['title'], 'url' => $page_canonical],
     ]),
     [
@@ -42,22 +43,28 @@ include __DIR__ . '/inc/head.php';
 <section class="container two-col">
   <div class="content">
     <article class="card">
+      <?php if ($categoryHero !== null): ?>
+        <figure class="hub-hero-media">
+          <?= interessa_render_image($categoryHero, ['class' => 'hub-card-image', 'loading' => 'eager']) ?>
+        </figure>
+      <?php endif; ?>
       <h1><?= esc($category['title']) ?></h1>
       <p class="meta"><?= esc($category['description']) ?></p>
 
       <?php if (!$articles): ?>
-        <p class="note">V tejto kategórii zatiaľ nemáme žiadne články.</p>
+        <p class="note">V tejto kategorii zatial nemame ziadne clanky.</p>
       <?php else: ?>
         <div class="grid-cards">
           <?php foreach ($articles as $item): ?>
+            <?php $articleImage = interessa_article_image_meta($item['slug'], 'thumb', true); ?>
             <article class="post-card">
               <a href="<?= esc(article_url($item['slug'])) ?>">
-                <img class="thumb" loading="lazy" decoding="async" src="<?= esc(article_img($item['slug'])) ?>" alt="<?= esc($item['title']) ?>">
+                <?= interessa_render_image($articleImage, ['class' => 'thumb', 'alt' => $item['title']]) ?>
               </a>
               <a class="chip" href="<?= esc(category_url($category['slug'])) ?>"><?= esc($category['title']) ?></a>
               <h3><a href="<?= esc(article_url($item['slug'])) ?>"><?= esc($item['title']) ?></a></h3>
               <?php if ($item['description'] !== ''): ?><p class="meta"><?= esc($item['description']) ?></p><?php endif; ?>
-              <a class="btn" href="<?= esc(article_url($item['slug'])) ?>">Čítať</a>
+              <a class="btn" href="<?= esc(article_url($item['slug'])) ?>">Citat</a>
             </article>
           <?php endforeach; ?>
         </div>

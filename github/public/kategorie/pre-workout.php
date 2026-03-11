@@ -1,5 +1,5 @@
 <?php
 declare(strict_types=1);
 
-$CATEGORY_SLUG = 'pre-workout';
-require __DIR__ . '/../category-template.php';
+$category_landing_slug = 'pre-workout';
+require __DIR__ . '/../inc/category-landing.php';

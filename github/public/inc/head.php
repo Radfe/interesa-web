@@ -21,7 +21,7 @@
   <meta name="twitter:description" content="<?= page_description() ?>" />
   <meta name="twitter:image" content="<?= esc(page_image_url()) ?>" />
 
-  <link rel="icon" href="<?= asset('img/logo-full.svg') ?>" type="image/svg+xml" />
+  <link rel="icon" href="<?= asset('img/brand/logo-icon.svg') ?>" type="image/svg+xml" />
   <link rel="stylesheet" href="<?= asset('css/main.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/compat.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/sidebar.css') ?>" />
@@ -35,7 +35,7 @@
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="/" aria-label="Domov">
-        <img src="<?= asset('img/logo-full.svg') ?>" alt="Interesa.sk logo" width="148" height="32" />
+        <?= interessa_render_image(interessa_brand_image_meta('logo-full'), ['alt' => 'Interesa.sk logo', 'width' => '148', 'height' => '32']) ?>
       </a>
 
       <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
