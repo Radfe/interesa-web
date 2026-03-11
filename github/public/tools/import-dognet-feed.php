@@ -38,11 +38,11 @@ if ($firstLine === false) {
 
 $delimiter = dognet_detect_delimiter($firstLine);
 rewind($handle);
-$headers = fgetcsv($handle, 0, $delimiter) ?: [];
+$headers = fgetcsv($handle, 0, $delimiter, '"', '\\') ?: [];
 $headers = array_map(static fn($value) => strtolower(trim((string) $value)), $headers);
 $rows = [];
 
-while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+while (($row = fgetcsv($handle, 0, $delimiter, '"', '\\')) !== false) {
     if (!is_array($row)) {
         continue;
     }

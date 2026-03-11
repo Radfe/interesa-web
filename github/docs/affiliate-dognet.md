@@ -1,26 +1,41 @@
 # Affiliate / Dognet Guide
 
-## Cieľ architektúry
+## Goal
 
-Affiliate odkazy nesmú byť rozhádzané natvrdo po článkoch. Web používa centralizovaný tok:
-- produktový katalóg
+Affiliate links should stay centralized and the visible links on the site should stay clean.
+That is why the website uses this flow:
+- product catalog
 - affiliate link registry
-- interná route `/go/<code>`
-- reusable CTA a produktové komponenty
+- internal route `/go/<code>`
+- reusable CTA and product components
 
-## Hlavné súbory
+The visitor only sees your internal site link structure.
+The real Dognet deeplink lives in the central registry and can be changed without editing articles.
+
+## Main files
 
 - `public/content/products/catalog.php`
 - `public/content/affiliates/links.php`
+- `public/content/affiliates/merchants.php`
 - `public/inc/affiliates.php`
 - `public/inc/products.php`
 - `public/inc/affiliate-ui.php`
 - `public/inc/top-products.php`
 - `public/go.php`
+- `public/tools/import-dognet-feed.php`
+- `public/tools/import-dognet-links.php`
 
-## Dátový model produktu
+## Clean link strategy
 
-Každý produkt môže niesť aspoň tieto polia:
+Frontend CTA should point to internal links only, for example:
+- `/go/protein-na-chudnutie-gymbeam`
+- `/go/kreatin-porovnanie-gymbeam`
+
+That keeps the article HTML clean and lets you replace Dognet links later without touching content.
+
+## Product model
+
+Each product can carry at least:
 - `name`
 - `slug`
 - `merchant`
@@ -36,59 +51,99 @@ Každý produkt môže niesť aspoň tieto polia:
 - `merchant_product_id`
 - `image_source`
 
-To znamená, že architektúra je pripravená na budúce feedy aj na ručne kurátorované editorial picks.
+## Merchant / campaign layer
 
-## Affiliate link workflow
+Merchant-level metadata lives in `public/content/affiliates/merchants.php`.
+This is the right place for:
+- network (`dognet`)
+- public campaign page
+- cookie window
+- validation window
+- feed availability
+- notes and restrictions
 
-1. Produkt alebo CTA používa `affiliate_code`.
-2. Frontend odkazuje na internú route `/go/<code>`.
-3. `public/go.php` presmeruje na URL vyriešenú v `public/inc/affiliates.php`.
-4. URL môže pochádzať z:
-   - `public/content/affiliates/links.php`
-   - CSV ako `affiliate_simple_edit.csv`
-5. CSV override má prednosť pre reálne Dognet deeplinky.
+### GymBeam note
 
-Tým pádom vieš meniť ciele odkazov bez ručného editovania článkov.
+Based on Dognet's public campaign page, GymBeam has a public campaign landing page and Dognet lists campaign assets such as XML feeds and promo materials.
+I used that to prepare the merchant layer so GymBeam can be treated as a first-class Dognet merchant in the project.
 
-## CTA a reusable prvky
+Public source:
+- https://www.dognet.sk/kampane/kampan-gymbeam-sk/
 
-Dostupné helpery:
+Inference:
+- the private app campaign link you sent most likely corresponds to the public GymBeam campaign page above
+
+## Link workflow
+
+### Option A: manual update
+
+Add or edit real Dognet deeplinks in:
+- `public/content/affiliates/links.php`
+
+This is the simplest path when you only add a few links.
+
+### Option B: CSV import
+
+Use the template:
+- `public/storage/dognet/link-import-template.csv`
+
+Then run:
+
+```bash
+php public/tools/import-dognet-links.php public/storage/dognet/link-import-template.csv gymbeam
+```
+
+The tool outputs a ready PHP array that can be pasted into `public/content/affiliates/links.php`.
+
+Recommended CSV columns:
+- `code`
+- `url`
+- `merchant_slug`
+- `product_slug`
+- `merchant`
+
+## Feed workflow
+
+Place raw exports in:
+- `public/storage/dognet/raw/`
+
+Normalize feed exports with:
+
+```bash
+php public/tools/import-dognet-feed.php path/to/feed.csv gymbeam
+```
+
+This prepares normalized product rows with fields such as:
+- product name
+- slug
+- merchant slug
+- image url
+- affiliate url
+- merchant product id
+
+## CTA and reusable components
+
+Available helpers:
 - `interessa_affiliate_cta_html()`
 - `interessa_render_affiliate_disclosure()`
 - `interessa_render_product_box()`
 - `interessa_render_recommended_product()`
 - `interessa_render_comparison_table()`
 
-Špecializovaný renderer pre shortlisty zostáva v `public/inc/top-products.php`, ale už stojí na tej istej centralizovanej affiliate logike.
+`public/inc/top-products.php` still handles shortlist rendering, but it now stands on the same centralized affiliate layer.
 
-## Dognet feed ready vrstva
+## Disclosure and SEO
 
-Pripravené miesto pre feedy:
-- `public/storage/dognet/`
+Recommended rules:
+- show disclosure on commercial blocks and comparison sections
+- keep `/go/` routes `noindex, nofollow`
+- avoid hardcoded third-party widgets in article bodies
+- keep Dognet URLs out of article HTML where possible
 
-Pripravený tool skeleton:
-- `public/tools/import-dognet-feed.php`
+## Practical recommendation
 
-Odporúčaný budúci tok:
-1. export feedu uložiť do `public/storage/dognet/raw/`
-2. normalizačným skriptom ho previesť do interného tvaru
-3. vybrané produkty zapísať do `public/content/products/catalog.php` alebo do samostatnej normalizovanej vrstvy
-4. Dognet deeplinky držať v CSV alebo v `links.php`
-
-## Disclosure
-
-Odporúčané pravidlo:
-- disclosure zobrazovať pri komerčných boxoch, shortlistoch a porovnaniach
-- `/go/` route držať s `noindex, nofollow`
-- CTA nerozbíjať agresívnymi widgetmi alebo extra JS
-
-## Použitie v obsahu
-
-Príklad produktu v katalógu:
-- produkt má vlastné dáta, obrázok, merchant a affiliate code
-
-Príklad v článku:
-- článok používa len editorial shortlist alebo `product_slug`
-- renderer si doplní CTA, obrázok a disclosure centralizovane
-
-Týmto sa oddeľuje obsah od affiliate logiky a zjednodušuje sa budúca výmena merchantov, deep linkov aj produktových obrázkov.
+When you get a new approved Dognet campaign:
+1. add merchant metadata to `public/content/affiliates/merchants.php`
+2. add or import deeplinks into `public/content/affiliates/links.php`
+3. connect selected products in `public/content/products/catalog.php`
+4. use only internal `/go/<code>` links in content and UI
