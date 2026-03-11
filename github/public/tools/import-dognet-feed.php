@@ -8,8 +8,11 @@ if (PHP_SAPI !== 'cli') {
 
 $source = $argv[1] ?? '';
 $merchant = $argv[2] ?? 'merchant';
+$limitArg = $argv[3] ?? '';
+$limit = is_numeric($limitArg) ? max(0, (int) $limitArg) : 0;
+
 if (!is_string($source) || trim($source) === '' || !is_file($source)) {
-    fwrite(STDERR, "Usage: php public/tools/import-dognet-feed.php <feed-file> <merchant-slug>\n");
+    fwrite(STDERR, "Usage: php public/tools/import-dognet-feed.php <feed-file> <merchant-slug> [limit]\n");
     exit(1);
 }
 
@@ -23,46 +26,145 @@ function dognet_detect_delimiter(string $line): string {
     return ',';
 }
 
-$handle = fopen($source, 'r');
-if ($handle === false) {
-    fwrite(STDERR, "Unable to open feed file.\n");
-    exit(1);
+function dognet_slugify(string $value): string {
+    $ascii = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+    if (!is_string($ascii) || $ascii === '') {
+        $ascii = $value;
+    }
+
+    $slug = preg_replace('~[^a-z0-9]+~i', '-', $ascii) ?? '';
+    return strtolower(trim($slug, '-'));
 }
 
-$firstLine = fgets($handle);
-if ($firstLine === false) {
+function dognet_is_xml_feed(string $path): bool {
+    $head = file_get_contents($path, false, null, 0, 512);
+    if (!is_string($head)) {
+        return false;
+    }
+
+    return str_contains($head, '<?xml') || str_contains($head, '<SHOP');
+}
+
+function dognet_xml_value(SimpleXMLElement $item, string $tag): string {
+    $result = $item->{$tag} ?? null;
+    return trim((string) $result);
+}
+
+function dognet_import_xml(string $source, string $merchant, int $limit = 0): array {
+    $reader = new XMLReader();
+    if (!$reader->open($source, 'UTF-8')) {
+        fwrite(STDERR, "Unable to open XML feed.\n");
+        exit(1);
+    }
+
+    $rows = [];
+    while ($reader->read()) {
+        if ($reader->nodeType !== XMLReader::ELEMENT || $reader->name !== 'SHOPITEM') {
+            continue;
+        }
+
+        $xml = $reader->readOuterXML();
+        if (!is_string($xml) || trim($xml) === '') {
+            continue;
+        }
+
+        $item = simplexml_load_string($xml);
+        if (!$item instanceof SimpleXMLElement) {
+            continue;
+        }
+
+        $name = dognet_xml_value($item, 'PRODUCTNAME');
+        if ($name === '') {
+            $name = dognet_xml_value($item, 'PRODUCT');
+        }
+        if ($name === '') {
+            continue;
+        }
+
+        $productSlug = $merchant . '-' . dognet_slugify($name);
+        $url = dognet_xml_value($item, 'URL');
+        $rows[] = [
+            'name' => $name,
+            'slug' => $productSlug,
+            'merchant_slug' => $merchant,
+            'merchant' => dognet_xml_value($item, 'MANUFACTURER') ?: ucfirst($merchant),
+            'image_url' => dognet_xml_value($item, 'IMGURL'),
+            'affiliate_url' => $url,
+            'raw_url' => $url,
+            'merchant_product_id' => dognet_xml_value($item, 'ITEM_ID'),
+            'ean' => dognet_xml_value($item, 'EAN'),
+            'category_text' => dognet_xml_value($item, 'CATEGORYTEXT'),
+            'feed_source' => 'heureka-xml',
+            'affiliate_candidate' => str_contains($url, 'dognet'),
+        ];
+
+        if ($limit > 0 && count($rows) >= $limit) {
+            break;
+        }
+    }
+
+    $reader->close();
+    return $rows;
+}
+
+function dognet_import_csv(string $source, string $merchant, int $limit = 0): array {
+    $handle = fopen($source, 'r');
+    if ($handle === false) {
+        fwrite(STDERR, "Unable to open feed file.\n");
+        exit(1);
+    }
+
+    $firstLine = fgets($handle);
+    if ($firstLine === false) {
+        fclose($handle);
+        fwrite(STDERR, "Feed file is empty.\n");
+        exit(1);
+    }
+
+    $delimiter = dognet_detect_delimiter($firstLine);
+    rewind($handle);
+    $headers = fgetcsv($handle, 0, $delimiter, '"', '\\') ?: [];
+    $headers = array_map(static fn($value) => strtolower(trim((string) $value)), $headers);
+    $rows = [];
+
+    while (($row = fgetcsv($handle, 0, $delimiter, '"', '\\')) !== false) {
+        if (!is_array($row)) {
+            continue;
+        }
+
+        $record = array_combine($headers, array_pad($row, count($headers), '')) ?: [];
+        $name = trim((string) ($record['name'] ?? $record['product'] ?? ''));
+        if ($name === '') {
+            continue;
+        }
+
+        $slug = dognet_slugify($name);
+        $rows[] = [
+            'name' => $name,
+            'slug' => $merchant . '-' . $slug,
+            'merchant_slug' => $merchant,
+            'merchant' => ucfirst($merchant),
+            'image_url' => trim((string) ($record['image'] ?? $record['image_url'] ?? '')),
+            'affiliate_url' => trim((string) ($record['deeplink'] ?? $record['url'] ?? '')),
+            'raw_url' => trim((string) ($record['url'] ?? '')),
+            'merchant_product_id' => trim((string) ($record['id'] ?? $record['product_id'] ?? '')),
+            'ean' => trim((string) ($record['ean'] ?? '')),
+            'category_text' => trim((string) ($record['category'] ?? $record['category_text'] ?? '')),
+            'feed_source' => 'csv',
+            'affiliate_candidate' => true,
+        ];
+
+        if ($limit > 0 && count($rows) >= $limit) {
+            break;
+        }
+    }
+
     fclose($handle);
-    fwrite(STDERR, "Feed file is empty.\n");
-    exit(1);
+    return $rows;
 }
 
-$delimiter = dognet_detect_delimiter($firstLine);
-rewind($handle);
-$headers = fgetcsv($handle, 0, $delimiter, '"', '\\') ?: [];
-$headers = array_map(static fn($value) => strtolower(trim((string) $value)), $headers);
-$rows = [];
+$rows = dognet_is_xml_feed($source)
+    ? dognet_import_xml($source, $merchant, $limit)
+    : dognet_import_csv($source, $merchant, $limit);
 
-while (($row = fgetcsv($handle, 0, $delimiter, '"', '\\')) !== false) {
-    if (!is_array($row)) {
-        continue;
-    }
-
-    $record = array_combine($headers, array_pad($row, count($headers), '')) ?: [];
-    $name = trim((string) ($record['name'] ?? $record['product'] ?? ''));
-    if ($name === '') {
-        continue;
-    }
-
-    $slug = strtolower(trim(preg_replace('~[^a-z0-9]+~i', '-', iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $name) ?: $name), '-'));
-    $rows[] = [
-        'name' => $name,
-        'slug' => $merchant . '-' . $slug,
-        'merchant_slug' => $merchant,
-        'image_url' => trim((string) ($record['image'] ?? $record['image_url'] ?? '')),
-        'affiliate_url' => trim((string) ($record['deeplink'] ?? $record['url'] ?? '')),
-        'merchant_product_id' => trim((string) ($record['id'] ?? $record['product_id'] ?? '')),
-    ];
-}
-
-fclose($handle);
 echo json_encode($rows, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL;

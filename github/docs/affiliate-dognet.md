@@ -71,7 +71,7 @@ Public source:
 - https://www.dognet.sk/kampane/kampan-gymbeam-sk/
 
 Inference:
-- the private app campaign link you sent most likely corresponds to the public GymBeam campaign page above
+- the private app campaign link most likely corresponds to the public GymBeam campaign page above
 
 ## Link workflow
 
@@ -111,15 +111,18 @@ Normalize feed exports with:
 
 ```bash
 php public/tools/import-dognet-feed.php path/to/feed.csv gymbeam
+php public/tools/import-dognet-feed.php path/to/feed.xml gymbeam 20
 ```
 
-This prepares normalized product rows with fields such as:
+The importer now supports both CSV and Heureka-style XML feeds. It prepares normalized product rows with fields such as:
 - product name
 - slug
 - merchant slug
 - image url
 - affiliate url
 - merchant product id
+- EAN
+- category path
 
 ## CTA and reusable components
 
