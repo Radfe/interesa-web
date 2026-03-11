@@ -4,6 +4,8 @@ declare(strict_types=1);
 require_once __DIR__ . '/inc/functions.php';
 require_once __DIR__ . '/inc/article-commerce.php';
 require_once __DIR__ . '/inc/top-products.php';
+require_once __DIR__ . '/inc/article-trust.php';
+require_once __DIR__ . '/inc/article-related.php';
 
 $slug = preg_replace('~[^a-z0-9\-_]+~i', '', (string) ($_GET['slug'] ?? ''));
 $file = __DIR__ . '/content/articles/' . $slug . '.html';
@@ -14,9 +16,10 @@ if ($slug === '' || !is_file($file)) {
 }
 
 $meta = article_meta($slug);
-$articleHero = interessa_article_image_meta($slug, 'hero', false);
+$articleHero = interessa_article_image_meta($slug, 'hero', true);
 $commerce = interessa_article_commerce($slug);
 $categoryMeta = $meta['category'] !== '' ? category_meta($meta['category']) : null;
+$updatedMeta = interessa_article_updated_meta($file);
 $page_title = $meta['title'] . ' | Interesa';
 $page_description = $meta['description'] !== '' ? $meta['description'] : $meta['title'];
 $page_canonical = article_url($slug);
@@ -32,26 +35,31 @@ if ($categoryMeta !== null) {
 }
 $breadcrumbs[] = ['name' => $meta['title'], 'url' => $page_canonical];
 
-$page_schema = [
-    breadcrumb_schema($breadcrumbs),
-    [
-        '@context' => 'https://schema.org',
-        '@type' => 'Article',
-        'headline' => $meta['title'],
-        'description' => $page_description,
-        'url' => absolute_url($page_canonical),
-        'mainEntityOfPage' => absolute_url($page_canonical),
-        'image' => page_image_url(),
-        'articleSection' => $categoryMeta['title'] ?? 'Články',
-        'publisher' => [
-            '@type' => 'Organization',
-            'name' => 'Interesa',
-            'logo' => [
-                '@type' => 'ImageObject',
-                'url' => absolute_url(asset('img/brand/logo-full.svg')),
-            ],
+$articleSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Article',
+    'headline' => $meta['title'],
+    'description' => $page_description,
+    'url' => absolute_url($page_canonical),
+    'mainEntityOfPage' => absolute_url($page_canonical),
+    'image' => page_image_url(),
+    'articleSection' => $categoryMeta['title'] ?? 'Články',
+    'publisher' => [
+        '@type' => 'Organization',
+        'name' => 'Interesa',
+        'logo' => [
+            '@type' => 'ImageObject',
+            'url' => absolute_url(asset('img/brand/logo-full.svg')),
         ],
     ],
+];
+if ($updatedMeta !== null) {
+    $articleSchema['dateModified'] = $updatedMeta['iso'];
+}
+
+$page_schema = [
+    breadcrumb_schema($breadcrumbs),
+    $articleSchema,
 ];
 
 if ($commerce !== null) {
@@ -77,16 +85,29 @@ include __DIR__ . '/inc/head.php';
           &rsaquo; <a href="<?= esc(category_url($categoryMeta['slug'])) ?>"><?= esc($categoryMeta['title']) ?></a>
         <?php endif; ?>
       </nav>
+
+      <div class="article-meta-bar">
+        <?php if ($categoryMeta !== null): ?>
+          <span class="article-meta-chip"><?= esc($categoryMeta['title']) ?></span>
+        <?php endif; ?>
+        <?php if ($updatedMeta !== null): ?>
+          <span class="article-meta-chip">Aktualizované: <?= esc($updatedMeta['date']) ?></span>
+        <?php endif; ?>
+      </div>
+
       <h1><?= esc($meta['title']) ?></h1>
       <?php if ($meta['description'] !== ''): ?><p class="lead"><?= esc($meta['description']) ?></p><?php endif; ?>
+
       <?php if ($articleHero !== null): ?>
         <figure class="article-hero">
           <?= interessa_render_image($articleHero, ['class' => 'article-hero-image']) ?>
         </figure>
       <?php endif; ?>
+
       <div class="article-body">
-        <?php readfile($file); ?>
+        <?php echo (string) file_get_contents($file); ?>
       </div>
+
       <?php
       if ($commerce !== null) {
           interessa_render_top_products(
@@ -95,6 +116,8 @@ include __DIR__ . '/inc/head.php';
               $commerce['intro'] ?? null
           );
       }
+      interessa_render_article_trust_box($slug, $meta, $commerce, $file);
+      interessa_render_related_articles($slug, 3);
       ?>
     </article>
   </div>

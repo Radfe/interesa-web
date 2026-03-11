@@ -21,7 +21,7 @@ $page_og_type = 'website';
 $page_schema = [
     breadcrumb_schema([
         ['name' => 'Domov', 'url' => '/'],
-        ['name' => 'Kategorie', 'url' => '/kategorie'],
+        ['name' => 'Kategórie', 'url' => '/kategorie'],
         ['name' => $category['title'], 'url' => $page_canonical],
     ]),
     [
@@ -52,7 +52,7 @@ include __DIR__ . '/inc/head.php';
       <p class="meta"><?= esc($category['description']) ?></p>
 
       <?php if (!$articles): ?>
-        <p class="note">V tejto kategorii zatial nemame ziadne clanky.</p>
+        <p class="note">V tejto kategórii zatiaľ nemáme žiadne články.</p>
       <?php else: ?>
         <div class="grid-cards">
           <?php foreach ($articles as $item): ?>
@@ -64,7 +64,7 @@ include __DIR__ . '/inc/head.php';
               <a class="chip" href="<?= esc(category_url($category['slug'])) ?>"><?= esc($category['title']) ?></a>
               <h3><a href="<?= esc(article_url($item['slug'])) ?>"><?= esc($item['title']) ?></a></h3>
               <?php if ($item['description'] !== ''): ?><p class="meta"><?= esc($item['description']) ?></p><?php endif; ?>
-              <a class="btn" href="<?= esc(article_url($item['slug'])) ?>">Citat</a>
+              <a class="btn" href="<?= esc(article_url($item['slug'])) ?>">Čítať</a>
             </article>
           <?php endforeach; ?>
         </div>

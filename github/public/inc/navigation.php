@@ -18,20 +18,20 @@ if (!function_exists('interessa_primary_navigation_items')) {
                 'label' => interessa_nav_category_title('proteiny', 'Zdravé proteíny'),
                 'mega_key' => 'proteiny',
                 'sections' => [
-                    ['title' => 'Typy', 'links' => [
-                        ['href' => '/kategorie/proteiny#srvate', 'label' => 'Srvátkové (WPC/WPI)'],
-                        ['href' => '/kategorie/proteiny#rastlinne', 'label' => 'Rastlinné'],
-                        ['href' => '/kategorie/proteiny#vegan', 'label' => 'Vegan blend'],
+                    ['title' => 'Najdôležitejšie', 'links' => [
+                        ['href' => '/clanky/najlepsie-proteiny-2025', 'label' => 'Najlepšie proteíny 2025'],
+                        ['href' => '/clanky/protein-na-chudnutie', 'label' => 'Proteín na chudnutie'],
+                        ['href' => '/clanky/veganske-proteiny-top-vyber-2025', 'label' => 'Vegánske proteíny'],
                     ]],
-                    ['title' => 'Ciele', 'links' => [
-                        ['href' => '/kategorie/proteiny#chudnutie', 'label' => 'Chudnutie'],
-                        ['href' => '/kategorie/proteiny#regeneracia', 'label' => 'Regenerácia'],
-                        ['href' => '/kategorie/proteiny#rychly-snack', 'label' => 'Rýchly snack'],
+                    ['title' => 'Porovnania', 'links' => [
+                        ['href' => '/clanky/srvatkovy-protein-vs-izolat-vs-hydro', 'label' => 'WPC vs WPI vs hydro'],
+                        ['href' => '/clanky/najlepsi-protein-na-chudnutie-wpc-vs-wpi', 'label' => 'WPC vs WPI na chudnutie'],
+                        ['href' => '/clanky/clear-protein', 'label' => 'Clear protein'],
                     ]],
-                    ['title' => 'Tipy a články', 'links' => [
-                        ['href' => '/clanky/', 'label' => 'Poradňa'],
-                        ['href' => '/clanky/#recepty', 'label' => 'Recepty s proteínom'],
-                        ['href' => '/clanky/#najcastejsie-otazky', 'label' => 'FAQ'],
+                    ['title' => 'Preskúmaj tému', 'links' => [
+                        ['href' => '/kategorie/proteiny', 'label' => 'Hub proteínov'],
+                        ['href' => '/clanky/proteiny', 'label' => 'Základy proteínov'],
+                        ['href' => '/clanky/', 'label' => 'Všetky články'],
                     ]],
                 ],
             ],
@@ -40,20 +40,20 @@ if (!function_exists('interessa_primary_navigation_items')) {
                 'label' => interessa_nav_category_title('vyziva', 'Zdravá výživa'),
                 'mega_key' => 'vyziva',
                 'sections' => [
-                    ['title' => 'Jedlá a snacky', 'links' => [
-                        ['href' => '/kategorie/vyziva#granola', 'label' => 'Granola a kaše'],
-                        ['href' => '/kategorie/vyziva#orechy', 'label' => 'Orechy a maslá'],
-                        ['href' => '/kategorie/vyziva#tycinky', 'label' => 'Tyčinky'],
+                    ['title' => 'Strava a rutina', 'links' => [
+                        ['href' => '/clanky/doplnky-vyzivy', 'label' => 'Doplnky výživy'],
+                        ['href' => '/clanky/chudnutie-tip', 'label' => 'Tipy na chudnutie'],
+                        ['href' => '/clanky/spalovace-tukov-realita', 'label' => 'Spaľovače tukov: realita'],
                     ]],
-                    ['title' => 'Špeciálne', 'links' => [
-                        ['href' => '/kategorie/vyziva#bezlepkove', 'label' => 'Bezlepkové'],
-                        ['href' => '/kategorie/vyziva#bezlaktozy', 'label' => 'Bez laktózy'],
-                        ['href' => '/kategorie/vyziva#keto', 'label' => 'Keto'],
+                    ['title' => 'Trávenie a tolerancia', 'links' => [
+                        ['href' => '/clanky/probiotika-a-travenie', 'label' => 'Probiotiká a trávenie'],
+                        ['href' => '/clanky/probiotika-ako-vybrat', 'label' => 'Ako vybrať probiotiká'],
+                        ['href' => '/kategorie/probiotika-travenie', 'label' => 'Hub trávenia'],
                     ]],
-                    ['title' => 'Nástroje', 'links' => [
-                        ['href' => '/clanky/#jedalnicky', 'label' => 'Jedálničky'],
-                        ['href' => '/clanky/#makra', 'label' => 'Výpočet makier'],
-                        ['href' => '/clanky/#hydratacia', 'label' => 'Hydratácia'],
+                    ['title' => 'Ciele', 'links' => [
+                        ['href' => '/kategorie/vyziva', 'label' => 'Zdravá výživa'],
+                        ['href' => '/kategorie/chudnutie', 'label' => 'Chudnutie'],
+                        ['href' => '/kategorie/probiotika', 'label' => 'Probiotiká'],
                     ]],
                 ],
             ],
@@ -62,20 +62,20 @@ if (!function_exists('interessa_primary_navigation_items')) {
                 'label' => interessa_nav_category_title('mineraly', 'Vitamíny a minerály'),
                 'mega_key' => 'mineraly',
                 'sections' => [
-                    ['title' => 'Vitamíny', 'links' => [
-                        ['href' => '/kategorie/mineraly#vitamin-c', 'label' => 'Vitamín C'],
-                        ['href' => '/kategorie/mineraly#vitamin-d3', 'label' => 'Vitamín D3'],
-                        ['href' => '/kategorie/mineraly#b-komplex', 'label' => 'B-komplex'],
+                    ['title' => 'Najčítanejšie', 'links' => [
+                        ['href' => '/clanky/horcik-ktory-je-najlepsi-a-preco', 'label' => 'Aký horčík vybrať'],
+                        ['href' => '/clanky/vitamin-d3-a-imunita', 'label' => 'Vitamín D3 a imunita'],
+                        ['href' => '/clanky/vitamin-c', 'label' => 'Vitamín C'],
                     ]],
                     ['title' => 'Minerály', 'links' => [
-                        ['href' => '/kategorie/mineraly#zinok', 'label' => 'Zinok'],
-                        ['href' => '/kategorie/mineraly#horcik', 'label' => 'Horčík'],
-                        ['href' => '/kategorie/mineraly#zelezo', 'label' => 'Železo'],
+                        ['href' => '/clanky/zinek', 'label' => 'Zinok'],
+                        ['href' => '/clanky/horcik', 'label' => 'Horčík'],
+                        ['href' => '/kategorie/mineraly', 'label' => 'Hub minerálov'],
                     ]],
-                    ['title' => 'Balíčky', 'links' => [
-                        ['href' => '/kategorie/mineraly#imunita', 'label' => 'Balíček imunita'],
-                        ['href' => '/kategorie/mineraly#energia', 'label' => 'Balíček energia'],
-                        ['href' => '/kategorie/mineraly#wellbeing', 'label' => 'Balíček wellbeing'],
+                    ['title' => 'Súvisiace témy', 'links' => [
+                        ['href' => '/kategorie/imunita', 'label' => 'Imunita'],
+                        ['href' => '/kategorie/vitaminy-mineraly', 'label' => 'Vitamíny a minerály'],
+                        ['href' => '/clanky/imunita-prirodne-latky-ktore-funguju', 'label' => 'Látky pre imunitu'],
                     ]],
                 ],
             ],

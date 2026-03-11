@@ -53,7 +53,7 @@ if (!function_exists('page_description')) {
         $description = $page_description
             ?? $PAGE_DESCRIPTION
             ?? ($page['description'] ?? null)
-            ?? 'Interesa - magazin o zdravej vyzive. Testy, porovnania a navody.';
+            ?? 'Interesa - magazín o zdravej výžive. Testy, porovnania a návody.';
         return esc($description);
     }
 }
@@ -327,6 +327,27 @@ if (!function_exists('category_articles')) {
     }
 }
 
+
+if (!function_exists('related_articles')) {
+    function related_articles(string $slug, int $limit = 3): array {
+        $canonicalSlug = canonical_article_slug($slug);
+        $category = normalize_category_slug((string) (article_meta($canonicalSlug)['category'] ?? ''));
+        if ($category === '') {
+            return [];
+        }
+
+        $items = [];
+        foreach (category_articles($category) as $item) {
+            $itemSlug = canonical_article_slug((string) ($item['slug'] ?? ''));
+            if ($itemSlug === '' || $itemSlug === $canonicalSlug) {
+                continue;
+            }
+            $items[] = $item;
+        }
+
+        return array_slice(array_values($items), 0, $limit);
+    }
+}
 if (!function_exists('article_url')) {
     function article_url(string $slug): string {
         return '/clanky/' . rawurlencode(canonical_article_slug($slug));

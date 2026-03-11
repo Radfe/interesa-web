@@ -130,7 +130,7 @@ a:hover{color:#0954aa}
   align-self:start;display:inline-flex;align-items:center;gap:.45rem;
   padding:.45rem .7rem;border:1px solid #d7dee4;border-radius:10px;color:#0f172a;background:#fff
 }
-.card-link::after{content:"→";font-weight:700;translate:0 1px}
+.card-link::after{content:">";font-weight:700;translate:0 1px}
 .card-link:hover{background:#f7fafc}
 
 /* Two-column */
@@ -249,7 +249,7 @@ a:hover{color:#0954aa}
 .hub-eyebrow{margin:0;color:var(--primary);font-size:.82rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .hub-checklist{list-style:none;padding:0;margin:0;display:grid;gap:.7rem}
 .hub-checklist li{position:relative;padding-left:1.2rem;color:var(--text)}
-.hub-checklist li::before{content:'✓';position:absolute;left:0;top:0;color:var(--primary);font-weight:800}
+.hub-checklist li::before{content:"";position:absolute;left:0;top:.45rem;width:8px;height:8px;border-radius:999px;background:var(--primary)}
 .hub-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
 .hub-card{display:grid;gap:.85rem;background:#fff;border:1px solid var(--line);border-radius:14px;padding:1rem;box-shadow:var(--shadow)}
 .hub-card-image{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;background:#eef4f2}
@@ -344,3 +344,20 @@ a:hover{color:#0954aa}
     grid-template-columns:1fr;
   }
 }
+
+.article-meta-bar{display:flex;flex-wrap:wrap;gap:.55rem;margin:.1rem 0 .2rem}
+.article-meta-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .7rem;border-radius:999px;background:#eef7f3;color:#1f5f4a;font-size:.86rem;font-weight:700}
+.article-trust{margin-top:1.75rem;padding:1.2rem;border:1px solid var(--line);border-radius:var(--radius);background:#f7fbf9}
+.article-trust-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.article-trust-card{display:grid;gap:.75rem;background:#fff;border:1px solid var(--line);border-radius:14px;padding:1rem;box-shadow:var(--shadow)}
+.article-trust-card h3{margin:0;line-height:1.3}
+.article-trust-card p{margin:0;color:var(--text);line-height:1.65}
+.article-trust-list{margin:0;padding-left:1rem;display:grid;gap:.55rem}
+.article-trust-list li{color:var(--text);line-height:1.6}
+.article-meta-inline{margin:0;color:var(--muted);line-height:1.6}
+.article-meta-inline code{font-size:.92em}
+@media (max-width:900px){
+  .article-trust-grid{grid-template-columns:1fr}
+}
+
+.article-related{margin-top:1.75rem}
