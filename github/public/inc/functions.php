@@ -70,6 +70,25 @@ if (!function_exists('cta_attrs')) {
     }
 }
 
+if (!function_exists('interessa_fix_mojibake')) {
+    function interessa_fix_mojibake(string $text): string {
+        if ($text === '' || !preg_match('~Ă|Ä|Ĺ|â~u', $text)) {
+            return $text;
+        }
+
+        $bytes = @iconv('UTF-8', 'Windows-1250//IGNORE', $text);
+        if ($bytes === false || $bytes === '') {
+            return $text;
+        }
+
+        $fixed = @iconv('UTF-8', 'UTF-8//IGNORE', $bytes);
+        if (!is_string($fixed) || $fixed === '') {
+            return $text;
+        }
+
+        return $fixed;
+    }
+}
 if (!function_exists('humanize_slug')) {
     function humanize_slug(string $slug): string {
         $title = str_replace(['-', '_'], ' ', trim($slug));
@@ -79,7 +98,7 @@ if (!function_exists('humanize_slug')) {
             return mb_convert_case($title, MB_CASE_TITLE, 'UTF-8');
         }
 
-        return ucwords($title);
+        return ucwords(interessa_fix_mojibake($title));
     }
 }
 
@@ -196,7 +215,7 @@ if (!function_exists('extract_article_title')) {
     function extract_article_title(string $file, string $slug): string {
         $html = @file_get_contents($file);
         if ($html !== false && preg_match('/<h1[^>]*>(.*?)<\/h1>/is', $html, $match)) {
-            return trim(strip_tags($match[1]));
+            return interessa_fix_mojibake(trim(strip_tags($match[1])));
         }
 
         return humanize_slug($slug);

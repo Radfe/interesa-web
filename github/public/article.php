@@ -6,6 +6,8 @@ require_once __DIR__ . '/inc/article-commerce.php';
 require_once __DIR__ . '/inc/top-products.php';
 require_once __DIR__ . '/inc/article-trust.php';
 require_once __DIR__ . '/inc/article-related.php';
+require_once __DIR__ . '/inc/article-enhancements.php';
+require_once __DIR__ . '/inc/article-outline.php';
 
 $slug = preg_replace('~[^a-z0-9\-_]+~i', '', (string) ($_GET['slug'] ?? ''));
 $file = __DIR__ . '/content/articles/' . $slug . '.html';
@@ -20,6 +22,12 @@ $articleHero = interessa_article_image_meta($slug, 'hero', true);
 $commerce = interessa_article_commerce($slug);
 $categoryMeta = $meta['category'] !== '' ? category_meta($meta['category']) : null;
 $updatedMeta = interessa_article_updated_meta($file);
+$faq = interessa_article_faq_items($slug);
+$articleBodyHtml = interessa_fix_mojibake((string) file_get_contents($file));
+$articlePrepared = interessa_article_prepare_body($articleBodyHtml);
+$articleBodyHtml = (string) ($articlePrepared['html'] ?? $articleBodyHtml);
+$articleHeadings = is_array($articlePrepared['headings'] ?? null) ? $articlePrepared['headings'] : [];
+$readingTime = (int) ($articlePrepared['reading_time'] ?? 1);
 $page_title = $meta['title'] . ' | Interesa';
 $page_description = $meta['description'] !== '' ? $meta['description'] : $meta['title'];
 $page_canonical = article_url($slug);
@@ -28,7 +36,7 @@ $page_og_type = 'article';
 
 $breadcrumbs = [
     ['name' => 'Domov', 'url' => '/'],
-    ['name' => 'Články', 'url' => '/clanky'],
+    ['name' => 'Clanky', 'url' => '/clanky'],
 ];
 if ($categoryMeta !== null) {
     $breadcrumbs[] = ['name' => $categoryMeta['title'], 'url' => category_url($categoryMeta['slug'])];
@@ -43,7 +51,7 @@ $articleSchema = [
     'url' => absolute_url($page_canonical),
     'mainEntityOfPage' => absolute_url($page_canonical),
     'image' => page_image_url(),
-    'articleSection' => $categoryMeta['title'] ?? 'Články',
+    'articleSection' => $categoryMeta['title'] ?? 'Clanky',
     'publisher' => [
         '@type' => 'Organization',
         'name' => 'Interesa',
@@ -65,7 +73,7 @@ $page_schema = [
 if ($commerce !== null) {
     $commerceSchema = interessa_top_products_schema(
         $commerce['products'] ?? [],
-        $commerce['title'] ?? 'Odporúčané produkty',
+        $commerce['title'] ?? 'Odporucane produkty',
         $page_canonical
     );
 
@@ -74,13 +82,18 @@ if ($commerce !== null) {
     }
 }
 
+$faqSchema = interessa_article_faq_schema($faq);
+if ($faqSchema !== null) {
+    $page_schema[] = $faqSchema;
+}
+
 include __DIR__ . '/inc/head.php';
 ?>
 <section class="container two-col">
   <div class="content">
     <article class="lead-article article-shell">
       <nav class="muted" aria-label="Breadcrumb">
-        <a href="/">Domov</a> &rsaquo; <a href="/clanky/">Články</a>
+        <a href="/">Domov</a> &rsaquo; <a href="/clanky/">Clanky</a>
         <?php if ($categoryMeta !== null): ?>
           &rsaquo; <a href="<?= esc(category_url($categoryMeta['slug'])) ?>"><?= esc($categoryMeta['title']) ?></a>
         <?php endif; ?>
@@ -91,8 +104,9 @@ include __DIR__ . '/inc/head.php';
           <span class="article-meta-chip"><?= esc($categoryMeta['title']) ?></span>
         <?php endif; ?>
         <?php if ($updatedMeta !== null): ?>
-          <span class="article-meta-chip">Aktualizované: <?= esc($updatedMeta['date']) ?></span>
+          <span class="article-meta-chip">Aktualizovane: <?= esc($updatedMeta['date']) ?></span>
         <?php endif; ?>
+        <span class="article-meta-chip"><?= esc((string) $readingTime) ?> min citania</span>
       </div>
 
       <h1><?= esc($meta['title']) ?></h1>
@@ -104,19 +118,23 @@ include __DIR__ . '/inc/head.php';
         </figure>
       <?php endif; ?>
 
+      <?php interessa_render_article_audience_box($slug); ?>
+      <?php interessa_render_article_outline($articleHeadings, $readingTime); ?>
+
       <div class="article-body">
-        <?php echo (string) file_get_contents($file); ?>
+        <?php echo $articleBodyHtml; ?>
       </div>
 
       <?php
       if ($commerce !== null) {
           interessa_render_top_products(
               $commerce['products'] ?? [],
-              $commerce['title'] ?? 'Odporúčané produkty',
+              $commerce['title'] ?? 'Odporucane produkty',
               $commerce['intro'] ?? null
           );
       }
       interessa_render_article_trust_box($slug, $meta, $commerce, $file);
+      interessa_render_article_faq_box($slug);
       interessa_render_related_articles($slug, 3);
       ?>
     </article>

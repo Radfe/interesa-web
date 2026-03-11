@@ -37,7 +37,7 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
 
     $file = __DIR__ . '/content/articles/' . $slug . '.html';
     if (is_file($file)) {
-        $text = strip_tags((string) file_get_contents($file));
+        $text = strip_tags(interessa_fix_mojibake((string) file_get_contents($file)));
         if (interessa_contains($text, $needle)) {
             $score += 3;
         }
