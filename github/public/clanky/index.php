@@ -7,17 +7,8 @@ $page_title = 'Články | Interesa';
 $page_description = 'Prehľad článkov o proteínoch, výžive, vitamínoch a mineráloch.';
 include __DIR__ . '/../inc/head.php';
 
-$items = [];
-foreach (article_registry() as $slug => $meta) {
-    $items[] = [
-        'slug' => $slug,
-        'title' => $meta[0] ?? humanize_slug($slug),
-        'description' => $meta[1] ?? '',
-        'url' => article_url($slug),
-    ];
-}
-
-usort($items, static fn($a, $b) => strcmp($a['title'], $b['title']));
+$items = array_values(indexed_articles());
+usort($items, static fn(array $a, array $b): int => strcmp((string) ($a['title'] ?? ''), (string) ($b['title'] ?? '')));
 ?>
 <section class="container two-col">
   <div class="content">
@@ -29,8 +20,8 @@ usort($items, static fn($a, $b) => strcmp($a['title'], $b['title']));
         <ul class="article-list">
           <?php foreach ($items as $item): ?>
             <li>
-              <a href="<?= esc($item['url']) ?>"><?= esc($item['title']) ?></a>
-              <?php if ($item['description'] !== ''): ?><div class="meta"><?= esc($item['description']) ?></div><?php endif; ?>
+              <a href="<?= esc(article_url((string) ($item['slug'] ?? ''))) ?>"><?= esc((string) ($item['title'] ?? '')) ?></a>
+              <?php if (!empty($item['description'])): ?><div class="meta"><?= esc((string) $item['description']) ?></div><?php endif; ?>
             </li>
           <?php endforeach; ?>
         </ul>

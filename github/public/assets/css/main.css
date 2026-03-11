@@ -298,3 +298,49 @@ a:hover{color:#0954aa}
 .top-product-product-name span{font-weight:700}
 .affiliate-product-product-name{margin:0;padding:.55rem .7rem;border-radius:12px;background:#f7fbf9;color:#35524a;font-size:.92rem;line-height:1.55}
 
+
+.stats-strip{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+  margin:0 auto 24px;
+}
+.stats-card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  padding:1rem 1.1rem;
+  display:grid;
+  gap:.35rem;
+}
+.stats-card strong{
+  font-size:1.05rem;
+  line-height:1.2;
+  color:#10202d;
+}
+.stats-card p{
+  margin:0;
+  color:var(--muted);
+}
+.home-section{
+  margin-bottom:28px;
+}
+.home-story{
+  align-items:start;
+}
+.home-trust-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+}
+.categories-overview{
+  gap:1.25rem;
+}
+.categories-stats{
+  margin:0;
+}
+@media (max-width:980px){
+  .stats-strip,
+  .home-trust-grid{
+    grid-template-columns:1fr;
+  }
+}

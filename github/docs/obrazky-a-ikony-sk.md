@@ -6,9 +6,9 @@ Tento web už má pripravený technický základ pre obrázky v `public/inc/medi
 
 - jednotne renderovať hero obrázky článkov a kategórií
 - používať fallback placeholder, keď obrázok ešte chýba
-- dopĺňať `alt`, `width`, `height`, `loading`, `fetchpriority`
+- dopĺňať `alt`, `width`, `height`, `loading` a `fetchpriority`
 - držať reálne produktové obrázky z merchant feedov alebo vzdialených URL
-- robiť jednoduché konzistentné SVG ikony pre menu, sekcie a badge prvky
+- napájať články na kategórické fallback vizuály, keď ešte nemajú vlastný hero obrázok
 
 ## Kde ukladať obrázky
 
@@ -42,9 +42,9 @@ Príklady:
 Drž jeden konzistentný smer:
 
 - čisté svetlé pozadie
-- jeden dominantný objekt alebo téma
+- jeden dominantný objekt alebo tému
 - minimum textu priamo v obrázku
-- jemná zelená / neutrálna farebnosť ako na webe
+- jemná zelená alebo neutrálna farebnosť ako na webe
 - radšej jednoduchý produktový alebo ingredienčný vizuál než generický chaos
 
 ### Produktové obrázky
@@ -56,10 +56,21 @@ Pri produktoch preferuj:
 - rovnaký pomer strán v rámci jednej sekcie
 - neprepisovať produkt zbytočnou grafikou
 
+## Ikony a menu
+
+Aktuálny smer webu je textová navigácia bez veľkých ilustračných ikon v hlavnom menu.
+
+To znamená:
+
+- horné menu nechávame čisté a textové
+- staré PNG ikonky v `public/assets/img/icons/` ber ako legacy assety
+- ak budeme pridávať nové ikony, preferované sú jednoduché SVG pre mikro UI, nie veľké farebné obrázky v navigácii
+
 ## Kedy použiť čo
 
 - hero článku: ilustračný obrázok k téme
-- top produkty / porovnania: reálny produktový packshot
+- top produkty a porovnania: reálny produktový packshot
+- kategória bez vlastného vizuálu: fallback na kategórický hero obrázok
 - menu a mikro UI: jednoduché jednofarebné SVG ikony
 
 ## Ako to robiť prakticky
@@ -68,7 +79,7 @@ Pri produktoch preferuj:
 2. Ulož ho do správneho priečinka v `public/assets/img/...`.
 3. Ak ide o článok alebo kategóriu, doplň meta záznam do `public/content/media/articles.php` alebo `public/content/media/categories.php`.
 4. Ak ide o produkt, doplň obrázok do produktového katalógu alebo cez merchant feed.
-5. Potom ho už web vie renderovať jednotne cez media helper.
+5. Potom ho web vie renderovať jednotne cez media helper.
 
 ## Dôležitá poznámka
 

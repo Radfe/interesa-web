@@ -46,7 +46,7 @@ $extraArticles = array_values(array_filter($categoryArticles, static function (a
 $page_schema = [
     breadcrumb_schema([
         ['name' => 'Domov', 'url' => '/'],
-        ['name' => 'Kategorie', 'url' => '/kategorie'],
+        ['name' => 'Kategórie', 'url' => '/kategorie'],
         ['name' => $hub['title'], 'url' => $page_canonical],
     ]),
     [
@@ -62,7 +62,7 @@ if ($itemList !== []) {
     $page_schema[] = [
         '@context' => 'https://schema.org',
         '@type' => 'ItemList',
-        'name' => 'Klucove clanky: ' . $hub['title'],
+        'name' => 'Kľúčové články: ' . $hub['title'],
         'itemListElement' => $itemList,
     ];
 }
@@ -77,7 +77,7 @@ include dirname(__DIR__) . '/inc/head.php';
           <?= interessa_render_image($categoryHero, ['class' => 'hub-card-image', 'loading' => 'eager', 'fetchpriority' => 'high']) ?>
         </figure>
       <?php endif; ?>
-      <p class="hub-eyebrow">Tematicky hub</p>
+      <p class="hub-eyebrow">Tematický hub</p>
       <h1><?= esc($hub['title']) ?></h1>
       <p class="lead"><?= esc($hub['intro']) ?></p>
       <?php if (!empty($hub['focus_points'])): ?>
@@ -91,8 +91,8 @@ include dirname(__DIR__) . '/inc/head.php';
 
     <section class="card">
       <div class="section-head">
-        <h2>Klucove clanky</h2>
-        <p class="meta">Najlepsia cesta je zacat jednym z tychto clankov a az potom riesit konkretny produkt.</p>
+        <h2>Kľúčové články</h2>
+        <p class="meta">Najlepšia cesta je začať jedným z týchto článkov a až potom riešiť konkrétny produkt.</p>
       </div>
       <?php if ($featuredGuides !== []): ?>
         <div class="hub-grid">
@@ -114,21 +114,21 @@ include dirname(__DIR__) . '/inc/head.php';
                 <span class="hub-card-label"><?= esc($label) ?></span>
                 <h3><a href="<?= esc(article_url($guideSlug)) ?>"><?= esc($title) ?></a></h3>
                 <?php if ($description !== ''): ?><p><?= esc($description) ?></p><?php endif; ?>
-                <a class="btn" href="<?= esc(article_url($guideSlug)) ?>">Otvorit clanok</a>
+                <a class="btn" href="<?= esc(article_url($guideSlug)) ?>">Otvoriť článok</a>
               </div>
             </article>
           <?php endforeach; ?>
         </div>
       <?php else: ?>
-        <p class="note"><?= esc((string) ($hub['empty_message'] ?? 'Tato kategoria sa este doplna. Zatial tu coskoro pribudnu odporucane clanky.')) ?></p>
+        <p class="note"><?= esc((string) ($hub['empty_message'] ?? 'Táto kategória sa ešte dopĺňa. Zatiaľ tu čoskoro pribudnú odporúčané články.')) ?></p>
       <?php endif; ?>
     </section>
 
     <?php if ($extraArticles !== []): ?>
       <section class="card">
         <div class="section-head">
-          <h2>Dalsie clanky v teme</h2>
-          <p class="meta">Doplnujuce clanky pre hlbsie prestudovanie temy.</p>
+          <h2>Ďalšie články v téme</h2>
+          <p class="meta">Dopĺňujúce články pre hlbšie preštudovanie témy.</p>
         </div>
         <ul class="article-list">
           <?php foreach ($extraArticles as $item): ?>

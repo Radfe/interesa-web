@@ -229,6 +229,41 @@ if (!function_exists('article_registry')) {
     }
 }
 
+if (!function_exists('canonical_article_slug')) {
+    function canonical_article_slug(string $slug): string {
+        static $aliases = [
+            'proteiny-na-chudnutie' => 'protein-na-chudnutie',
+            'veganske-proteiny-top' => 'veganske-proteiny-top-vyber-2025',
+        ];
+
+        $slug = trim($slug);
+        return $aliases[$slug] ?? $slug;
+    }
+}
+
+if (!function_exists('indexed_articles')) {
+    function indexed_articles(): array {
+        static $items = null;
+        if (is_array($items)) {
+            return $items;
+        }
+
+        $items = [];
+        foreach (article_registry() as $slug => $row) {
+            $canonicalSlug = canonical_article_slug($slug);
+            $meta = article_meta($canonicalSlug);
+            $items[$canonicalSlug] = [
+                'slug' => $canonicalSlug,
+                'title' => $meta['title'] !== '' ? $meta['title'] : ($row[0] ?? humanize_slug($canonicalSlug)),
+                'description' => $meta['description'] !== '' ? $meta['description'] : ($row[1] ?? ''),
+                'category' => normalize_category_slug($meta['category'] ?? ($row[2] ?? '')),
+            ];
+        }
+
+        return $items;
+    }
+}
+
 if (!function_exists('article_meta')) {
     function article_meta(string $slug): array {
         $articles = article_registry();
@@ -270,6 +305,11 @@ if (!function_exists('category_articles')) {
         $items = [];
 
         foreach (article_registry() as $articleSlug => $row) {
+            $canonicalSlug = canonical_article_slug($articleSlug);
+            if ($canonicalSlug !== $articleSlug) {
+                continue;
+            }
+
             $articleCategory = normalize_category_slug($row[2] ?? '');
             if ($articleCategory !== $normalized) {
                 continue;
@@ -289,7 +329,7 @@ if (!function_exists('category_articles')) {
 
 if (!function_exists('article_url')) {
     function article_url(string $slug): string {
-        return '/clanky/' . rawurlencode($slug);
+        return '/clanky/' . rawurlencode(canonical_article_slug($slug));
     }
 }
 
@@ -301,6 +341,7 @@ if (!function_exists('category_url')) {
 
 if (!function_exists('article_img')) {
     function article_img(string $slug): string {
+        $slug = canonical_article_slug($slug);
         $dir = __DIR__ . '/../assets/img/articles/';
         foreach (['.webp', '.jpg', '.jpeg', '.png', '.svg'] as $ext) {
             if (is_file($dir . $slug . $ext)) {

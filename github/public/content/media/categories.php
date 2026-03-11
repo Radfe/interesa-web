@@ -15,33 +15,33 @@ return [
         'thumb' => ['asset' => 'img/icons/vitaminy.png', 'alt' => 'Ikona kategórie vitamíny a minerály'],
     ],
     'imunita' => [
-        'hero' => ['asset' => 'img/placeholders/category-16x9.svg', 'alt' => 'Ilustračný vizuál kategórie imunita'],
+        'hero' => ['asset' => 'img/cards/vitaminy.webp', 'alt' => 'Ilustračný vizuál kategórie imunita'],
         'thumb' => ['asset' => 'img/icons/imunita.png', 'alt' => 'Ikona kategórie imunita'],
     ],
     'sila' => [
-        'hero' => ['asset' => 'img/placeholders/category-16x9.svg', 'alt' => 'Ilustračný vizuál kategórie sila a výkon'],
+        'hero' => ['asset' => 'img/cards/proteiny.webp', 'alt' => 'Ilustračný vizuál kategórie sila a výkon'],
         'thumb' => ['asset' => 'img/icons/sila.png', 'alt' => 'Ikona kategórie sila a výkon'],
     ],
     'klby-koza' => [
-        'hero' => ['asset' => 'img/placeholders/category-16x9.svg', 'alt' => 'Ilustračný vizuál kategórie kĺby a koža'],
+        'hero' => ['asset' => 'img/cards/vitaminy.webp', 'alt' => 'Ilustračný vizuál kategórie kĺby a koža'],
         'thumb' => ['asset' => 'img/icons/klby-koza.png', 'alt' => 'Ikona kategórie kĺby a koža'],
     ],
     'aminokyseliny' => [
-        'hero' => ['asset' => 'img/placeholders/category-16x9.svg', 'alt' => 'Ilustračný vizuál kategórie aminokyseliny'],
+        'hero' => ['asset' => 'img/cards/proteiny.webp', 'alt' => 'Ilustračný vizuál kategórie aminokyseliny'],
     ],
     'chudnutie' => [
-        'hero' => ['asset' => 'img/placeholders/category-16x9.svg', 'alt' => 'Ilustračný vizuál kategórie chudnutie'],
+        'hero' => ['asset' => 'img/cards/proteiny.webp', 'alt' => 'Ilustračný vizuál kategórie chudnutie'],
     ],
     'doplnkove-prislusenstvo' => [
-        'hero' => ['asset' => 'img/placeholders/category-16x9.svg', 'alt' => 'Ilustračný vizuál kategórie doplnkové príslušenstvo'],
+        'hero' => ['asset' => 'img/cards/vyziva.webp', 'alt' => 'Ilustračný vizuál kategórie doplnkové príslušenstvo'],
     ],
     'kreatin' => [
-        'hero' => ['asset' => 'img/placeholders/category-16x9.svg', 'alt' => 'Ilustračný vizuál kategórie kreatín'],
+        'hero' => ['asset' => 'img/cards/proteiny.webp', 'alt' => 'Ilustračný vizuál kategórie kreatín'],
     ],
     'pre-workout' => [
-        'hero' => ['asset' => 'img/placeholders/category-16x9.svg', 'alt' => 'Ilustračný vizuál kategórie pre-workout'],
+        'hero' => ['asset' => 'img/cards/proteiny.webp', 'alt' => 'Ilustračný vizuál kategórie pre-workout'],
     ],
     'probiotika-travenie' => [
-        'hero' => ['asset' => 'img/placeholders/category-16x9.svg', 'alt' => 'Ilustračný vizuál kategórie probiotiká a trávenie'],
+        'hero' => ['asset' => 'img/cards/vyziva.webp', 'alt' => 'Ilustračný vizuál kategórie probiotiká a trávenie'],
     ],
 ];

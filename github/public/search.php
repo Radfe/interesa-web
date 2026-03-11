@@ -25,8 +25,8 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
         return null;
     }
 
-    $title = $meta[0] ?? humanize_slug($slug);
-    $description = $meta[1] ?? '';
+    $title = (string) ($meta['title'] ?? $meta[0] ?? humanize_slug($slug));
+    $description = (string) ($meta['description'] ?? $meta[1] ?? '');
     $haystack = $title . ' ' . $description;
     $needle = $query;
     $score = 0;
@@ -61,8 +61,13 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
         <div class="card-grid">
           <?php
           $hits = [];
-          foreach (article_registry() as $slug => $meta) {
-              $match = match_article_result($slug, $meta, $q);
+          foreach (indexed_articles() as $item) {
+              $slug = (string) ($item['slug'] ?? '');
+              if ($slug === '') {
+                  continue;
+              }
+
+              $match = match_article_result($slug, $item, $q);
               if ($match !== null) {
                   $hits[] = $match;
               }

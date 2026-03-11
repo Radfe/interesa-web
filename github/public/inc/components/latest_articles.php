@@ -9,20 +9,28 @@ $items = [];
 if (is_dir($dir)) {
     foreach (glob($dir . '/*.html') ?: [] as $file) {
         $slug = basename($file, '.html');
-        $meta = article_meta($slug);
+        $canonicalSlug = canonical_article_slug($slug);
+        $meta = article_meta($canonicalSlug);
         $title = trim((string) ($meta['title'] ?? ''));
         if ($title === '') {
-            $title = humanize_slug($slug);
+            $title = humanize_slug($canonicalSlug);
         }
 
-        $items[] = [
-            'slug' => $slug,
+        $mtime = @filemtime($file) ?: time();
+        $existing = $items[$canonicalSlug] ?? null;
+        if (is_array($existing) && (int) ($existing['mtime'] ?? 0) >= $mtime) {
+            continue;
+        }
+
+        $items[$canonicalSlug] = [
+            'slug' => $canonicalSlug,
             'title' => $title,
-            'mtime' => @filemtime($file) ?: time(),
+            'mtime' => $mtime,
         ];
     }
 }
 
+$items = array_values($items);
 usort($items, static fn(array $a, array $b): int => $b['mtime'] <=> $a['mtime']);
 $items = array_slice($items, 0, 6);
 
@@ -37,10 +45,10 @@ if ($items === []) {
 
 echo '<ul class="latest-list">';
 foreach ($items as $item) {
-    $url = '/clanky/' . $item['slug'];
+    $url = article_url((string) $item['slug']);
     $date = date('d.m.Y', (int) $item['mtime']);
     echo '<li>';
-    echo '<a href="' . esc($url) . '">' . esc($item['title']) . '</a>';
+    echo '<a href="' . esc($url) . '">' . esc((string) $item['title']) . '</a>';
     echo '<span class="date">' . esc($date) . '</span>';
     echo '</li>';
 }
