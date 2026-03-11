@@ -108,8 +108,10 @@ if (!function_exists('interessa_collect_asset_candidates')) {
                     ];
                 }
 
+                $baseName = basename($base);
                 foreach (glob($root . $base . '-*.' . $ext) ?: [] as $file) {
-                    if (!preg_match('~-(\d+)\.' . preg_quote($ext, '~') . '$~', basename($file), $match)) {
+                    $fileName = basename($file);
+                    if (!preg_match('~^' . preg_quote($baseName, '~') . '-(\\d+)\\.' . preg_quote($ext, '~') . '$~', $fileName, $match)) {
                         continue;
                     }
 
@@ -121,8 +123,8 @@ if (!function_exists('interessa_collect_asset_candidates')) {
                         'height' => $size['height'],
                     ];
                 }
-            }
         }
+            }
 
         usort($variants, static function (array $left, array $right): int {
             return (int) ($left['width'] ?? 0) <=> (int) ($right['width'] ?? 0);
