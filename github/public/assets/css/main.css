@@ -1,4 +1,4 @@
-/* Interesa Ä‚ËĂ˘â€šÂ¬Ă˘â‚¬Ĺ› svetlĂ„â€šĂ‹â€ˇ Ä‚ËĂ˘â€šÂ¬Äąâ€şTestadoÄ‚ËĂ˘â€šÂ¬ÄąÄ„ tĂ„â€šĂ‚Â©ma (vyladenĂ„â€šĂ‹â€ˇ) */
+/* Interesa Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬Äąâ€ş svetlÄ‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ˘â‚¬Ë‡ Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ă„Ä…Ă˘â‚¬ĹźTestadoĂ„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ă„Ä…Ă„â€ž tÄ‚â€žĂ˘â‚¬ĹˇÄ‚â€šĂ‚Â©ma (vyladenÄ‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ˘â‚¬Ë‡) */
 
 :root{
   --bg:#f6faf8;
@@ -111,7 +111,7 @@ a:hover{color:#0954aa}
 }
 .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:#dfe6eb}
 
-/* jednotnĂ„â€šĂ‹â€ˇ vĂ„â€šĂ‹ĹĄĂ„Ä…Ă‹â€ˇka nĂ„â€šĂ‹â€ˇhÄ‚â€žĂ„Äľadu Ä‚ËĂ˘â€šÂ¬Ă˘â‚¬Ĺ› responsĂ„â€šĂ‚Â­vne */
+/* jednotnÄ‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ˘â‚¬Ë‡ vÄ‚â€žĂ˘â‚¬ĹˇÄ‚â€ąÄąÄ„Ä‚â€žĂ„â€¦Ä‚â€ąĂ˘â‚¬Ë‡ka nÄ‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ˘â‚¬Ë‡hĂ„â€šĂ˘â‚¬ĹľÄ‚â€žĂ„Äľadu Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬Äąâ€ş responsÄ‚â€žĂ˘â‚¬ĹˇÄ‚â€šĂ‚Â­vne */
 .card>img{width:100%;height:clamp(180px,22vw,240px);object-fit:cover}
 
 /* telo karty */
@@ -119,13 +119,13 @@ a:hover{color:#0954aa}
 .card-body h3{margin:.15rem 0;line-height:1.25}
 .card-body p{color:var(--muted);margin:0}
 
-/* 2-riadkovĂ„â€šĂ‹ĹĄ clamp */
+/* 2-riadkovÄ‚â€žĂ˘â‚¬ĹˇÄ‚â€ąÄąÄ„ clamp */
 @supports (-webkit-line-clamp:2){
   .card-body h3{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
   .card-body p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 }
 
-/* CTA v kartĂ„â€šĂ‹â€ˇch Ä‚ËĂ˘â€šÂ¬Ă˘â‚¬Ĺ› s malou Ă„Ä…Ă‹â€ˇĂ„â€šĂ‚Â­pkou */
+/* CTA v kartÄ‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ˘â‚¬Ë‡ch Ă„â€šĂ‹ÂÄ‚ËĂ˘â‚¬ĹˇĂ‚Â¬Ä‚ËĂ˘â€šÂ¬Äąâ€ş s malou Ä‚â€žĂ„â€¦Ä‚â€ąĂ˘â‚¬Ë‡Ä‚â€žĂ˘â‚¬ĹˇÄ‚â€šĂ‚Â­pkou */
 .card-link{
   align-self:start;display:inline-flex;align-items:center;gap:.45rem;
   padding:.45rem .7rem;border:1px solid #d7dee4;border-radius:10px;color:#0f172a;background:#fff
@@ -139,7 +139,7 @@ a:hover{color:#0954aa}
 .lead-article .meta{color:var(--muted);margin-top:0}
 .inline-figure{margin:1rem 0 0;border-radius:14px;overflow:hidden}
 
-/* Sidebar / Heureka + NajnovĂ„Ä…Ă‹â€ˇie Ä‚â€žÄąÂ¤lĂ„â€šĂ‹â€ˇnky */
+/* Sidebar / Heureka + NajnovÄ‚â€žĂ„â€¦Ä‚â€ąĂ˘â‚¬Ë‡ie Ă„â€šĂ˘â‚¬ĹľĂ„Ä…Ă‚Â¤lÄ‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ˘â‚¬Ë‡nky */
 .sidebar{display:grid;gap:16px}
 .sidebar .ad-card{
   background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:12px
@@ -147,7 +147,7 @@ a:hover{color:#0954aa}
 .sidebar .ad-card h3{margin:0 0 10px;font-size:15px;color:#0f172a}
 .sidebar .ad-card>div[class^="heureka-"]{min-height:150px}
 
-/* NajnovĂ„Ä…Ă‹â€ˇie Ä‚â€žÄąÂ¤lĂ„â€šĂ‹â€ˇnky */
+/* NajnovÄ‚â€žĂ„â€¦Ä‚â€ąĂ˘â‚¬Ë‡ie Ă„â€šĂ˘â‚¬ĹľĂ„Ä…Ă‚Â¤lÄ‚â€žĂ˘â‚¬ĹˇÄ‚â€ąĂ˘â‚¬Ë‡nky */
 .latest-articles .latest-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .latest-articles .latest-list li{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .latest-articles .latest-list a{color:#0f172a}
@@ -195,7 +195,7 @@ a:hover{color:#0954aa}
   .mega-toggle:checked ~ .mega{display:grid}
 }
 
-/* Doplnenia pre SVG (ak by si ich pouĂ„Ä…Ă„Äľil) */
+/* Doplnenia pre SVG (ak by si ich pouÄ‚â€žĂ„â€¦Ä‚â€žĂ„Äľil) */
 .svg-hero{display:block;width:100%;height:auto}
 .svg-cover{aspect-ratio:3/2;display:block}
 .svg-cover svg{display:block;width:100%;height:100%}
@@ -421,3 +421,19 @@ a:hover{color:#0954aa}
 .hub-card-body .hub-card-icon + .hub-card-label{margin-top:-.1rem}
 .filter-chip__icon{display:inline-flex;align-items:center;justify-content:center;width:1.1rem;height:1.1rem;margin-right:.35rem;vertical-align:middle}
 .filter-chip__icon svg{width:.95rem;height:.95rem}
+
+.article-admin-section,
+.article-admin-comparison,
+.article-admin-recommended {
+  margin-top: 2rem;
+}
+
+.article-admin-section p,
+.article-admin-comparison p {
+  margin: 0 0 1rem;
+}
+
+.article-admin-recommended-grid {
+  display: grid;
+  gap: 1rem;
+}

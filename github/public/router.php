@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 if (PHP_SAPI === 'cli-server') {
@@ -40,6 +41,11 @@ if ($path === '/hero-helper') {
 
 if ($path === '/dognet-helper') {
     require __DIR__ . '/dognet-helper.php';
+    exit;
+}
+
+if ($path === '/admin') {
+    require __DIR__ . '/admin/index.php';
     exit;
 }
 

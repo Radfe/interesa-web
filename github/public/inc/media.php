@@ -244,13 +244,22 @@ if (!function_exists('interessa_article_image_meta')) {
         $registry = interessa_media_registry()['articles'][$canonicalSlug] ?? [];
         $entry = is_array($registry[$variant] ?? null) ? $registry[$variant] : [];
         $meta = article_meta($canonicalSlug);
+        $override = function_exists('interessa_admin_article_override') ? interessa_admin_article_override($canonicalSlug) : [];
         $alt = trim((string) ($entry['alt'] ?? ''));
+        if ($alt === '') {
+            $alt = trim((string) ($override['title'] ?? ''));
+        }
         if ($alt === '') {
             $alt = $meta['title'] !== '' ? $meta['title'] : humanize_slug($canonicalSlug);
         }
 
         $variants = [];
-        if (isset($entry['asset'])) {
+        $overrideAsset = trim((string) ($override['hero_asset'] ?? ''));
+        if ($variant === 'hero' && $overrideAsset !== '') {
+            $variants = interessa_collect_asset_candidates([ltrim($overrideAsset, '/')]);
+        }
+
+        if ($variants === [] && isset($entry['asset'])) {
             $asset = trim((string) $entry['asset']);
             if ($asset !== '') {
                 $variants = interessa_collect_asset_candidates([ltrim($asset, '/')]);

@@ -27,6 +27,7 @@ if (!function_exists('interessa_product_catalog')) {
             $catalog = array_replace($catalog, $data);
         }
 
+        $catalog = interessa_admin_merge_product_catalog($catalog);
         ksort($catalog);
         return $catalog;
     }
