@@ -471,3 +471,66 @@ if (!function_exists('interessa_admin_store_uploaded_product_image')) {
             : 'img/products/' . ($merchantSlug !== '' ? $merchantSlug . '/' : '') . $productSlug . '/main.webp';
     }
 }
+
+if (!function_exists('interessa_admin_export_bundle')) {
+    function interessa_admin_export_bundle(): array {
+        return [
+            'exported_at' => date('c'),
+            'articles' => interessa_admin_all_article_overrides(),
+            'products' => interessa_admin_products(),
+            'affiliate_links' => interessa_admin_affiliate_links(),
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_import_bundle')) {
+    function interessa_admin_import_bundle(array $bundle): array {
+        $imported = [
+            'articles' => 0,
+            'products' => 0,
+            'affiliate_links' => 0,
+        ];
+
+        foreach (($bundle['articles'] ?? []) as $slug => $article) {
+            if (!is_array($article)) {
+                continue;
+            }
+            interessa_admin_save_article_override((string) $slug, $article);
+            $imported['articles']++;
+        }
+
+        $products = [];
+        foreach (($bundle['products'] ?? []) as $slug => $product) {
+            if (!is_array($product)) {
+                continue;
+            }
+            $normalizedSlug = interessa_admin_slugify((string) $slug);
+            if ($normalizedSlug === '') {
+                continue;
+            }
+            $products[$normalizedSlug] = interessa_admin_normalize_product_record($normalizedSlug, $product);
+        }
+        if ($products !== []) {
+            interessa_admin_save_products(array_replace(interessa_admin_products(), $products));
+            $imported['products'] = count($products);
+        }
+
+        $links = [];
+        foreach (($bundle['affiliate_links'] ?? []) as $code => $record) {
+            if (!is_array($record)) {
+                continue;
+            }
+            $normalizedCode = interessa_admin_slugify((string) $code);
+            if ($normalizedCode === '') {
+                continue;
+            }
+            $links[$normalizedCode] = interessa_admin_normalize_affiliate_record($normalizedCode, $record);
+        }
+        if ($links !== []) {
+            interessa_admin_save_affiliate_links(array_replace(interessa_admin_affiliate_links(), $links));
+            $imported['affiliate_links'] = count($links);
+        }
+
+        return $imported;
+    }
+}

@@ -7,6 +7,12 @@
 - Products: shared catalog overrides in `public/storage/admin/products.json`
 - Affiliate links: admin-managed link overrides in `public/storage/admin/affiliate-links.json`
 - Images: uploaded hero and product images are stored in the canonical asset paths already used by the frontend
+- Auth: lightweight session login via `public/inc/admin-auth.php`
+
+## Login
+- Default local password: `interesa-admin`
+- Recommended: create `public/storage/admin/auth.php` based on `public/storage/admin/auth.example.php`
+- Real `auth.php` is ignored by Git
 
 ## Article management
 The admin panel edits structured article data without replacing the existing flat-file architecture.
@@ -62,6 +68,12 @@ It outputs:
 - alt text
 - dimensions
 - target asset path
+
+## UX helpers
+The admin panel also includes lightweight helpers:
+- add section button for article blocks
+- one-click sample JSON for comparison columns and rows
+- direct upload for hero and product images
 
 ## Fallback rules
 - article hero: admin hero asset -> media registry asset -> canonical article hero asset -> category visual fallback
