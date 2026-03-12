@@ -478,3 +478,45 @@
 .admin-check-card small {
   color: #516072;
 }
+.admin-diagnostic-list {
+  display: grid;
+  gap: 0.4rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.admin-diagnostic-list p {
+  margin: 0;
+}
+.admin-queue-actions {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: end;
+}
+.admin-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.admin-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.8);
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.admin-filter-pill.is-active {
+  border-color: rgba(31, 41, 55, 0.22);
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}

@@ -1,0 +1,56 @@
+type,slug,title,merchant,status,asset_path,code
+hero,pre-workout-ako-vybrat,"Ako vybrať pre-workout – stimulanty aj pumpa",,missing,public/assets/img/articles/heroes/pre-workout-ako-vybrat.webp,
+hero,aminokyseliny-bcaa-eaa,"Aminokyseliny: BCAA a EAA – rozdiely a použitie",,missing,public/assets/img/articles/heroes/aminokyseliny-bcaa-eaa.webp,
+hero,bcaa-vs-eaa,"BCAA vs. EAA – ktoré a kedy",,missing,public/assets/img/articles/heroes/bcaa-vs-eaa.webp,
+hero,chudnutie-tip,"Chudnutie – rýchle tipy, ktoré fungujú",,missing,public/assets/img/articles/heroes/chudnutie-tip.webp,
+hero,clear-protein,"Clear proteín – čo to je a kedy dáva zmysel",,missing,public/assets/img/articles/heroes/clear-protein.webp,
+hero,doplnky-vyzivy,"Doplnky výživy – top výber 2025",,missing,public/assets/img/articles/heroes/doplnky-vyzivy.webp,
+hero,doplnky-vyzivy-top-vyber-2025,"Doplnky výživy – top výber 2025",,missing,public/assets/img/articles/heroes/doplnky-vyzivy-top-vyber-2025.webp,
+hero,horcik-ktory-je-najlepsi-a-preco,"Horčík – ktorý je najlepší a prečo?",,missing,public/assets/img/articles/heroes/horcik-ktory-je-najlepsi-a-preco.webp,
+hero,horcik,"Horčík – typy, vstrebávanie a koľko ho treba",,missing,public/assets/img/articles/heroes/horcik.webp,
+hero,imunita-prirodne-latky-ktore-funguju,"Imunita – 5 prírodných látok, ktoré fungujú",,missing,public/assets/img/articles/heroes/imunita-prirodne-latky-ktore-funguju.webp,
+hero,kedy-brat-kreatin-a-kolko,"Kedy brať kreatín a koľko – načasovanie, dávky a pauzy",,missing,public/assets/img/articles/heroes/kedy-brat-kreatin-a-kolko.webp,
+hero,kolagen-na-klby-porovnanie,"Kolagén na kĺby – porovnanie a odporúčania",,missing,public/assets/img/articles/heroes/kolagen-na-klby-porovnanie.webp,
+hero,kolagen-recenzia,"Kolagén – recenzie a výber (typ I/II/III)",,missing,public/assets/img/articles/heroes/kolagen-recenzia.webp,
+hero,kolagen,"Kolagén – základné informácie a užívanie",,missing,public/assets/img/articles/heroes/kolagen.webp,
+hero,kreatin-monohydrat-vs-hcl,"Kreatín monohydrát vs. HCL – rozdiely a čo kúpiť",,missing,public/assets/img/articles/heroes/kreatin-monohydrat-vs-hcl.webp,
+hero,kreatin-porovnanie,"Kreatín – porovnanie a výber (Creapure, monohydrát, HCl)",,missing,public/assets/img/articles/heroes/kreatin-porovnanie.webp,
+hero,kreatin-vedlajsie-ucinky-a-fakty,"Kreatín: vedľajšie účinky a fakty z výskumov",,missing,public/assets/img/articles/heroes/kreatin-vedlajsie-ucinky-a-fakty.webp,
+hero,klby-a-kolagen,"Kĺby a kolagén – kedy pomáha",,missing,public/assets/img/articles/heroes/klby-a-kolagen.webp,
+hero,najlepsie-proteiny-2025,"Najlepšie proteíny 2025 – prehľad a výber podľa cieľa",,missing,public/assets/img/articles/heroes/najlepsie-proteiny-2025.webp,
+hero,najlepsi-protein-na-chudnutie-wpc-vs-wpi,"Najlepší proteín na chudnutie: WPC vs. WPI, dávkovanie a načasovanie",,missing,public/assets/img/articles/heroes/najlepsi-protein-na-chudnutie-wpc-vs-wpi.webp,
+hero,pre-workout,"Pre-workout – základný sprievodca",,missing,public/assets/img/articles/heroes/pre-workout.webp,
+hero,probiotika-a-travenie,"Probiotiká a trávenie – čo naozaj funguje",,missing,public/assets/img/articles/heroes/probiotika-a-travenie.webp,
+hero,probiotika-ako-vybrat,"Probiotiká – ako vybrať a na čo si dať pozor",,missing,public/assets/img/articles/heroes/probiotika-ako-vybrat.webp,
+hero,protein-na-chudnutie,"Proteín na chudnutie – ako vyberať a dávkovať",,missing,public/assets/img/articles/heroes/protein-na-chudnutie.webp,
+hero,proteiny,"Proteíny: prehľad typov a rýchlych odporúčaní",,missing,public/assets/img/articles/heroes/proteiny.webp,
+hero,spalovace-tukov-realita,"Spaľovače tukov – čo je realita a čo marketing",,missing,public/assets/img/articles/heroes/spalovace-tukov-realita.webp,
+hero,srvatkovy-protein-vs-izolat-vs-hydro,"Srvátkový proteín vs. izolát vs. hydro – čo sa oplatí?",,missing,public/assets/img/articles/heroes/srvatkovy-protein-vs-izolat-vs-hydro.webp,
+hero,veganske-proteiny-top-vyber-2025,"Vegánske proteíny – top výber 2025",,missing,public/assets/img/articles/heroes/veganske-proteiny-top-vyber-2025.webp,
+hero,vitamin-c,"Vitamín C – dávky, zdroje a kedy dopĺňať",,missing,public/assets/img/articles/heroes/vitamin-c.webp,
+hero,vitamin-d3-a-imunita,"Vitamín D3 a imunita – čo hovoria štúdie",,missing,public/assets/img/articles/heroes/vitamin-d3-a-imunita.webp,
+hero,vitamin-d3,"Vitamín D3 – dávky a formy",,missing,public/assets/img/articles/heroes/vitamin-d3.webp,
+hero,zinek,"Zinok – formy a kedy dopĺňať",,missing,public/assets/img/articles/heroes/zinek.webp,
+product,aktin-balanced-preworkout,"Balanced stim pre-workout",Aktin,missing-local-packshot,img/products/aktin/aktin-balanced-preworkout/main.webp,pre-workout-ako-vybrat-aktin
+product,aktin-creatine-monohydrate,"Creatine Monohydrate / osvedčený základ",Aktin,missing-local-packshot,img/products/aktin/aktin-creatine-monohydrate/main.webp,kreatin-porovnanie-aktin
+product,aktin-magnesium-bisglycinate,"Magnézium bisglycinát",Aktin,missing-local-packshot,img/products/aktin/aktin-magnesium-bisglycinate/main.webp,horcik-ktory-je-najlepsi-a-preco-aktin
+product,aktin-probiotics-multistrain,"Multi-strain probiotiká",Aktin,missing-local-packshot,img/products/aktin/aktin-probiotics-multistrain/main.webp,probiotika-ako-vybrat-aktin
+product,aktin-whey-isolate-cut,"Whey Isolate / nízkokalorický WPI",Aktin,missing-local-packshot,img/products/aktin/aktin-whey-isolate-cut/main.webp,protein-na-chudnutie-aktin
+product,gymbeam-creatine-monohydrate,"Kreatín monohydrát / value",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-creatine-monohydrate/main.webp,kreatin-porovnanie-gymbeam
+product,gymbeam-creatine-monohydrate-real,"GymBeam 100% Kreatin monohydrat",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-creatine-monohydrate-real/main.webp,kreatin-porovnanie-gymbeam
+product,gymbeam-enjoy-pre-workout,"GymBeam ENJOY Pre-Workout",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-enjoy-pre-workout/main.webp,pre-workout-ako-vybrat-gymbeam
+product,gymbeam-high-stim-preworkout,"High-stim pre-workout",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-high-stim-preworkout/main.webp,pre-workout-ako-vybrat-gymbeam
+product,gymbeam-just-whey,"GymBeam Just Whey",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-just-whey/main.webp,najlepsie-proteiny-2025-gymbeam
+product,gymbeam-magnesium-citrate,"Magnézium citrát",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-magnesium-citrate/main.webp,horcik-ktory-je-najlepsi-a-preco-gymbeam
+product,gymbeam-magnesium-citrate-caps,"GymBeam Magnesium Citrate Caps",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-magnesium-citrate-caps/main.webp,horcik-ktory-je-najlepsi-a-preco-gymbeam
+product,gymbeam-probioten,"ProbioTen - GymBeam",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-probioten/main.webp,probiotika-ako-vybrat-gymbeam
+product,gymbeam-probiotics-everyday,"Everyday digestion probiotiká",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-probiotics-everyday/main.webp,probiotika-ako-vybrat-gymbeam
+product,gymbeam-runcollg-collagen,"GymBeam RunCollg Collagen",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-runcollg-collagen/main.webp,kolagen-na-klby-porovnanie-gymbeam
+product,gymbeam-true-whey,"GymBeam True Whey",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-true-whey/main.webp,protein-na-chudnutie-gymbeam
+product,gymbeam-vegan-blend,"GymBeam Vegan Blend",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-vegan-blend/main.webp,veganske-proteiny-top-vyber-2025-gymbeam
+product,gymbeam-whey-concentrate-value,"Whey koncentrát / value voľba",GymBeam,missing-local-packshot,img/products/gymbeam/gymbeam-whey-concentrate-value/main.webp,protein-na-chudnutie-gymbeam
+product,myprotein-clear-protein-light,"Clear protein / ľahší drink",Myprotein,missing-local-packshot,img/products/myprotein/myprotein-clear-protein-light/main.webp,protein-na-chudnutie-myprotein
+product,myprotein-creatine-hcl,"Kreatín HCl / alternatíva",Myprotein,missing-local-packshot,img/products/myprotein/myprotein-creatine-hcl/main.webp,kreatin-monohydrat-vs-hcl-myprotein
+product,myprotein-magnesium-malate,"Magnézium malát",Myprotein,missing-local-packshot,img/products/myprotein/myprotein-magnesium-malate/main.webp,horcik-ktory-je-najlepsi-a-preco-myprotein
+product,myprotein-non-stim-pump,"Non-stim pump formula",Myprotein,missing-local-packshot,img/products/myprotein/myprotein-non-stim-pump/main.webp,pre-workout-ako-vybrat-myprotein
+product,myprotein-probiotics-capsules,"Probiotiká / cestovné kapsuly",Myprotein,missing-local-packshot,img/products/myprotein/myprotein-probiotics-capsules/main.webp,probiotika-ako-vybrat-myprotein

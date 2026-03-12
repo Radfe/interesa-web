@@ -114,10 +114,27 @@ function interessa_admin_collect_comparison_visual(): array {
 
 function interessa_admin_article_options(): array {
     $items = indexed_articles();
+    foreach ($items as $slug => $item) {
+        $title = trim((string) ($item['title'] ?? ''));
+        $items[$slug]['title'] = interessa_admin_clean_label($title !== '' ? $title : (string) $slug);
+    }
     uasort($items, static function (array $left, array $right): int {
         return strcasecmp((string) ($left['title'] ?? ''), (string) ($right['title'] ?? ''));
     });
     return $items;
+}
+
+function interessa_admin_clean_label(string $value): string {
+    $value = trim($value);
+    if ($value === '') {
+        return '';
+    }
+
+    if (function_exists('interessa_fix_mojibake')) {
+        $value = interessa_fix_mojibake($value);
+    }
+
+    return trim($value);
 }
 
 function interessa_admin_comparison_editor_state(array $comparison): array {
@@ -157,7 +174,7 @@ function interessa_admin_brief_rows(array $articleOptions): array {
         $brief = interessa_hero_prompt_meta($slug);
         $rows[] = [
             'slug' => $slug,
-            'title' => (string) ($item['title'] ?? $brief['title'] ?? $slug),
+            'title' => interessa_admin_clean_label((string) ($item['title'] ?? $brief['title'] ?? $slug)),
             'filename' => (string) ($brief['file_name'] ?? ''),
             'alt_text' => (string) ($brief['alt_text'] ?? ''),
             'dimensions' => (string) ($brief['dimensions'] ?? '1200x800'),
@@ -168,8 +185,7 @@ function interessa_admin_brief_rows(array $articleOptions): array {
     return $rows;
 }
 
-
-function interessa_admin_image_queue(array $articleOptions, int $limit = 12): array {
+function interessa_admin_image_queue(array $articleOptions, string $filter = 'missing', int $limit = 12): array {
     $rows = [];
     foreach ($articleOptions as $slug => $item) {
         $meta = interessa_article_image_meta((string) $slug, 'hero', true);
@@ -178,18 +194,104 @@ function interessa_admin_image_queue(array $articleOptions, int $limit = 12): ar
         $promptMeta = interessa_hero_prompt_meta((string) $slug);
         $rows[] = [
             'slug' => (string) $slug,
-            'title' => (string) ($item['title'] ?? $slug),
+            'title' => interessa_admin_clean_label((string) ($item['title'] ?? $slug)),
             'asset_path' => (string) ($promptMeta['asset_path'] ?? ''),
             'has_final_webp' => $isFinalWebp,
+            'source_type' => (string) ($meta['source_type'] ?? 'placeholder'),
+            'article_url' => article_url((string) $slug),
         ];
     }
 
+    if ($filter === 'missing') {
+        $rows = array_values(array_filter($rows, static fn(array $row): bool => empty($row['has_final_webp'])));
+    } elseif ($filter === 'ready') {
+        $rows = array_values(array_filter($rows, static fn(array $row): bool => !empty($row['has_final_webp'])));
+    }
+
     usort($rows, static function (array $left, array $right): int {
-        return ((int) $left['has_final_webp']) <=> ((int) $right['has_final_webp']);
+        $statusSort = ((int) $left['has_final_webp']) <=> ((int) $right['has_final_webp']);
+        if ($statusSort !== 0) {
+            return $statusSort;
+        }
+
+        return strcasecmp((string) ($left['title'] ?? ''), (string) ($right['title'] ?? ''));
     });
 
     return array_slice($rows, 0, $limit);
 }
+
+function interessa_admin_product_image_queue(array $catalog, string $filter = 'missing', int $limit = 12): array {
+    $rows = [];
+    foreach ($catalog as $slug => $product) {
+        $normalized = interessa_normalize_product(is_array($product) ? $product : []);
+        $mode = trim((string) ($normalized['image_mode'] ?? 'placeholder'));
+        $targetAsset = trim((string) ($normalized['image_target_asset'] ?? ''));
+        $hasLocalPackshot = $targetAsset !== '' && (($assetPath = interessa_asset_file_path($targetAsset)) !== null) && is_file($assetPath);
+        $rows[] = [
+            'slug' => (string) ($normalized['slug'] ?? $slug),
+            'name' => interessa_admin_clean_label((string) ($normalized['name'] ?? $slug)),
+            'merchant' => (string) ($normalized['merchant'] ?? ''),
+            'affiliate_code' => (string) ($normalized['affiliate_code'] ?? ''),
+            'image_mode' => $mode,
+            'target_asset' => $targetAsset,
+            'needs_local_packshot' => !$hasLocalPackshot,
+            'remote_src' => (string) ($normalized['image_remote_src'] ?? ''),
+        ];
+    }
+
+    if ($filter === 'missing') {
+        $rows = array_values(array_filter($rows, static fn(array $row): bool => !empty($row['needs_local_packshot'])));
+    } elseif ($filter === 'ready') {
+        $rows = array_values(array_filter($rows, static fn(array $row): bool => empty($row['needs_local_packshot'])));
+    } elseif ($filter === 'remote') {
+        $rows = array_values(array_filter($rows, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'remote'));
+    } elseif ($filter === 'placeholder') {
+        $rows = array_values(array_filter($rows, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'placeholder'));
+    }
+
+    usort($rows, static function (array $left, array $right): int {
+        $statusSort = ((int) $right['needs_local_packshot']) <=> ((int) $left['needs_local_packshot']);
+        if ($statusSort !== 0) {
+            return $statusSort;
+        }
+
+        return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
+    });
+
+    return array_slice($rows, 0, $limit);
+}
+
+function interessa_admin_output_image_backlog_csv(array $articleOptions, array $catalog): never {
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="interesa-image-backlog.csv"');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, ['type', 'slug', 'title', 'merchant', 'status', 'asset_path', 'code']);
+    foreach (interessa_admin_image_queue($articleOptions, max(count($articleOptions), 1)) as $row) {
+        fputcsv($out, [
+            'hero',
+            $row['slug'] ?? '',
+            $row['title'] ?? '',
+            '',
+            !empty($row['has_final_webp']) ? 'ready' : 'missing',
+            $row['asset_path'] ?? '',
+            '',
+        ]);
+    }
+    foreach (interessa_admin_product_image_queue($catalog, max(count($catalog), 1)) as $row) {
+        fputcsv($out, [
+            'product',
+            $row['slug'] ?? '',
+            $row['name'] ?? '',
+            $row['merchant'] ?? '',
+            !empty($row['needs_local_packshot']) ? 'missing-local-packshot' : 'ready',
+            $row['target_asset'] ?? '',
+            $row['affiliate_code'] ?? '',
+        ]);
+    }
+    fclose($out);
+    exit;
+}
+
 function interessa_admin_output_briefs_csv(array $rows): never {
     header('Content-Type: text/csv; charset=UTF-8');
     header('Content-Disposition: attachment; filename="article-visual-briefs-admin.csv"');
@@ -462,8 +564,12 @@ if ($isAuthed) {
                 $flash = 'feed-import';
             }
 
+            if ($action === 'export_image_backlog_csv') {
+                interessa_admin_output_image_backlog_csv(interessa_admin_article_options(), interessa_product_catalog());
+            }
+
             if ($action === 'export_briefs_csv') {
-                interessa_admin_output_briefs_csv($articleOptions);
+                interessa_admin_output_briefs_csv(interessa_admin_brief_rows(interessa_admin_article_options()));
             }
         }
     } catch (Throwable $e) {
@@ -488,6 +594,11 @@ $selectedProduct = $selectedProductSlug !== '' ? interessa_product($selectedProd
 $selectedProduct = is_array($selectedProduct) ? interessa_normalize_product($selectedProduct) : null;
 $selectedProductImage = is_array($selectedProduct) ? ($selectedProduct['image'] ?? null) : null;
 $selectedProductImageSource = is_array($selectedProduct) ? (string) ($selectedProduct['image_mode'] ?? 'placeholder') : 'missing';
+$selectedProductAffiliate = is_array($selectedProduct) && trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== '' ? aff_record((string) $selectedProduct['affiliate_code']) : null;
+$selectedProductAffiliateUrl = is_array($selectedProduct) && trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== '' ? aff_resolve((string) $selectedProduct['affiliate_code']) : null;
+$selectedProductAffiliateType = $selectedProductAffiliate !== null ? aff_link_type($selectedProductAffiliate) : '';
+$selectedProductTarget = is_array($selectedProduct) ? interessa_affiliate_target($selectedProduct) : ['href' => '', 'label' => ''];
+
 
 
 $affiliateRegistry = aff_registry();
@@ -496,13 +607,39 @@ sort($affiliateCodes);
 $selectedAffiliateCode = trim((string) ($_GET['code'] ?? ($affiliateCodes[0] ?? '')));
 $selectedAffiliate = $selectedAffiliateCode !== '' ? aff_record($selectedAffiliateCode) : null;
 
+$imageFilter = trim((string) ($_GET['image_filter'] ?? 'missing'));
+if (!in_array($imageFilter, ['missing', 'all', 'ready'], true)) {
+    $imageFilter = 'missing';
+}
+$productImageFilter = trim((string) ($_GET['product_image_filter'] ?? 'missing'));
+if (!in_array($productImageFilter, ['missing', 'all', 'ready', 'remote', 'placeholder'], true)) {
+    $productImageFilter = 'missing';
+}
+
+$allImageQueue = interessa_admin_image_queue($articleOptions, 'all', max(count($articleOptions), 1));
+$allProductImageQueue = interessa_admin_product_image_queue($catalog, 'all', max(count($catalog), 1));
+$imageQueue = interessa_admin_image_queue($articleOptions, $imageFilter, $imageFilter === 'all' ? max(count($articleOptions), 1) : 16);
+$productImageQueue = interessa_admin_product_image_queue($catalog, $productImageFilter, $productImageFilter === 'all' ? max(count($catalog), 1) : 16);
+$imageQueueCounts = [
+    'all' => count($allImageQueue),
+    'missing' => count(array_filter($allImageQueue, static fn(array $row): bool => empty($row['has_final_webp']))),
+    'ready' => count(array_filter($allImageQueue, static fn(array $row): bool => !empty($row['has_final_webp']))),
+];
+$productImageQueueCounts = [
+    'all' => count($allProductImageQueue),
+    'missing' => count(array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot']))),
+    'ready' => count(array_filter($allProductImageQueue, static fn(array $row): bool => empty($row['needs_local_packshot']))),
+    'remote' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'remote')),
+    'placeholder' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'placeholder')),
+];
+
 $dashboardStats = [
     'article_overrides' => count(interessa_admin_all_article_overrides()),
     'products' => count($catalog),
     'affiliate_codes' => count($affiliateCodes),
-    'hero_ready' => count(array_filter(interessa_admin_image_queue($articleOptions, max(count($articleOptions), 1)), static fn(array $row): bool => !empty($row['has_final_webp']))),
+    'hero_ready' => $imageQueueCounts['ready'],
 ];
-$imageQueue = interessa_admin_image_queue($articleOptions);
+
 
 $sections = is_array($selectedArticleOverride['sections'] ?? null) ? $selectedArticleOverride['sections'] : [];
 while (count($sections) < 5) {
@@ -720,6 +857,9 @@ require dirname(__DIR__) . '/inc/head.php';
                     <button class="btn btn-secondary btn-small" type="button" data-add-row>Pridej riadok</button>
                     <button class="btn btn-secondary btn-small" type="button" data-fill-columns>Priklad stlpcov</button>
                     <button class="btn btn-secondary btn-small" type="button" data-fill-rows>Priklad riadkov</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-apply-preset="top-picks">Preset top picks</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-apply-preset="duel">Preset duel</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-from-products>Riadky z odporucanych produktov</button>
                   </div>
                 </div>
                 <div class="admin-grid two-up">
@@ -779,7 +919,6 @@ require dirname(__DIR__) . '/inc/head.php';
                 <label>
                   <span>Odporucane produkty (slug na riadok)</span>
                   <textarea name="recommended_products" rows="6"><?= esc($recommendedProductsText) ?></textarea>
-                </label>
                   <span>Vyber z existujucich produktov</span>
                   <div class="admin-check-grid">
                     <?php foreach ($catalog as $productSlug => $productRow): ?>
@@ -790,6 +929,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       </label>
                     <?php endforeach; ?>
                   </div>
+                </label>
                 <label>
                   <span>Nahrat hero obrazok</span>
                   <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" />
@@ -845,6 +985,40 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </section>
 
+            <section class="admin-subsection">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Queue chybajucich packshotov</h3>
+                  <p class="admin-meta">Preferujeme lokalny WebP packshot v cielovej asset ceste. Remote obrazok je len prechodny fallback.</p>
+                </div>
+                <div class="admin-filter-pills">
+                  <a class="admin-filter-pill<?= $productImageFilter === 'missing' ? ' is-active' : '' ?>" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=missing">Chyba lokalny (<?= esc((string) $productImageQueueCounts['missing']) ?>)</a>
+                  <a class="admin-filter-pill<?= $productImageFilter === 'remote' ? ' is-active' : '' ?>" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=remote">Remote (<?= esc((string) $productImageQueueCounts['remote']) ?>)</a>
+                  <a class="admin-filter-pill<?= $productImageFilter === 'placeholder' ? ' is-active' : '' ?>" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=placeholder">Placeholder (<?= esc((string) $productImageQueueCounts['placeholder']) ?>)</a>
+                  <a class="admin-filter-pill<?= $productImageFilter === 'ready' ? ' is-active' : '' ?>" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=ready">Hotovo (<?= esc((string) $productImageQueueCounts['ready']) ?>)</a>
+                  <a class="admin-filter-pill<?= $productImageFilter === 'all' ? ' is-active' : '' ?>" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=all">Vsetko (<?= esc((string) $productImageQueueCounts['all']) ?>)</a>
+                </div>
+              </div>
+              <div class="admin-queue-list">
+                <?php foreach ($productImageQueue as $queueRow): ?>
+                  <article class="admin-queue-item<?= empty($queueRow['needs_local_packshot']) ? ' is-done' : '' ?>">
+                    <div>
+                      <strong><?= esc((string) $queueRow['name']) ?></strong>
+                      <p><?= esc((string) $queueRow['slug']) ?><?php if ($queueRow['merchant'] !== ''): ?> / <?= esc((string) $queueRow['merchant']) ?><?php endif; ?></p>
+                      <code><?= esc((string) $queueRow['target_asset']) ?></code>
+                    </div>
+                    <div class="admin-queue-actions">
+                      <span class="admin-note"><?= esc((string) $queueRow['image_mode']) ?></span>
+                      <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>">Otvorit v produkte</a>
+                      <?php if (trim((string) ($queueRow['remote_src'] ?? '')) !== ''): ?>
+                        <a class="btn btn-secondary btn-small" href="<?= esc((string) $queueRow['remote_src']) ?>" target="_blank" rel="noopener">Remote preview</a>
+                      <?php endif; ?>
+                    </div>
+                  </article>
+                <?php endforeach; ?>
+              </div>
+            </section>
+
             <section class="admin-subsection admin-asset-preview">
               <div class="admin-subsection-head">
                 <h3>Aktualny packshot a zdroj</h3>
@@ -857,6 +1031,17 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p><strong>Zdroj:</strong> <?= esc($selectedProductImageSource) ?></p>
                   <p><strong>Target asset:</strong> <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></p>
                   <p><strong>Remote source:</strong> <?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?></p>
+                  <div class="admin-diagnostic-list">
+                    <p><strong>Affiliate kod:</strong> <?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?: 'chyba' ?></p>
+                    <p><strong>Typ linku:</strong> <?= esc($selectedProductAffiliateType !== '' ? $selectedProductAffiliateType : 'neznamy') ?></p>
+                    <p><strong>Registry source:</strong> <?= esc((string) ($selectedProductAffiliate['source'] ?? 'bez registry')) ?></p>
+                    <p><strong>Cielova URL:</strong> <?= esc((string) ($selectedProductAffiliateUrl ?? ($selectedProduct['fallback_url'] ?? ''))) ?></p>
+                  </div>
+                  <?php if (trim((string) ($selectedProductTarget['href'] ?? '')) !== ''): ?>
+                    <div class="admin-actions">
+                      <a class="btn btn-secondary btn-small" href="<?= esc((string) $selectedProductTarget['href']) ?>" target="_blank" rel="noopener">Otvorit aktualny ciel</a>
+                    </div>
+                  <?php endif; ?>
                 </div>
               </div>
             </section>
@@ -900,6 +1085,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <label>
                   <span>Nahrat lokalny packshot</span>
                   <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" />
+                  <small class="admin-note">Cielovy asset pre upload: <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></small>
                 </label>
               </div>
               <div class="admin-actions">
@@ -968,6 +1154,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <label>
                     <span>Nahrat finalny hero obrazok</span>
                     <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" required />
+                    <small class="admin-note">Cielovy hero asset: <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></small>
                   </label>
                   <button class="btn btn-cta" type="submit">Nahrat hero obrazok</button>
                 </form>
@@ -981,16 +1168,24 @@ require dirname(__DIR__) . '/inc/head.php';
                 <p class="admin-kicker">Hero image backlog</p>
                 <h2>Queue chybajucich hero obrazkov</h2>
               </div>
+              <div class="admin-filter-pills">
+                <a class="admin-filter-pill<?= $imageFilter === 'missing' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=missing">Chyba WebP (<?= esc((string) $imageQueueCounts['missing']) ?>)</a>
+                <a class="admin-filter-pill<?= $imageFilter === 'ready' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=ready">Hotovo (<?= esc((string) $imageQueueCounts['ready']) ?>)</a>
+                <a class="admin-filter-pill<?= $imageFilter === 'all' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=all">Vsetko (<?= esc((string) $imageQueueCounts['all']) ?>)</a>
+              </div>
             </div>
             <div class="admin-queue-list">
               <?php foreach ($imageQueue as $queueRow): ?>
                 <article class="admin-queue-item<?= !empty($queueRow['has_final_webp']) ? ' is-done' : '' ?>">
                   <div>
                     <strong><?= esc((string) $queueRow['title']) ?></strong>
-                    <p><?= esc((string) $queueRow['slug']) ?></p>
+                    <p><?= esc((string) $queueRow['slug']) ?> / <?= esc((string) ($queueRow['source_type'] ?? 'placeholder')) ?></p>
                     <code><?= esc((string) $queueRow['asset_path']) ?></code>
                   </div>
-                  <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc((string) $queueRow['slug']) ?>">Otvorit</a>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc((string) $queueRow['slug']) ?>&amp;image_filter=<?= esc($imageFilter) ?>">Otvorit</a>
+                    <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['article_url'] ?? article_url((string) $queueRow['slug']))) ?>" target="_blank" rel="noopener">Clanok</a>
+                  </div>
                 </article>
               <?php endforeach; ?>
             </div>
@@ -1084,6 +1279,15 @@ require dirname(__DIR__) . '/inc/head.php';
                 <form method="post" class="admin-form">
                   <input type="hidden" name="action" value="export_bundle" />
                   <button class="btn btn-cta" type="submit">Exportovat JSON balik</button>
+                </form>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Export image backlog CSV</h3>
+                <p>Stiahne zoznam chybajucich hero obrazkov a packshotov aj s cielovymi asset cestami.</p>
+                <form method="post" class="admin-form">
+                  <input type="hidden" name="action" value="export_image_backlog_csv" />
+                  <button class="btn btn-secondary" type="submit">Exportovat image backlog</button>
                 </form>
               </section>
 

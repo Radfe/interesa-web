@@ -136,3 +136,13 @@ Update `AGENT_STATUS.md` only when:
 ## Article recommendation picker
 - Article editor now supports checkbox selection of reusable products in addition to manual slug textarea entry
 - Manual textarea remains available as a fallback for advanced use
+
+## Comparison and recommendation helpers
+- Article editor now includes ready-to-use comparison presets for `top picks` and `duel`
+- The comparison editor can also generate rows directly from selected recommended products
+- This reduces repetitive manual setup when building money pages and comparison articles
+
+## Product diagnostics and packshot workflow
+- Product editor now shows affiliate diagnostics, registry source and current target link
+- Product editor also includes a queue of products that still need a final local packshot
+- This helps prioritize which merchant images should be mirrored into the canonical local asset paths first

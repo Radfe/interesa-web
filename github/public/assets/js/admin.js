@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const fillRowsButton = document.querySelector('[data-fill-rows]');
   const addColumnButton = document.querySelector('[data-add-column]');
   const addRowButton = document.querySelector('[data-add-row]');
+  const fillFromProductsButton = document.querySelector('[data-fill-from-products]');
+  const presetButtons = Array.from(document.querySelectorAll('[data-apply-preset]'));
   const columnsRoot = document.querySelector('[data-comparison-columns]');
   const rowsRoot = document.querySelector('[data-comparison-rows]');
 
@@ -30,6 +32,30 @@ document.addEventListener('DOMContentLoaded', () => {
     ['gymbeam-true-whey', 'kazdodenne pouzitie', '4.7', ''],
     ['gymbeam-creatine-monohydrate', 'vykon a sila', '4.6', '']
   ];
+
+  const presets = {
+    'top-picks': {
+      columns: [
+        { key: 'product_slug', label: 'Produkt', type: 'product' },
+        { key: 'best_for', label: 'Najlepsie pre', type: 'text' },
+        { key: 'rating', label: 'Rating', type: 'text' },
+        { key: 'cta', label: 'Akcia', type: 'cta' }
+      ]
+    },
+    duel: {
+      columns: [
+        { key: 'feature', label: 'Parameter', type: 'text' },
+        { key: 'option_a', label: 'Moznost A', type: 'text' },
+        { key: 'option_b', label: 'Moznost B', type: 'text' }
+      ],
+      rows: [
+        ['Typ produktu', '', ''],
+        ['Najlepsie pre', '', ''],
+        ['Silne stranky', '', ''],
+        ['Slabsie stranky', '', '']
+      ]
+    }
+  };
 
   const ensureComparisonRoots = () => columnsRoot instanceof HTMLElement && rowsRoot instanceof HTMLElement;
 
@@ -190,6 +216,49 @@ document.addEventListener('DOMContentLoaded', () => {
     reindexRowCells();
   };
 
+  const setColumns = (columns) => {
+    if (!ensureComparisonRoots()) {
+      return;
+    }
+    columnsRoot.innerHTML = '';
+    columns.forEach((column, index) => {
+      columnsRoot.appendChild(buildColumn(column, index));
+    });
+  };
+
+  const setRows = (rows) => {
+    if (!ensureComparisonRoots()) {
+      return;
+    }
+    rowsRoot.innerHTML = '';
+    rows.forEach((row) => {
+      rowsRoot.appendChild(buildRow(row));
+    });
+    if (rows.length === 0) {
+      rowsRoot.appendChild(buildRow());
+    }
+    reindexRowCells();
+  };
+
+  const selectedRecommendedProducts = () => {
+    const checked = Array.from(document.querySelectorAll('input[name="recommended_product_checks[]"]:checked'))
+      .map((input) => input.value.trim())
+      .filter(Boolean);
+    const manualField = document.querySelector('textarea[name="recommended_products"]');
+    const manual = manualField instanceof HTMLTextAreaElement
+      ? manualField.value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean)
+      : [];
+
+    return Array.from(new Set([...checked, ...manual]));
+  };
+
+  const ensureProductPreset = () => {
+    setColumns(presets['top-picks'].columns);
+    if (comparisonRows().length === 0) {
+      setRows([]);
+    }
+  };
+
   if (addColumnButton) {
     addColumnButton.addEventListener('click', () => addColumn());
   }
@@ -294,6 +363,58 @@ document.addEventListener('DOMContentLoaded', () => {
             rating: '4.6'
           }
         ], null, 2);
+      }
+    });
+  }
+
+  presetButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const presetKey = button.getAttribute('data-apply-preset');
+      const preset = presetKey ? presets[presetKey] : null;
+      if (!preset || !ensureComparisonRoots()) {
+        return;
+      }
+      setColumns(preset.columns || []);
+      setRows(preset.rows || []);
+      if (columnsField instanceof HTMLTextAreaElement) {
+        columnsField.value = JSON.stringify(preset.columns || [], null, 2);
+      }
+      if (rowsField instanceof HTMLTextAreaElement) {
+        rowsField.value = JSON.stringify((preset.rows || []).map((rowValues) => {
+          const row = {};
+          (preset.columns || []).forEach((column, index) => {
+            row[column.key] = rowValues[index] || '';
+          });
+          return row;
+        }), null, 2);
+      }
+    });
+  });
+
+  if (fillFromProductsButton) {
+    fillFromProductsButton.addEventListener('click', () => {
+      if (!ensureComparisonRoots()) {
+        return;
+      }
+
+      const productSlugs = selectedRecommendedProducts();
+      if (productSlugs.length === 0) {
+        return;
+      }
+
+      ensureProductPreset();
+      const rows = productSlugs.map((slug) => [slug, '', '', '']);
+      setRows(rows);
+      if (rowsField instanceof HTMLTextAreaElement) {
+        rowsField.value = JSON.stringify(rows.map((rowValues) => ({
+          product_slug: rowValues[0],
+          best_for: rowValues[1],
+          rating: rowValues[2],
+          cta: rowValues[3]
+        })), null, 2);
+      }
+      if (columnsField instanceof HTMLTextAreaElement) {
+        columnsField.value = JSON.stringify(presets['top-picks'].columns, null, 2);
       }
     });
   }
