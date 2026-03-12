@@ -37,7 +37,7 @@ if (!function_exists('interessa_admin_article_content_payload')) {
                     'text' => $heading,
                 ];
                 echo '<section class="article-admin-section">';
-                echo '<h2 id="' . esc($anchor) . '">' . esc($heading) . '</h2>';
+                echo '<h2 class="article-admin-heading" id="' . esc($anchor) . '">' . esc($heading) . '</h2>';
             } else {
                 echo '<section class="article-admin-section">';
             }
@@ -69,10 +69,10 @@ if (!function_exists('interessa_admin_article_content_payload')) {
             ];
 
             echo '<section class="article-admin-comparison">';
-            echo '<h2 id="' . esc($anchor) . '">' . esc($comparisonTitle) . '</h2>';
+            echo '<h2 class="article-admin-heading" id="' . esc($anchor) . '">' . esc($comparisonTitle) . '</h2>';
             if ($comparisonIntro !== '') {
                 $wordCount += str_word_count(strip_tags($comparisonIntro));
-                echo '<p>' . esc($comparisonIntro) . '</p>';
+                echo '<p class="article-admin-comparison-intro">' . esc($comparisonIntro) . '</p>';
             }
             echo interessa_render_comparison_table(
                 is_array($comparison['rows']) ? $comparison['rows'] : [],
@@ -99,7 +99,7 @@ if (!function_exists('interessa_admin_article_content_payload')) {
                 'text' => 'Odporucane produkty',
             ];
             echo '<section class="article-admin-recommended">';
-            echo '<h2 id="odporucane-produkty">Odporucane produkty</h2>';
+            echo '<h2 class="article-admin-heading" id="odporucane-produkty">Odporucane produkty</h2>';
             echo '<div class="article-admin-recommended-grid">';
             foreach ($recommendedProducts as $row) {
                 echo interessa_render_product_box($row);

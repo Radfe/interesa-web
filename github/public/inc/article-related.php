@@ -67,17 +67,20 @@ if (!function_exists('interessa_render_related_articles')) {
         $categoryMeta = category_meta((string) (article_meta($slug)['category'] ?? ''));
         echo '<section class="article-related">';
         echo '<div class="section-head">';
-        echo '<h2>Suvisiace clanky</h2>';
+        echo '<h2>' . esc('S?visiace ?l?nky') . '</h2>';
         if ($categoryMeta !== null) {
-            echo '<p class="meta">Dalsie navody a porovnania v teme ' . esc($categoryMeta['title']) . '.</p>';
+            echo '<p class="meta">' . esc('?al?ie n?vody a porovnania v t?me') . ' ' . esc((string) ($categoryMeta['title'] ?? '')) . '.</p>';
         }
         echo '</div>';
         echo '<div class="hub-grid article-related-grid">';
 
         foreach ($items as $item) {
             $itemSlug = (string) ($item['slug'] ?? '');
-            $itemTitle = (string) ($item['title'] ?? humanize_slug($itemSlug));
-            $itemDescription = (string) ($item['description'] ?? '');
+            $itemTitle = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake((string) ($item['title'] ?? humanize_slug($itemSlug))) : (string) ($item['title'] ?? humanize_slug($itemSlug));
+            $itemDescription = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake((string) ($item['description'] ?? '')) : (string) ($item['description'] ?? '');
+            $itemCategorySlug = normalize_category_slug((string) ($item['category'] ?? ''));
+            $itemCategoryMeta = $itemCategorySlug !== '' ? category_meta($itemCategorySlug) : null;
+            $itemDate = !empty($item['mtime']) ? date('d.m.Y', (int) $item['mtime']) : '';
             $image = interessa_article_image_meta($itemSlug, 'thumb', true);
 
             echo '<article class="hub-card">';
@@ -85,11 +88,19 @@ if (!function_exists('interessa_render_related_articles')) {
             echo interessa_render_image($image, ['class' => 'hub-card-image', 'alt' => $itemTitle]);
             echo '</a>';
             echo '<div class="hub-card-body">';
+            echo '<div class="article-card-meta">';
+            if ($itemCategoryMeta !== null) {
+                echo '<span class="article-card-chip">' . esc((string) ($itemCategoryMeta['title'] ?? '')) . '</span>';
+            }
+            if ($itemDate !== '') {
+                echo '<span class="article-card-date">' . esc($itemDate) . '</span>';
+            }
+            echo '</div>';
             echo '<h3><a href="' . esc(article_url($itemSlug)) . '">' . esc($itemTitle) . '</a></h3>';
             if ($itemDescription !== '') {
                 echo '<p>' . esc($itemDescription) . '</p>';
             }
-            echo '<a class="card-link" href="' . esc(article_url($itemSlug)) . '">Citat clanok</a>';
+            echo '<a class="card-link" href="' . esc(article_url($itemSlug)) . '">' . esc('??ta? ?l?nok') . '</a>';
             echo '</div>';
             echo '</article>';
         }

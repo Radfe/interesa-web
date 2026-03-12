@@ -18,7 +18,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const addRowButton = document.querySelector('[data-add-row]');
   const fillFromProductsButton = document.querySelector('[data-fill-from-products]');
   const fillFromReadyProductsButton = document.querySelector('[data-fill-ready-products]');
+  const fillFromCardReadyButton = document.querySelector('[data-fill-card-ready]');
+  const selectCardReadyProductsButton = document.querySelector('[data-select-card-ready-products]');
+  const selectMoneyReadyProductsButton = document.querySelector('[data-select-money-ready-products]');
+  const clearProductSelectionButton = document.querySelector('[data-clear-product-selection]');
   const fillFromReadyShortlistButton = document.querySelector('[data-fill-ready-shortlist]');
+  const fillMoneyScaffoldButton = document.querySelector('[data-fill-money-scaffold]');
+  const syncProductsFromComparisonButton = document.querySelector('[data-sync-products-from-comparison]');
+  const productRatingButtons = Array.from(document.querySelectorAll('[data-set-product-rating]'));
+  const fillProductRatingAutoButton = document.querySelector('[data-fill-product-rating-auto]');
+  const fillProductEmptyButton = document.querySelector('[data-fill-product-empty]');
+  const fillProductSummaryButton = document.querySelector('[data-fill-product-summary]');
+  const fillProductProsButton = document.querySelector('[data-fill-product-pros]');
+  const fillProductConsButton = document.querySelector('[data-fill-product-cons]');
+  const fillProductAllButton = document.querySelector('[data-fill-product-all]');
   const presetButtons = Array.from(document.querySelectorAll('[data-apply-preset]'));
   const columnsRoot = document.querySelector('[data-comparison-columns]');
   const rowsRoot = document.querySelector('[data-comparison-rows]');
@@ -262,8 +275,30 @@ document.addEventListener('DOMContentLoaded', () => {
     return Array.from(new Set([...checked, ...manual]));
   };
 
+  const recommendedCheckboxes = () => Array.from(document.querySelectorAll('input[name="recommended_product_checks[]"]'))
+
+  const setRecommendedSelection = (predicate) => {
+    recommendedCheckboxes().forEach((input) => {
+      if (!(input instanceof HTMLInputElement)) {
+        return;
+      }
+      input.checked = predicate(input);
+    });
+
+    const checkedSlugs = recommendedCheckboxes()
+      .filter((input) => input instanceof HTMLInputElement && input.checked)
+      .map((input) => input.value.trim())
+      .filter(Boolean);
+
+    const manualField = document.querySelector('textarea[name="recommended_products"]');
+    if (manualField instanceof HTMLTextAreaElement) {
+      manualField.value = checkedSlugs.join("\\n");
+    }
+  };
+
   const selectedRecommendedProductMeta = (options = {}) => {
     const onlyReady = options.onlyReady === true;
+    const onlyCardReady = options.onlyCardReady === true;
     const lookup = new Map();
     Array.from(document.querySelectorAll('input[name="recommended_product_checks[]"]')).forEach((input) => {
       if (!(input instanceof HTMLInputElement)) {
@@ -281,13 +316,18 @@ document.addEventListener('DOMContentLoaded', () => {
         rating: (input.dataset.productRating || '').trim(),
         summary: (input.dataset.productSummary || '').trim(),
         affiliateReady: (input.dataset.productAffiliateReady || '') === 'true',
-        packshotReady: (input.dataset.productPackshotReady || '') === 'true'
+        packshotReady: (input.dataset.productPackshotReady || '') === 'true',
+        summaryReady: (input.dataset.productSummaryReady || '') === 'true',
+        ratingReady: (input.dataset.productRatingReady || '') === 'true',
+        prosReady: (input.dataset.productProsReady || '') === 'true',
+        consReady: (input.dataset.productConsReady || '') === 'true',
+        cardReady: (input.dataset.productCardReady || '') === 'true'
       });
     });
 
     return selectedRecommendedProducts()
-      .map((slug) => lookup.get(slug) || ({ slug, name: slug, bestFor: '', merchant: '', rating: '', summary: '', affiliateReady: false, packshotReady: false }))
-      .filter((product) => !onlyReady || (product.affiliateReady && product.packshotReady));
+      .map((slug) => lookup.get(slug) || ({ slug, name: slug, bestFor: '', merchant: '', rating: '', summary: '', affiliateReady: false, packshotReady: false, summaryReady: false, ratingReady: false, prosReady: false, consReady: false, cardReady: false }))
+      .filter((product) => (!onlyReady || (product.affiliateReady && product.packshotReady)) && (!onlyCardReady || product.cardReady));
   };
 
   const applyComparisonRowsFromProducts = (productRows) => {
@@ -310,6 +350,70 @@ document.addEventListener('DOMContentLoaded', () => {
       columnsField.value = JSON.stringify(presets['catalog-picks'].columns, null, 2);
     }
   };
+  const applyMoneyPageScaffold = (productRows) => {
+    const cardReadyRows = productRows.filter((product) => product.cardReady);
+    const readyRows = productRows.filter((product) => product.affiliateReady && product.packshotReady);
+    const sourceRows = cardReadyRows.length > 0 ? cardReadyRows : (readyRows.length > 0 ? readyRows : productRows);
+    const sortedRows = [...sourceRows].sort((left, right) => {
+      const leftRating = Number.parseFloat(left.rating || '0');
+      const rightRating = Number.parseFloat(right.rating || '0');
+      return rightRating - leftRating;
+    }).slice(0, 3);
+    if (sortedRows.length === 0 || !ensureComparisonRoots()) {
+      return;
+    }
+
+    setColumns(presets['top-picks'].columns);
+    const rows = sortedRows.map((product) => [product.slug, product.bestFor || product.summary || product.name || '', product.rating || '', '']);
+    setRows(rows);
+
+    const comparisonTitleField = document.querySelector("input[name=\"comparison_title\"]");
+    const comparisonIntroField = document.querySelector("input[name=\"comparison_intro\"]");
+    const articleTitleField = document.querySelector("input[name=\"title\"]");
+    const articleIntroField = document.querySelector("textarea[name=\"intro\"]");
+    const recommendedField = document.querySelector("textarea[name=\"recommended_products\"]");
+    const sectionHeadings = Array.from(document.querySelectorAll("input[name=\"section_heading[]\"]"));
+    const sectionBodies = Array.from(document.querySelectorAll("textarea[name=\"section_body[]\"]"));
+    const articleTitle = articleTitleField instanceof HTMLInputElement ? articleTitleField.value.trim() : "";
+
+    if (comparisonTitleField instanceof HTMLInputElement && comparisonTitleField.value.trim() === "") {
+      comparisonTitleField.value = articleTitle !== "" ? `Rychle porovnanie: ${articleTitle}` : "Rychle porovnanie top produktov";
+    }
+    if (comparisonIntroField instanceof HTMLInputElement && comparisonIntroField.value.trim() === "") {
+      comparisonIntroField.value = "Vyber najzaujimavejsich odporucanych produktov na rychle porovnanie podla vyuzitia, hodnotenia a pripravenosti na money page.";
+    }
+    if (articleIntroField instanceof HTMLTextAreaElement && articleIntroField.value.trim() === "") {
+      articleIntroField.value = "Strucny prehlad top odporucanych produktov a najdolezitejsich rozdielov na jednom mieste.";
+    }
+    if (recommendedField instanceof HTMLTextAreaElement && recommendedField.value.trim() === "") {
+      recommendedField.value = sortedRows.map((product) => product.slug).join("\\n");
+    }
+    if (sectionHeadings[0] instanceof HTMLInputElement && sectionHeadings[0].value.trim() === "") {
+      sectionHeadings[0].value = "Rychly vyber";
+    }
+    if (sectionBodies[0] instanceof HTMLTextAreaElement && sectionBodies[0].value.trim() === "") {
+      sectionBodies[0].value = "Strucny vyber top produktov a komu jednotlive moznosti davaju najvacsi zmysel.";
+    }
+    if (sectionHeadings[1] instanceof HTMLInputElement && sectionHeadings[1].value.trim() === "") {
+      sectionHeadings[1].value = "Na co sa pri vybere zamerat";
+    }
+    if (sectionBodies[1] instanceof HTMLTextAreaElement && sectionBodies[1].value.trim() === "") {
+      sectionBodies[1].value = "Pri porovnani sleduj hlavne vyuzitie produktu, formu, zlozenie, davkovanie a pomer hodnoty k cene.";
+    }
+
+    if (rowsField instanceof HTMLTextAreaElement) {
+      rowsField.value = JSON.stringify(sortedRows.map((product) => ({
+        product_slug: product.slug,
+        best_for: product.bestFor || product.summary || product.name || "",
+        rating: product.rating || "",
+        cta: ""
+      })), null, 2);
+    }
+    if (columnsField instanceof HTMLTextAreaElement) {
+      columnsField.value = JSON.stringify(presets['top-picks'].columns, null, 2);
+    }
+  };
+
   const applyReadyShortlist = (productRows) => {
     const sortedRows = [...productRows].sort((left, right) => {
       const leftRating = Number.parseFloat(left.rating || '0');
@@ -345,6 +449,53 @@ document.addEventListener('DOMContentLoaded', () => {
     if (columnsField instanceof HTMLTextAreaElement) {
       columnsField.value = JSON.stringify(presets['top-picks'].columns, null, 2);
     }
+  };
+
+  const comparisonProductSlugs = () => {
+    if (!ensureComparisonRoots()) {
+      return [];
+    }
+
+    const columns = Array.from(columnsRoot.querySelectorAll("[data-comparison-column]"));
+    const productColumnIndex = columns.findIndex((column) => {
+      const typeSelect = column.querySelector("select[name=\"comparison_column_type[]\"]");
+      const keyInput = column.querySelector("input[name=\"comparison_column_key[]\"]");
+      const typeValue = typeSelect instanceof HTMLSelectElement ? typeSelect.value.trim() : "";
+      const keyValue = keyInput instanceof HTMLInputElement ? keyInput.value.trim() : "";
+      return typeValue === "product" || keyValue === "product_slug" || keyValue === "product";
+    });
+
+    if (productColumnIndex < 0) {
+      return [];
+    }
+
+    return comparisonRows()
+      .map((row) => {
+        const cells = Array.from(row.querySelectorAll("textarea"));
+        const cell = cells[productColumnIndex];
+        return cell instanceof HTMLTextAreaElement ? cell.value.trim() : "";
+      })
+      .filter(Boolean)
+      .filter((value, index, all) => all.indexOf(value) === index);
+  };
+
+  const syncRecommendedProductsFromComparison = () => {
+    const slugs = comparisonProductSlugs();
+    if (slugs.length === 0) {
+      return;
+    }
+
+    const manualField = document.querySelector("textarea[name=\"recommended_products\"]");
+    if (manualField instanceof HTMLTextAreaElement) {
+      manualField.value = slugs.join("\\n");
+    }
+
+    Array.from(document.querySelectorAll("input[name=\"recommended_product_checks[]\"]")).forEach((input) => {
+      if (!(input instanceof HTMLInputElement)) {
+        return;
+      }
+      input.checked = slugs.includes(input.value.trim());
+    });
   };
 
   const ensureProductPreset = () => {
@@ -492,13 +643,89 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  if (syncProductsFromComparisonButton) {
+    syncProductsFromComparisonButton.addEventListener('click', () => {
+      syncRecommendedProductsFromComparison();
+    });
+  }
+
+  if (fillMoneyScaffoldButton) {
+    fillMoneyScaffoldButton.addEventListener('click', () => {
+      applyMoneyPageScaffold(selectedRecommendedProductMeta());
+    });
+  }
+
   if (fillFromReadyProductsButton) {
     fillFromReadyProductsButton.addEventListener('click', () => {
       applyComparisonRowsFromProducts(selectedRecommendedProductMeta({ onlyReady: true }));
     });
   }
 
+  if (fillFromCardReadyButton) {
+    fillFromCardReadyButton.addEventListener('click', () => {
+      applyComparisonRowsFromProducts(selectedRecommendedProductMeta({ onlyCardReady: true }));
+    });
+  }
+
   reindexRowCells();
+  const productField = (selector) => document.querySelector(selector);
+
+  const productContext = () => {
+    const nameField = productField("input[name=\"name\"]");
+    const brandField = productField("input[name=\"brand\"]");
+    const merchantField = productField("input[name=\"merchant\"]");
+    const categoryField = productField("input[name=\"category\"]");
+    return {
+      name: nameField instanceof HTMLInputElement ? nameField.value.trim() : "",
+      brand: brandField instanceof HTMLInputElement ? brandField.value.trim() : "",
+      merchant: merchantField instanceof HTMLInputElement ? merchantField.value.trim() : "",
+      category: categoryField instanceof HTMLInputElement ? categoryField.value.trim() : ""
+    };
+  };
+
+  const productCategoryHint = (category) => {
+    const value = (category || "").toLowerCase();
+    if (value.includes("protein")) return "kazdodenne doplnenie bielkovin";
+    if (value.includes("kreat")) return "vykon, silu a regeneraciu";
+    if (value.includes("horc") || value.includes("miner")) return "kazdodennu suplementaciu a doplnenie mineralov";
+    if (value.includes("kolagen") || value.includes("klb")) return "starostlivost o klby, pokozku a regeneraciu";
+    if (value.includes("probiotik") || value.includes("traven")) return "travienie a rovnovahu mikrobiomu";
+    if (value.includes("imunit")) return "dlhodobu podporu imunity";
+    return "kazdodennu doplnkovu rutinu";
+  };
+
+  const buildProductSummary = () => {
+    const context = productContext();
+    const source = context.brand || context.merchant || "overeny merchant";
+    const focus = productCategoryHint(context.category);
+    const name = context.name || "Tento produkt";
+    return `${name} od ${source} je doplnok vhodny pre ${focus}. V reusable katalogu sluzi ako zaklad pre odporucania, porovnania a money-page karty.`;
+  };
+
+  const buildProductPros = () => {
+    const context = productContext();
+    const focus = productCategoryHint(context.category);
+    return [
+      `jasne zameranie na ${focus}`,
+      "vhodny do porovnani a odporucanych vyberov",
+      "lahko sa zaradi do beznej suplementacnej rutiny"
+    ].join("\\n");
+  };
+
+  const buildProductCons = () => [
+    "treba skontrolovat zlozenie, davkovanie a formu produktu",
+    "vysledna vhodnost zavisi od ciela a individualnej tolerancie",
+    "pred zaradenim je dobre porovnat aj alternativy v rovnakej kategorii"
+  ].join("\\n");
+
+  const setProductFieldValue = (selector, value) => {
+    const field = productField(selector);
+    if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+      field.value = value;
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  };
+
   const slugifyForAdmin = (value) => value
     .toLowerCase()
     .normalize('NFD')
@@ -533,6 +760,32 @@ document.addEventListener('DOMContentLoaded', () => {
   syncAutoSlugField('product');
   syncAutoSlugField('merchant');
 
+
+  if (fillProductSummaryButton) {
+    fillProductSummaryButton.addEventListener('click', () => {
+      setProductFieldValue("textarea[name=\"summary\"]", buildProductSummary());
+    });
+  }
+
+  if (fillProductProsButton) {
+    fillProductProsButton.addEventListener('click', () => {
+      setProductFieldValue("textarea[name=\"pros\"]", buildProductPros());
+    });
+  }
+
+  if (fillProductConsButton) {
+    fillProductConsButton.addEventListener('click', () => {
+      setProductFieldValue("textarea[name=\"cons\"]", buildProductCons());
+    });
+  }
+
+  if (fillProductAllButton) {
+    fillProductAllButton.addEventListener('click', () => {
+      setProductFieldValue("textarea[name=\"summary\"]", buildProductSummary());
+      setProductFieldValue("textarea[name=\"pros\"]", buildProductPros());
+      setProductFieldValue("textarea[name=\"cons\"]", buildProductCons());
+    });
+  }
 
   document.addEventListener('click', async (event) => {
     const trigger = event.target.closest('[data-copy-value]');

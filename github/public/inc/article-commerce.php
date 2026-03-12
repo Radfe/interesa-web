@@ -3,6 +3,24 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/article-review-details.php';
 
+if (!function_exists('interessa_article_commerce_clean')) {
+    function interessa_article_commerce_clean(mixed $value): mixed {
+        if (is_string($value)) {
+            return function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake($value) : $value;
+        }
+
+        if (!is_array($value)) {
+            return $value;
+        }
+
+        foreach ($value as $key => $item) {
+            $value[$key] = interessa_article_commerce_clean($item);
+        }
+
+        return $value;
+    }
+}
+
 if (!function_exists('interessa_article_commerce_sections')) {
     function interessa_article_commerce_sections(): array {
         return [
@@ -387,7 +405,7 @@ if (!function_exists('interessa_article_commerce')) {
         $sectionDetails = $reviewDetails[$canonicalSlug] ?? [];
 
         if ($sectionDetails === []) {
-            return $section;
+            return interessa_article_commerce_clean($section);
         }
 
         foreach ($section['products'] as $index => $product) {
@@ -399,6 +417,6 @@ if (!function_exists('interessa_article_commerce')) {
             $section['products'][$index] = array_merge($product, $sectionDetails[$code]);
         }
 
-        return $section;
+        return interessa_article_commerce_clean($section);
     }
 }

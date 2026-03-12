@@ -1,4 +1,4 @@
-# Admin system
+﻿# Admin system
 
 ## Architecture
 - Route: `/admin`
@@ -10,6 +10,24 @@
 - Auth: lightweight session login via `public/inc/admin-auth.php`
 
 ## Login
+## Practical daily use
+The admin is meant to support the public website, not replace it.
+
+Recommended order for normal work:
+1. open the article in `Clanky`
+2. update title, intro, sections and comparison content
+3. add reusable products
+4. generate or upload the hero image
+5. upload missing product packshots
+6. finish Dognet affiliate links
+7. open the live page and verify the frontend
+
+Shortcut:
+- use `Pomoc / quickstart` inside `/admin` for step-by-step guidance
+- use `Image briefy` for Canva / AI prompts and final upload paths
+- use `Produkty` for reusable product quality, packshots and affiliate diagnostics
+- use `Affiliate odkazy` only when the final `/go/` target still needs to be connected
+
 - Default local password: `interesa-admin`
 - Recommended: create `public/storage/admin/auth.php` based on `public/storage/admin/auth.example.php`
 - Real `auth.php` is ignored by Git
@@ -179,8 +197,8 @@ Update `AGENT_STATUS.md` only when:
 - Product quick-create also accepts prefilled values through admin workflow links for future bridge extensions
 
 ## Recommendation workflow diagnostics
-- Article editor now shows a `Workflow odporucanych produktov` panel with summary counts for reusable catalog coverage, affiliate readiness, packshot readiness and money-page-ready products
-- The same panel surfaces action rows for anything that is still incomplete and can jump directly to product edit, affiliate wiring or packshot workflow
+- Article editor now shows a `Workflow odporucanych produktov` panel with summary counts for reusable catalog coverage, affiliate readiness, packshot readiness, money-page-ready products and fully reusable-card-ready products
+- The same panel surfaces action rows for anything that is still incomplete and now also shows readiness percentages plus missing editorial/commercial areas for each product
 - Missing product slugs can be turned into reusable products directly from the article workflow and returned back into the editor
 
 ## Product-to-article round trip
@@ -208,3 +226,29 @@ Update `AGENT_STATUS.md` only when:
 - Product and affiliate editors can now be opened from the article image workflow with return context for the selected article
 - Product save and affiliate save/create flows can redirect back to the originating article workflow when return context is present
 - Product usage diagnostics now link directly into the image workflow of articles where the selected product is used
+## Richer comparison and recommendation helpers
+- Article comparison tools now include Money-page scaffold, which can build a top-picks comparison from selected reusable products and fill basic comparison/article copy when fields are still empty
+- Article comparison tools now also include Porovnanie -> produkty, which syncs product slugs from the current comparison table back into the recommended-products workflow
+- This reduces duplicate manual editing between comparison blocks and article recommendation lists on money pages
+## Faster reusable-product drafting
+- Product editor now includes quick scaffold buttons for Starter summary, Starter plusy, Starter minusy, Iba doplnit prazdne and Vyplnit vsetko
+- The same editor now includes rating preset buttons plus an Auto rating helper for quicker first-pass scoring
+- A live checklist shows whether summary, rating, pros, cons, affiliate wiring and packshot are already ready for the selected reusable product
+- These drafts are generated from the current product name, brand, merchant and category so reusable products can be prepared much faster before manual refinement
+- The goal is to reduce repetitive typing when building product cards for comparisons, top picks and money pages
+## Live money-page polish
+- Money-page scaffold now prefers fully card-ready reusable products first, then falls back to money-page-ready ones if needed
+- Recommended-product diagnostics in the article editor now distinguish between basic money-page readiness and a fully reusable-card-ready state
+- Live affiliate product boxes now use richer product summaries and can render rating plus real-packshot status when the reusable product record contains that data
+
+
+## In-admin help
+- Admin now includes `Pomoc / quickstart` directly in the sidebar
+- The help screen explains the normal order of work:
+  - article first
+  - then reusable products and comparison blocks
+  - then hero images and packshots
+  - then Dognet affiliate links
+  - finally the live frontend check
+- The goal is to make daily usage possible without remembering internal file paths
+

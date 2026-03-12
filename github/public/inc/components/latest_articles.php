@@ -35,10 +35,10 @@ usort($items, static fn(array $a, array $b): int => $b['mtime'] <=> $a['mtime'])
 $items = array_slice($items, 0, 6);
 
 echo '<article class="ad-card latest-articles">';
-echo '<h3>Najnovšie články</h3>';
+echo '<h3>Najnovsie clanky</h3>';
 
 if ($items === []) {
-    echo '<p class="muted">Zatiaľ tu nie sú žiadne články.</p>';
+    echo '<p class="muted">Zatial tu nie su ziadne clanky.</p>';
     echo '</article>';
     return;
 }

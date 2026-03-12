@@ -1,4 +1,4 @@
-.admin-page {
+﻿.admin-page {
   padding-block: 2rem 3rem;
 }
 
@@ -660,4 +660,45 @@
 .admin-inline-upload__label input[type="file"] {
   max-width: 220px;
   font-size: 0.78rem;
+}.admin-product-readiness {
+  display: grid;
+  gap: 0.65rem;
+}
+.admin-product-readiness__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.65rem;
+}
+.admin-product-readiness__summary small {
+  color: #516072;
+}
+.admin-quickstart{margin-top:1rem;padding:1rem;border:1px solid rgba(15,23,42,.08);border-radius:16px;background:#f8fbff}.admin-quickstart h2{margin:0 0 .55rem;font-size:1rem}.admin-quickstart-list{margin:0;padding-left:1.15rem;display:grid;gap:.45rem;color:#516072}.admin-quickstart-list li{line-height:1.55}
+
+.admin-help-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.admin-help-card {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.admin-help-card h3,
+.admin-help-checklist h3 {
+  margin: 0;
+}
+
+.admin-help-card .admin-quickstart-list {
+  padding-left: 1rem;
+}
+
+.admin-help-checklist {
+  margin-top: 1rem;
 }

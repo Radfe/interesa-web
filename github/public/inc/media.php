@@ -1,4 +1,19 @@
 <?php
+if (!function_exists('interessa_media_clean_text')) {
+    function interessa_media_clean_text(string $text): string {
+        $text = trim($text);
+        if ($text === '') {
+            return '';
+        }
+
+        if (function_exists('interessa_fix_mojibake')) {
+            $text = interessa_fix_mojibake($text);
+        }
+
+        return trim($text);
+    }
+}
+
 if (!function_exists('interessa_media_registry')) {
     function interessa_media_registry(): array {
         static $registry = null;
@@ -198,7 +213,7 @@ if (!function_exists('interessa_build_image_meta')) {
 
         return [
             'src' => interessa_asset_public_url((string) $primary['asset']),
-            'alt' => trim((string) ($options['alt'] ?? '')),
+            'alt' => interessa_media_clean_text((string) ($options['alt'] ?? '')),
             'width' => $width > 0 ? $width : null,
             'height' => $height > 0 ? $height : null,
             'asset' => (string) ($primary['asset'] ?? ''),
@@ -224,7 +239,7 @@ if (!function_exists('interessa_remote_image_meta')) {
 
         return [
             'src' => $src,
-            'alt' => trim((string) ($config['alt'] ?? $fallbackAlt)),
+            'alt' => interessa_media_clean_text((string) ($config['alt'] ?? $fallbackAlt)),
             'width' => $width > 0 ? $width : null,
             'height' => $height > 0 ? $height : null,
             'asset' => null,
@@ -245,9 +260,9 @@ if (!function_exists('interessa_article_image_meta')) {
         $entry = is_array($registry[$variant] ?? null) ? $registry[$variant] : [];
         $meta = article_meta($canonicalSlug);
         $override = function_exists('interessa_admin_article_override') ? interessa_admin_article_override($canonicalSlug) : [];
-        $alt = trim((string) ($entry['alt'] ?? ''));
+        $alt = interessa_media_clean_text((string) ($entry['alt'] ?? ''));
         if ($alt === '') {
-            $alt = trim((string) ($override['title'] ?? ''));
+            $alt = interessa_media_clean_text((string) ($override['title'] ?? ''));
         }
         if ($alt === '') {
             $alt = $meta['title'] !== '' ? $meta['title'] : humanize_slug($canonicalSlug);
@@ -298,7 +313,7 @@ if (!function_exists('interessa_category_image_meta')) {
         $entry = is_array($registry[$variant] ?? null) ? $registry[$variant] : [];
         $meta = category_meta($slug);
         $title = $meta['title'] ?? humanize_slug($slug);
-        $alt = trim((string) ($entry['alt'] ?? ''));
+        $alt = interessa_media_clean_text((string) ($entry['alt'] ?? ''));
         if ($alt === '') {
             $alt = $title;
         }
@@ -329,7 +344,7 @@ if (!function_exists('interessa_category_image_meta')) {
 if (!function_exists('interessa_product_image_meta')) {
     function interessa_product_image_meta(string $slug, array $config = [], bool $allowFallback = true): ?array {
         $slug = trim($slug);
-        $alt = trim((string) ($config['alt'] ?? humanize_slug($slug)));
+        $alt = interessa_media_clean_text((string) ($config['alt'] ?? humanize_slug($slug)));
         $merchantSlug = trim((string) ($config['merchant_slug'] ?? ''));
         $sizes = (string) ($config['sizes'] ?? '(min-width: 1100px) 280px, 50vw');
         $targetAsset = trim((string) ($config['mirror_asset'] ?? interessa_product_image_target_asset($slug, $merchantSlug)));
@@ -384,7 +399,7 @@ if (!function_exists('interessa_brand_image_meta')) {
         ]);
 
         return interessa_build_image_meta($variants, [
-            'alt' => 'Interesa',
+            'alt' => interessa_media_clean_text('Interesa'),
             'loading' => 'eager',
             'fetchpriority' => 'high',
             'source_type' => 'local',

@@ -1,6 +1,24 @@
 <?php
 declare(strict_types=1);
 
+if (!function_exists('interessa_article_enhancement_clean')) {
+    function interessa_article_enhancement_clean(mixed $value): mixed {
+        if (is_string($value)) {
+            return function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake($value) : $value;
+        }
+
+        if (!is_array($value)) {
+            return $value;
+        }
+
+        foreach ($value as $key => $item) {
+            $value[$key] = interessa_article_enhancement_clean($item);
+        }
+
+        return $value;
+    }
+}
+
 if (!function_exists('interessa_article_enhancements_registry')) {
     function interessa_article_enhancements_registry(): array {
         return [
@@ -132,7 +150,7 @@ if (!function_exists('interessa_article_enhancements')) {
     function interessa_article_enhancements(string $slug): array {
         $registry = interessa_article_enhancements_registry();
         $canonicalSlug = canonical_article_slug($slug);
-        return $registry[$canonicalSlug] ?? $registry[$slug] ?? [];
+        return interessa_article_enhancement_clean($registry[$canonicalSlug] ?? $registry[$slug] ?? []);
     }
 }
 

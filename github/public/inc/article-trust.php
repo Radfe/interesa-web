@@ -85,15 +85,15 @@ if (!function_exists('interessa_render_article_trust_box')) {
         $categoryTitle = trim((string) ($categoryMeta['title'] ?? ''));
         $disclosure = interessa_affiliate_disclosure_text();
 
-        echo '<section class="article-trust" aria-label="Redakcne poznamky">';
+        echo '<section class="article-trust" aria-label="' . esc('Redak?n? pozn?mky') . '">';
         echo '<div class="section-head">';
-        echo '<h2>Ako s clankom pracovat</h2>';
-        echo '<p class="meta">Kratke vysvetlenie, ako je obsah pripraveny, ako funguju odkazy a kedy bol naposledy kontrolovany.</p>';
+        echo '<h2>' . esc('Ako s ?l?nkom pracova?') . '</h2>';
+        echo '<p class="meta">' . esc('Kr?tke vysvetlenie, ako je obsah pripraven?, ako funguj? odkazy a kedy bol naposledy kontrolovan?.') . '</p>';
         echo '</div>';
         echo '<div class="article-trust-grid">';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>Ako hodnotime</h3>';
+        echo '<h3>' . esc('Ako hodnot?me') . '</h3>';
         echo '<ul class="article-trust-list">';
         foreach ($points as $point) {
             echo '<li>' . esc($point) . '</li>';
@@ -102,22 +102,22 @@ if (!function_exists('interessa_render_article_trust_box')) {
         echo '</article>';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>Ako funguju odkazy</h3>';
+        echo '<h3>' . esc('Ako funguj? odkazy') . '</h3>';
         echo '<p>' . esc($commerce !== null
             ? $disclosure
-            : 'Aj pri informacnych clankoch zachovavame ciste interne odkazy a priebezne upratujeme strukturu tak, aby bol obsah dlhodobo udrzatelny.') . '</p>';
-        echo '<p class="article-meta-inline"><strong>Forma odkazov:</strong> interne <code>/go/</code> route a centralna sprava partnerov.</p>';
+            : 'Aj pri informa?n?ch ?l?nkoch zachov?vame ?ist? intern? odkazy a priebe?ne upratujeme ?trukt?ru tak, aby bol obsah dlhodobo udr?ate?n?.') . '</p>';
+        echo '<p class="article-meta-inline"><strong>' . esc('Forma odkazov:') . '</strong> interne <code>/go/</code> route a ' . esc('centr?lna spr?va partnerov.') . '</p>';
         echo '</article>';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>Posledna kontrola</h3>';
+        echo '<h3>' . esc('Posledn? kontrola') . '</h3>';
         if ($updated !== null) {
-            echo '<p class="article-meta-inline"><strong>Obsah skontrolovany:</strong> ' . esc($updated['date']) . '</p>';
+            echo '<p class="article-meta-inline"><strong>' . esc('Obsah skontrolovan?:') . '</strong> ' . esc($updated['date']) . '</p>';
         }
         if ($categoryTitle !== '') {
-            echo '<p class="article-meta-inline"><strong>Tema:</strong> ' . esc($categoryTitle) . '</p>';
+            echo '<p class="article-meta-inline"><strong>' . esc('T?ma:') . '</strong> ' . esc($categoryTitle) . '</p>';
         }
-        echo '<p class="article-meta-inline"><strong>Slug:</strong> ' . esc(canonical_article_slug($slug)) . '</p>';
+        echo '<p class="article-meta-inline"><strong>' . esc('Slug:') . '</strong> ' . esc(canonical_article_slug($slug)) . '</p>';
         echo '</article>';
 
         echo '</div>';

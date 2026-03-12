@@ -12,7 +12,7 @@ require_once dirname(__DIR__) . '/inc/article-commerce.php';
 
 function interessa_admin_selected_section(): string {
     $section = strtolower(trim((string) ($_GET['section'] ?? 'articles')));
-    return in_array($section, ['articles', 'products', 'images', 'affiliates', 'tools'], true) ? $section : 'articles';
+    return in_array($section, ['articles', 'products', 'images', 'affiliates', 'tools', 'help'], true) ? $section : 'articles';
 }
 
 function interessa_admin_redirect(string $section, array $query = []): never {
@@ -160,6 +160,7 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
         'affiliate_ready' => 0,
         'packshot_ready' => 0,
         'money_ready' => 0,
+        'card_ready' => 0,
     ];
 
     foreach ($slugs as $slug) {
@@ -172,10 +173,19 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
                 'merchant' => '',
                 'exists' => false,
                 'affiliate_code' => '',
+                'issues' => ['Produkt nie je v reusable katalogu'],
+                'checklist_ready_count' => 0,
+                'checklist_total' => 6,
+                'checklist_percent' => 0,
+                'summary_ready' => false,
+                'rating_ready' => false,
+                'pros_ready' => false,
+                'cons_ready' => false,
                 'affiliate_ready' => false,
                 'has_click_target' => false,
                 'packshot_ready' => false,
                 'money_ready' => false,
+                'card_ready' => false,
                 'image_mode' => 'missing',
                 'image_target_asset' => '',
                 'href' => '',
@@ -194,6 +204,33 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
         $imageMode = trim((string) ($normalized['image_mode'] ?? 'placeholder'));
         $packshotReady = $imageMode !== '' && $imageMode !== 'placeholder';
         $moneyReady = $affiliateReady && $packshotReady;
+        $pros = array_values(array_filter(array_map('trim', (array) ($normalized['pros'] ?? []))));
+        $cons = array_values(array_filter(array_map('trim', (array) ($normalized['cons'] ?? []))));
+        $summaryReady = trim((string) ($normalized['summary'] ?? '')) !== '';
+        $ratingReady = trim((string) ($normalized['rating'] ?? '')) !== '';
+        $prosReady = $pros !== [];
+        $consReady = $cons !== [];
+        $cardReady = $summaryReady && $ratingReady && $prosReady && $consReady && $moneyReady;
+        $issues = [];
+
+        if (!$summaryReady) {
+            $issues[] = 'Chyba kratky popis';
+        }
+        if (!$ratingReady) {
+            $issues[] = 'Chyba rating';
+        }
+        if (!$prosReady) {
+            $issues[] = 'Chybaju plusy';
+        }
+        if (!$consReady) {
+            $issues[] = 'Chybaju minusy';
+        }
+        if (!$affiliateReady) {
+            $issues[] = 'Affiliate nie je hotovy';
+        }
+        if (!$packshotReady) {
+            $issues[] = 'Packshot nie je hotovy';
+        }
 
         $summary['catalog']++;
         if ($affiliateReady) {
@@ -205,6 +242,9 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
         if ($moneyReady) {
             $summary['money_ready']++;
         }
+        if ($cardReady) {
+            $summary['card_ready']++;
+        }
 
         $rows[] = [
             'slug' => $slug,
@@ -212,10 +252,19 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
             'merchant' => (string) ($normalized['merchant'] ?? ''),
             'exists' => true,
             'affiliate_code' => $affiliateCode,
+            'issues' => $issues,
+            'checklist_ready_count' => 6 - count($issues),
+            'checklist_total' => 6,
+            'checklist_percent' => (int) round(((6 - count($issues)) / 6) * 100),
+            'summary_ready' => $summaryReady,
+            'rating_ready' => $ratingReady,
+            'pros_ready' => $prosReady,
+            'cons_ready' => $consReady,
             'affiliate_ready' => $affiliateReady,
             'has_click_target' => $hasClickTarget,
             'packshot_ready' => $packshotReady,
             'money_ready' => $moneyReady,
+            'card_ready' => $cardReady,
             'image_mode' => $imageMode,
             'image_target_asset' => (string) ($normalized['image_target_asset'] ?? ''),
             'href' => trim((string) ($target['href'] ?? '')),
@@ -225,8 +274,12 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
     }
 
     $actionRows = array_values(array_filter($rows, static function (array $row): bool {
-        return empty($row['money_ready']);
+        return empty($row['card_ready']);
     }));
+
+    usort($actionRows, static function (array $left, array $right): int {
+        return (int) ($right['checklist_percent'] ?? 0) <=> (int) ($left['checklist_percent'] ?? 0);
+    });
 
     return [
         'summary' => $summary,
@@ -298,10 +351,51 @@ function interessa_admin_article_options(): array {
         $title = trim((string) ($item['title'] ?? ''));
         $items[$slug]['title'] = interessa_admin_clean_label($title !== '' ? $title : (string) $slug);
     }
+
     uasort($items, static function (array $left, array $right): int {
         return strcasecmp((string) ($left['title'] ?? ''), (string) ($right['title'] ?? ''));
     });
+
     return $items;
+}
+
+function interessa_admin_article_default_products(string $slug, array $catalog): array {
+    $slug = canonical_article_slug($slug);
+    if ($slug === '') {
+        return [];
+    }
+
+    $section = function_exists('interessa_article_commerce') ? interessa_article_commerce($slug) : null;
+    if (!is_array($section) || !is_array($section['products'] ?? null)) {
+        return [];
+    }
+
+    $codes = [];
+    foreach ($section['products'] as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+
+        $code = trim((string) ($row['code'] ?? ''));
+        if ($code !== '') {
+            $codes[] = $code;
+        }
+    }
+
+    if ($codes === []) {
+        return [];
+    }
+
+    $slugs = [];
+    foreach ($catalog as $productSlug => $product) {
+        $normalized = interessa_normalize_product(is_array($product) ? $product : []);
+        $affiliateCode = trim((string) ($normalized['affiliate_code'] ?? ''));
+        if ($affiliateCode !== '' && in_array($affiliateCode, $codes, true)) {
+            $slugs[] = (string) ($normalized['slug'] ?? $productSlug);
+        }
+    }
+
+    return array_values(array_unique(array_filter(array_map('strval', $slugs))));
 }
 
 function interessa_admin_clean_label(string $value): string {
@@ -931,6 +1025,23 @@ $selectedProductAffiliate = is_array($selectedProduct) && trim((string) ($select
 $selectedProductAffiliateUrl = is_array($selectedProduct) && trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== '' ? aff_resolve((string) $selectedProduct['affiliate_code']) : null;
 $selectedProductAffiliateType = $selectedProductAffiliate !== null ? aff_link_type($selectedProductAffiliate) : '';
 $selectedProductTarget = is_array($selectedProduct) ? interessa_affiliate_target($selectedProduct) : ['href' => '', 'label' => ''];
+$selectedProductPros = is_array($selectedProduct) && is_array($selectedProduct['pros'] ?? null) ? array_values(array_filter(array_map('strval', $selectedProduct['pros']))) : [];
+$selectedProductCons = is_array($selectedProduct) && is_array($selectedProduct['cons'] ?? null) ? array_values(array_filter(array_map('strval', $selectedProduct['cons']))) : [];
+$selectedProductSummaryReady = is_array($selectedProduct) && trim((string) ($selectedProduct['summary'] ?? '')) !== '';
+$selectedProductRatingReady = is_array($selectedProduct) && trim((string) ($selectedProduct['rating'] ?? '')) !== '';
+$selectedProductAffiliateReady = is_array($selectedProductAffiliateUrl) && trim((string) ($selectedProductAffiliateUrl['href'] ?? '')) !== '';
+$selectedProductPackshotReady = is_array($selectedProduct) && trim((string) ($selectedProduct['image_mode'] ?? 'placeholder')) !== 'placeholder';
+$selectedProductChecklist = [
+    'Popis' => $selectedProductSummaryReady,
+    'Rating' => $selectedProductRatingReady,
+    'Plusy' => $selectedProductPros !== [],
+    'Minusy' => $selectedProductCons !== [],
+    'Affiliate' => $selectedProductAffiliateReady,
+    'Packshot' => $selectedProductPackshotReady,
+];
+$selectedProductChecklistReadyCount = count(array_filter($selectedProductChecklist));
+$selectedProductChecklistTotal = count($selectedProductChecklist);
+$selectedProductChecklistPercent = $selectedProductChecklistTotal > 0 ? (int) round(($selectedProductChecklistReadyCount / $selectedProductChecklistTotal) * 100) : 0;
 
 
 
@@ -1017,6 +1128,9 @@ while (count($sections) < 5) {
 $comparison = is_array($selectedArticleOverride['comparison'] ?? null) ? $selectedArticleOverride['comparison'] : ['columns' => [], 'rows' => []];
 $comparisonEditor = interessa_admin_comparison_editor_state($comparison);
 $articleEditorProductSlugs = is_array($selectedArticleOverride['recommended_products'] ?? null) ? array_values(array_unique(array_map('strval', $selectedArticleOverride['recommended_products']))) : [];
+if ($articleEditorProductSlugs === []) {
+    $articleEditorProductSlugs = interessa_admin_article_default_products($selectedArticleSlug, $catalog);
+}
 $articleEditorInjectedProduct = trim((string) ($_GET['add_product'] ?? ''));
 if ($articleEditorInjectedProduct !== '' && interessa_product($articleEditorInjectedProduct) !== null && !in_array($articleEditorInjectedProduct, $articleEditorProductSlugs, true)) {
     $articleEditorProductSlugs[] = $articleEditorInjectedProduct;
@@ -1042,6 +1156,7 @@ $recommendedMissingCount = (int) ($recommendedDiagnosticsSummary['missing_catalo
 $recommendedAffiliateReadyCount = (int) ($recommendedDiagnosticsSummary['affiliate_ready'] ?? 0);
 $recommendedPackshotReadyCount = (int) ($recommendedDiagnosticsSummary['packshot_ready'] ?? 0);
 $recommendedMoneyReadyCount = (int) ($recommendedDiagnosticsSummary['money_ready'] ?? 0);
+$recommendedCardReadyCount = (int) ($recommendedDiagnosticsSummary['card_ready'] ?? 0);
 $selectedArticlePackshotGaps = array_values(array_filter($recommendedDiagnosticsRows, static function (array $row): bool {
     return !empty($row['exists']) && empty($row['packshot_ready']);
 }));
@@ -1096,11 +1211,52 @@ require dirname(__DIR__) . '/inc/head.php';
           <a class="<?= $section === 'images' ? 'is-active' : '' ?>" href="/admin?section=images&slug=<?= esc($selectedArticleSlug) ?>">Image briefy</a>
           <a class="<?= $section === 'affiliates' ? 'is-active' : '' ?>" href="/admin?section=affiliates&code=<?= esc($selectedAffiliateCode) ?>">Affiliate odkazy</a>
           <a class="<?= $section === 'tools' ? 'is-active' : '' ?>" href="/admin?section=tools">Import / export</a>
+          <a class="<?= $section === 'help' ? 'is-active' : '' ?>" href="/admin?section=help">Pomoc / quickstart</a>
           <a href="/admin/ai-status">AI status</a>
         </nav>
         <div class="admin-note">
           Frontend ostava flat-file. Admin uklada len override data a obrazky.
         </div>
+        <section class="admin-quickstart">
+          <h2>Rychly start</h2>
+          <?php if ($section === 'articles'): ?>
+            <ol class="admin-quickstart-list">
+              <li>Vyber clanok a uprav titulok, intro a sekcie.</li>
+              <li>V casti odporucanych produktov pouzi reusable katalog a scaffold tlacidla.</li>
+              <li>Uloz clanok a skontroluj live stranku.</li>
+            </ol>
+          <?php elseif ($section === 'images'): ?>
+            <ol class="admin-quickstart-list">
+              <li>Skopiruj prompt, filename a target path.</li>
+              <li>Vytvor hero v Canve alebo AI nastroji a exportuj WebP.</li>
+              <li>Nahraj hero alebo packshot a vrat sa na clanok.</li>
+            </ol>
+          <?php elseif ($section === 'products'): ?>
+            <ol class="admin-quickstart-list">
+              <li>Dopln nazov, obchod, summary, rating, plusy a minusy.</li>
+              <li>Skontroluj affiliate kod a packshot.</li>
+              <li>Pozri pouzitie produktu v clankoch a vrat sa spat do workflowu.</li>
+            </ol>
+          <?php elseif ($section === 'affiliates'): ?>
+            <ol class="admin-quickstart-list">
+              <li>Vyber alebo vytvor interny /go/ kod.</li>
+              <li>Vloz finalnu cielovu URL a merchant data.</li>
+              <li>Vrat sa na produkt alebo clanok a skontroluj CTA.</li>
+            </ol>
+          <?php elseif ($section === 'help'): ?>
+            <ol class="admin-quickstart-list">
+              <li>Ak ides upravit obsah, zacni v Clankoch.</li>
+              <li>Ak ides riesit obrazky, otvor Image briefy.</li>
+              <li>Ak ides riesit CTA a produkty, pouzi Produkty a Affiliate odkazy.</li>
+            </ol>
+          <?php else: ?>
+            <ol class="admin-quickstart-list">
+              <li>Articles: obsah, porovnania a odporucane produkty.</li>
+              <li>Products: reusable produkty, packshoty a affiliate diagnostika.</li>
+              <li>Images: hero briefy, Canva workflow a upload obrazkov.</li>
+            </ol>
+          <?php endif; ?>
+        </section>
       </aside>
 
       <div class="admin-main">
@@ -1278,6 +1434,9 @@ require dirname(__DIR__) . '/inc/head.php';
                     <button class="btn btn-secondary btn-small" type="button" data-apply-preset="duel">Preset duel</button>
                     <button class="btn btn-secondary btn-small" type="button" data-fill-from-products>Riadky z odporucanych produktov</button>
                     <button class="btn btn-secondary btn-small" type="button" data-fill-ready-products>Len money-page ready</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-card-ready>Len karty ready</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-money-scaffold>Money-page scaffold</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-sync-products-from-comparison>Porovnanie -> produkty</button>
                     <button class="btn btn-secondary btn-small" type="button" data-fill-ready-shortlist>Top 3 ready shortlist</button>
                   </div>
                 </div>
@@ -1339,6 +1498,11 @@ require dirname(__DIR__) . '/inc/head.php';
                   <span>Odporucane produkty (slug na riadok)</span>
                   <textarea name="recommended_products" rows="6"><?= esc($recommendedProductsText) ?></textarea>
                   <span>Vyber z existujucich produktov</span>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-select-card-ready-products>Oznacit karty ready</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-select-money-ready-products>Oznacit money-page ready</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-clear-product-selection>Vymazat vyber</button>
+                  </div>
                   <div class="admin-check-grid">
                     <?php foreach ($catalog as $productSlug => $productRow): ?>
                       <?php $checked = in_array((string) $productSlug, is_array($selectedArticleOverride['recommended_products'] ?? null) ? $selectedArticleOverride['recommended_products'] : [], true); ?>
@@ -1350,7 +1514,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php $productAffiliateReady = $productAffiliateCode !== '' && aff_resolve($productAffiliateCode) !== null; ?>
                       <div class="admin-check-card-wrap">
                         <label class="admin-check-card">
-                          <input type="checkbox" name="recommended_product_checks[]" value="<?= esc((string) $productSlug) ?>" data-product-name="<?= esc((string) ($productNormalized['name'] ?? $productSlug)) ?>" data-product-bestfor="<?= esc((string) ($productNormalized['summary'] ?? '')) ?>" data-product-merchant="<?= esc((string) ($productNormalized['merchant'] ?? '')) ?>" data-product-rating="<?= esc((string) ($productNormalized['rating'] ?? '')) ?>" data-product-summary="<?= esc((string) ($productNormalized['summary'] ?? '')) ?>" data-product-affiliate-ready="<?= $productAffiliateReady ? 'true' : 'false' ?>" data-product-packshot-ready="<?= $productPackshotReady ? 'true' : 'false' ?>" <?= $checked ? 'checked' : '' ?> />
+                          <input type="checkbox" name="recommended_product_checks[]" value="<?= esc((string) $productSlug) ?>" data-product-name="<?= esc((string) ($productNormalized['name'] ?? $productSlug)) ?>" data-product-bestfor="<?= esc((string) ($productNormalized['summary'] ?? '')) ?>" data-product-merchant="<?= esc((string) ($productNormalized['merchant'] ?? '')) ?>" data-product-rating="<?= esc((string) ($productNormalized['rating'] ?? '')) ?>" data-product-summary="<?= esc((string) ($productNormalized['summary'] ?? '')) ?>" data-product-affiliate-ready="<?= $productAffiliateReady ? 'true' : 'false' ?>" data-product-packshot-ready="<?= $productPackshotReady ? 'true' : 'false' ?>" data-product-summary-ready="<?= trim((string) ($productNormalized['summary'] ?? '')) !== '' ? 'true' : 'false' ?>" data-product-rating-ready="<?= trim((string) ($productNormalized['rating'] ?? '')) !== '' ? 'true' : 'false' ?>" data-product-pros-ready="<?= (is_array($productNormalized['pros'] ?? null) ? array_values(array_filter(array_map('strval', $productNormalized['pros']))) : []) !== [] ? 'true' : 'false' ?>" data-product-cons-ready="<?= (is_array($productNormalized['cons'] ?? null) ? array_values(array_filter(array_map('strval', $productNormalized['cons']))) : []) !== [] ? 'true' : 'false' ?>" data-product-card-ready="<?= ($productAffiliateReady && $productPackshotReady && trim((string) ($productNormalized['summary'] ?? '')) !== '' && trim((string) ($productNormalized['rating'] ?? '')) !== '' && (is_array($productNormalized['pros'] ?? null) ? array_values(array_filter(array_map('strval', $productNormalized['pros']))) : []) !== [] && (is_array($productNormalized['cons'] ?? null) ? array_values(array_filter(array_map('strval', $productNormalized['cons']))) : []) !== []) ? 'true' : 'false' ?>" <?= $checked ? 'checked' : '' ?> />
                           <span><strong><?= esc((string) ($productRow['name'] ?? $productSlug)) ?></strong><small><?= esc((string) $productSlug) ?></small></span>
                         </label>
                         <div class="admin-status-pills">
@@ -1406,7 +1570,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Workflow odporucanych produktov</h3>
-                    <p class="admin-note">Money-page ready: <?= esc((string) $recommendedMoneyReadyCount) ?> / <?= esc((string) $recommendedTotalCount) ?></p>
+                    <p class="admin-note">Money-page ready: <?= esc((string) $recommendedMoneyReadyCount) ?> / <?= esc((string) $recommendedTotalCount) ?> / reusable karta hotova: <?= esc((string) $recommendedCardReadyCount) ?> / <?= esc((string) $recommendedTotalCount) ?></p>
                   </div>
                 </div>
                 <div class="admin-status-grid">
@@ -1441,6 +1605,14 @@ require dirname(__DIR__) . '/inc/head.php';
                             <span class="admin-status-pill<?= !empty($actionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
                             <span class="admin-status-pill<?= !empty($actionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['packshot_ready']) ? 'Packshot pripraveny' : 'Packshot chyba' ?></span>
                           </div>
+                            <small class="admin-note">Pripravenost: <?= esc((string) ($actionRow['checklist_percent'] ?? 0)) ?>% / chybaju <?= esc((string) count($actionRow['issues'] ?? [])) ?> oblasti</small>
+                            <div class="admin-status-pills">
+                              <span class="admin-status-pill<?= !empty($actionRow['summary_ready']) ? ' is-good' : ' is-warning' ?>">Popis</span>
+                              <span class="admin-status-pill<?= !empty($actionRow['rating_ready']) ? ' is-good' : ' is-warning' ?>">Rating</span>
+                              <span class="admin-status-pill<?= !empty($actionRow['pros_ready']) ? ' is-good' : ' is-warning' ?>">Plusy</span>
+                              <span class="admin-status-pill<?= !empty($actionRow['cons_ready']) ? ' is-good' : ' is-warning' ?>">Minusy</span>
+                              <span class="admin-status-pill<?= !empty($actionRow['card_ready']) ? ' is-good' : ' is-warning' ?>">Karta ready</span>
+                            </div>
                           <?php if (trim((string) ($actionRow['summary'] ?? '')) !== ''): ?>
                             <small class="admin-note"><?= esc((string) ($actionRow['summary'] ?? '')) ?></small>
                           <?php endif; ?>
@@ -1490,6 +1662,7 @@ require dirname(__DIR__) . '/inc/head.php';
                             <span class="admin-status-pill<?= !empty($previewStatus['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
                             <span class="admin-status-pill<?= !empty($previewStatus['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['packshot_ready']) ? 'Packshot pripraveny' : 'Packshot chyba' ?></span>
                           </div>
+                          <small class="admin-note">Pripravenost: <?= esc((string) ($previewStatus['checklist_percent'] ?? 0)) ?>%</small>
                           <?php if (trim((string) ($previewRow['summary'] ?? '')) !== ''): ?>
                             <p><?= esc((string) ($previewRow['summary'] ?? '')) ?></p>
                           <?php endif; ?>
@@ -1821,10 +1994,48 @@ require dirname(__DIR__) . '/inc/head.php';
                 <label><span>Kategoria</span><input type="text" name="category" value="<?= esc((string) ($selectedProduct['category'] ?? '')) ?>" /></label>
               </div>
               <div class="admin-grid three-up">
-                <label><span>Affiliate code</span><input type="text" name="affiliate_code" value="<?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?>" /></label>
-                <label><span>Fallback URL</span><input type="url" name="fallback_url" value="<?= esc((string) ($selectedProduct['fallback_url'] ?? '')) ?>" /></label>
-                <label><span>Rating</span><input type="number" min="0" max="5" step="0.1" name="rating" value="<?= esc((string) ($selectedProduct['rating'] ?? '')) ?>" /></label>
+                <label><span>Affiliate code</span><input type="text" name="affiliate_code" value="<?= esc((string) (['affiliate_code'] ?? '')) ?>" /></label>
+                <label><span>Fallback URL</span><input type="url" name="fallback_url" value="<?= esc((string) (['fallback_url'] ?? '')) ?>" /></label>
+                <label><span>Rating</span><input type="number" min="0" max="5" step="0.1" name="rating" value="<?= esc((string) (['rating'] ?? '')) ?>" data-product-rating-input /></label>
               </div>
+              <section class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <h3>Rychle hodnotenie a checklist</h3>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.1">4.1 Budget</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.3">4.3 Solid</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.5">4.5 Value</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.7">4.7 Top pick</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.9">4.9 Flagship</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-rating-auto>Auto rating</button>
+                  </div>
+                </div>
+                <div class="admin-product-readiness">
+                  <div class="admin-product-readiness__summary">
+                    <strong>Pripravenost produktu: <?= esc((string) $selectedProductChecklistPercent) ?>%</strong>
+                    <small><?= esc((string) $selectedProductChecklistReadyCount) ?> / <?= esc((string) $selectedProductChecklistTotal) ?> zakladnych poloziek je hotovych</small>
+                  </div>
+                  <div class="admin-status-pills">
+                    <?php foreach ($selectedProductChecklist as $checkLabel => $isReady): ?>
+                      <span class="admin-status-pill<?= $isReady ? ' is-good' : ' is-warning' ?>"><?= esc((string) $checkLabel) ?></span>
+                    <?php endforeach; ?>
+                  </div>
+                </div>
+                <p class="admin-note">Rating preset je len rychly start. Pred publikaciou ho vzdy dolad podla realneho porovnania a kvality produktu.</p>
+              </section>
+              <section class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <h3>Rychle scaffoldy produktu</h3>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-empty>Iba doplnit prazdne</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-summary>Starter summary</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-pros>Starter plusy</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-cons>Starter minusy</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-all>Vyplnit vsetko</button>
+                  </div>
+                </div>
+                <p class="admin-note">Vygeneruje zakladny draft z nazvu, brandu, obchodu a kategorie. Potom ho staci doladit redakcne.</p>
+              </section>
               <label>
                 <span>Kratky popis</span>
                 <textarea name="summary" rows="3"><?= esc((string) ($selectedProduct['summary'] ?? '')) ?></textarea>
@@ -2175,6 +2386,112 @@ require dirname(__DIR__) . '/inc/head.php';
           </section>
         <?php endif; ?>
 
+        <?php if ($section === 'help'): ?>
+          <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Pomoc pre kazdodennu pracu</p>
+                <h2>Co kliknut a v akom poradi</h2>
+              </div>
+            </div>
+            <div class="admin-help-grid">
+              <article class="admin-help-card">
+                <h3>1. Chcem upravit clanok</h3>
+                <ol class="admin-quickstart-list">
+                  <li>Otvor <a href="/admin?section=articles&slug=<?= esc($selectedArticleSlug) ?>">Clanky</a> a vyber konkretne URL.</li>
+                  <li>Uprav titulok, intro, sekcie a SEO meta.</li>
+                  <li>Ak je to money page, pouzi reusable produkty a tlacidlo <strong>Money-page scaffold</strong>.</li>
+                  <li>Uloz clanok a otvor live stranku v novom tabu.</li>
+                </ol>
+              </article>
+
+              <article class="admin-help-card">
+                <h3>2. Chcem doplnit hero obrazok</h3>
+                <ol class="admin-quickstart-list">
+                  <li>Otvor <a href="/admin?section=images&slug=<?= esc($selectedArticleSlug) ?>">Image briefy</a>.</li>
+                  <li>Skopiruj <strong>prompt</strong>, <strong>filename</strong> a <strong>target path</strong>.</li>
+                  <li>V Canve alebo AI nastroji vytvor obrazok bez textu a exportuj WebP.</li>
+                  <li>Nahraj hero cez admin a skontroluj live clanok.</li>
+                </ol>
+              </article>
+
+              <article class="admin-help-card">
+                <h3>3. Chcem doplnit packshot produktu</h3>
+                <ol class="admin-quickstart-list">
+                  <li>Otvor <a href="/admin?section=products&product=<?= esc($selectedProductSlug) ?>">Produkty</a> alebo packshot queue v image workflowe.</li>
+                  <li>Skopiruj cielovu asset cestu.</li>
+                  <li>Nahraj packshot cez rychly upload.</li>
+                  <li>Vrat sa na clanok a skontroluj, ci karta uz ukazuje realny packshot.</li>
+                </ol>
+              </article>
+
+              <article class="admin-help-card">
+                <h3>4. Chcem doplnit Dognet link</h3>
+                <ol class="admin-quickstart-list">
+                  <li>Otvor <a href="/admin?section=affiliates&code=<?= esc($selectedAffiliateCode) ?>">Affiliate odkazy</a>.</li>
+                  <li>Vyber existujuci kod alebo vytvor novy interny <code>/go/</code> kod.</li>
+                  <li>Vloz finalny Dognet deeplink a merchant data.</li>
+                  <li>Skontroluj CTA na live stranke alebo otvor <code>/go/...</code> link.</li>
+                </ol>
+              </article>
+
+              <article class="admin-help-card">
+                <h3>5. Chcem rychlo vytvorit novu money page</h3>
+                <ol class="admin-quickstart-list">
+                  <li>V Clankoch vytvor novy clanok ako <strong>comparison</strong> alebo <strong>review</strong>.</li>
+                  <li>Pridaj reusable produkty z katalogu.</li>
+                  <li>Pouzi <strong>Money-page scaffold</strong> alebo <strong>Top 3 ready shortlist</strong>.</li>
+                  <li>Dopln hero obrazok, packshoty a affiliate linky iba tam, kde queue ukazuje medzery.</li>
+                </ol>
+              </article>
+
+              <article class="admin-help-card">
+                <h3>6. Odporucany bezny workflow</h3>
+                <ol class="admin-quickstart-list">
+                  <li>Najprv clanok a struktura.</li>
+                  <li>Potom reusable produkty a porovnanie.</li>
+                  <li>Potom hero obrazok a packshoty.</li>
+                  <li>Az nakoniec Dognet deeplinky a finalna kontrola live stranky.</li>
+                </ol>
+              </article>
+            </div>
+
+            <section class="admin-subsection admin-help-checklist">
+              <h3>Pred publikovanim skontroluj</h3>
+              <div class="admin-check-card-wrap">
+                <label class="admin-check-card">
+                  <input type="checkbox" />
+                  <div>
+                    <strong>Titulok, intro a meta description su vyplnene</strong>
+                    <small>Clanok by mal mat aj jasnu hlavnu temu a cisty slug.</small>
+                  </div>
+                </label>
+                <label class="admin-check-card">
+                  <input type="checkbox" />
+                  <div>
+                    <strong>Odporucane produkty maju affiliate a packshot</strong>
+                    <small>Ak nie, otvor queue nedokoncenych produktov alebo affiliate queue.</small>
+                  </div>
+                </label>
+                <label class="admin-check-card">
+                  <input type="checkbox" />
+                  <div>
+                    <strong>Hero obrazok je finalny WebP</strong>
+                    <small>SVG fallback nechaj len docasne, nie ako finalny vystup.</small>
+                  </div>
+                </label>
+                <label class="admin-check-card">
+                  <input type="checkbox" />
+                  <div>
+                    <strong>Live clanok vyzera dobre na fronte</strong>
+                    <small>Skontroluj CTA, porovnanie, related bloky a obrazky.</small>
+                  </div>
+                </label>
+              </div>
+            </section>
+          </section>
+        <?php endif; ?>
+
         <?php if ($section === 'tools'): ?>
           <section class="admin-card">
             <div class="admin-card-head">
@@ -2293,6 +2610,7 @@ require dirname(__DIR__) . '/inc/head.php';
   <?php endif; ?>
 </section>
 <?php require dirname(__DIR__) . '/inc/footer.php'; ?>
+
 
 
 

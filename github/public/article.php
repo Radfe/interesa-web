@@ -115,7 +115,7 @@ include __DIR__ . '/inc/head.php';
 ?>
 <section class="container two-col">
   <div class="content">
-    <article class="lead-article article-shell">
+    <article class="lead-article article-shell<?= $usesAdminContent ? ' article-shell-admin' : '' ?>">
       <nav class="muted" aria-label="Breadcrumb">
         <a href="/">Domov</a> &rsaquo; <a href="/clanky/">Clanky</a>
         <?php if ($categoryMeta !== null): ?>
