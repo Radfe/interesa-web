@@ -284,7 +284,10 @@ if ($isAuthed) {
                 $comparisonRows = $visualComparison['rows'] !== []
                     ? $visualComparison['rows']
                     : interessa_admin_decode_json_textarea((string) ($_POST['comparison_rows_json'] ?? ''), 'Riadky porovnania');
-                $recommended = interessa_admin_lines_to_array((string) ($_POST['recommended_products'] ?? ''));
+                $recommended = array_values(array_unique(array_merge(
+                    $recommended,
+                    interessa_admin_lines_to_array($_POST['recommended_product_checks'] ?? [])
+                )));
                 $payload = [
                     'title' => (string) ($_POST['title'] ?? ''),
                     'intro' => (string) ($_POST['intro'] ?? ''),
@@ -473,6 +476,9 @@ $selectedArticleMeta = $selectedArticleSlug !== '' ? article_meta($selectedArtic
 $categoryOptions = category_registry();
 $selectedArticleOverride = $selectedArticleSlug !== '' ? interessa_admin_article_content($selectedArticleSlug) : interessa_admin_normalize_article_override('', []);
 $articlePrompt = $selectedArticleSlug !== '' ? interessa_hero_prompt_meta($selectedArticleSlug) : [];
+$selectedArticleHero = $selectedArticleSlug !== '' ? interessa_article_image_meta($selectedArticleSlug, 'hero', true) : null;
+$selectedArticleHeroSource = is_array($selectedArticleHero) ? (string) ($selectedArticleHero['source_type'] ?? 'placeholder') : 'missing';
+
 
 $catalog = interessa_product_catalog();
 $productSlugs = array_keys($catalog);
@@ -480,6 +486,9 @@ sort($productSlugs);
 $selectedProductSlug = trim((string) ($_GET['product'] ?? ($productSlugs[0] ?? '')));
 $selectedProduct = $selectedProductSlug !== '' ? interessa_product($selectedProductSlug) : null;
 $selectedProduct = is_array($selectedProduct) ? interessa_normalize_product($selectedProduct) : null;
+$selectedProductImage = is_array($selectedProduct) ? ($selectedProduct['image'] ?? null) : null;
+$selectedProductImageSource = is_array($selectedProduct) ? (string) ($selectedProduct['image_mode'] ?? 'placeholder') : 'missing';
+
 
 $affiliateRegistry = aff_registry();
 $affiliateCodes = array_keys($affiliateRegistry);
@@ -771,6 +780,16 @@ require dirname(__DIR__) . '/inc/head.php';
                   <span>Odporucane produkty (slug na riadok)</span>
                   <textarea name="recommended_products" rows="6"><?= esc($recommendedProductsText) ?></textarea>
                 </label>
+                  <span>Vyber z existujucich produktov</span>
+                  <div class="admin-check-grid">
+                    <?php foreach ($catalog as $productSlug => $productRow): ?>
+                      <?php $checked = in_array((string) $productSlug, is_array($selectedArticleOverride['recommended_products'] ?? null) ? $selectedArticleOverride['recommended_products'] : [], true); ?>
+                      <label class="admin-check-card">
+                        <input type="checkbox" name="recommended_product_checks[]" value="<?= esc((string) $productSlug) ?>" <?= $checked ? 'checked' : '' ?> />
+                        <span><strong><?= esc((string) ($productRow['name'] ?? $productSlug)) ?></strong><small><?= esc((string) $productSlug) ?></small></span>
+                      </label>
+                    <?php endforeach; ?>
+                  </div>
                 <label>
                   <span>Nahrat hero obrazok</span>
                   <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" />
@@ -824,6 +843,22 @@ require dirname(__DIR__) . '/inc/head.php';
                   <button class="btn btn-secondary" type="submit">Vytvorit produkt</button>
                 </div>
               </form>
+            </section>
+
+            <section class="admin-subsection admin-asset-preview">
+              <div class="admin-subsection-head">
+                <h3>Aktualny packshot a zdroj</h3>
+              </div>
+              <div class="admin-asset-preview__grid">
+                <div class="admin-asset-preview__media">
+                  <?= interessa_render_image($selectedProductImage, ['class' => 'admin-asset-preview__image']) ?>
+                </div>
+                <div class="admin-asset-preview__body">
+                  <p><strong>Zdroj:</strong> <?= esc($selectedProductImageSource) ?></p>
+                  <p><strong>Target asset:</strong> <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></p>
+                  <p><strong>Remote source:</strong> <?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?></p>
+                </div>
+              </div>
             </section>
 
             <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
@@ -891,6 +926,22 @@ require dirname(__DIR__) . '/inc/head.php';
                 </select>
               </form>
             </div>
+
+            <section class="admin-subsection admin-asset-preview">
+              <div class="admin-subsection-head">
+                <h3>Aktualny hero asset</h3>
+              </div>
+              <div class="admin-asset-preview__grid">
+                <div class="admin-asset-preview__media">
+                  <?= interessa_render_image($selectedArticleHero, ['class' => 'admin-asset-preview__image']) ?>
+                </div>
+                <div class="admin-asset-preview__body">
+                  <p><strong>Zdroj:</strong> <?= esc($selectedArticleHeroSource) ?></p>
+                  <p><strong>Aktivny asset:</strong> <code><?= esc((string) ($selectedArticleHero['asset'] ?? '')) ?></code></p>
+                  <p><strong>Target path:</strong> <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></p>
+                </div>
+              </div>
+            </section>
 
             <div class="admin-brief-grid">
               <div class="admin-brief-card">

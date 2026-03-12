@@ -122,3 +122,17 @@ Update `AGENT_STATUS.md` only when:
 - a milestone is completed
 - the branch changes
 - a significant set of modified files changes
+
+## Quick create workflows
+- Products section now includes a quick-create form for new reusable products
+- Affiliate section now includes a quick-create form for new `/go/` codes
+- These flows create lightweight admin overrides first, then open the full editor for enrichment
+
+## Admin image previews
+- Products section shows the current packshot preview, source type and target asset path
+- Images section shows the current hero preview, source type and target output path
+- This makes it easier to verify whether the site is using local WebP, remote merchant image or fallback
+
+## Article recommendation picker
+- Article editor now supports checkbox selection of reusable products in addition to manual slug textarea entry
+- Manual textarea remains available as a fallback for advanced use

@@ -412,3 +412,69 @@
   border-radius: inherit;
   background: linear-gradient(135deg, #15314b, #2d6a8c);
 }
+
+.admin-asset-preview__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+  align-items: start;
+}
+
+.admin-asset-preview__media {
+  padding: 1rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.admin-asset-preview__image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  aspect-ratio: 3 / 2;
+}
+
+.admin-asset-preview__body {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.admin-asset-preview__body p {
+  margin: 0;
+}
+
+@media (max-width: 980px) {
+  .admin-asset-preview__grid {
+    grid-template-columns: 1fr;
+  }
+}
+.admin-check-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-top: 0.75rem;
+}
+
+.admin-check-card {
+  display: flex;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.85rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #fff;
+}
+
+.admin-check-card input {
+  width: auto;
+  margin-top: 0.15rem;
+}
+
+.admin-check-card span {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.admin-check-card small {
+  color: #516072;
+}
