@@ -199,3 +199,74 @@ if (!function_exists('interessa_admin_import_feed_products')) {
         return $imported;
     }
 }
+
+if (!function_exists('interessa_admin_parse_affiliate_csv_file')) {
+    function interessa_admin_parse_affiliate_csv_file(string $path): array {
+        $handle = fopen($path, 'r');
+        if ($handle === false) {
+            throw new RuntimeException('Affiliate CSV sa nepodarilo otvorit.');
+        }
+
+        $firstLine = fgets($handle);
+        if ($firstLine === false) {
+            fclose($handle);
+            return [];
+        }
+
+        $delimiter = interessa_admin_feed_detect_delimiter($firstLine);
+        rewind($handle);
+        $headers = fgetcsv($handle, 0, $delimiter, '"', '\\') ?: [];
+        $headers = array_map(static fn($value) => strtolower(trim((string) $value)), $headers);
+        $rows = [];
+
+        while (($row = fgetcsv($handle, 0, $delimiter, '"', '\\')) !== false) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $record = array_combine($headers, array_pad($row, count($headers), '')) ?: [];
+            $code = interessa_admin_slugify((string) ($record['code'] ?? ''));
+            $url = trim((string) ($record['deeplink_url'] ?? $record['deeplink'] ?? $record['url'] ?? ''));
+            if ($code === '' || $url === '') {
+                continue;
+            }
+
+            $rows[$code] = [
+                'url' => $url,
+                'merchant' => (string) ($record['merchant'] ?? ''),
+                'merchant_slug' => (string) ($record['merchant_slug'] ?? ''),
+                'product_slug' => (string) ($record['product_slug'] ?? ''),
+                'link_type' => (string) ($record['link_type'] ?? 'affiliate'),
+                'source' => basename($path),
+            ];
+        }
+
+        fclose($handle);
+        ksort($rows);
+        return $rows;
+    }
+}
+
+if (!function_exists('interessa_admin_import_affiliate_rows')) {
+    function interessa_admin_import_affiliate_rows(array $rows): int {
+        $links = interessa_admin_affiliate_links();
+        $count = 0;
+        foreach ($rows as $code => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $normalizedCode = interessa_admin_slugify((string) $code);
+            if ($normalizedCode === '') {
+                continue;
+            }
+            $links[$normalizedCode] = interessa_admin_normalize_affiliate_record($normalizedCode, $row);
+            $count++;
+        }
+
+        if ($count > 0) {
+            interessa_admin_save_affiliate_links($links);
+        }
+
+        return $count;
+    }
+}

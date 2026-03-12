@@ -97,3 +97,10 @@ The importer:
 - article hero: admin hero asset -> media registry asset -> canonical article hero asset -> category visual fallback
 - product image: local mirrored packshot -> approved remote merchant image -> product placeholder
 - affiliate links: admin link override -> PHP registries -> CSV fallback
+
+
+## Reset and delete actions
+- article overrides can be reset without touching the original HTML article
+- product overrides can be deleted without removing the base catalog
+- affiliate link overrides can be deleted without touching the PHP registries
+- all destructive admin actions now use browser confirmation before submit

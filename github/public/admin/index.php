@@ -120,12 +120,14 @@ function interessa_admin_article_options(): array {
     return $items;
 }
 
-function interessa_admin_comparison_editor_state(array $comparison, int $maxColumns = 4, int $maxRows = 5): array {
-    $sourceColumns = is_array($comparison['columns'] ?? null) ? $comparison['columns'] : [];
-    $sourceRows = is_array($comparison['rows'] ?? null) ? $comparison['rows'] : [];
+function interessa_admin_comparison_editor_state(array $comparison): array {
+    $sourceColumns = is_array($comparison['columns'] ?? null) ? array_values($comparison['columns']) : [];
+    $sourceRows = is_array($comparison['rows'] ?? null) ? array_values($comparison['rows']) : [];
+    $columnCount = max(count($sourceColumns), 1);
+    $rowCount = max(count($sourceRows), 1);
     $columns = [];
 
-    foreach (range(0, $maxColumns - 1) as $index) {
+    foreach (range(0, $columnCount - 1) as $index) {
         $columns[$index] = [
             'key' => (string) ($sourceColumns[$index]['key'] ?? ''),
             'label' => (string) ($sourceColumns[$index]['label'] ?? ''),
@@ -134,7 +136,7 @@ function interessa_admin_comparison_editor_state(array $comparison, int $maxColu
     }
 
     $rows = [];
-    foreach (range(0, $maxRows - 1) as $rowIndex) {
+    foreach (range(0, $rowCount - 1) as $rowIndex) {
         $rowCells = [];
         foreach ($columns as $column) {
             $key = (string) ($column['key'] ?? '');
@@ -226,6 +228,12 @@ if ($isAuthed) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $action = trim((string) ($_POST['action'] ?? ''));
 
+            if ($action === 'delete_article_override') {
+                $slug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
+                interessa_admin_delete_article_override($slug);
+                interessa_admin_redirect('articles', ['slug' => $slug, 'saved' => 'article-reset']);
+            }
+
             if ($action === 'save_article') {
                 $slug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
                 $visualComparison = interessa_admin_collect_comparison_visual();
@@ -260,6 +268,12 @@ if ($isAuthed) {
                 interessa_admin_redirect('articles', ['slug' => $slug, 'saved' => 'article']);
             }
 
+            if ($action === 'delete_product_override') {
+                $slug = trim((string) ($_POST['product_slug'] ?? ''));
+                interessa_admin_delete_product_record($slug);
+                interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'product-reset']);
+            }
+
             if ($action === 'save_product') {
                 $slug = trim((string) ($_POST['product_slug'] ?? ''));
                 $merchantSlug = trim((string) ($_POST['merchant_slug'] ?? ''));
@@ -284,6 +298,12 @@ if ($isAuthed) {
 
                 interessa_admin_save_product_record($slug, $payload);
                 interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'product']);
+            }
+
+            if ($action === 'delete_affiliate_override') {
+                $code = trim((string) ($_POST['code'] ?? ''));
+                interessa_admin_delete_affiliate_record($code);
+                interessa_admin_redirect('affiliates', ['code' => $code, 'saved' => 'affiliate-reset']);
             }
 
             if ($action === 'save_affiliate') {
@@ -326,6 +346,16 @@ if ($isAuthed) {
                 $result = interessa_admin_import_bundle($bundle);
                 $importSummary = 'Importovane: ' . $result['articles'] . ' clankov, ' . $result['products'] . ' produktov, ' . $result['affiliate_links'] . ' affiliate odkazov.';
                 $flash = 'bundle-import';
+            }
+
+            if ($action === 'affiliate_csv_import') {
+                if (empty($_FILES['affiliate_csv_file']['tmp_name']) || !is_uploaded_file($_FILES['affiliate_csv_file']['tmp_name'])) {
+                    throw new RuntimeException('Vyber affiliate CSV subor.');
+                }
+                $rows = interessa_admin_parse_affiliate_csv_file((string) $_FILES['affiliate_csv_file']['tmp_name']);
+                $count = interessa_admin_import_affiliate_rows($rows);
+                $importSummary = 'Affiliate CSV import: ' . $count . ' odkazov bolo ulozenych do admin affiliate vrstvy.';
+                $flash = 'affiliate-import';
             }
 
             if ($action === 'feed_import') {
@@ -376,6 +406,7 @@ while (count($sections) < 5) {
 }
 
 $comparison = is_array($selectedArticleOverride['comparison'] ?? null) ? $selectedArticleOverride['comparison'] : ['columns' => [], 'rows' => []];
+$comparisonEditor = interessa_admin_comparison_editor_state($comparison);
 $recommendedProductsText = implode(PHP_EOL, is_array($selectedArticleOverride['recommended_products'] ?? null) ? $selectedArticleOverride['recommended_products'] : []);
 
 require dirname(__DIR__) . '/inc/head.php';
@@ -515,6 +546,8 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <h3>Porovnanie</h3>
                   <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-add-column>Pridej stlpec</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-add-row>Pridej riadok</button>
                     <button class="btn btn-secondary btn-small" type="button" data-fill-columns>Priklad stlpcov</button>
                     <button class="btn btn-secondary btn-small" type="button" data-fill-rows>Priklad riadkov</button>
                   </div>
@@ -532,9 +565,10 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection is-compact">
                   <h4>Vizualny editor porovnania</h4>
                   <div class="admin-comparison-editor">
-                    <div class="admin-comparison-columns">
+                    <div class="admin-comparison-columns" data-comparison-columns>
                       <?php foreach ($comparisonEditor['columns'] as $index => $column): ?>
-                        <div class="admin-comparison-column">
+                        <div class="admin-comparison-column" data-comparison-column>
+                          <button class="btn btn-secondary btn-small admin-comparison-remove" type="button" data-remove-column>Odstranit stlpec</button>
                           <input type="text" name="comparison_column_label[]" value="<?= esc((string) ($column['label'] ?? '')) ?>" placeholder="Label stlpca" />
                           <input type="text" name="comparison_column_key[]" value="<?= esc((string) ($column['key'] ?? '')) ?>" placeholder="key" />
                           <select name="comparison_column_type[]">
@@ -546,12 +580,13 @@ require dirname(__DIR__) . '/inc/head.php';
                         </div>
                       <?php endforeach; ?>
                     </div>
-                    <div class="admin-comparison-rows">
+                    <div class="admin-comparison-rows" data-comparison-rows>
                       <?php foreach ($comparisonEditor['rows'] as $rowCells): ?>
-                        <div class="admin-comparison-row-grid">
+                        <div class="admin-comparison-row-grid" data-comparison-row>
                           <?php foreach ($rowCells as $columnIndex => $value): ?>
                             <textarea name="comparison_cell_<?= (int) $columnIndex ?>[]" rows="2" placeholder="Hodnota bunky"><?= esc((string) $value) ?></textarea>
                           <?php endforeach; ?>
+                          <button class="btn btn-secondary btn-small admin-comparison-remove admin-comparison-remove-row" type="button" data-remove-row>Odstranit riadok</button>
                         </div>
                       <?php endforeach; ?>
                     </div>
@@ -584,6 +619,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div class="admin-actions">
                 <button class="btn btn-cta" type="submit">Ulozit clanok</button>
                 <a class="btn btn-secondary" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok</a>
+                <button class="btn btn-secondary" type="submit" name="action" value="delete_article_override" onclick="return confirm('Naozaj resetovat admin override pre tento clanok?');">Reset override</button>
               </div>
             </form>
           </section>
@@ -649,6 +685,7 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
               <div class="admin-actions">
                 <button class="btn btn-cta" type="submit">Ulozit produkt</button>
+                <button class="btn btn-secondary" type="submit" name="action" value="delete_product_override" onclick="return confirm('Naozaj zmazat admin override produktu?');">Zmazat override produktu</button>
               </div>
             </form>
           </section>
@@ -744,6 +781,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <?php if ($selectedAffiliateCode !== ''): ?>
                   <a class="btn btn-secondary" href="/go/<?= rawurlencode($selectedAffiliateCode) ?>" target="_blank" rel="noopener">Otvorit /go/ link</a>
                 <?php endif; ?>
+                <button class="btn btn-secondary" type="submit" name="action" value="delete_affiliate_override" onclick="return confirm('Naozaj zmazat admin override affiliate odkazu?');">Zmazat override odkazu</button>
               </div>
             </form>
           </section>
@@ -800,6 +838,19 @@ require dirname(__DIR__) . '/inc/head.php';
                     <input type="file" name="feed_file" accept=".xml,.csv,.txt" required />
                   </label>
                   <button class="btn btn-cta" type="submit">Importovat produkty z feedu</button>
+                </form>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Affiliate CSV import</h3>
+                <p>Nahraj CSV s code/url alebo deeplink_url a admin ho pripoji do centralnej affiliate override vrstvy.</p>
+                <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
+                  <input type="hidden" name="action" value="affiliate_csv_import" />
+                  <label>
+                    <span>Affiliate CSV</span>
+                    <input type="file" name="affiliate_csv_file" accept=".csv,.txt" required />
+                  </label>
+                  <button class="btn btn-cta" type="submit">Importovat affiliate CSV</button>
                 </form>
               </section>
 

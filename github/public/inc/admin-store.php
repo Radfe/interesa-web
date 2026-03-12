@@ -534,3 +534,52 @@ if (!function_exists('interessa_admin_import_bundle')) {
         return $imported;
     }
 }
+
+if (!function_exists('interessa_admin_delete_article_override')) {
+    function interessa_admin_delete_article_override(string $slug): void {
+        $path = interessa_admin_article_override_path($slug);
+        if (is_file($path)) {
+            @unlink($path);
+        }
+    }
+}
+
+if (!function_exists('interessa_admin_delete_product_record')) {
+    function interessa_admin_delete_product_record(string $slug): void {
+        $slug = interessa_admin_slugify($slug);
+        if ($slug === '') {
+            return;
+        }
+
+        $products = interessa_admin_products();
+        unset($products[$slug]);
+        if ($products === []) {
+            if (is_file(INTERESSA_ADMIN_PRODUCTS_FILE)) {
+                @unlink(INTERESSA_ADMIN_PRODUCTS_FILE);
+            }
+            return;
+        }
+
+        interessa_admin_save_products($products);
+    }
+}
+
+if (!function_exists('interessa_admin_delete_affiliate_record')) {
+    function interessa_admin_delete_affiliate_record(string $code): void {
+        $code = interessa_admin_slugify($code);
+        if ($code === '') {
+            return;
+        }
+
+        $links = interessa_admin_affiliate_links();
+        unset($links[$code]);
+        if ($links === []) {
+            if (is_file(INTERESSA_ADMIN_AFFILIATE_LINKS_FILE)) {
+                @unlink(INTERESSA_ADMIN_AFFILIATE_LINKS_FILE);
+            }
+            return;
+        }
+
+        interessa_admin_save_affiliate_links($links);
+    }
+}
