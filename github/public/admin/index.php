@@ -111,6 +111,130 @@ function interessa_admin_recommended_selection(): array {
     return array_values(array_unique(array_merge($manual, $checked)));
 }
 
+function interessa_admin_recommended_preview_rows(array $slugs): array {
+    $rows = [];
+    foreach (array_values(array_unique(array_filter(array_map('strval', $slugs)))) as $slug) {
+        $product = interessa_product($slug);
+        if (!is_array($product)) {
+            continue;
+        }
+        $normalized = interessa_normalize_product($product);
+        $target = interessa_affiliate_target($normalized);
+        $rows[] = [
+            'slug' => $slug,
+            'name' => (string) ($normalized['name'] ?? $slug),
+            'merchant' => (string) ($normalized['merchant'] ?? ''),
+            'summary' => (string) ($normalized['summary'] ?? ''),
+            'image' => $normalized['image'] ?? null,
+            'href' => (string) ($target['href'] ?? ''),
+            'label' => (string) ($target['label'] ?? ''),
+        ];
+    }
+    return $rows;
+}
+
+function interessa_admin_missing_product_rows(array $slugs, string $defaultCategory = ''): array {
+    $rows = [];
+    foreach (array_values(array_unique(array_filter(array_map('strval', $slugs)))) as $slug) {
+        if ($slug === '' || interessa_product($slug) !== null) {
+            continue;
+        }
+
+        $rows[] = [
+            'slug' => $slug,
+            'name' => humanize_slug($slug),
+            'category' => normalize_category_slug($defaultCategory),
+        ];
+    }
+    return $rows;
+}
+
+
+function interessa_admin_recommended_diagnostics(array $slugs): array {
+    $rows = [];
+    $slugs = array_values(array_unique(array_filter(array_map('strval', $slugs))));
+    $summary = [
+        'total' => count($slugs),
+        'catalog' => 0,
+        'missing_catalog' => 0,
+        'affiliate_ready' => 0,
+        'packshot_ready' => 0,
+        'money_ready' => 0,
+    ];
+
+    foreach ($slugs as $slug) {
+        $product = interessa_product($slug);
+        if (!is_array($product)) {
+            $summary['missing_catalog']++;
+            $rows[] = [
+                'slug' => $slug,
+                'name' => humanize_slug($slug),
+                'merchant' => '',
+                'exists' => false,
+                'affiliate_code' => '',
+                'affiliate_ready' => false,
+                'has_click_target' => false,
+                'packshot_ready' => false,
+                'money_ready' => false,
+                'image_mode' => 'missing',
+                'image_target_asset' => '',
+                'href' => '',
+                'summary' => '',
+                'rating' => '',
+            ];
+            continue;
+        }
+
+        $normalized = interessa_normalize_product($product);
+        $target = interessa_affiliate_target($normalized);
+        $affiliateCode = trim((string) ($normalized['affiliate_code'] ?? ''));
+        $resolved = $affiliateCode !== '' ? aff_resolve($affiliateCode) : null;
+        $affiliateReady = is_array($resolved) && trim((string) ($resolved['href'] ?? '')) !== '';
+        $hasClickTarget = trim((string) ($target['href'] ?? '')) !== '';
+        $imageMode = trim((string) ($normalized['image_mode'] ?? 'placeholder'));
+        $packshotReady = $imageMode !== '' && $imageMode !== 'placeholder';
+        $moneyReady = $affiliateReady && $packshotReady;
+
+        $summary['catalog']++;
+        if ($affiliateReady) {
+            $summary['affiliate_ready']++;
+        }
+        if ($packshotReady) {
+            $summary['packshot_ready']++;
+        }
+        if ($moneyReady) {
+            $summary['money_ready']++;
+        }
+
+        $rows[] = [
+            'slug' => $slug,
+            'name' => (string) ($normalized['name'] ?? $slug),
+            'merchant' => (string) ($normalized['merchant'] ?? ''),
+            'exists' => true,
+            'affiliate_code' => $affiliateCode,
+            'affiliate_ready' => $affiliateReady,
+            'has_click_target' => $hasClickTarget,
+            'packshot_ready' => $packshotReady,
+            'money_ready' => $moneyReady,
+            'image_mode' => $imageMode,
+            'image_target_asset' => (string) ($normalized['image_target_asset'] ?? ''),
+            'href' => trim((string) ($target['href'] ?? '')),
+            'summary' => (string) ($normalized['summary'] ?? ''),
+            'rating' => trim((string) ($normalized['rating'] ?? '')),
+        ];
+    }
+
+    $actionRows = array_values(array_filter($rows, static function (array $row): bool {
+        return empty($row['money_ready']);
+    }));
+
+    return [
+        'summary' => $summary,
+        'rows' => $rows,
+        'action_rows' => $actionRows,
+    ];
+}
+
 function interessa_admin_collect_comparison_visual(): array {
     $keys = $_POST['comparison_column_key'] ?? [];
     $labels = $_POST['comparison_column_label'] ?? [];
@@ -255,6 +379,7 @@ function interessa_admin_image_queue(array $articleOptions, string $filter = 'mi
             'file_name' => (string) ($promptMeta['file_name'] ?? ''),
             'alt_text' => (string) ($promptMeta['alt_text'] ?? ''),
             'dimensions' => (string) ($promptMeta['dimensions'] ?? '1200x800'),
+            'prompt' => (string) ($promptMeta['prompt'] ?? ''),
             'has_final_webp' => $isFinalWebp,
             'source_type' => (string) ($meta['source_type'] ?? 'placeholder'),
             'article_url' => article_url((string) $slug),
@@ -320,6 +445,103 @@ function interessa_admin_product_image_queue(array $catalog, string $filter = 'm
     return array_slice($rows, 0, $limit);
 }
 
+function interessa_admin_product_affiliate_queue(array $catalog, int $limit = 12): array {
+    $rows = [];
+    foreach ($catalog as $slug => $product) {
+        $normalized = interessa_normalize_product(is_array($product) ? $product : []);
+        $productSlug = (string) ($normalized['slug'] ?? $slug);
+        $affiliateCode = trim((string) ($normalized['affiliate_code'] ?? ''));
+        $record = $affiliateCode !== '' ? aff_record($affiliateCode) : null;
+        $resolved = $affiliateCode !== '' ? aff_resolve($affiliateCode) : null;
+        $status = '';
+
+        if ($affiliateCode === '') {
+            $status = 'chyba affiliate kod';
+        } elseif (!is_array($record)) {
+            $status = 'kod nie je v registry';
+        } elseif ($resolved === null) {
+            $status = 'link sa neda vyriesit';
+        }
+
+        if ($status === '') {
+            continue;
+        }
+
+        $rows[] = [
+            'slug' => $productSlug,
+            'name' => interessa_admin_clean_label((string) ($normalized['name'] ?? $productSlug)),
+            'merchant' => (string) ($normalized['merchant'] ?? ''),
+            'affiliate_code' => $affiliateCode,
+            'status' => $status,
+            'fallback_url' => (string) ($normalized['fallback_url'] ?? ''),
+        ];
+    }
+
+    usort($rows, static function (array $left, array $right): int {
+        return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
+    });
+
+    return array_slice($rows, 0, $limit);
+}
+
+
+function interessa_admin_product_quality_queue(array $catalog, int $limit = 12): array {
+    $rows = [];
+    foreach ($catalog as $slug => $product) {
+        $normalized = interessa_normalize_product(is_array($product) ? $product : []);
+        $productSlug = (string) ($normalized['slug'] ?? $slug);
+        $pros = is_array($normalized['pros'] ?? null) ? array_values(array_filter(array_map('strval', $normalized['pros']))) : [];
+        $cons = is_array($normalized['cons'] ?? null) ? array_values(array_filter(array_map('strval', $normalized['cons']))) : [];
+        $affiliateCode = trim((string) ($normalized['affiliate_code'] ?? ''));
+        $resolved = $affiliateCode !== '' ? aff_resolve($affiliateCode) : null;
+        $affiliateReady = is_array($resolved) && trim((string) ($resolved['href'] ?? '')) !== '';
+        $packshotReady = trim((string) ($normalized['image_mode'] ?? 'placeholder')) !== 'placeholder';
+
+        $issues = [];
+        if (trim((string) ($normalized['summary'] ?? '')) === '') {
+            $issues[] = 'Chyba kratky popis';
+        }
+        if (trim((string) ($normalized['rating'] ?? '')) === '') {
+            $issues[] = 'Chyba rating';
+        }
+        if ($pros === []) {
+            $issues[] = 'Chybaju plusy';
+        }
+        if ($cons === []) {
+            $issues[] = 'Chybaju minusy';
+        }
+        if (!$affiliateReady) {
+            $issues[] = 'Affiliate nie je hotovy';
+        }
+        if (!$packshotReady) {
+            $issues[] = 'Packshot nie je hotovy';
+        }
+
+        if ($issues === []) {
+            continue;
+        }
+
+        $rows[] = [
+            'slug' => $productSlug,
+            'name' => interessa_admin_clean_label((string) ($normalized['name'] ?? $productSlug)),
+            'merchant' => (string) ($normalized['merchant'] ?? ''),
+            'issues' => $issues,
+            'summary_ready' => trim((string) ($normalized['summary'] ?? '')) !== '',
+            'rating_ready' => trim((string) ($normalized['rating'] ?? '')) !== '',
+            'pros_ready' => $pros !== [],
+            'cons_ready' => $cons !== [],
+            'affiliate_ready' => $affiliateReady,
+            'packshot_ready' => $packshotReady,
+            'affiliate_code' => $affiliateCode,
+        ];
+    }
+
+    usort($rows, static function (array $left, array $right): int {
+        return count($right['issues'] ?? []) <=> count($left['issues'] ?? []);
+    });
+
+    return array_slice($rows, 0, max($limit, 1));
+}
 function interessa_admin_output_image_backlog_csv(array $articleOptions, array $catalog): never {
     header('Content-Type: text/csv; charset=UTF-8');
     header('Content-Disposition: attachment; filename="interesa-image-backlog.csv"');
@@ -481,6 +703,10 @@ if ($isAuthed) {
             if ($action === 'create_product') {
                 $slugInput = trim((string) ($_POST['new_product_slug'] ?? ''));
                 $nameInput = trim((string) ($_POST['new_product_name'] ?? ''));
+                $merchantInput = trim((string) ($_POST['new_product_merchant'] ?? ''));
+                $merchantSlugInput = trim((string) ($_POST['new_product_merchant_slug'] ?? ''));
+                $returnSection = trim((string) ($_POST['return_section'] ?? ''));
+                $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
                 $slug = interessa_admin_slugify($slugInput !== '' ? $slugInput : $nameInput);
                 if ($slug === '') {
                     throw new RuntimeException('Vypln slug alebo nazov noveho produktu.');
@@ -489,17 +715,20 @@ if ($isAuthed) {
                 interessa_admin_save_product_record($slug, [
                     'name' => $nameInput,
                     'brand' => (string) ($_POST['new_product_brand'] ?? ''),
-                    'merchant' => (string) ($_POST['new_product_merchant'] ?? ''),
-                    'merchant_slug' => (string) ($_POST['new_product_merchant_slug'] ?? ''),
+                    'merchant' => $merchantInput,
+                    'merchant_slug' => $merchantSlugInput !== '' ? $merchantSlugInput : interessa_admin_slugify($merchantInput),
                     'category' => (string) ($_POST['new_product_category'] ?? ''),
                     'affiliate_code' => (string) ($_POST['new_product_affiliate_code'] ?? ''),
-                    'fallback_url' => '',
-                    'summary' => '',
+                    'fallback_url' => (string) ($_POST['new_product_fallback_url'] ?? ''),
+                    'summary' => (string) ($_POST['new_product_summary'] ?? ''),
                     'rating' => '0',
                     'pros' => '',
                     'cons' => '',
-                    'image_remote_src' => '',
+                    'image_remote_src' => (string) ($_POST['new_product_image_remote_src'] ?? ''),
                 ]);
+                if ($returnSection === 'articles' && $returnSlug !== '') {
+                    interessa_admin_redirect('articles', ['slug' => $returnSlug, 'add_product' => $slug, 'saved' => 'product-created']);
+                }
                 interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'product-created']);
             }
 
@@ -526,6 +755,14 @@ if ($isAuthed) {
                 }
 
                 interessa_admin_save_product_record($slug, $payload);
+                $returnSection = trim((string) ($_POST['return_section'] ?? ''));
+                $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                if ($returnSection === 'images' && $returnSlug !== '') {
+                    interessa_admin_redirect('images', ['slug' => $returnSlug, 'saved' => 'product']);
+                }
+                if ($returnSection === 'articles' && $returnSlug !== '') {
+                    interessa_admin_redirect('articles', ['slug' => $returnSlug, 'saved' => 'product']);
+                }
                 interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'product']);
             }
 
@@ -551,6 +788,14 @@ if ($isAuthed) {
                     'product_slug' => $productSlugInput,
                     'link_type' => (string) ($_POST['new_affiliate_link_type'] ?? 'affiliate'),
                 ]);
+                $returnSection = trim((string) ($_POST['return_section'] ?? ''));
+                $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                if ($returnSection === 'images' && $returnSlug !== '') {
+                    interessa_admin_redirect('images', ['slug' => $returnSlug, 'saved' => 'affiliate-created']);
+                }
+                if ($returnSection === 'articles' && $returnSlug !== '') {
+                    interessa_admin_redirect('articles', ['slug' => $returnSlug, 'saved' => 'affiliate-created']);
+                }
                 interessa_admin_redirect('affiliates', ['code' => $code, 'saved' => 'affiliate-created']);
             }
 
@@ -563,6 +808,14 @@ if ($isAuthed) {
                     'product_slug' => (string) ($_POST['product_slug'] ?? ''),
                     'link_type' => (string) ($_POST['link_type'] ?? 'affiliate'),
                 ]);
+                $returnSection = trim((string) ($_POST['return_section'] ?? ''));
+                $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                if ($returnSection === 'images' && $returnSlug !== '') {
+                    interessa_admin_redirect('images', ['slug' => $returnSlug, 'saved' => 'affiliate']);
+                }
+                if ($returnSection === 'articles' && $returnSlug !== '') {
+                    interessa_admin_redirect('articles', ['slug' => $returnSlug, 'saved' => 'affiliate']);
+                }
                 interessa_admin_redirect('affiliates', ['code' => $code, 'saved' => 'affiliate']);
             }
 
@@ -574,6 +827,29 @@ if ($isAuthed) {
                 interessa_admin_save_article_override($slug, $override);
                 interessa_admin_redirect('images', ['slug' => $slug, 'saved' => 'hero']);
             }
+            if ($action === 'upload_packshot_only') {
+                $slug = trim((string) ($_POST['product_slug'] ?? ''));
+                $returnSection = trim((string) ($_POST['return_section'] ?? 'products'));
+                $returnArticleSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                $product = interessa_product($slug);
+                if (!is_array($product)) {
+                    throw new RuntimeException('Vybrany produkt sa nenasiel v katalogu.');
+                }
+
+                $normalizedProduct = interessa_normalize_product($product);
+                $merchantSlug = trim((string) ($normalizedProduct['merchant_slug'] ?? ''));
+                $asset = interessa_admin_store_uploaded_product_image($slug, $merchantSlug, $_FILES['product_image']);
+                $payload = array_replace($normalizedProduct, interessa_admin_product_record($slug) ?? []);
+                $payload['image_asset'] = $asset;
+                interessa_admin_save_product_record($slug, $payload);
+
+                if ($returnSection === 'images' && $returnArticleSlug !== '') {
+                    interessa_admin_redirect('images', ['slug' => $returnArticleSlug, 'saved' => 'packshot']);
+                }
+
+                interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'packshot']);
+            }
+
 
             if ($action === 'export_bundle') {
                 header('Content-Type: application/json; charset=UTF-8');
@@ -663,6 +939,23 @@ $affiliateCodes = array_keys($affiliateRegistry);
 sort($affiliateCodes);
 $selectedAffiliateCode = trim((string) ($_GET['code'] ?? ($affiliateCodes[0] ?? '')));
 $selectedAffiliate = $selectedAffiliateCode !== '' ? aff_record($selectedAffiliateCode) : null;
+$prefillAffiliateCode = trim((string) ($_GET['prefill_code'] ?? ''));
+$prefillAffiliateMerchant = trim((string) ($_GET['prefill_merchant'] ?? ''));
+$prefillAffiliateMerchantSlug = trim((string) ($_GET['prefill_merchant_slug'] ?? ''));
+$prefillAffiliateProductSlug = trim((string) ($_GET['prefill_product_slug'] ?? ''));
+$returnSectionPrefill = trim((string) ($_GET['return_section'] ?? ''));
+if (!in_array($returnSectionPrefill, ['articles', 'images'], true)) {
+    $returnSectionPrefill = '';
+}
+$returnSlugPrefill = canonical_article_slug(trim((string) ($_GET['return_slug'] ?? '')));
+$prefillNewProductBrand = trim((string) ($_GET['prefill_product_brand'] ?? ''));
+$prefillNewProductMerchant = trim((string) ($_GET['prefill_product_merchant'] ?? ''));
+$prefillNewProductMerchantSlug = trim((string) ($_GET['prefill_product_merchant_slug'] ?? ''));
+$prefillNewProductCategory = trim((string) ($_GET['prefill_product_category'] ?? ''));
+$prefillNewProductAffiliateCode = trim((string) ($_GET['prefill_product_affiliate_code'] ?? ''));
+$prefillNewProductFallbackUrl = trim((string) ($_GET['prefill_product_fallback_url'] ?? ''));
+$prefillNewProductImageRemoteSrc = trim((string) ($_GET['prefill_product_image_remote_src'] ?? ''));
+$prefillNewProductSummary = trim((string) ($_GET['prefill_product_summary'] ?? ''));
 
 $imageFilter = trim((string) ($_GET['image_filter'] ?? 'missing'));
 if (!in_array($imageFilter, ['missing', 'all', 'ready'], true)) {
@@ -690,6 +983,24 @@ $productImageQueueCounts = [
     'placeholder' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'placeholder')),
 ];
 
+$missingHeroSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allImageQueue, static fn(array $row): bool => empty($row['has_final_webp'])))));
+$selectedHeroQueueIndex = array_search($selectedArticleSlug, $missingHeroSlugs, true);
+$prevMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex > 0 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex - 1] : '';
+$nextMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex < count($missingHeroSlugs) - 1 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex + 1] : '';
+$selectedHeroQueuePosition = $selectedHeroQueueIndex !== false ? ($selectedHeroQueueIndex + 1) : 0;
+$missingPackshotSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot'])))));
+$selectedPackshotQueueIndex = array_search($selectedProductSlug, $missingPackshotSlugs, true);
+$prevMissingPackshotSlug = $selectedPackshotQueueIndex !== false && $selectedPackshotQueueIndex > 0 ? (string) $missingPackshotSlugs[$selectedPackshotQueueIndex - 1] : '';
+$nextMissingPackshotSlug = $selectedPackshotQueueIndex !== false && $selectedPackshotQueueIndex < count($missingPackshotSlugs) - 1 ? (string) $missingPackshotSlugs[$selectedPackshotQueueIndex + 1] : '';
+$selectedPackshotQueuePosition = $selectedPackshotQueueIndex !== false ? ($selectedPackshotQueueIndex + 1) : 0;
+
+$productAffiliateQueueAll = interessa_admin_product_affiliate_queue($catalog, max(count($catalog), 1));
+$productAffiliateQueue = array_slice($productAffiliateQueueAll, 0, 12);
+$productAffiliateQueueCount = count($productAffiliateQueueAll);
+$productQualityQueueAll = interessa_admin_product_quality_queue($catalog, max(count($catalog), 1));
+$productQualityQueue = array_slice($productQualityQueueAll, 0, 12);
+$productQualityQueueCount = count($productQualityQueueAll);
+
 $dashboardStats = [
     'article_overrides' => count(interessa_admin_all_article_overrides()),
     'products' => count($catalog),
@@ -705,7 +1016,37 @@ while (count($sections) < 5) {
 
 $comparison = is_array($selectedArticleOverride['comparison'] ?? null) ? $selectedArticleOverride['comparison'] : ['columns' => [], 'rows' => []];
 $comparisonEditor = interessa_admin_comparison_editor_state($comparison);
-$recommendedProductsText = implode(PHP_EOL, is_array($selectedArticleOverride['recommended_products'] ?? null) ? $selectedArticleOverride['recommended_products'] : []);
+$articleEditorProductSlugs = is_array($selectedArticleOverride['recommended_products'] ?? null) ? array_values(array_unique(array_map('strval', $selectedArticleOverride['recommended_products']))) : [];
+$articleEditorInjectedProduct = trim((string) ($_GET['add_product'] ?? ''));
+if ($articleEditorInjectedProduct !== '' && interessa_product($articleEditorInjectedProduct) !== null && !in_array($articleEditorInjectedProduct, $articleEditorProductSlugs, true)) {
+    $articleEditorProductSlugs[] = $articleEditorInjectedProduct;
+}
+$articleEditorInjectedProductName = $articleEditorInjectedProduct !== '' && interessa_product($articleEditorInjectedProduct) !== null
+    ? (string) ((interessa_product($articleEditorInjectedProduct)['name'] ?? $articleEditorInjectedProduct))
+    : '';
+
+$recommendedProductsText = implode(PHP_EOL, $articleEditorProductSlugs);
+$recommendedProductPreview = interessa_admin_recommended_preview_rows($articleEditorProductSlugs);
+
+$missingRecommendedProducts = interessa_admin_missing_product_rows(
+    $articleEditorProductSlugs,
+    (string) ($selectedArticleOverride['category'] ?? $selectedArticleMeta['category'] ?? '')
+);
+$recommendedDiagnostics = interessa_admin_recommended_diagnostics($articleEditorProductSlugs);
+$recommendedDiagnosticsSummary = is_array($recommendedDiagnostics['summary'] ?? null) ? $recommendedDiagnostics['summary'] : [];
+$recommendedDiagnosticsRows = is_array($recommendedDiagnostics['rows'] ?? null) ? $recommendedDiagnostics['rows'] : [];
+$recommendedActionRows = is_array($recommendedDiagnostics['action_rows'] ?? null) ? $recommendedDiagnostics['action_rows'] : [];
+$recommendedCatalogCoverage = (int) ($recommendedDiagnosticsSummary['catalog'] ?? 0);
+$recommendedTotalCount = (int) ($recommendedDiagnosticsSummary['total'] ?? 0);
+$recommendedMissingCount = (int) ($recommendedDiagnosticsSummary['missing_catalog'] ?? 0);
+$recommendedAffiliateReadyCount = (int) ($recommendedDiagnosticsSummary['affiliate_ready'] ?? 0);
+$recommendedPackshotReadyCount = (int) ($recommendedDiagnosticsSummary['packshot_ready'] ?? 0);
+$recommendedMoneyReadyCount = (int) ($recommendedDiagnosticsSummary['money_ready'] ?? 0);
+$selectedArticlePackshotGaps = array_values(array_filter($recommendedDiagnosticsRows, static function (array $row): bool {
+    return !empty($row['exists']) && empty($row['packshot_ready']);
+}));
+$selectedArticlePackshotGapCount = count($selectedArticlePackshotGaps);
+
 
 require dirname(__DIR__) . '/inc/head.php';
 ?>
@@ -769,7 +1110,12 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($importSummary !== ''): ?>
           <div class="admin-flash is-success"><?= esc($importSummary) ?></div>
         <?php endif; ?>
+        <?php if ($section === 'articles' && $articleEditorInjectedProduct !== ''): ?>
+          <div class="admin-flash is-success"><?= esc($articleEditorInjectedProductName !== '' ? $articleEditorInjectedProductName : $articleEditorInjectedProduct) ?> bol pridany do odporucanych produktov len v editore. Uloz clanok, aby zmena ostala natrvalo.</div>
+        <?php endif; ?>
+
         <?php if ($error !== ''): ?>
+
           <div class="admin-flash is-error"><?= esc($error) ?></div>
         <?php endif; ?>
 
@@ -798,6 +1144,11 @@ require dirname(__DIR__) . '/inc/head.php';
               <div>
                 <p class="admin-kicker">Article management</p>
                 <h2>Strukturovany obsah clanku</h2>
+              </div>
+              <div class="admin-inline-actions">
+                <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit image workflow</a>
+                <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Hero helper</a>
+                <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Live clanok</a>
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="articles" />
@@ -923,8 +1274,11 @@ require dirname(__DIR__) . '/inc/head.php';
                     <button class="btn btn-secondary btn-small" type="button" data-fill-columns>Priklad stlpcov</button>
                     <button class="btn btn-secondary btn-small" type="button" data-fill-rows>Priklad riadkov</button>
                     <button class="btn btn-secondary btn-small" type="button" data-apply-preset="top-picks">Preset top picks</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-apply-preset="catalog-picks">Preset katalog</button>
                     <button class="btn btn-secondary btn-small" type="button" data-apply-preset="duel">Preset duel</button>
                     <button class="btn btn-secondary btn-small" type="button" data-fill-from-products>Riadky z odporucanych produktov</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-ready-products>Len money-page ready</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-ready-shortlist>Top 3 ready shortlist</button>
                   </div>
                 </div>
                 <div class="admin-grid two-up">
@@ -988,18 +1342,205 @@ require dirname(__DIR__) . '/inc/head.php';
                   <div class="admin-check-grid">
                     <?php foreach ($catalog as $productSlug => $productRow): ?>
                       <?php $checked = in_array((string) $productSlug, is_array($selectedArticleOverride['recommended_products'] ?? null) ? $selectedArticleOverride['recommended_products'] : [], true); ?>
-                      <label class="admin-check-card">
-                        <input type="checkbox" name="recommended_product_checks[]" value="<?= esc((string) $productSlug) ?>" <?= $checked ? 'checked' : '' ?> />
-                        <span><strong><?= esc((string) ($productRow['name'] ?? $productSlug)) ?></strong><small><?= esc((string) $productSlug) ?></small></span>
-                      </label>
+                      <?php $productNormalized = interessa_product((string) $productSlug) ?? interessa_normalize_product(is_array($productRow) ? $productRow : []); ?>
+                      <?php $productTarget = interessa_affiliate_target($productNormalized); ?>
+                      <?php $productAffiliateCode = trim((string) ($productNormalized['affiliate_code'] ?? '')); ?>
+                      <?php $productImageMode = trim((string) ($productNormalized['image_mode'] ?? 'placeholder')); ?>
+                      <?php $productPackshotReady = $productImageMode !== '' && $productImageMode !== 'placeholder'; ?>
+                      <?php $productAffiliateReady = $productAffiliateCode !== '' && aff_resolve($productAffiliateCode) !== null; ?>
+                      <div class="admin-check-card-wrap">
+                        <label class="admin-check-card">
+                          <input type="checkbox" name="recommended_product_checks[]" value="<?= esc((string) $productSlug) ?>" data-product-name="<?= esc((string) ($productNormalized['name'] ?? $productSlug)) ?>" data-product-bestfor="<?= esc((string) ($productNormalized['summary'] ?? '')) ?>" data-product-merchant="<?= esc((string) ($productNormalized['merchant'] ?? '')) ?>" data-product-rating="<?= esc((string) ($productNormalized['rating'] ?? '')) ?>" data-product-summary="<?= esc((string) ($productNormalized['summary'] ?? '')) ?>" data-product-affiliate-ready="<?= $productAffiliateReady ? 'true' : 'false' ?>" data-product-packshot-ready="<?= $productPackshotReady ? 'true' : 'false' ?>" <?= $checked ? 'checked' : '' ?> />
+                          <span><strong><?= esc((string) ($productRow['name'] ?? $productSlug)) ?></strong><small><?= esc((string) $productSlug) ?></small></span>
+                        </label>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill<?= $productAffiliateReady ? ' is-good' : ' is-warning' ?>"><?= $productAffiliateReady ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
+                          <span class="admin-status-pill<?= $productPackshotReady ? ' is-good' : ' is-warning' ?>"><?= $productPackshotReady ? 'Packshot pripraveny' : 'Packshot chyba' ?></span>
+                        </div>
+                        <div class="admin-inline-actions admin-check-card__actions">
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $productSlug) ?>">Produkt</a>
+                          <?php if ($productAffiliateCode !== ''): ?>
+                            <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($productAffiliateCode) ?>">Affiliate</a>
+                          <?php endif; ?>
+                          <?php if (trim((string) ($productTarget['href'] ?? '')) !== ''): ?>
+                            <a class="btn btn-secondary btn-small" href="<?= esc((string) ($productTarget['href'] ?? '')) ?>" target="_blank" rel="noopener">Ciel</a>
+                          <?php endif; ?>
+                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) $productSlug) ?>">Kopirovat slug</button>
+                        </div>
+                      </div>
                     <?php endforeach; ?>
                   </div>
                 </label>
                 <label>
                   <span>Nahrat hero obrazok</span>
                   <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" />
+                  <small class="admin-note">Target hero asset: <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></small>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Image workflow</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?>">Kopirovat hero path</button>
+                  </div>
                 </label>
               </div>
+
+              <section class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <h3>Aktualny hero v editore</h3>
+                </div>
+                <div class="admin-mini-product-card admin-mini-hero-card">
+                  <div class="admin-mini-product-card__media">
+                    <?= interessa_render_image($selectedArticleHero, ['class' => 'admin-mini-product-card__image']) ?>
+                  </div>
+                  <div class="admin-mini-product-card__body">
+                    <strong><?= esc((string) ($selectedArticleMeta['title'] ?? $selectedArticleSlug)) ?></strong>
+                    <small>Zdroj: <?= esc($selectedArticleHeroSource) ?></small>
+                    <small><code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></small>
+                    <div class="admin-inline-actions admin-mini-product-card__actions">
+                      <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Image workflow</a>
+                      <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Hero helper</a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Workflow odporucanych produktov</h3>
+                    <p class="admin-note">Money-page ready: <?= esc((string) $recommendedMoneyReadyCount) ?> / <?= esc((string) $recommendedTotalCount) ?></p>
+                  </div>
+                </div>
+                <div class="admin-status-grid">
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $recommendedCatalogCoverage) ?> / <?= esc((string) $recommendedTotalCount) ?></strong>
+                    <span>V reusable katalogu</span>
+                  </article>
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $recommendedAffiliateReadyCount) ?> / <?= esc((string) max($recommendedCatalogCoverage, 1)) ?></strong>
+                    <span>Affiliate hotove</span>
+                  </article>
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $recommendedPackshotReadyCount) ?> / <?= esc((string) max($recommendedCatalogCoverage, 1)) ?></strong>
+                    <span>Packshot pripraveny</span>
+                  </article>
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $recommendedMissingCount) ?></strong>
+                    <span>Mimo katalogu</span>
+                  </article>
+                </div>
+                <?php if ($recommendedActionRows === []): ?>
+                  <p class="admin-note">Vsetky odporucane produkty su pripravene pre penazne clanky.</p>
+                <?php else: ?>
+                  <div class="admin-queue-list">
+                    <?php foreach ($recommendedActionRows as $actionRow): ?>
+                      <article class="admin-queue-item<?= !empty($actionRow['money_ready']) ? ' is-done' : '' ?>">
+                        <div>
+                          <strong><?= esc((string) ($actionRow['name'] ?? '')) ?></strong>
+                          <p><?= esc((string) ($actionRow['slug'] ?? '')) ?><?php if (trim((string) ($actionRow['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($actionRow['merchant'] ?? '')) ?><?php endif; ?></p>
+                          <div class="admin-status-pills">
+                            <span class="admin-status-pill<?= !empty($actionRow['exists']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['exists']) ? 'V katalogu' : 'Mimo katalogu' ?></span>
+                            <span class="admin-status-pill<?= !empty($actionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
+                            <span class="admin-status-pill<?= !empty($actionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['packshot_ready']) ? 'Packshot pripraveny' : 'Packshot chyba' ?></span>
+                          </div>
+                          <?php if (trim((string) ($actionRow['summary'] ?? '')) !== ''): ?>
+                            <small class="admin-note"><?= esc((string) ($actionRow['summary'] ?? '')) ?></small>
+                          <?php endif; ?>
+                        </div>
+                        <div class="admin-queue-actions">
+                          <?php if (!empty($actionRow['exists'])): ?>
+                            <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($actionRow['slug'] ?? '')) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
+                            <?php if (trim((string) ($actionRow['affiliate_code'] ?? '')) !== ''): ?>
+                              <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($actionRow['affiliate_code'] ?? '')) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Affiliate</a>
+                            <?php else: ?>
+                              <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($actionRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($actionRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($actionRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc((string) ($actionRow['slug'] ?? '')) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vytvorit affiliate</a>
+                            <?php endif; ?>
+                            <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($actionRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Packshot workflow</a>
+                            <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Image workflow</a>
+                            <?php if (trim((string) ($actionRow['image_target_asset'] ?? '')) !== ''): ?>
+                              <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($actionRow['image_target_asset'] ?? '')) ?>">Kopirovat path</button>
+                            <?php endif; ?>
+                          <?php else: ?>
+                            <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;prefill_product_name=<?= esc((string) ($actionRow['name'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($actionRow['slug'] ?? '')) ?>&amp;prefill_product_category=<?= esc((string) ($selectedArticleOverride['category'] ?? $selectedArticleMeta['category'] ?? '')) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vytvorit produkt</a>
+                            <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($actionRow['slug'] ?? '')) ?>">Kopirovat slug</button>
+                          <?php endif; ?>
+                        </div>
+                      </article>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
+              </section>
+
+              <section class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <h3>Preview odporucanych produktov</h3>
+                </div>
+                <?php if ($recommendedProductPreview === []): ?>
+                  <p class="admin-note">Zatial tu nie je vybrany ziadny produkt na preview.</p>
+                <?php else: ?>
+                  <div class="admin-mini-product-grid">
+                    <?php foreach ($recommendedProductPreview as $previewRow): ?>
+                      <?php $previewStatus = $recommendedDiagnosticsBySlug[(string) ($previewRow['slug'] ?? '')] ?? []; ?>
+                      <article class="admin-mini-product-card">
+                        <div class="admin-mini-product-card__media">
+                          <?= interessa_render_image($previewRow['image'] ?? null, ['class' => 'admin-mini-product-card__image']) ?>
+                        </div>
+                        <div class="admin-mini-product-card__body">
+                          <strong><?= esc((string) ($previewRow['name'] ?? '')) ?></strong>
+                          <small><?= esc((string) ($previewRow['slug'] ?? '')) ?><?php if (trim((string) ($previewRow['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($previewRow['merchant'] ?? '')) ?><?php endif; ?></small>
+                          <div class="admin-status-pills">
+                            <span class="admin-status-pill<?= !empty($previewStatus['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
+                            <span class="admin-status-pill<?= !empty($previewStatus['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['packshot_ready']) ? 'Packshot pripraveny' : 'Packshot chyba' ?></span>
+                          </div>
+                          <?php if (trim((string) ($previewRow['summary'] ?? '')) !== ''): ?>
+                            <p><?= esc((string) ($previewRow['summary'] ?? '')) ?></p>
+                          <?php endif; ?>
+                          <?php if (trim((string) ($previewRow['href'] ?? '')) !== ''): ?>
+                            <small><?= esc((string) ($previewRow['label'] ?? 'Do obchodu')) ?></small>
+                          <?php endif; ?>
+                        <div class="admin-inline-actions admin-mini-product-card__actions">
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
+                          <?php if (trim((string) ($previewRow['code'] ?? $previewRow['affiliate_code'] ?? '')) !== ''): ?>
+                            <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($previewRow['code'] ?? $previewRow['affiliate_code'] ?? '')) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Affiliate</a>
+                          <?php endif; ?>
+                          <?php if (trim((string) ($previewRow['href'] ?? '')) !== ''): ?>
+                            <a class="btn btn-secondary btn-small" href="<?= esc((string) ($previewRow['href'] ?? '')) ?>" target="_blank" rel="noopener">Ciel</a>
+                          <?php endif; ?>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Image workflow</a>
+                          <?php if (trim((string) ($previewRow['slug'] ?? '')) !== ''): ?>
+                            <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($previewRow['slug'] ?? '')) ?>">Kopirovat slug</button>
+                          <?php endif; ?>
+                        </div>
+                      </article>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
+              </section>
+
+              <section class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <h3>Slugy mimo katalog reusable produktov</h3>
+                </div>
+                <?php if ($missingRecommendedProducts === []): ?>
+                  <p class="admin-note">Vsetky odporucane produkty v tomto clanku uz existuju v katalogu.</p>
+                <?php else: ?>
+                  <div class="admin-queue-list">
+                    <?php foreach ($missingRecommendedProducts as $missingRow): ?>
+                      <article class="admin-queue-item">
+                        <div>
+                          <strong><?= esc((string) ($missingRow['name'] ?? '')) ?></strong>
+                          <p><?= esc((string) ($missingRow['slug'] ?? '')) ?></p>
+                          <?php if (trim((string) ($missingRow['category'] ?? '')) !== ''): ?>
+                            <small class="admin-note">Kategoria: <?= esc((string) ($missingRow['category'] ?? '')) ?></small>
+                          <?php endif; ?>
+                        </div>
+                        <div class="admin-queue-actions">
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;prefill_product_name=<?= esc((string) ($missingRow['name'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($missingRow['slug'] ?? '')) ?>&amp;prefill_product_category=<?= esc((string) ($missingRow['category'] ?? '')) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vytvorit produkt</a>
+                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($missingRow['slug'] ?? '')) ?>">Kopirovat slug</button>
+                        </div>
+                      </article>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
+              </section>
 
               <div class="admin-actions">
                 <button class="btn btn-cta" type="submit">Ulozit clanok</button>
@@ -1027,23 +1568,40 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </div>
 
+            <?php if ($returnSectionPrefill !== "" && $returnSlugPrefill !== ""): ?>
+              <section class="admin-subsection is-compact">
+                <p class="admin-note">Tento editor bol otvoreny z workflowu pre clanok <strong><?= esc($returnSlugPrefill) ?></strong>.</p>
+                <div class="admin-inline-actions">
+                  <a class="btn btn-secondary btn-small" href="/admin?section=<?= esc($returnSectionPrefill) ?>&amp;slug=<?= esc($returnSlugPrefill) ?>">Spat do workflowu clanku</a>
+                </div>
+              </section>
+            <?php endif; ?>
+
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <h3>Rychlo vytvorit novy produkt</h3>
               </div>
               <form method="post" class="admin-form admin-form-stack">
                 <input type="hidden" name="action" value="create_product" />
+                <input type="hidden" name="return_section" value="<?= esc((string) ($_GET['return_section'] ?? '')) ?>" />
+                <input type="hidden" name="return_slug" value="<?= esc((string) ($_GET['return_slug'] ?? '')) ?>" />
                 <div class="admin-grid three-up">
-                  <label><span>Nazov</span><input type="text" name="new_product_name" placeholder="Napriklad GymBeam Magnesium Citrate" /></label>
-                  <label><span>Slug</span><input type="text" name="new_product_slug" placeholder="gymbeam-magnesium-citrate" /></label>
-                  <label><span>Brand</span><input type="text" name="new_product_brand" placeholder="GymBeam" /></label>
+                  <label><span>Nazov</span><input type="text" name="new_product_name" value="<?= esc($prefillNewProductName) ?>" placeholder="Napriklad GymBeam Magnesium Citrate" data-auto-slug-source="product" /></label>
+                  <label><span>Slug</span><input type="text" name="new_product_slug" value="<?= esc($prefillNewProductSlug) ?>" placeholder="gymbeam-magnesium-citrate" data-auto-slug-target="product" /></label>
+                  <label><span>Brand</span><input type="text" name="new_product_brand" value="<?= esc($prefillNewProductBrand) ?>" placeholder="GymBeam" /></label>
                 </div>
                 <div class="admin-grid three-up">
-                  <label><span>Obchod</span><input type="text" name="new_product_merchant" placeholder="GymBeam" /></label>
-                  <label><span>Merchant slug</span><input type="text" name="new_product_merchant_slug" placeholder="gymbeam" /></label>
-                  <label><span>Kategoria</span><input type="text" name="new_product_category" placeholder="mineraly" /></label>
+                  <label><span>Obchod</span><input type="text" name="new_product_merchant" value="<?= esc($prefillNewProductMerchant) ?>" placeholder="GymBeam" data-auto-slug-source="merchant" /></label>
+                  <label><span>Merchant slug</span><input type="text" name="new_product_merchant_slug" value="<?= esc($prefillNewProductMerchantSlug) ?>" placeholder="gymbeam" data-auto-slug-target="merchant" /></label>
+                  <label><span>Kategoria</span><input type="text" name="new_product_category" value="<?= esc($prefillNewProductCategory) ?>" placeholder="mineraly" /></label>
                 </div>
-                <label><span>Affiliate code (volitelne)</span><input type="text" name="new_product_affiliate_code" placeholder="horcik-ktory-je-najlepsi-a-preco-gymbeam" /></label>
+                <div class="admin-grid two-up">
+                  <label><span>Fallback URL</span><input type="url" name="new_product_fallback_url" value="<?= esc($prefillNewProductFallbackUrl) ?>" placeholder="https://merchant.example.com/produkt" /></label>
+                  <label><span>Remote image URL</span><input type="url" name="new_product_image_remote_src" value="<?= esc($prefillNewProductImageRemoteSrc) ?>" placeholder="https://merchant.example.com/image.webp" /></label>
+                </div>
+                <label><span>Kratky popis</span><textarea name="new_product_summary" rows="3" placeholder="Strucne zhrnutie produktu pre karty a odporucania"><?= esc($prefillNewProductSummary) ?></textarea></label>
+                <label><span>Affiliate code (volitelne)</span><input type="text" name="new_product_affiliate_code" value="<?= esc($prefillNewProductAffiliateCode) ?>" placeholder="horcik-ktory-je-najlepsi-a-preco-gymbeam" /></label>
+                <small class="admin-note">Slug a merchant slug sa doplnia automaticky, ak polia nechate prazdne.</small>
                 <div class="admin-actions">
                   <button class="btn btn-secondary" type="submit">Vytvorit produkt</button>
                 </div>
@@ -1075,13 +1633,97 @@ require dirname(__DIR__) . '/inc/head.php';
                     <div class="admin-queue-actions">
                       <span class="admin-note"><?= esc((string) $queueRow['image_mode']) ?></span>
                       <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>">Otvorit v produkte</a>
+                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['target_asset'] ?? '')) ?>">Kopirovat asset</button>
                       <?php if (trim((string) ($queueRow['remote_src'] ?? '')) !== ''): ?>
                         <a class="btn btn-secondary btn-small" href="<?= esc((string) $queueRow['remote_src']) ?>" target="_blank" rel="noopener">Remote preview</a>
                       <?php endif; ?>
                     </div>
                   </article>
+
                 <?php endforeach; ?>
               </div>
+            </section>
+            <section class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Queue chybajucich affiliate napojeni</h3>
+                  <p class="admin-meta">Produkty, ktore este nemaju kompletne affiliate napojenie alebo sa ich /go/ link nevie vyriesit.</p>
+                </div>
+                <span class="admin-note"><?= esc((string) $productAffiliateQueueCount) ?> zaznamov</span>
+              </div>
+              <?php if ($productAffiliateQueue === []): ?>
+                <p class="admin-note">Vsetky produkty v katalogu maju pouzitelne affiliate napojenie.</p>
+              <?php else: ?>
+                <div class="admin-queue-list">
+                  <?php foreach ($productAffiliateQueue as $queueRow): ?>
+                    <article class="admin-queue-item">
+                      <div>
+                        <strong><?= esc((string) ($queueRow['name'] ?? '')) ?></strong>
+                        <p><?= esc((string) ($queueRow['slug'] ?? '')) ?><?php if (trim((string) ($queueRow['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($queueRow['merchant'] ?? '')) ?><?php endif; ?></p>
+                        <small class="admin-note"><?= esc((string) ($queueRow['status'] ?? '')) ?></small>
+                        <?php if (trim((string) ($queueRow['affiliate_code'] ?? '')) !== ''): ?>
+                          <code><?= esc((string) ($queueRow['affiliate_code'] ?? '')) ?></code>
+                        <?php endif; ?>
+                      </div>
+                      <div class="admin-queue-actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
+                        <?php if (trim((string) ($queueRow['affiliate_code'] ?? '')) === ''): ?>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($queueRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($queueRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc((string) ($queueRow['slug'] ?? '')) ?>">Vytvorit affiliate</a>
+                        <?php endif; ?>
+                        <?php if (trim((string) ($queueRow['affiliate_code'] ?? '')) !== ''): ?>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($queueRow['affiliate_code'] ?? '')) ?>">Affiliate</a>
+                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['affiliate_code'] ?? '')) ?>">Kopirovat kod</button>
+                        <?php endif; ?>
+                        <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
+                          <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Fallback URL</a>
+                        <?php endif; ?>
+                      </div>
+                    </article>
+                  <?php endforeach; ?>
+                </div>
+              <?php endif; ?>
+            </section>
+
+            <section class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Queue nedokoncenych produktov</h3>
+                  <p class="admin-meta">Produkty, ktorym este chyba redakcna alebo obchodna kvalita reusable karty.</p>
+                </div>
+                <span class="admin-note"><?= esc((string) $productQualityQueueCount) ?> zaznamov</span>
+              </div>
+              <?php if ($productQualityQueue === []): ?>
+                <p class="admin-note">Reusable produkty maju vyplneny popis, rating, plusy, minusy aj zakladny commerce stav.</p>
+              <?php else: ?>
+                <div class="admin-queue-list">
+                  <?php foreach ($productQualityQueue as $queueRow): ?>
+                    <article class="admin-queue-item">
+                      <div>
+                        <strong><?= esc((string) ($queueRow['name'] ?? '')) ?></strong>
+                        <p><?= esc((string) ($queueRow['slug'] ?? '')) ?><?php if (trim((string) ($queueRow['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($queueRow['merchant'] ?? '')) ?><?php endif; ?></p>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill<?= !empty($queueRow['summary_ready']) ? ' is-good' : ' is-warning' ?>">Popis</span>
+                          <span class="admin-status-pill<?= !empty($queueRow['rating_ready']) ? ' is-good' : ' is-warning' ?>">Rating</span>
+                          <span class="admin-status-pill<?= !empty($queueRow['pros_ready']) ? ' is-good' : ' is-warning' ?>">Plusy</span>
+                          <span class="admin-status-pill<?= !empty($queueRow['cons_ready']) ? ' is-good' : ' is-warning' ?>">Minusy</span>
+                          <span class="admin-status-pill<?= !empty($queueRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>">Affiliate</span>
+                          <span class="admin-status-pill<?= !empty($queueRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>">Packshot</span>
+                        </div>
+                        <small class="admin-note"><?= esc(implode(', ', array_values(array_slice($queueRow['issues'] ?? [], 0, 3)))) ?></small>
+                      </div>
+                      <div class="admin-queue-actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
+                        <?php if (trim((string) ($queueRow['affiliate_code'] ?? '')) !== ''): ?>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($queueRow['affiliate_code'] ?? '')) ?>">Affiliate</a>
+                        <?php else: ?>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($queueRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($queueRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc((string) ($queueRow['slug'] ?? '')) ?>">Vytvorit affiliate</a>
+                        <?php endif; ?>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Packshot workflow</a>
+                      </div>
+                    </article>
+                  <?php endforeach; ?>
+                </div>
+              <?php endif; ?>
             </section>
 
             <section class="admin-subsection admin-asset-preview">
@@ -1095,6 +1737,25 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-asset-preview__body">
                   <p><strong>Zdroj:</strong> <?= esc($selectedProductImageSource) ?></p>
                   <p><strong>Target asset:</strong> <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></p>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?>">Kopirovat target asset</button>
+                    <?php if (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
+                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>">Kopirovat remote URL</button>
+                    <?php endif; ?>
+                  </div>
+                  <?php if ($selectedPackshotQueuePosition > 0): ?>
+                    <p class="admin-note">Packshot backlog: <?= esc((string) $selectedPackshotQueuePosition) ?> / <?= esc((string) count($missingPackshotSlugs)) ?></p>
+                  <?php endif; ?>
+                  <?php if ($prevMissingPackshotSlug !== '' || $nextMissingPackshotSlug !== ''): ?>
+                    <div class="admin-inline-actions">
+                      <?php if ($prevMissingPackshotSlug !== ''): ?>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($prevMissingPackshotSlug) ?>&amp;product_image_filter=missing">Predchadzajuci chyba</a>
+                      <?php endif; ?>
+                      <?php if ($nextMissingPackshotSlug !== ''): ?>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($nextMissingPackshotSlug) ?>&amp;product_image_filter=missing">Dalsi chyba</a>
+                      <?php endif; ?>
+                    </div>
+                  <?php endif; ?>
                   <p><strong>Remote source:</strong> <?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?></p>
                   <div class="admin-diagnostic-list">
                     <p><strong>Affiliate kod:</strong> <?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?: 'chyba' ?></p>
@@ -1102,6 +1763,16 @@ require dirname(__DIR__) . '/inc/head.php';
                     <p><strong>Registry source:</strong> <?= esc((string) ($selectedProductAffiliate['source'] ?? 'bez registry')) ?></p>
                     <p><strong>Cielova URL:</strong> <?= esc((string) ($selectedProductAffiliateUrl ?? ($selectedProduct['fallback_url'] ?? ''))) ?></p>
                   </div>
+                    <?php if (trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== ''): ?>
+                      <div class="admin-inline-actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?>">Otvorit affiliate</a>
+                        <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?>">Kopirovat affiliate kod</button>
+                      </div>
+                    <?php else: ?>
+                      <div class="admin-inline-actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($selectedProduct['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>">Vytvorit affiliate</a>
+                      </div>
+                    <?php endif; ?>
                   <?php if (trim((string) ($selectedProductTarget['href'] ?? '')) !== ''): ?>
                     <div class="admin-actions">
                       <a class="btn btn-secondary btn-small" href="<?= esc((string) $selectedProductTarget['href']) ?>" target="_blank" rel="noopener">Otvorit aktualny ciel</a>
@@ -1137,6 +1808,8 @@ require dirname(__DIR__) . '/inc/head.php';
 
             <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
               <input type="hidden" name="action" value="save_product" />
+              <?php if ($returnSectionPrefill !== ""): ?><input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill) ?>" /><?php endif; ?>
+              <?php if ($returnSlugPrefill !== ""): ?><input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" /><?php endif; ?>
               <div class="admin-grid three-up">
                 <label><span>Slug</span><input type="text" name="product_slug" value="<?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?>" /></label>
                 <label><span>Nazov</span><input type="text" name="name" value="<?= esc((string) ($selectedProduct['name'] ?? '')) ?>" /></label>
@@ -1214,9 +1887,130 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p><strong>Zdroj:</strong> <?= esc($selectedArticleHeroSource) ?></p>
                   <p><strong>Aktivny asset:</strong> <code><?= esc((string) ($selectedArticleHero['asset'] ?? '')) ?></code></p>
                   <p><strong>Target path:</strong> <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></p>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?>">Kopirovat target path</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['file_name'] ?? '')) ?>">Kopirovat filename</button>
+                  </div>
+                  <?php if ($selectedHeroQueuePosition > 0): ?>
+                    <p class="admin-note">Hero backlog: <?= esc((string) $selectedHeroQueuePosition) ?> / <?= esc((string) count($missingHeroSlugs)) ?></p>
+                  <?php endif; ?>
+                  <?php if ($prevMissingHeroSlug !== '' || $nextMissingHeroSlug !== ''): ?>
+                    <div class="admin-inline-actions">
+                      <?php if ($prevMissingHeroSlug !== ''): ?>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($prevMissingHeroSlug) ?>&amp;image_filter=missing">Predchadzajuci chyba</a>
+                      <?php endif; ?>
+                      <?php if ($nextMissingHeroSlug !== ''): ?>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($nextMissingHeroSlug) ?>&amp;image_filter=missing">Dalsi chyba</a>
+                      <?php endif; ?>
+                    </div>
+                  <?php endif; ?>
                 </div>
               </div>
             </section>
+
+            <?php if ($selectedArticlePackshotGaps !== []): ?>
+              <section class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Packshot medzery pre tento clanok</h3>
+                    <p class="admin-meta">Odporucane produkty v tomto clanku, ktore este nemaju finalny packshot.</p>
+                  </div>
+                  <span class="admin-note"><?= esc((string) $selectedArticlePackshotGapCount) ?> zaznamov</span>
+                </div>
+                <div class="admin-queue-list">
+                  <?php foreach ($selectedArticlePackshotGaps as $queueRow): ?>
+                    <article class="admin-queue-item">
+                      <div>
+                        <strong><?= esc((string) ($queueRow['name'] ?? '')) ?></strong>
+                        <p><?= esc((string) ($queueRow['slug'] ?? '')) ?><?php if (trim((string) ($queueRow['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($queueRow['merchant'] ?? '')) ?><?php endif; ?></p>
+                        <?php if (trim((string) ($queueRow['image_target_asset'] ?? '')) !== ''): ?>
+                          <code><?= esc((string) ($queueRow['image_target_asset'] ?? '')) ?></code>
+                        <?php endif; ?>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill<?= !empty($queueRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($queueRow['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
+                          <span class="admin-status-pill is-warning">Packshot chyba</span>
+                        </div>
+                      </div>
+                      <div class="admin-queue-actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Packshot workflow</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
+                        <?php if (trim((string) ($queueRow['image_target_asset'] ?? '')) !== ''): ?>
+                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['image_target_asset'] ?? '')) ?>">Kopirovat path</button>
+                        <?php endif; ?>
+                        <form method="post" enctype="multipart/form-data" class="admin-inline-upload">
+                          <input type="hidden" name="action" value="upload_packshot_only" />
+                          <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
+                          <input type="hidden" name="return_section" value="images" />
+                          <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
+                          <label class="admin-inline-upload__label">
+                            <span>Packshot</span>
+                            <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
+                          </label>
+                          <button class="btn btn-secondary btn-small" type="submit">Nahrat packshot</button>
+                        </form>
+                      </div>
+                    </article>
+                  <?php endforeach; ?>
+                </div>
+              </section>
+            <?php endif; ?>
+
+            <?php if ($recommendedProductPreview !== []): ?>
+              <section class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Produkty v tomto clanku</h3>
+                    <p class="admin-meta">Prehlad odporucanych produktov aj s packshot a affiliate stavom priamo v image workflowe.</p>
+                  </div>
+                </div>
+                <div class="admin-mini-product-grid">
+                  <?php foreach ($recommendedProductPreview as $previewRow): ?>
+                    <?php $previewStatus = $recommendedDiagnosticsBySlug[(string) ($previewRow['slug'] ?? '')] ?? []; ?>
+                    <article class="admin-mini-product-card">
+                      <div class="admin-mini-product-card__media">
+                        <?= interessa_render_image($previewRow['image'] ?? null, ['class' => 'admin-mini-product-card__image']) ?>
+                      </div>
+                      <div class="admin-mini-product-card__body">
+                        <strong><?= esc((string) ($previewRow['name'] ?? '')) ?></strong>
+                        <small><?= esc((string) ($previewRow['slug'] ?? '')) ?><?php if (trim((string) ($previewRow['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($previewRow['merchant'] ?? '')) ?><?php endif; ?></small>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill<?= !empty($previewStatus['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
+                          <span class="admin-status-pill<?= !empty($previewStatus['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['packshot_ready']) ? 'Packshot pripraveny' : 'Packshot chyba' ?></span>
+                        </div>
+                        <?php if (trim((string) ($previewStatus['image_target_asset'] ?? '')) !== ''): ?>
+                          <small><code><?= esc((string) ($previewStatus['image_target_asset'] ?? '')) ?></code></small>
+                        <?php endif; ?>
+                      </div>
+                      <div class="admin-inline-actions admin-mini-product-card__actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Packshot workflow</a>
+                        <?php if (trim((string) ($previewStatus['affiliate_code'] ?? '')) !== ''): ?>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($previewStatus['affiliate_code'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Affiliate</a>
+                        <?php else: ?>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($previewRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($previewRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vytvorit affiliate</a>
+                        <?php endif; ?>
+                        <?php if (trim((string) ($previewStatus['image_target_asset'] ?? '')) !== ''): ?>
+                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($previewStatus['image_target_asset'] ?? '')) ?>">Kopirovat path</button>
+                        <?php endif; ?>
+                      </div>
+                        <?php if (empty($previewStatus['packshot_ready'])): ?>
+                          <form method="post" enctype="multipart/form-data" class="admin-inline-upload">
+                            <input type="hidden" name="action" value="upload_packshot_only" />
+                            <input type="hidden" name="product_slug" value="<?= esc((string) ($previewRow['slug'] ?? '')) ?>" />
+                            <input type="hidden" name="return_section" value="images" />
+                            <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
+                            <label class="admin-inline-upload__label">
+                              <span>Packshot</span>
+                              <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
+                            </label>
+                            <button class="btn btn-secondary btn-small" type="submit">Nahrat packshot</button>
+                          </form>
+                        <?php endif; ?>
+                    </article>
+                  <?php endforeach; ?>
+                </div>
+              </section>
+            <?php endif; ?>
 
             <div class="admin-brief-grid">
               <div class="admin-brief-card">
@@ -1242,6 +2036,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   <li>Nahraj obrazok sem alebo do cielovej cesty v assets.</li>
                   <li>Clanok automaticky pouzije novy hero asset.</li>
                 </ol>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Otvorit hero helper</a>
+                    <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok</a>
+                  </div>
                 <form method="post" enctype="multipart/form-data" class="admin-form">
                   <input type="hidden" name="action" value="upload_hero_only" />
                   <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
@@ -1282,6 +2080,8 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
                   <div class="admin-queue-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc((string) $queueRow['slug']) ?>&amp;image_filter=<?= esc($imageFilter) ?>">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['prompt'] ?? '')) ?>">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['asset_path'] ?? '')) ?>">Kopirovat path</button>
                     <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['article_url'] ?? article_url((string) $queueRow['slug']))) ?>" target="_blank" rel="noopener">Clanok</a>
                   </div>
                 </article>
@@ -1307,19 +2107,30 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </div>
 
+            <?php if ($returnSectionPrefill !== "" && $returnSlugPrefill !== ""): ?>
+              <section class="admin-subsection is-compact">
+                <p class="admin-note">Tento editor bol otvoreny z workflowu pre clanok <strong><?= esc($returnSlugPrefill) ?></strong>.</p>
+                <div class="admin-inline-actions">
+                  <a class="btn btn-secondary btn-small" href="/admin?section=<?= esc($returnSectionPrefill) ?>&amp;slug=<?= esc($returnSlugPrefill) ?>">Spat do workflowu clanku</a>
+                </div>
+              </section>
+            <?php endif; ?>
+
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <h3>Rychlo vytvorit novy affiliate kod</h3>
               </div>
               <form method="post" class="admin-form admin-form-stack">
                 <input type="hidden" name="action" value="create_affiliate" />
+                <?php if ($returnSectionPrefill !== ""): ?><input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill) ?>" /><?php endif; ?>
+                <?php if ($returnSlugPrefill !== ""): ?><input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" /><?php endif; ?>
                 <div class="admin-grid three-up">
-                  <label><span>Kod</span><input type="text" name="new_affiliate_code" placeholder="kolagen-recenzia-gymbeam" /></label>
-                  <label><span>Merchant</span><input type="text" name="new_affiliate_merchant" placeholder="GymBeam" /></label>
-                  <label><span>Merchant slug</span><input type="text" name="new_affiliate_merchant_slug" placeholder="gymbeam" /></label>
+                  <label><span>Kod</span><input type="text" name="new_affiliate_code" value="<?= esc($prefillAffiliateCode) ?>" placeholder="kolagen-recenzia-gymbeam" /></label>
+                  <label><span>Merchant</span><input type="text" name="new_affiliate_merchant" value="<?= esc($prefillAffiliateMerchant) ?>" placeholder="GymBeam" /></label>
+                  <label><span>Merchant slug</span><input type="text" name="new_affiliate_merchant_slug" value="<?= esc($prefillAffiliateMerchantSlug) ?>" placeholder="gymbeam" /></label>
                 </div>
                 <div class="admin-grid two-up">
-                  <label><span>Product slug</span><input type="text" name="new_affiliate_product_slug" placeholder="gymbeam-collagen-complex" /></label>
+                  <label><span>Product slug</span><input type="text" name="new_affiliate_product_slug" value="<?= esc($prefillAffiliateProductSlug) ?>" placeholder="gymbeam-collagen-complex" /></label>
                   <label><span>Typ linku</span>
                     <select name="new_affiliate_link_type">
                       <option value="affiliate">affiliate</option>
@@ -1335,6 +2146,8 @@ require dirname(__DIR__) . '/inc/head.php';
 
             <form method="post" class="admin-form admin-form-stack">
               <input type="hidden" name="action" value="save_affiliate" />
+              <?php if ($returnSectionPrefill !== ""): ?><input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill) ?>" /><?php endif; ?>
+              <?php if ($returnSlugPrefill !== ""): ?><input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" /><?php endif; ?>
               <div class="admin-grid two-up">
                 <label><span>Kod</span><input type="text" name="code" value="<?= esc((string) ($selectedAffiliate['code'] ?? $selectedAffiliateCode)) ?>" /></label>
                 <label><span>Typ linku</span>
@@ -1480,3 +2293,6 @@ require dirname(__DIR__) . '/inc/head.php';
   <?php endif; ?>
 </section>
 <?php require dirname(__DIR__) . '/inc/footer.php'; ?>
+
+
+

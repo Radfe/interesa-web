@@ -572,3 +572,92 @@
   display: grid;
   gap: 0.75rem;
 }
+.admin-mini-product-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+.admin-check-card-wrap {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.admin-check-card__actions {
+  margin-top: 0;
+  padding-left: 2.2rem;
+}
+
+.admin-status-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.admin-status-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.admin-status-card strong {
+  font-size: 1.15rem;
+  color: #102030;
+}
+
+.admin-status-card span {
+  color: #516072;
+  font-size: 0.92rem;
+}
+
+.admin-status-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+.admin-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: #eef2f7;
+  color: #304256;
+}
+
+.admin-status-pill.is-good {
+  background: #ebf8ee;
+  color: #216038;
+}
+
+.admin-status-pill.is-warning {
+  background: #fff4e8;
+  color: #8a4b13;
+}
+
+.admin-inline-upload {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.admin-inline-upload__label {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: #516072;
+}
+
+.admin-inline-upload__label input[type="file"] {
+  max-width: 220px;
+  font-size: 0.78rem;
+}

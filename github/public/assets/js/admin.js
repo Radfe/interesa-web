@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const addColumnButton = document.querySelector('[data-add-column]');
   const addRowButton = document.querySelector('[data-add-row]');
   const fillFromProductsButton = document.querySelector('[data-fill-from-products]');
+  const fillFromReadyProductsButton = document.querySelector('[data-fill-ready-products]');
+  const fillFromReadyShortlistButton = document.querySelector('[data-fill-ready-shortlist]');
   const presetButtons = Array.from(document.querySelectorAll('[data-apply-preset]'));
   const columnsRoot = document.querySelector('[data-comparison-columns]');
   const rowsRoot = document.querySelector('[data-comparison-rows]');
@@ -38,6 +40,14 @@ document.addEventListener('DOMContentLoaded', () => {
       columns: [
         { key: 'product_slug', label: 'Produkt', type: 'product' },
         { key: 'best_for', label: 'Najlepsie pre', type: 'text' },
+        { key: 'rating', label: 'Rating', type: 'text' },
+        { key: 'cta', label: 'Akcia', type: 'cta' }
+      ]
+    },
+    'catalog-picks': {
+      columns: [
+        { key: 'product_slug', label: 'Produkt', type: 'product' },
+        { key: 'merchant', label: 'Obchod', type: 'text' },
         { key: 'rating', label: 'Rating', type: 'text' },
         { key: 'cta', label: 'Akcia', type: 'cta' }
       ]
@@ -252,6 +262,91 @@ document.addEventListener('DOMContentLoaded', () => {
     return Array.from(new Set([...checked, ...manual]));
   };
 
+  const selectedRecommendedProductMeta = (options = {}) => {
+    const onlyReady = options.onlyReady === true;
+    const lookup = new Map();
+    Array.from(document.querySelectorAll('input[name="recommended_product_checks[]"]')).forEach((input) => {
+      if (!(input instanceof HTMLInputElement)) {
+        return;
+      }
+      const slug = input.value.trim();
+      if (!slug) {
+        return;
+      }
+      lookup.set(slug, {
+        slug,
+        name: (input.dataset.productName || slug).trim(),
+        bestFor: (input.dataset.productBestfor || input.dataset.productSummary || '').trim(),
+        merchant: (input.dataset.productMerchant || '').trim(),
+        rating: (input.dataset.productRating || '').trim(),
+        summary: (input.dataset.productSummary || '').trim(),
+        affiliateReady: (input.dataset.productAffiliateReady || '') === 'true',
+        packshotReady: (input.dataset.productPackshotReady || '') === 'true'
+      });
+    });
+
+    return selectedRecommendedProducts()
+      .map((slug) => lookup.get(slug) || ({ slug, name: slug, bestFor: '', merchant: '', rating: '', summary: '', affiliateReady: false, packshotReady: false }))
+      .filter((product) => !onlyReady || (product.affiliateReady && product.packshotReady));
+  };
+
+  const applyComparisonRowsFromProducts = (productRows) => {
+    if (productRows.length === 0 || !ensureComparisonRoots()) {
+      return;
+    }
+
+    setColumns(presets['catalog-picks'].columns);
+    const rows = productRows.map((product) => [product.slug, product.merchant, product.rating, '']);
+    setRows(rows);
+    if (rowsField instanceof HTMLTextAreaElement) {
+      rowsField.value = JSON.stringify(productRows.map((product) => ({
+        product_slug: product.slug,
+        merchant: product.merchant,
+        rating: product.rating,
+        cta: ''
+      })), null, 2);
+    }
+    if (columnsField instanceof HTMLTextAreaElement) {
+      columnsField.value = JSON.stringify(presets['catalog-picks'].columns, null, 2);
+    }
+  };
+  const applyReadyShortlist = (productRows) => {
+    const sortedRows = [...productRows].sort((left, right) => {
+      const leftRating = Number.parseFloat(left.rating || '0');
+      const rightRating = Number.parseFloat(right.rating || '0');
+      return rightRating - leftRating;
+    }).slice(0, 3);
+
+    if (sortedRows.length === 0 || !ensureComparisonRoots()) {
+      return;
+    }
+
+    setColumns(presets['top-picks'].columns);
+    const rows = sortedRows.map((product) => [product.slug, product.bestFor || product.summary || product.name || '', product.rating || '', '']);
+    setRows(rows);
+
+    const comparisonTitleField = document.querySelector('input[name="comparison_title"]');
+    const comparisonIntroField = document.querySelector('input[name="comparison_intro"]');
+    if (comparisonTitleField instanceof HTMLInputElement && comparisonTitleField.value.trim() === '') {
+      comparisonTitleField.value = 'Top odporucane produkty';
+    }
+    if (comparisonIntroField instanceof HTMLInputElement && comparisonIntroField.value.trim() === '') {
+      comparisonIntroField.value = 'Kratky shortlist produktov, ktore uz maju hotove packshoty aj affiliate napojenie.';
+    }
+
+    if (rowsField instanceof HTMLTextAreaElement) {
+      rowsField.value = JSON.stringify(sortedRows.map((product) => ({
+        product_slug: product.slug,
+        best_for: product.bestFor || product.summary || product.name || '',
+        rating: product.rating || '',
+        cta: ''
+      })), null, 2);
+    }
+    if (columnsField instanceof HTMLTextAreaElement) {
+      columnsField.value = JSON.stringify(presets['top-picks'].columns, null, 2);
+    }
+  };
+
   const ensureProductPreset = () => {
     setColumns(presets['top-picks'].columns);
     if (comparisonRows().length === 0) {
@@ -393,33 +488,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (fillFromProductsButton) {
     fillFromProductsButton.addEventListener('click', () => {
-      if (!ensureComparisonRoots()) {
-        return;
-      }
+      applyComparisonRowsFromProducts(selectedRecommendedProductMeta());
+    });
+  }
 
-      const productSlugs = selectedRecommendedProducts();
-      if (productSlugs.length === 0) {
-        return;
-      }
-
-      ensureProductPreset();
-      const rows = productSlugs.map((slug) => [slug, '', '', '']);
-      setRows(rows);
-      if (rowsField instanceof HTMLTextAreaElement) {
-        rowsField.value = JSON.stringify(rows.map((rowValues) => ({
-          product_slug: rowValues[0],
-          best_for: rowValues[1],
-          rating: rowValues[2],
-          cta: rowValues[3]
-        })), null, 2);
-      }
-      if (columnsField instanceof HTMLTextAreaElement) {
-        columnsField.value = JSON.stringify(presets['top-picks'].columns, null, 2);
-      }
+  if (fillFromReadyProductsButton) {
+    fillFromReadyProductsButton.addEventListener('click', () => {
+      applyComparisonRowsFromProducts(selectedRecommendedProductMeta({ onlyReady: true }));
     });
   }
 
   reindexRowCells();
+  const slugifyForAdmin = (value) => value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+  const syncAutoSlugField = (group) => {
+    const source = document.querySelector(`[data-auto-slug-source="${group}"]`);
+    const target = document.querySelector(`[data-auto-slug-target="${group}"]`);
+    if (!(source instanceof HTMLInputElement) || !(target instanceof HTMLInputElement)) {
+      return;
+    }
+
+    const apply = () => {
+      const nextValue = slugifyForAdmin(source.value || '');
+      if (target.value.trim() === '' || target.dataset.autoSlugDirty !== 'true') {
+        target.value = nextValue;
+      }
+    };
+
+    target.addEventListener('input', () => {
+      target.dataset.autoSlugDirty = target.value.trim() !== '' ? 'true' : 'false';
+    });
+
+    source.addEventListener('input', apply);
+    if (target.value.trim() === '') {
+      apply();
+    }
+  };
+
+  syncAutoSlugField('product');
+  syncAutoSlugField('merchant');
+
 
   document.addEventListener('click', async (event) => {
     const trigger = event.target.closest('[data-copy-value]');
