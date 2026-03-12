@@ -1,112 +1,143 @@
 # Images and Assets Guide
 
-## Vizuálny smer
+## Visual Direction
 
-Aktuálne použité obrázky ukazujú smer, ktorý sa oplatí držať:
-- jemné pastelové zelené a neutrálne pozadia
-- čisté kompozície s veľkým množstvom voľného priestoru
-- minimalistické still-life alebo ilustračné produktové vizuály
-- mäkké svetlo a nízky vizuálny šum
+Use one clear visual language across the website:
+- bright minimal backgrounds
+- soft pastel greens and neutrals
+- realistic editorial or modern stock-photo look
+- calm, premium health and fitness styling
+- no text inside article hero images
 
-Tento štýl je vhodný pre dlhodobý obsahový affiliate web, pretože pôsobí čisto, dôveryhodne a ľahko sa opakuje.
+Use generated or editorial visuals mainly for:
+- article hero images
+- category visuals
+- homepage editorial sections
 
-Poznámka: pôvodný `og-default.jpg` pôsobil štýlovo nekonzistentne. Nový kanonický brand fallback je `public/assets/img/brand/og-default.svg`.
+Use real merchant or Dognet-approved packshots mainly for:
+- product recommendation cards
+- comparison tables
+- top picks sections
+- affiliate product boxes
 
-## Kanonická štruktúra
+## Canonical Asset Structure
 
-Web používa existujúci asset root `public/assets/`, aby sa nerozbila kompatibilita.
+The project keeps the existing `public/assets/` root.
 
-Odporúčaná štruktúra:
+Preferred structure:
 - `public/assets/img/brand/`
-- `public/assets/img/articles/`
+- `public/assets/img/articles/heroes/`
 - `public/assets/img/categories/`
-- `public/assets/img/products/`
+- `public/assets/img/products/{merchant_slug}/{product_slug}/main.webp`
 - `public/assets/img/placeholders/`
 - `public/content/media/articles.php`
 - `public/content/media/categories.php`
+- `public/content/media/article-hero-prompts.php`
 
-Legacy priečinky ako `cards/`, `hero/` alebo `icons/` zostávajú podporované ako fallback, ale nové assety by mali ísť do kanonickej štruktúry vyššie.
+## Naming Rules
 
-## Naming convention
+Rules:
+- lowercase only
+- no diacritics
+- words separated by hyphens
+- filename based on article slug or product slug
+- prefer one canonical filename per asset role
 
-Pravidlá:
-- bez diakritiky
-- malé písmená
-- slová oddelené pomlčkami
-- názov orientovaný na obsah a SEO
+Examples:
+- `kreatin-porovnanie.webp`
+- `kolagen-recenzia.webp`
+- `imunita-prirodne-latky-ktore-funguju.webp`
+- `public/assets/img/products/gymbeam/gymbeam-true-whey/main.webp`
 
-Príklady:
-- `najlepsie-proteiny-2025/hero-1600.webp`
-- `najlepsie-proteiny-2025/thumb-800.webp`
-- `protein-na-chudnutie/detail-01-1200.webp`
-- `aktin-whey-isolate-cut/main-1200.webp`
-- `proteiny/hero-1600.webp`
+## Product Image Workflow
 
-## Odporúčané rozmery
+Canonical target path for mirrored product images:
+- `public/assets/img/products/{merchant_slug}/{product_slug}/main.webp`
 
-### Články
-- hero: `1600x900`
-- thumb/card: `800x450`
-- inline detail: `1200x675`
+Runtime preference order:
+1. explicit local asset from catalog metadata
+2. canonical local mirrored packshot path
+3. approved remote merchant image (`remote_src`)
+4. fallback product media state
 
-### Kategórie
-- hero: `1600x900`
-- thumbnail/icon: podľa potreby, ideálne `512x512`
+This means the site can work immediately with merchant feed images, but once you save a local optimized WebP to the canonical mirror path, the site will use it automatically without changing templates.
 
-### Produkty
-- main: `1200x1200`
-- gallery: `1200x1200`
-- lightweight card fallback: `800x800`
+Generated manifest:
+- `docs/product-image-manifest.csv`
 
-## Formát a výkon
+Builder:
+- `tools/build-product-image-manifest.php`
 
-Preferovaný formát:
-- WebP ako primárny formát pre nové assety
+Recommended product image spec:
+- format: WebP
+- canvas: 1000x1000 to 1200x1200
+- display style: clean packshot with transparent or soft neutral background
+- crop: keep the whole pack visible
+- compression target: ideally below 250 KB for the final mirrored site asset
 
-Zásady:
-- explicitné `width` a `height`
-- `loading="lazy"` mimo critical above-the-fold prvkov
-- `decoding="async"` pre väčšinu obrázkov
-- `fetchpriority="high"` len pre hlavný hero obrázok stránky
-- pre produkty a články použiť varianty s width suffixom, napr. `hero-800.webp`, `hero-1600.webp`
+## Article Hero Workflow
 
-## Alt texty
+Hero assets are driven by:
+- `public/content/media/articles.php`
+- `public/content/media/article-hero-prompts.php`
+- `public/inc/hero-prompts.php`
+- `public/hero-helper.php`
 
-Zásady:
-- opisuj, čo je na obrázku a prečo je na stránke relevantný
-- neopakuj presne len názov článku bez významu
-- pri produktových obrázkoch uveď typ produktu alebo merchant kontext, ak je relevantný
-- pri čisto dekoratívnych prvkoch zvažuj prázdny alt, ale len tam, kde obrázok naozaj nenesie obsah
+Generated brief export:
+- `docs/article-visual-briefs.csv`
 
-Príklady:
-- `Proteínový shaker a odmerka s proteínom na mätozelenom pozadí`
-- `Produktový vizuál pre whey isolate od Aktinu`
-- `Ikona kategórie vitamíny a minerály`
+Builder:
+- `tools/build-article-visual-briefs.php`
 
-## Ilustračné vs produktové obrázky
+Recommended hero spec:
+- format: WebP
+- dimensions: 1200x800
+- no text in the image
+- editorial, realistic and category-specific
+- keep a calm premium look, not a noisy collage
 
-Ilustračné obrázky:
-- používaj pre hero sekcie, kategórie a edukatívne články
-- majú držať vizuálny štýl webu
+Each article hero brief should include:
+- article title
+- category
+- target filename
+- target folder
+- alt text
+- style brief
+- prompt text
 
-Produktové obrázky:
-- používaj pre recenzie, porovnania a affiliate boxy
-- môžu pochádzať z merchant feedov alebo Dognet dát
-- udržuj jasný názov produktu, merchant a zdroj
+## Canva / AI Workflow
 
-## Technický workflow
+Use this lightweight workflow:
+1. Open `docs/article-visual-briefs.csv` or `/hero-helper`.
+2. Copy the prompt and style brief.
+3. Generate the image in Canva or another AI tool.
+4. Export as `1200x800` WebP.
+5. Save it to `public/assets/img/articles/heroes/{slug}.webp`.
+6. The site will start using it automatically.
 
-Každý článok môže mať v `public/content/media/articles.php` definované:
-- `hero`
-- `thumb`
-- `gallery`
+For product images:
+1. Check `docs/product-image-manifest.csv`.
+2. If a merchant feed image exists, mirror it locally.
+3. Save it to the canonical product path.
+4. Rebuild the manifest if needed.
 
-Každá kategória môže mať v `public/content/media/categories.php` definované:
-- `hero`
-- `thumb`
+## Alt Text Rules
 
-Renderovanie prechádza cez helpery v `public/inc/media.php`, ktoré:
-- hľadajú nový kanonický asset
-- podporujú responsive varianty s width suffixom
-- doplnia fallback placeholder
-- doplnia rozmery a lazy loading
+Article hero alt text:
+- use the article title or a close descriptive version of it
+- keep it relevant to the page topic
+
+Product image alt text:
+- use the real product name
+- include merchant context only if helpful
+- do not stuff keywords unnaturally
+
+## Fallback Rules
+
+If an article hero does not exist yet:
+- use the current article hero registry and SVG fallback workflow
+
+If a product packshot does not exist yet:
+- prefer remote approved merchant image if available
+- otherwise use the intentional fallback media state in the UI
+- do not upload random editorial illustrations into product recommendation cards

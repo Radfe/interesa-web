@@ -55,7 +55,7 @@ if (!function_exists('interessa_top_products_schema')) {
             }
 
             $image = is_array($resolved['_image'] ?? null) ? $resolved['_image'] : null;
-            if ($image !== null && !empty($image['src'])) {
+            if ($image !== null && !empty($image['src']) && ($image['source_type'] ?? '') !== 'placeholder') {
                 $product['image'] = absolute_url((string) $image['src']);
             }
 
@@ -126,27 +126,44 @@ if (!function_exists('interessa_render_top_products')) {
             $rating = (float) ($row['rating'] ?? 0);
             $pros = is_array($row['pros'] ?? null) ? array_values($row['pros']) : [];
             $cons = is_array($row['cons'] ?? null) ? array_values($row['cons']) : [];
-            $image = is_array($row['_image'] ?? null) ? $row['_image'] : interessa_product_image_meta(trim((string) ($row['slug'] ?? '')), [], true);
+            $imageMode = trim((string) ($row['image_mode'] ?? (($row['_image']['source_type'] ?? 'placeholder'))));
 
             echo '<article class="top-product-card">';
-            echo '<div class="top-product-rank">#' . (int) ($index + 1) . '</div>';
-            echo interessa_render_image($image, ['class' => 'top-product-image']);
+            echo '<div class="top-product-rank">Top ' . (int) ($index + 1) . '</div>';
+            if ($merchant !== '') {
+                echo '<div class="top-product-merchant-pill">' . esc($merchant) . '</div>';
+            }
+            echo interessa_render_product_media($row, [
+                'wrapper_class' => 'top-product-media',
+                'frame_class' => 'top-product-media-frame',
+                'image_class' => 'top-product-image',
+                'badge_class' => 'top-product-media-badge',
+                'show_badge' => false,
+                'title_class' => 'top-product-media-title',
+                'meta_class' => 'top-product-media-meta',
+            ]);
             echo '<div class="top-product-body">';
+            echo '<div class="top-product-copy">';
             echo '<h3>' . esc($name) . '</h3>';
             if ($subtitle !== '') {
                 echo '<p class="top-product-subtitle">' . esc($subtitle) . '</p>';
             }
+            echo '</div>';
             if ($showProductName) {
                 echo '<p class="top-product-product-name"><span>' . esc(interessa_text('Produkt v obchode:')) . '</span> ' . esc($productName) . '</p>';
             }
             if ($bestFor !== '') {
-                echo '<div class="top-product-bestfor"><span>' . esc(interessa_text('Najlepšie pre:')) . '</span> ' . esc($bestFor) . '</div>';
+                echo '<div class="top-product-bestfor"><span>' . esc(interessa_text('Najlepsie pre:')) . '</span> ' . esc($bestFor) . '</div>';
             }
-            if ($rating > 0) {
-                echo '<div class="top-product-rating">' . interessa_render_stars($rating) . '</div>';
-            }
-            if ($merchant !== '') {
-                echo '<div class="top-product-merchant">' . esc(interessa_text('Obchod:')) . ' ' . esc($merchant) . '</div>';
+            if ($rating > 0 || $imageMode !== 'placeholder') {
+                echo '<div class="top-product-meta-row">';
+                if ($rating > 0) {
+                    echo '<div class="top-product-rating">' . interessa_render_stars($rating) . '</div>';
+                }
+                if ($imageMode !== 'placeholder') {
+                    echo '<span class="top-product-image-status">Realny packshot</span>';
+                }
+                echo '</div>';
             }
             if ($pros !== [] || $cons !== []) {
                 echo '<div class="top-product-highlights">';
@@ -158,7 +175,7 @@ if (!function_exists('interessa_render_top_products')) {
                     echo '</ul></div>';
                 }
                 if ($cons !== []) {
-                    echo '<div class="top-product-list is-cons"><div class="top-product-list-title">' . esc(interessa_text('Mínusy')) . '</div><ul>';
+                    echo '<div class="top-product-list is-cons"><div class="top-product-list-title">' . esc(interessa_text('Minusy')) . '</div><ul>';
                     foreach ($cons as $item) {
                         echo '<li>' . esc((string) $item) . '</li>';
                     }
@@ -166,9 +183,9 @@ if (!function_exists('interessa_render_top_products')) {
                 }
                 echo '</div>';
             }
-            echo '</div>';
             echo '<div class="top-product-actions">';
-            echo interessa_affiliate_cta_html($row, ['class' => 'btn']);
+            echo interessa_affiliate_cta_html($row, ['class' => 'btn btn-cta']);
+            echo '</div>';
             echo '</div>';
             echo '</article>';
         }

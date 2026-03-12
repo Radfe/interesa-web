@@ -34,7 +34,7 @@ function hero_helper_priority_slugs(): array {
 }
 
 $page_title = 'Hero Helper | Interesa';
-$page_description = 'Interný prehľad hero obrázkov článkov.';
+$page_description = 'Interny prehlad hero obrazkov clankov.';
 $page_robots = 'noindex,nofollow';
 $page_styles = [asset('css/hero-helper.css')];
 $page_scripts = [asset('js/hero-helper.js')];
@@ -62,9 +62,11 @@ foreach ($articles as $slug => $item) {
     if ($title === '') {
         $title = humanize_slug($slug);
     }
+    $title = interessa_fix_mojibake($title);
 
     $category = normalize_category_slug((string) ($item['category'] ?? ''));
     $categoryLabel = (string) (category_meta($category)['title'] ?? humanize_slug($category));
+    $categoryLabel = interessa_fix_mojibake($categoryLabel);
     $image = interessa_article_image_meta($slug, 'thumb', true);
     $webpFile = __DIR__ . '/assets/img/articles/heroes/' . $slug . '.webp';
     $svgFile = __DIR__ . '/assets/img/articles/heroes/' . $slug . '.svg';
@@ -108,8 +110,12 @@ foreach ($articles as $slug => $item) {
         'has_svg' => $hasSvg,
         'is_priority' => $isPriority,
         'prompt' => (string) ($cardMeta['prompt'] ?? ''),
+        'style_brief' => (string) ($cardMeta['style_brief'] ?? ''),
+        'dimensions' => (string) ($cardMeta['dimensions'] ?? '1200x800'),
+        'target_folder' => (string) ($cardMeta['target_folder'] ?? 'public/assets/img/articles/heroes/'),
+        'target_filename' => (string) ($cardMeta['file_name'] ?? ($slug . '.webp')),
         'asset_path' => (string) ($cardMeta['asset_path'] ?? ('public/assets/img/articles/heroes/' . $slug . '.webp')),
-        'alt_text' => (string) ($cardMeta['alt_text'] ?? $title),
+        'alt_text' => interessa_fix_mojibake((string) ($cardMeta['alt_text'] ?? $title)),
         'article_url' => article_url($slug),
     ];
 }
@@ -127,40 +133,40 @@ require __DIR__ . '/inc/head.php';
 <section class="container hero-helper-page">
   <div class="hero-helper-head">
     <div>
-      <p class="eyebrow">Interný nástroj</p>
-      <h1>Hero obrázky článkov</h1>
-      <p class="lead">Každý článok má vlastný hero fallback. Keď nahráš finálny <code>.webp</code> so správnym slug názvom, web ho začne používať automaticky.</p>
+      <p class="eyebrow">Interny nastroj</p>
+      <h1>Hero obrazky clankov</h1>
+      <p class="lead">Kazdy clanok ma vlastny hero fallback. Ked nahras finalny <code>.webp</code> so spravnym slug nazvom, web ho zacne pouzivat automaticky.</p>
     </div>
     <div class="hero-helper-stats">
-      <div class="hero-stat"><strong><?= count($cards) ?></strong><span>článkov</span></div>
-      <div class="hero-stat"><strong><?= $webpCount ?></strong><span>finálnych WebP</span></div>
+      <div class="hero-stat"><strong><?= count($cards) ?></strong><span>clankov</span></div>
+      <div class="hero-stat"><strong><?= $webpCount ?></strong><span>finalnych WebP</span></div>
       <div class="hero-stat"><strong><?= $svgCount ?></strong><span>SVG fallbackov</span></div>
-      <div class="hero-stat"><strong><?= $priorityPending ?></strong><span>priorít čaká</span></div>
+      <div class="hero-stat"><strong><?= $priorityPending ?></strong><span>priorit caka</span></div>
     </div>
   </div>
 
   <div class="hero-helper-notice">
-    <strong>Workflow:</strong> sleduj cieľový názov súboru, skopíruj prompt a po exporte ulož <code>.webp</code> do <code>public/assets/img/articles/heroes/</code>. Karty s označením <strong>Priorita 1</strong> sú zoradené navrchu.
+    <strong>Workflow:</strong> sleduj cielovy nazov suboru, skopiruj prompt a po exporte uloz <code>.webp</code> do <code>public/assets/img/articles/heroes/</code>. Karty s oznacenim <strong>Priorita 1</strong> su zoradene navrchu.
   </div>
 
   <div class="hero-helper-summary">
     <?php foreach ($categorySummary as $category => $summary): ?>
       <button type="button" class="hero-summary-card js-hero-category-filter" data-category="<?= esc($category) ?>">
         <strong><?= esc((string) $summary['label']) ?></strong>
-        <span><?= (int) $summary['webp'] ?> hotovo / <?= (int) $summary['pending'] ?> čaká</span>
+        <span><?= (int) $summary['webp'] ?> hotovo / <?= (int) $summary['pending'] ?> caka</span>
       </button>
     <?php endforeach; ?>
   </div>
 
   <form class="hero-helper-toolbar" id="hero-helper-toolbar" autocomplete="off">
     <label class="hero-filter">
-      <span>Hľadať článok</span>
-      <input type="search" id="hero-filter-search" placeholder="Názov alebo slug">
+      <span>Hladat clanok</span>
+      <input type="search" id="hero-filter-search" placeholder="Nazov alebo slug">
     </label>
     <label class="hero-filter">
-      <span>Kategória</span>
+      <span>Kategoria</span>
       <select id="hero-filter-category">
-        <option value="">Všetky kategórie</option>
+        <option value="">Vsetky kategorie</option>
         <?php foreach ($categorySummary as $category => $summary): ?>
           <option value="<?= esc($category) ?>"><?= esc((string) $summary['label']) ?></option>
         <?php endforeach; ?>
@@ -175,7 +181,7 @@ require __DIR__ . '/inc/head.php';
       <span>Len bez WebP</span>
     </label>
     <div class="hero-filter hero-filter-results">
-      <span>Zobrazené karty</span>
+      <span>Zobrazene karty</span>
       <strong id="hero-filter-count"><?= count($cards) ?></strong>
     </div>
   </form>
@@ -195,7 +201,7 @@ require __DIR__ . '/inc/head.php';
         </a>
         <div class="hero-card-body">
           <div class="hero-card-meta">
-            <span class="hero-badge<?= $card['has_webp'] ? ' is-ready' : ' is-fallback' ?>"><?= $card['has_webp'] ? 'WebP hotový' : 'SVG fallback' ?></span>
+            <span class="hero-badge<?= $card['has_webp'] ? ' is-ready' : ' is-fallback' ?>"><?= $card['has_webp'] ? 'WebP hotovy' : 'SVG fallback' ?></span>
             <?php if ($card['is_priority']): ?>
               <span class="hero-badge is-priority">Priorita 1</span>
             <?php endif; ?>
@@ -205,14 +211,16 @@ require __DIR__ . '/inc/head.php';
           </div>
           <h2><a href="<?= esc($card['article_url']) ?>" target="_blank" rel="noopener"><?= esc($card['title']) ?></a></h2>
           <p class="hero-card-slug"><code><?= esc($card['slug']) ?></code></p>
-          <p class="hero-card-path"><strong>Súbor:</strong> <code><?= esc($card['asset_path']) ?></code></p>
+          <p class="hero-card-path"><strong>Subor:</strong> <code><?= esc($card['asset_path']) ?></code></p>
           <p class="hero-card-alt"><strong>Alt:</strong> <?= esc($card['alt_text']) ?></p>
+          <p class="hero-card-path"><strong>Export:</strong> <code><?= esc($card['dimensions']) ?></code> do <code><?= esc($card['target_folder']) ?></code></p>
           <div class="hero-card-actions">
-            <button type="button" class="btn btn-secondary js-copy-prompt" data-prompt="<?= esc($card['prompt']) ?>">Kopírovať prompt</button>
-            <a class="btn btn-ghost" href="<?= esc($card['article_url']) ?>" target="_blank" rel="noopener">Otvoriť článok</a>
+            <button type="button" class="btn btn-secondary js-copy-prompt" data-prompt="<?= esc($card['prompt']) ?>">Kopirovat prompt</button>
+            <a class="btn btn-ghost" href="<?= esc($card['article_url']) ?>" target="_blank" rel="noopener">Otvorit clanok</a>
           </div>
           <details class="hero-card-prompt">
-            <summary>Zobraziť prompt</summary>
+            <summary>Zobrazit brief a prompt</summary>
+            <p><strong>Style brief:</strong> <?= esc($card['style_brief']) ?></p>
             <pre><?= esc($card['prompt']) ?></pre>
           </details>
         </div>

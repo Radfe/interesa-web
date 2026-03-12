@@ -14,6 +14,12 @@ if (!function_exists('interessa_hero_prompt_registry')) {
     }
 }
 
+if (!function_exists('interessa_hero_visual_style')) {
+    function interessa_hero_visual_style(): string {
+        return 'Realistic editorial hero visual, bright minimal background, soft pastel palette, natural light, premium health and fitness look, no text, no logo, no collage.';
+    }
+}
+
 if (!function_exists('interessa_hero_prompt_category_subject')) {
     function interessa_hero_prompt_category_subject(string $category, string $title): string {
         $category = normalize_category_slug($category);
@@ -38,9 +44,10 @@ if (!function_exists('interessa_build_hero_prompt')) {
     function interessa_build_hero_prompt(string $title, string $category): string {
         $subject = interessa_hero_prompt_category_subject($category, $title);
         return sprintf(
-            'Realistic professional hero photo for "%s", %s, bright minimal background, soft pastel palette, modern health and fitness look, natural light, no text, no collage, 3:2 aspect ratio.',
+            'Realistic professional hero photo for "%s", %s, %s 3:2 aspect ratio.',
             $title,
-            $subject
+            $subject,
+            interessa_hero_visual_style()
         );
     }
 }
@@ -56,11 +63,18 @@ if (!function_exists('interessa_hero_prompt_meta')) {
         if ($title === '') {
             $title = humanize_slug($canonicalSlug);
         }
+        if (function_exists('interessa_fix_mojibake')) {
+            $title = interessa_fix_mojibake($title);
+        }
 
         $category = normalize_category_slug((string) ($item['category'] ?? ($meta['category'] ?? '')));
-        $assetPath = (string) ($item['asset_path'] ?? ('public/assets/img/articles/heroes/' . $canonicalSlug . '.webp'));
+        $targetFolder = (string) ($item['target_folder'] ?? 'public/assets/img/articles/heroes/');
+        $assetPath = (string) ($item['asset_path'] ?? ($targetFolder . $canonicalSlug . '.webp'));
         $fileName = (string) ($item['file_name'] ?? ($canonicalSlug . '.webp'));
         $altText = (string) ($item['alt_text'] ?? $title);
+        if (function_exists('interessa_fix_mojibake')) {
+            $altText = interessa_fix_mojibake($altText);
+        }
         $prompt = trim((string) ($item['prompt'] ?? ''));
         if ($prompt === '') {
             $prompt = interessa_build_hero_prompt($title, $category);
@@ -69,9 +83,12 @@ if (!function_exists('interessa_hero_prompt_meta')) {
         return [
             'title' => $title,
             'category' => $category,
+            'dimensions' => (string) ($item['dimensions'] ?? '1200x800'),
+            'target_folder' => $targetFolder,
             'file_name' => $fileName,
             'asset_path' => $assetPath,
             'alt_text' => $altText,
+            'style_brief' => (string) ($item['style_brief'] ?? interessa_hero_visual_style()),
             'prompt' => $prompt,
             'status' => (string) ($item['status'] ?? 'todo'),
         ];
