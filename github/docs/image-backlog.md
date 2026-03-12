@@ -1,9 +1,9 @@
 # Image Backlog
 
-Aktuálne má každý článok vlastný SVG hero fallback v `public/assets/img/articles/heroes/`.
-Finálny stav je nahradiť najdôležitejšie články realistickými WebP vizuálmi z Canvy alebo iného grafického nástroja.
+Every article already has its own SVG fallback in `public/assets/img/articles/heroes/`.
+The next step is to replace the first 10 commercially important articles with final WebP heroes.
 
-## Priorita 1
+## Priority 1
 - `protein-na-chudnutie.webp`
 - `kreatin-porovnanie.webp`
 - `kolagen-recenzia.webp`
@@ -15,8 +15,15 @@ Finálny stav je nahradiť najdôležitejšie články realistickými WebP vizu�
 - `najlepsie-proteiny-2025.webp`
 - `najlepsi-protein-na-chudnutie-wpc-vs-wpi.webp`
 
+## Working files
+- `docs/hero-priority-batch-sk.md`
+- `docs/hero-priority-batch.csv`
+- `public/inc/hero-prompts.php`
+- `public/content/media/article-hero-prompts.php`
+- `tools/build-hero-priority-batch.php`
+
 ## Workflow
-1. Vytvor hero obrázok podľa promptu zo shotlistu.
-2. Exportuj WebP približne 1200x800 a pod 350 KB.
-3. Ulož súbor do `public/assets/img/articles/heroes/` presne podľa slug názvu.
-4. Obnov článok v prehliadači. WebP automaticky nahradí dočasný SVG fallback.
+1. Open the priority batch.
+2. Generate or edit the WebP using the prompt.
+3. Save the file into `public/assets/img/articles/heroes/` using the exact slug name.
+4. Refresh the article or `hero-helper` and check that the SVG fallback is gone.

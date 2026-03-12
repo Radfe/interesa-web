@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 if (!function_exists('interessa_media_registry')) {
     function interessa_media_registry(): array {
         static $registry = null;
@@ -111,7 +109,7 @@ if (!function_exists('interessa_collect_asset_candidates')) {
                 $baseName = basename($base);
                 foreach (glob($root . $base . '-*.' . $ext) ?: [] as $file) {
                     $fileName = basename($file);
-                    if (!preg_match('~^' . preg_quote($baseName, '~') . '-(\\d+)\\.' . preg_quote($ext, '~') . '$~', $fileName, $match)) {
+                    if (!preg_match('~^' . preg_quote($baseName, '~') . '-(\d+)\.' . preg_quote($ext, '~') . '$~', $fileName, $match)) {
                         continue;
                     }
 
@@ -123,8 +121,8 @@ if (!function_exists('interessa_collect_asset_candidates')) {
                         'height' => $size['height'],
                     ];
                 }
-        }
             }
+        }
 
         usort($variants, static function (array $left, array $right): int {
             return (int) ($left['width'] ?? 0) <=> (int) ($right['width'] ?? 0);
@@ -213,12 +211,13 @@ if (!function_exists('interessa_remote_image_meta')) {
 
 if (!function_exists('interessa_article_image_meta')) {
     function interessa_article_image_meta(string $slug, string $variant = 'thumb', bool $allowFallback = true): ?array {
-        $registry = interessa_media_registry()['articles'][$slug] ?? [];
+        $canonicalSlug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : $slug;
+        $registry = interessa_media_registry()['articles'][$canonicalSlug] ?? [];
         $entry = is_array($registry[$variant] ?? null) ? $registry[$variant] : [];
-        $meta = article_meta($slug);
+        $meta = article_meta($canonicalSlug);
         $alt = trim((string) ($entry['alt'] ?? ''));
         if ($alt === '') {
-            $alt = $meta['title'] !== '' ? $meta['title'] : humanize_slug($slug);
+            $alt = $meta['title'] !== '' ? $meta['title'] : humanize_slug($canonicalSlug);
         }
 
         $variants = [];
@@ -231,11 +230,11 @@ if (!function_exists('interessa_article_image_meta')) {
 
         if ($variants === []) {
             $variants = interessa_collect_asset_candidates([
-                'img/articles/heroes/' . $slug,
-                'img/articles/' . $slug . '/hero',
-                'img/articles/' . $slug . '/' . $variant,
-                'img/articles/' . $slug,
-                'img/articles/' . $slug . '-hero',
+                'img/articles/heroes/' . $canonicalSlug,
+                'img/articles/' . $canonicalSlug . '/hero',
+                'img/articles/' . $canonicalSlug . '/' . $variant,
+                'img/articles/' . $canonicalSlug,
+                'img/articles/' . $canonicalSlug . '-hero',
             ]);
         }
 
@@ -320,65 +319,43 @@ if (!function_exists('interessa_product_image_meta')) {
         return interessa_build_image_meta($variants, [
             'alt' => $alt,
             'sizes' => $sizes,
-            'width' => $config['width'] ?? null,
-            'height' => $config['height'] ?? null,
+            'loading' => (string) ($config['loading'] ?? 'lazy'),
         ], 'product', $allowFallback);
-    }
-}
-
-if (!function_exists('interessa_brand_image_meta')) {
-    function interessa_brand_image_meta(string $name): ?array {
-        $variants = interessa_collect_asset_candidates(['img/brand/' . trim($name, '/')]);
-        return interessa_build_image_meta($variants, [
-            'alt' => 'Interesa',
-            'loading' => 'eager',
-            'decoding' => 'sync',
-        ], 'brand', false);
     }
 }
 
 if (!function_exists('interessa_render_image')) {
     function interessa_render_image(?array $image, array $attrs = []): string {
-        if ($image === null || trim((string) ($image['src'] ?? '')) === '') {
+        if (!is_array($image) || trim((string) ($image['src'] ?? '')) === '') {
             return '';
         }
 
-        $attributes = [
-            'src' => (string) $image['src'],
-            'alt' => (string) ($attrs['alt'] ?? $image['alt'] ?? ''),
-            'loading' => (string) ($attrs['loading'] ?? $image['loading'] ?? 'lazy'),
-            'decoding' => (string) ($attrs['decoding'] ?? $image['decoding'] ?? 'async'),
-        ];
+        $attrs = array_merge([
+            'src' => $image['src'],
+            'alt' => $image['alt'] ?? '',
+            'loading' => $image['loading'] ?? 'lazy',
+            'decoding' => $image['decoding'] ?? 'async',
+        ], $attrs);
 
-        if (!empty($image['width']) && empty($attrs['width'])) {
-            $attributes['width'] = (string) $image['width'];
-        }
-        if (!empty($image['height']) && empty($attrs['height'])) {
-            $attributes['height'] = (string) $image['height'];
-        }
-        if (!empty($image['srcset'])) {
-            $attributes['srcset'] = (string) $image['srcset'];
-        }
-        if (!empty($image['sizes'])) {
-            $attributes['sizes'] = (string) $image['sizes'];
-        }
-        if (!empty($image['fetchpriority'])) {
-            $attributes['fetchpriority'] = (string) $image['fetchpriority'];
+        foreach (['width', 'height', 'srcset', 'sizes', 'fetchpriority'] as $key) {
+            if (!isset($attrs[$key]) && !empty($image[$key])) {
+                $attrs[$key] = $image[$key];
+            }
         }
 
+        $htmlAttrs = [];
         foreach ($attrs as $key => $value) {
-            if ($value === null || $value === '') {
+            if ($value === null || $value === false || $value === '') {
                 continue;
             }
-            $attributes[(string) $key] = (string) $value;
+            if ($value === true) {
+                $htmlAttrs[] = $key;
+                continue;
+            }
+
+            $htmlAttrs[] = $key . '="' . esc((string) $value) . '"';
         }
 
-        $html = '<img';
-        foreach ($attributes as $key => $value) {
-            $html .= ' ' . esc((string) $key) . '="' . esc((string) $value) . '"';
-        }
-        $html .= ' />';
-
-        return $html;
+        return '<img ' . implode(' ', $htmlAttrs) . '>';
     }
 }

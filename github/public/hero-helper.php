@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/inc/functions.php';
+require_once __DIR__ . '/inc/hero-prompts.php';
 
 function hero_helper_prompt_map(): array {
     static $map = null;
@@ -10,39 +11,10 @@ function hero_helper_prompt_map(): array {
     }
 
     $map = [];
-    $file = dirname(__DIR__) . '/docs/article-hero-shotlist.csv';
-    if (!is_file($file)) {
-        return $map;
+    foreach (indexed_articles() as $slug => $_meta) {
+        $map[$slug] = interessa_hero_prompt_meta($slug);
     }
 
-    $handle = fopen($file, 'rb');
-    if ($handle === false) {
-        return $map;
-    }
-
-    fgetcsv($handle);
-    while (($row = fgetcsv($handle)) !== false) {
-        if (!is_array($row) || count($row) < 7) {
-            continue;
-        }
-
-        $slug = trim((string) ($row[0] ?? ''));
-        if ($slug === '') {
-            continue;
-        }
-
-        $map[$slug] = [
-            'title' => (string) ($row[1] ?? ''),
-            'category' => (string) ($row[2] ?? ''),
-            'file_name' => (string) ($row[3] ?? ''),
-            'asset_path' => (string) ($row[4] ?? ''),
-            'alt_text' => (string) ($row[5] ?? ''),
-            'prompt' => (string) ($row[6] ?? ''),
-            'status' => (string) ($row[7] ?? ''),
-        ];
-    }
-
-    fclose($handle);
     return $map;
 }
 
@@ -125,6 +97,7 @@ foreach ($articles as $slug => $item) {
         $categorySummary[$category]['pending']++;
     }
 
+    $cardMeta = $promptMap[$slug] ?? interessa_hero_prompt_meta($slug);
     $cards[] = [
         'slug' => $slug,
         'title' => $title,
@@ -134,9 +107,9 @@ foreach ($articles as $slug => $item) {
         'has_webp' => $hasWebp,
         'has_svg' => $hasSvg,
         'is_priority' => $isPriority,
-        'prompt' => (string) ($promptMap[$slug]['prompt'] ?? ''),
-        'asset_path' => (string) ($promptMap[$slug]['asset_path'] ?? ('public/assets/img/articles/heroes/' . $slug . '.webp')),
-        'alt_text' => (string) ($promptMap[$slug]['alt_text'] ?? $title),
+        'prompt' => (string) ($cardMeta['prompt'] ?? ''),
+        'asset_path' => (string) ($cardMeta['asset_path'] ?? ('public/assets/img/articles/heroes/' . $slug . '.webp')),
+        'alt_text' => (string) ($cardMeta['alt_text'] ?? $title),
         'article_url' => article_url($slug),
     ];
 }
