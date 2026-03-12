@@ -49,6 +49,11 @@ if ($path === '/admin') {
     exit;
 }
 
+if ($path === '/admin/ai-status') {
+    require __DIR__ . '/admin/ai-status.php';
+    exit;
+}
+
 if ($path === '/search') {
     require __DIR__ . '/search.php';
     exit;

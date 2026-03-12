@@ -194,6 +194,7 @@ if (!function_exists('interessa_admin_normalize_article_override')) {
             'intro' => interessa_admin_normalize_text($data['intro'] ?? ''),
             'meta_title' => interessa_admin_normalize_text($data['meta_title'] ?? ''),
             'meta_description' => interessa_admin_normalize_text($data['meta_description'] ?? ''),
+            'category' => normalize_category_slug((string) ($data['category'] ?? '')),
             'hero_asset' => trim((string) ($data['hero_asset'] ?? '')),
             'sections' => interessa_admin_normalize_sections(is_array($data['sections'] ?? null) ? $data['sections'] : []),
             'comparison' => interessa_admin_normalize_comparison(is_array($data['comparison'] ?? null) ? $data['comparison'] : []),
@@ -253,7 +254,13 @@ if (!function_exists('interessa_admin_article_content')) {
 if (!function_exists('interessa_admin_article_has_structured_content')) {
     function interessa_admin_article_has_structured_content(string $slug): bool {
         $article = interessa_admin_article_content($slug);
-        return $article['sections'] !== []
+        return trim((string) ($article['title'] ?? '')) !== ''
+            || trim((string) ($article['intro'] ?? '')) !== ''
+            || trim((string) ($article['meta_title'] ?? '')) !== ''
+            || trim((string) ($article['meta_description'] ?? '')) !== ''
+            || trim((string) ($article['category'] ?? '')) !== ''
+            || trim((string) ($article['hero_asset'] ?? '')) !== ''
+            || $article['sections'] !== []
             || ($article['comparison']['columns'] ?? []) !== []
             || $article['recommended_products'] !== [];
     }
@@ -280,10 +287,14 @@ if (!function_exists('interessa_admin_merge_article_meta')) {
         if (trim((string) ($override['meta_description'] ?? '')) !== '') {
             $meta['meta_description'] = trim((string) $override['meta_description']);
         }
+        if (trim((string) ($override['category'] ?? '')) !== '') {
+            $meta['category'] = normalize_category_slug((string) $override['category']);
+        }
 
         return $meta;
     }
 }
+
 
 if (!function_exists('interessa_admin_products')) {
     function interessa_admin_products(): array {

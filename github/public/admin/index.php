@@ -168,6 +168,28 @@ function interessa_admin_brief_rows(array $articleOptions): array {
     return $rows;
 }
 
+
+function interessa_admin_image_queue(array $articleOptions, int $limit = 12): array {
+    $rows = [];
+    foreach ($articleOptions as $slug => $item) {
+        $meta = interessa_article_image_meta((string) $slug, 'hero', true);
+        $src = (string) ($meta['src'] ?? '');
+        $isFinalWebp = str_ends_with(strtolower($src), '.webp');
+        $promptMeta = interessa_hero_prompt_meta((string) $slug);
+        $rows[] = [
+            'slug' => (string) $slug,
+            'title' => (string) ($item['title'] ?? $slug),
+            'asset_path' => (string) ($promptMeta['asset_path'] ?? ''),
+            'has_final_webp' => $isFinalWebp,
+        ];
+    }
+
+    usort($rows, static function (array $left, array $right): int {
+        return ((int) $left['has_final_webp']) <=> ((int) $right['has_final_webp']);
+    });
+
+    return array_slice($rows, 0, $limit);
+}
 function interessa_admin_output_briefs_csv(array $rows): never {
     header('Content-Type: text/csv; charset=UTF-8');
     header('Content-Disposition: attachment; filename="article-visual-briefs-admin.csv"');
@@ -234,6 +256,25 @@ if ($isAuthed) {
                 interessa_admin_redirect('articles', ['slug' => $slug, 'saved' => 'article-reset']);
             }
 
+            if ($action === 'create_article') {
+                $slugInput = trim((string) ($_POST['new_article_slug'] ?? ''));
+                $titleInput = trim((string) ($_POST['new_article_title'] ?? ''));
+                $slug = interessa_admin_slugify($slugInput !== '' ? $slugInput : $titleInput);
+                if ($slug === '') {
+                    throw new RuntimeException('Vypln slug alebo titulok noveho clanku.');
+                }
+
+                interessa_admin_save_article_override($slug, [
+                    'title' => $titleInput,
+                    'intro' => (string) ($_POST['new_article_intro'] ?? ''),
+                    'category' => (string) ($_POST['new_article_category'] ?? ''),
+                    'sections' => [],
+                    'comparison' => ['columns' => [], 'rows' => []],
+                    'recommended_products' => [],
+                ]);
+                interessa_admin_redirect('articles', ['slug' => $slug, 'saved' => 'article-created']);
+            }
+
             if ($action === 'save_article') {
                 $slug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
                 $visualComparison = interessa_admin_collect_comparison_visual();
@@ -249,6 +290,7 @@ if ($isAuthed) {
                     'intro' => (string) ($_POST['intro'] ?? ''),
                     'meta_title' => (string) ($_POST['meta_title'] ?? ''),
                     'meta_description' => (string) ($_POST['meta_description'] ?? ''),
+                    'category' => (string) ($_POST['category'] ?? ''),
                     'hero_asset' => (string) ($_POST['hero_asset'] ?? ''),
                     'sections' => interessa_admin_collect_sections(),
                     'comparison' => [
@@ -272,6 +314,31 @@ if ($isAuthed) {
                 $slug = trim((string) ($_POST['product_slug'] ?? ''));
                 interessa_admin_delete_product_record($slug);
                 interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'product-reset']);
+            }
+
+            if ($action === 'create_product') {
+                $slugInput = trim((string) ($_POST['new_product_slug'] ?? ''));
+                $nameInput = trim((string) ($_POST['new_product_name'] ?? ''));
+                $slug = interessa_admin_slugify($slugInput !== '' ? $slugInput : $nameInput);
+                if ($slug === '') {
+                    throw new RuntimeException('Vypln slug alebo nazov noveho produktu.');
+                }
+
+                interessa_admin_save_product_record($slug, [
+                    'name' => $nameInput,
+                    'brand' => (string) ($_POST['new_product_brand'] ?? ''),
+                    'merchant' => (string) ($_POST['new_product_merchant'] ?? ''),
+                    'merchant_slug' => (string) ($_POST['new_product_merchant_slug'] ?? ''),
+                    'category' => (string) ($_POST['new_product_category'] ?? ''),
+                    'affiliate_code' => (string) ($_POST['new_product_affiliate_code'] ?? ''),
+                    'fallback_url' => '',
+                    'summary' => '',
+                    'rating' => '0',
+                    'pros' => '',
+                    'cons' => '',
+                    'image_remote_src' => '',
+                ]);
+                interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'product-created']);
             }
 
             if ($action === 'save_product') {
@@ -304,6 +371,25 @@ if ($isAuthed) {
                 $code = trim((string) ($_POST['code'] ?? ''));
                 interessa_admin_delete_affiliate_record($code);
                 interessa_admin_redirect('affiliates', ['code' => $code, 'saved' => 'affiliate-reset']);
+            }
+
+            if ($action === 'create_affiliate') {
+                $codeInput = trim((string) ($_POST['new_affiliate_code'] ?? ''));
+                $productSlugInput = trim((string) ($_POST['new_affiliate_product_slug'] ?? ''));
+                $merchantSlugInput = trim((string) ($_POST['new_affiliate_merchant_slug'] ?? ''));
+                $code = interessa_admin_slugify($codeInput !== '' ? $codeInput : $productSlugInput);
+                if ($code === '') {
+                    throw new RuntimeException('Vypln kod alebo product slug noveho affiliate odkazu.');
+                }
+
+                interessa_admin_save_affiliate_record($code, [
+                    'url' => '',
+                    'merchant' => (string) ($_POST['new_affiliate_merchant'] ?? ''),
+                    'merchant_slug' => $merchantSlugInput,
+                    'product_slug' => $productSlugInput,
+                    'link_type' => (string) ($_POST['new_affiliate_link_type'] ?? 'affiliate'),
+                ]);
+                interessa_admin_redirect('affiliates', ['code' => $code, 'saved' => 'affiliate-created']);
             }
 
             if ($action === 'save_affiliate') {
@@ -384,6 +470,7 @@ if ($isAuthed) {
 $articleOptions = interessa_admin_article_options();
 $selectedArticleSlug = canonical_article_slug(trim((string) ($_GET['slug'] ?? array_key_first($articleOptions) ?? '')));
 $selectedArticleMeta = $selectedArticleSlug !== '' ? article_meta($selectedArticleSlug) : ['title' => '', 'description' => '', 'category' => ''];
+$categoryOptions = category_registry();
 $selectedArticleOverride = $selectedArticleSlug !== '' ? interessa_admin_article_content($selectedArticleSlug) : interessa_admin_normalize_article_override('', []);
 $articlePrompt = $selectedArticleSlug !== '' ? interessa_hero_prompt_meta($selectedArticleSlug) : [];
 
@@ -399,6 +486,14 @@ $affiliateCodes = array_keys($affiliateRegistry);
 sort($affiliateCodes);
 $selectedAffiliateCode = trim((string) ($_GET['code'] ?? ($affiliateCodes[0] ?? '')));
 $selectedAffiliate = $selectedAffiliateCode !== '' ? aff_record($selectedAffiliateCode) : null;
+
+$dashboardStats = [
+    'article_overrides' => count(interessa_admin_all_article_overrides()),
+    'products' => count($catalog),
+    'affiliate_codes' => count($affiliateCodes),
+    'hero_ready' => count(array_filter(interessa_admin_image_queue($articleOptions, max(count($articleOptions), 1)), static fn(array $row): bool => !empty($row['has_final_webp']))),
+];
+$imageQueue = interessa_admin_image_queue($articleOptions);
 
 $sections = is_array($selectedArticleOverride['sections'] ?? null) ? $selectedArticleOverride['sections'] : [];
 while (count($sections) < 5) {
@@ -424,6 +519,7 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($error !== ''): ?>
           <div class="admin-flash is-error"><?= esc($error) ?></div>
         <?php endif; ?>
+
         <form method="post" class="admin-form admin-form-stack">
           <input type="hidden" name="action" value="login" />
           <label>
@@ -456,6 +552,7 @@ require dirname(__DIR__) . '/inc/head.php';
           <a class="<?= $section === 'images' ? 'is-active' : '' ?>" href="/admin?section=images&slug=<?= esc($selectedArticleSlug) ?>">Image briefy</a>
           <a class="<?= $section === 'affiliates' ? 'is-active' : '' ?>" href="/admin?section=affiliates&code=<?= esc($selectedAffiliateCode) ?>">Affiliate odkazy</a>
           <a class="<?= $section === 'tools' ? 'is-active' : '' ?>" href="/admin?section=tools">Import / export</a>
+          <a href="/admin/ai-status">AI status</a>
         </nav>
         <div class="admin-note">
           Frontend ostava flat-file. Admin uklada len override data a obrazky.
@@ -472,6 +569,25 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($error !== ''): ?>
           <div class="admin-flash is-error"><?= esc($error) ?></div>
         <?php endif; ?>
+
+        <section class="admin-dashboard-grid">
+          <article class="admin-stat-card">
+            <span class="admin-stat-label">Article overrides</span>
+            <strong><?= esc((string) $dashboardStats['article_overrides']) ?></strong>
+          </article>
+          <article class="admin-stat-card">
+            <span class="admin-stat-label">Produkty</span>
+            <strong><?= esc((string) $dashboardStats['products']) ?></strong>
+          </article>
+          <article class="admin-stat-card">
+            <span class="admin-stat-label">Affiliate kody</span>
+            <strong><?= esc((string) $dashboardStats['affiliate_codes']) ?></strong>
+          </article>
+          <article class="admin-stat-card">
+            <span class="admin-stat-label">Hero WebP hotovo</span>
+            <strong><?= esc((string) $dashboardStats['hero_ready']) ?></strong>
+          </article>
+        </section>
 
         <?php if ($section === 'articles'): ?>
           <section class="admin-card">
@@ -490,14 +606,59 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </div>
 
+            <section class="admin-subsection">
+              <div class="admin-subsection-head">
+                <h3>Vytvorit novy clanok</h3>
+              </div>
+              <form method="post" class="admin-form admin-form-stack">
+                <input type="hidden" name="action" value="create_article" />
+                <div class="admin-grid three-up">
+                  <label>
+                    <span>Titulok</span>
+                    <input type="text" name="new_article_title" placeholder="Napriklad Najlepsi omega-3 doplnok" />
+                  </label>
+                  <label>
+                    <span>Slug</span>
+                    <input type="text" name="new_article_slug" placeholder="najlepsi-omega-3-doplnok" />
+                  </label>
+                  <label>
+                    <span>Kategoria</span>
+                    <select name="new_article_category">
+                      <option value="">Bez kategorie</option>
+                      <?php foreach ($categoryOptions as $categorySlug => $categoryRow): ?>
+                        <option value="<?= esc((string) $categorySlug) ?>"><?= esc((string) ($categoryRow['title'] ?? $categorySlug)) ?></option>
+                      <?php endforeach; ?>
+                    </select>
+                  </label>
+                </div>
+                <label>
+                  <span>Startovacie intro</span>
+                  <textarea name="new_article_intro" rows="2" placeholder="Kratky uvod, ktory sa zobrazi na clanku aj v zoznamoch."></textarea>
+                </label>
+                <div class="admin-actions">
+                  <button class="btn btn-cta" type="submit">Vytvorit clanok</button>
+                </div>
+              </form>
+            </section>
+
             <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
               <input type="hidden" name="action" value="save_article" />
               <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
 
-              <div class="admin-grid two-up">
+              <div class="admin-grid three-up">
                 <label>
                   <span>Titulok</span>
                   <input type="text" name="title" value="<?= esc((string) ($selectedArticleOverride['title'] ?: $selectedArticleMeta['title'])) ?>" />
+                </label>
+                <label>
+                  <span>Kategoria</span>
+                  <?php $selectedCategory = (string) ($selectedArticleOverride['category'] ?: $selectedArticleMeta['category']); ?>
+                  <select name="category">
+                    <option value="">Bez kategorie</option>
+                    <?php foreach ($categoryOptions as $categorySlug => $categoryRow): ?>
+                      <option value="<?= esc((string) $categorySlug) ?>" <?= $selectedCategory === (string) $categorySlug ? 'selected' : '' ?>><?= esc((string) ($categoryRow['title'] ?? $categorySlug)) ?></option>
+                    <?php endforeach; ?>
+                  </select>
                 </label>
                 <label>
                   <span>Hero asset</span>
@@ -642,6 +803,29 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </div>
 
+            <section class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <h3>Rychlo vytvorit novy produkt</h3>
+              </div>
+              <form method="post" class="admin-form admin-form-stack">
+                <input type="hidden" name="action" value="create_product" />
+                <div class="admin-grid three-up">
+                  <label><span>Nazov</span><input type="text" name="new_product_name" placeholder="Napriklad GymBeam Magnesium Citrate" /></label>
+                  <label><span>Slug</span><input type="text" name="new_product_slug" placeholder="gymbeam-magnesium-citrate" /></label>
+                  <label><span>Brand</span><input type="text" name="new_product_brand" placeholder="GymBeam" /></label>
+                </div>
+                <div class="admin-grid three-up">
+                  <label><span>Obchod</span><input type="text" name="new_product_merchant" placeholder="GymBeam" /></label>
+                  <label><span>Merchant slug</span><input type="text" name="new_product_merchant_slug" placeholder="gymbeam" /></label>
+                  <label><span>Kategoria</span><input type="text" name="new_product_category" placeholder="mineraly" /></label>
+                </div>
+                <label><span>Affiliate code (volitelne)</span><input type="text" name="new_product_affiliate_code" placeholder="horcik-ktory-je-najlepsi-a-preco-gymbeam" /></label>
+                <div class="admin-actions">
+                  <button class="btn btn-secondary" type="submit">Vytvorit produkt</button>
+                </div>
+              </form>
+            </section>
+
             <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
               <input type="hidden" name="action" value="save_product" />
               <div class="admin-grid three-up">
@@ -739,6 +923,27 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
             </div>
           </section>
+
+          <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Hero image backlog</p>
+                <h2>Queue chybajucich hero obrazkov</h2>
+              </div>
+            </div>
+            <div class="admin-queue-list">
+              <?php foreach ($imageQueue as $queueRow): ?>
+                <article class="admin-queue-item<?= !empty($queueRow['has_final_webp']) ? ' is-done' : '' ?>">
+                  <div>
+                    <strong><?= esc((string) $queueRow['title']) ?></strong>
+                    <p><?= esc((string) $queueRow['slug']) ?></p>
+                    <code><?= esc((string) $queueRow['asset_path']) ?></code>
+                  </div>
+                  <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc((string) $queueRow['slug']) ?>">Otvorit</a>
+                </article>
+              <?php endforeach; ?>
+            </div>
+          </section>
         <?php endif; ?>
 
         <?php if ($section === 'affiliates'): ?>
@@ -757,6 +962,32 @@ require dirname(__DIR__) . '/inc/head.php';
                 </select>
               </form>
             </div>
+
+            <section class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <h3>Rychlo vytvorit novy affiliate kod</h3>
+              </div>
+              <form method="post" class="admin-form admin-form-stack">
+                <input type="hidden" name="action" value="create_affiliate" />
+                <div class="admin-grid three-up">
+                  <label><span>Kod</span><input type="text" name="new_affiliate_code" placeholder="kolagen-recenzia-gymbeam" /></label>
+                  <label><span>Merchant</span><input type="text" name="new_affiliate_merchant" placeholder="GymBeam" /></label>
+                  <label><span>Merchant slug</span><input type="text" name="new_affiliate_merchant_slug" placeholder="gymbeam" /></label>
+                </div>
+                <div class="admin-grid two-up">
+                  <label><span>Product slug</span><input type="text" name="new_affiliate_product_slug" placeholder="gymbeam-collagen-complex" /></label>
+                  <label><span>Typ linku</span>
+                    <select name="new_affiliate_link_type">
+                      <option value="affiliate">affiliate</option>
+                      <option value="product">product</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="admin-actions">
+                  <button class="btn btn-secondary" type="submit">Vytvorit affiliate kod</button>
+                </div>
+              </form>
+            </section>
 
             <form method="post" class="admin-form admin-form-stack">
               <input type="hidden" name="action" value="save_affiliate" />

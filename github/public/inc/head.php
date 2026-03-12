@@ -31,7 +31,7 @@
   <?= schema_script_tags() ?>
 </head>
 <body>
-  <a class="skip-link" href="#obsah">Preskočiť na obsah</a>
+  <a class="skip-link" href="#obsah">Preskocit na obsah</a>
 
   <header class="site-header">
     <div class="container header-inner">
@@ -40,7 +40,7 @@
       </a>
 
       <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
-      <label for="nav-toggle" class="nav-toggle-btn" aria-label="Zobraziť menu" aria-controls="hlavne-menu" aria-expanded="false">
+      <label for="nav-toggle" class="nav-toggle-btn" aria-label="Zobrazit menu" aria-controls="hlavne-menu" aria-expanded="false">
         <span class="bar"></span><span class="bar"></span><span class="bar"></span>
       </label>
 

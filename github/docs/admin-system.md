@@ -104,3 +104,21 @@ The importer:
 - product overrides can be deleted without removing the base catalog
 - affiliate link overrides can be deleted without touching the PHP registries
 - all destructive admin actions now use browser confirmation before submit
+
+## Admin dashboard
+- authenticated admin now shows summary cards for article overrides, products, affiliate codes and final hero WebP coverage
+- the images section now includes a backlog queue of articles that still need a final hero WebP
+
+## AI status dashboard
+- Root status file: `AGENT_STATUS.md`
+- Admin route: `/admin/ai-status`
+- Reads current branch, current task, next task, last completed task, modified files and progress bars
+- Helper functions live in `public/inc/agent-status.php`
+- CLI milestone updater: `php tools/update-agent-status.php --current-task="..." --last-completed="..."`
+
+## Status update rule
+Update `AGENT_STATUS.md` only when:
+- a major feature starts
+- a milestone is completed
+- the branch changes
+- a significant set of modified files changes

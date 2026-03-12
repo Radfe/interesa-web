@@ -1,0 +1,19 @@
+{
+    "test-admin-product": {
+        "slug": "test-admin-product",
+        "name": "Test Admin Product",
+        "brand": "Interesa",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "category": "proteiny",
+        "affiliate_code": "test-admin-code",
+        "fallback_url": "",
+        "summary": "",
+        "rating": 0,
+        "pros": [],
+        "cons": [],
+        "image": {
+            "asset": "img/products/gymbeam/test-admin-product/main.webp"
+        }
+    }
+}

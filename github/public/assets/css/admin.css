@@ -314,3 +314,101 @@
 .admin-comparison-remove-row {
     align-self: stretch;
 }
+.admin-dashboard-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-stat-card {
+  background: linear-gradient(180deg, #ffffff, #f7fafc);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+}
+
+.admin-stat-card strong {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 1.7rem;
+  color: #15314b;
+}
+
+.admin-stat-label {
+  display: block;
+  color: #516072;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.admin-queue-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-queue-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 1rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.admin-queue-item.is-done {
+  opacity: 0.72;
+}
+
+.admin-queue-item p,
+.admin-queue-item code {
+  margin: 0.2rem 0 0;
+}
+
+@media (max-width: 980px) {
+  .admin-dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-queue-item {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}.admin-progress-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-progress-item {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-progress-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.admin-progress-bar {
+  height: 12px;
+  border-radius: 999px;
+  background: #e6edf3;
+  overflow: hidden;
+}
+
+.admin-progress-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #15314b, #2d6a8c);
+}
