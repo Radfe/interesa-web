@@ -7,10 +7,11 @@ require_once dirname(__DIR__) . '/inc/products.php';
 require_once dirname(__DIR__) . '/inc/hero-prompts.php';
 require_once dirname(__DIR__) . '/inc/admin-content.php';
 require_once dirname(__DIR__) . '/inc/admin-auth.php';
+require_once dirname(__DIR__) . '/inc/admin-feed-import.php';
 
 function interessa_admin_selected_section(): string {
     $section = strtolower(trim((string) ($_GET['section'] ?? 'articles')));
-    return in_array($section, ['articles', 'products', 'images', 'affiliates'], true) ? $section : 'articles';
+    return in_array($section, ['articles', 'products', 'images', 'affiliates', 'tools'], true) ? $section : 'articles';
 }
 
 function interessa_admin_redirect(string $section, array $query = []): never {
@@ -54,6 +55,63 @@ function interessa_admin_collect_sections(): array {
     return $sections;
 }
 
+function interessa_admin_collect_comparison_visual(): array {
+    $keys = $_POST['comparison_column_key'] ?? [];
+    $labels = $_POST['comparison_column_label'] ?? [];
+    $types = $_POST['comparison_column_type'] ?? [];
+    $columns = [];
+
+    if (is_array($keys) && is_array($labels) && is_array($types)) {
+        $count = max(count($keys), count($labels), count($types));
+        for ($i = 0; $i < $count; $i++) {
+            $key = interessa_admin_slugify($keys[$i] ?? '');
+            $label = interessa_admin_normalize_text($labels[$i] ?? '');
+            $type = strtolower(trim((string) ($types[$i] ?? 'text')));
+            if ($key === '' || $label === '') {
+                continue;
+            }
+            if (!in_array($type, ['text', 'product', 'cta'], true)) {
+                $type = 'text';
+            }
+            $columns[] = [
+                'key' => $key,
+                'label' => $label,
+                'type' => $type,
+            ];
+        }
+    }
+
+    $rows = [];
+    if ($columns !== []) {
+        $rowCount = 0;
+        foreach (range(0, count($columns) - 1) as $index) {
+            $values = $_POST['comparison_cell_' . $index] ?? [];
+            if (is_array($values)) {
+                $rowCount = max($rowCount, count($values));
+            }
+        }
+
+        for ($rowIndex = 0; $rowIndex < $rowCount; $rowIndex++) {
+            $row = [];
+            foreach ($columns as $columnIndex => $column) {
+                $cellValues = $_POST['comparison_cell_' . $columnIndex] ?? [];
+                $value = is_array($cellValues) ? trim((string) ($cellValues[$rowIndex] ?? '')) : '';
+                if ($value !== '') {
+                    $row[$column['key']] = $value;
+                }
+            }
+            if ($row !== []) {
+                $rows[] = $row;
+            }
+        }
+    }
+
+    return [
+        'columns' => $columns,
+        'rows' => $rows,
+    ];
+}
+
 function interessa_admin_article_options(): array {
     $items = indexed_articles();
     uasort($items, static function (array $left, array $right): int {
@@ -62,6 +120,71 @@ function interessa_admin_article_options(): array {
     return $items;
 }
 
+function interessa_admin_comparison_editor_state(array $comparison, int $maxColumns = 4, int $maxRows = 5): array {
+    $sourceColumns = is_array($comparison['columns'] ?? null) ? $comparison['columns'] : [];
+    $sourceRows = is_array($comparison['rows'] ?? null) ? $comparison['rows'] : [];
+    $columns = [];
+
+    foreach (range(0, $maxColumns - 1) as $index) {
+        $columns[$index] = [
+            'key' => (string) ($sourceColumns[$index]['key'] ?? ''),
+            'label' => (string) ($sourceColumns[$index]['label'] ?? ''),
+            'type' => (string) ($sourceColumns[$index]['type'] ?? 'text'),
+        ];
+    }
+
+    $rows = [];
+    foreach (range(0, $maxRows - 1) as $rowIndex) {
+        $rowCells = [];
+        foreach ($columns as $column) {
+            $key = (string) ($column['key'] ?? '');
+            $rowCells[] = $key !== '' ? (string) ($sourceRows[$rowIndex][$key] ?? '') : '';
+        }
+        $rows[] = $rowCells;
+    }
+
+    return [
+        'columns' => $columns,
+        'rows' => $rows,
+    ];
+}
+
+function interessa_admin_brief_rows(array $articleOptions): array {
+    $rows = [];
+    foreach ($articleOptions as $slug => $item) {
+        $brief = interessa_hero_prompt_meta($slug);
+        $rows[] = [
+            'slug' => $slug,
+            'title' => (string) ($item['title'] ?? $brief['title'] ?? $slug),
+            'filename' => (string) ($brief['file_name'] ?? ''),
+            'alt_text' => (string) ($brief['alt_text'] ?? ''),
+            'dimensions' => (string) ($brief['dimensions'] ?? '1200x800'),
+            'asset_path' => (string) ($brief['asset_path'] ?? ''),
+            'prompt' => (string) ($brief['prompt'] ?? ''),
+        ];
+    }
+    return $rows;
+}
+
+function interessa_admin_output_briefs_csv(array $rows): never {
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="article-visual-briefs-admin.csv"');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, ['slug', 'title', 'filename', 'alt_text', 'dimensions', 'asset_path', 'prompt']);
+    foreach ($rows as $row) {
+        fputcsv($out, [
+            $row['slug'] ?? '',
+            $row['title'] ?? '',
+            $row['filename'] ?? '',
+            $row['alt_text'] ?? '',
+            $row['dimensions'] ?? '',
+            $row['asset_path'] ?? '',
+            $row['prompt'] ?? '',
+        ]);
+    }
+    fclose($out);
+    exit;
+}
 $page_title = 'Admin | Interesa';
 $page_description = 'Interny admin panel pre clanky, produkty, obrazky a affiliate odkazy.';
 $page_canonical = '/admin';
@@ -95,6 +218,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $isAuthed = interessa_admin_is_authenticated();
 $config = interessa_admin_auth_config();
+$importSummary = '';
+$articleOptions = interessa_admin_article_options();
 
 if ($isAuthed) {
     try {
@@ -103,8 +228,13 @@ if ($isAuthed) {
 
             if ($action === 'save_article') {
                 $slug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
-                $comparisonColumns = interessa_admin_decode_json_textarea((string) ($_POST['comparison_columns_json'] ?? ''), 'Stlpce porovnania');
-                $comparisonRows = interessa_admin_decode_json_textarea((string) ($_POST['comparison_rows_json'] ?? ''), 'Riadky porovnania');
+                $visualComparison = interessa_admin_collect_comparison_visual();
+                $comparisonColumns = $visualComparison['columns'] !== []
+                    ? $visualComparison['columns']
+                    : interessa_admin_decode_json_textarea((string) ($_POST['comparison_columns_json'] ?? ''), 'Stlpce porovnania');
+                $comparisonRows = $visualComparison['rows'] !== []
+                    ? $visualComparison['rows']
+                    : interessa_admin_decode_json_textarea((string) ($_POST['comparison_rows_json'] ?? ''), 'Riadky porovnania');
                 $recommended = interessa_admin_lines_to_array((string) ($_POST['recommended_products'] ?? ''));
                 $payload = [
                     'title' => (string) ($_POST['title'] ?? ''),
@@ -176,12 +306,51 @@ if ($isAuthed) {
                 interessa_admin_save_article_override($slug, $override);
                 interessa_admin_redirect('images', ['slug' => $slug, 'saved' => 'hero']);
             }
+
+            if ($action === 'export_bundle') {
+                header('Content-Type: application/json; charset=UTF-8');
+                header('Content-Disposition: attachment; filename="interesa-admin-export.json"');
+                echo json_encode(interessa_admin_export_bundle(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                exit;
+            }
+
+            if ($action === 'import_bundle') {
+                if (empty($_FILES['bundle_file']['tmp_name']) || !is_uploaded_file($_FILES['bundle_file']['tmp_name'])) {
+                    throw new RuntimeException('Vyber export subor pre import.');
+                }
+                $json = file_get_contents((string) $_FILES['bundle_file']['tmp_name']);
+                $bundle = json_decode((string) $json, true);
+                if (!is_array($bundle)) {
+                    throw new RuntimeException('Importovany subor nie je validny JSON export.');
+                }
+                $result = interessa_admin_import_bundle($bundle);
+                $importSummary = 'Importovane: ' . $result['articles'] . ' clankov, ' . $result['products'] . ' produktov, ' . $result['affiliate_links'] . ' affiliate odkazov.';
+                $flash = 'bundle-import';
+            }
+
+            if ($action === 'feed_import') {
+                if (empty($_FILES['feed_file']['tmp_name']) || !is_uploaded_file($_FILES['feed_file']['tmp_name'])) {
+                    throw new RuntimeException('Vyber feed subor XML alebo CSV.');
+                }
+                $merchantSlug = interessa_admin_slugify((string) ($_POST['feed_merchant_slug'] ?? ''));
+                if ($merchantSlug === '') {
+                    throw new RuntimeException('Vypln merchant slug pre feed import.');
+                }
+                $limit = max(0, (int) ($_POST['feed_limit'] ?? 0));
+                $rows = interessa_admin_parse_feed_file((string) $_FILES['feed_file']['tmp_name'], $merchantSlug, $limit);
+                $imported = interessa_admin_import_feed_products($rows);
+                $importSummary = 'Feed import: ' . count($imported) . ' produktov bolo ulozenych do admin produktov.';
+                $flash = 'feed-import';
+            }
+
+            if ($action === 'export_briefs_csv') {
+                interessa_admin_output_briefs_csv($articleOptions);
+            }
         }
     } catch (Throwable $e) {
         $error = trim($e->getMessage());
     }
 }
-
 $articleOptions = interessa_admin_article_options();
 $selectedArticleSlug = canonical_article_slug(trim((string) ($_GET['slug'] ?? array_key_first($articleOptions) ?? '')));
 $selectedArticleMeta = $selectedArticleSlug !== '' ? article_meta($selectedArticleSlug) : ['title' => '', 'description' => '', 'category' => ''];
@@ -218,6 +387,9 @@ require dirname(__DIR__) . '/inc/head.php';
         <p class="admin-kicker">Protected admin</p>
         <h1>Prihlasenie do adminu</h1>
         <p class="admin-meta">Tento panel je urceny na internu spravu clankov, produktov, obrazkov a affiliate odkazov.</p>
+        <?php if ($importSummary !== ''): ?>
+          <div class="admin-flash is-success"><?= esc($importSummary) ?></div>
+        <?php endif; ?>
         <?php if ($error !== ''): ?>
           <div class="admin-flash is-error"><?= esc($error) ?></div>
         <?php endif; ?>
@@ -252,6 +424,7 @@ require dirname(__DIR__) . '/inc/head.php';
           <a class="<?= $section === 'products' ? 'is-active' : '' ?>" href="/admin?section=products&product=<?= esc($selectedProductSlug) ?>">Produkty</a>
           <a class="<?= $section === 'images' ? 'is-active' : '' ?>" href="/admin?section=images&slug=<?= esc($selectedArticleSlug) ?>">Image briefy</a>
           <a class="<?= $section === 'affiliates' ? 'is-active' : '' ?>" href="/admin?section=affiliates&code=<?= esc($selectedAffiliateCode) ?>">Affiliate odkazy</a>
+          <a class="<?= $section === 'tools' ? 'is-active' : '' ?>" href="/admin?section=tools">Import / export</a>
         </nav>
         <div class="admin-note">
           Frontend ostava flat-file. Admin uklada len override data a obrazky.
@@ -261,6 +434,9 @@ require dirname(__DIR__) . '/inc/head.php';
       <div class="admin-main">
         <?php if ($flash !== ''): ?>
           <div class="admin-flash is-success">Ulozene: <?= esc($flash) ?></div>
+        <?php endif; ?>
+        <?php if ($importSummary !== ''): ?>
+          <div class="admin-flash is-success"><?= esc($importSummary) ?></div>
         <?php endif; ?>
         <?php if ($error !== ''): ?>
           <div class="admin-flash is-error"><?= esc($error) ?></div>
@@ -353,14 +529,45 @@ require dirname(__DIR__) . '/inc/head.php';
                     <input type="text" name="comparison_intro" value="<?= esc((string) ($comparison['intro'] ?? '')) ?>" />
                   </label>
                 </div>
-                <label>
-                  <span>Stlpce porovnania (JSON)</span>
-                  <textarea name="comparison_columns_json" rows="6" data-columns-json><?= esc(json_encode($comparison['columns'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></textarea>
-                </label>
-                <label>
-                  <span>Riadky porovnania (JSON)</span>
-                  <textarea name="comparison_rows_json" rows="8" data-rows-json><?= esc(json_encode($comparison['rows'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></textarea>
-                </label>
+                <div class="admin-subsection is-compact">
+                  <h4>Vizualny editor porovnania</h4>
+                  <div class="admin-comparison-editor">
+                    <div class="admin-comparison-columns">
+                      <?php foreach ($comparisonEditor['columns'] as $index => $column): ?>
+                        <div class="admin-comparison-column">
+                          <input type="text" name="comparison_column_label[]" value="<?= esc((string) ($column['label'] ?? '')) ?>" placeholder="Label stlpca" />
+                          <input type="text" name="comparison_column_key[]" value="<?= esc((string) ($column['key'] ?? '')) ?>" placeholder="key" />
+                          <select name="comparison_column_type[]">
+                            <?php $type = (string) ($column['type'] ?? 'text'); ?>
+                            <option value="text" <?= $type === 'text' ? 'selected' : '' ?>>text</option>
+                            <option value="product" <?= $type === 'product' ? 'selected' : '' ?>>product</option>
+                            <option value="cta" <?= $type === 'cta' ? 'selected' : '' ?>>cta</option>
+                          </select>
+                        </div>
+                      <?php endforeach; ?>
+                    </div>
+                    <div class="admin-comparison-rows">
+                      <?php foreach ($comparisonEditor['rows'] as $rowCells): ?>
+                        <div class="admin-comparison-row-grid">
+                          <?php foreach ($rowCells as $columnIndex => $value): ?>
+                            <textarea name="comparison_cell_<?= (int) $columnIndex ?>[]" rows="2" placeholder="Hodnota bunky"><?= esc((string) $value) ?></textarea>
+                          <?php endforeach; ?>
+                        </div>
+                      <?php endforeach; ?>
+                    </div>
+                  </div>
+                  <details class="admin-advanced-json">
+                    <summary>Advanced JSON fallback</summary>
+                    <label>
+                      <span>Stlpce porovnania (JSON)</span>
+                      <textarea name="comparison_columns_json" rows="6" data-columns-json><?= esc(json_encode($comparison['columns'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></textarea>
+                    </label>
+                    <label>
+                      <span>Riadky porovnania (JSON)</span>
+                      <textarea name="comparison_rows_json" rows="8" data-rows-json><?= esc(json_encode($comparison['rows'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></textarea>
+                    </label>
+                  </details>
+                </div>
               </div>
 
               <div class="admin-grid two-up">
@@ -539,6 +746,98 @@ require dirname(__DIR__) . '/inc/head.php';
                 <?php endif; ?>
               </div>
             </form>
+          </section>
+        <?php endif; ?>
+
+        <?php if ($section === 'tools'): ?>
+          <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Import / export workflow</p>
+                <h2>Admin bundle, feed import a batch briefy</h2>
+              </div>
+            </div>
+            <div class="admin-tools-grid">
+              <section class="admin-subsection">
+                <h3>Export admin balika</h3>
+                <p>Stiahne aktualne article, product a affiliate override data v jednom JSON subore.</p>
+                <form method="post" class="admin-form">
+                  <input type="hidden" name="action" value="export_bundle" />
+                  <button class="btn btn-cta" type="submit">Exportovat JSON balik</button>
+                </form>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Import admin balika</h3>
+                <p>Nahraj skor exportovany JSON balik a admin ho sluci s aktualnymi override datami.</p>
+                <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
+                  <input type="hidden" name="action" value="import_bundle" />
+                  <label>
+                    <span>JSON balik</span>
+                    <input type="file" name="bundle_file" accept="application/json,.json" required />
+                  </label>
+                  <button class="btn btn-cta" type="submit">Importovat balik</button>
+                </form>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Feed import produktov</h3>
+                <p>Nahraj XML alebo CSV feed a admin z neho vytvori alebo aktualizuje produkty v admin override vrstve.</p>
+                <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
+                  <input type="hidden" name="action" value="feed_import" />
+                  <div class="admin-grid two-up">
+                    <label>
+                      <span>Merchant slug</span>
+                      <input type="text" name="feed_merchant_slug" value="gymbeam" required />
+                    </label>
+                    <label>
+                      <span>Limit (0 = vsetko)</span>
+                      <input type="number" name="feed_limit" min="0" step="1" value="25" />
+                    </label>
+                  </div>
+                  <label>
+                    <span>Feed subor</span>
+                    <input type="file" name="feed_file" accept=".xml,.csv,.txt" required />
+                  </label>
+                  <button class="btn btn-cta" type="submit">Importovat produkty z feedu</button>
+                </form>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Batch hero briefy</h3>
+                <p>Vygeneruje CSV pre Canva / AI workflow napriec clankami.</p>
+                <form method="post" class="admin-form">
+                  <input type="hidden" name="action" value="export_briefs_csv" />
+                  <button class="btn btn-cta" type="submit">Exportovat briefy do CSV</button>
+                </form>
+              </section>
+            </div>
+
+            <div class="admin-subsection">
+              <h3>Preview briefov</h3>
+              <div class="admin-brief-table-wrap">
+                <table class="admin-brief-table">
+                  <thead>
+                    <tr>
+                      <th>Slug</th>
+                      <th>Filename</th>
+                      <th>Dimensions</th>
+                      <th>Alt text</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php foreach ($briefRows as $row): ?>
+                      <tr>
+                        <td><?= esc((string) ($row['slug'] ?? '')) ?></td>
+                        <td><?= esc((string) ($row['filename'] ?? '')) ?></td>
+                        <td><?= esc((string) ($row['dimensions'] ?? '')) ?></td>
+                        <td><?= esc((string) ($row['alt_text'] ?? '')) ?></td>
+                      </tr>
+                    <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </section>
         <?php endif; ?>
       </div>

@@ -32,6 +32,15 @@ Frontend behavior:
 - if admin structured content exists, the article renderer uses the admin sections, comparison block and recommended products
 - article meta and category listings read admin overrides automatically
 
+## Comparison editor
+The article screen now supports two comparison workflows:
+- visual editor for columns and rows
+- advanced JSON fallback for edge cases
+
+Recommended use:
+- use the visual editor for normal comparison blocks
+- keep JSON only for advanced manual structures
+
 ## Product management
 Products remain reusable across multiple articles.
 
@@ -69,11 +78,20 @@ It outputs:
 - dimensions
 - target asset path
 
-## UX helpers
-The admin panel also includes lightweight helpers:
-- add section button for article blocks
-- one-click sample JSON for comparison columns and rows
-- direct upload for hero and product images
+## Import / export tools
+The admin tools section now supports:
+- full admin bundle export to JSON
+- full admin bundle import from JSON
+- product feed import from XML or CSV
+- batch hero brief export to CSV
+
+## Feed import
+Feed import uploads XML or CSV locally through the admin panel.
+The importer:
+- parses merchant feed rows
+- creates admin product overrides
+- preserves the existing frontend architecture
+- prepares products for later affiliate and image enrichment
 
 ## Fallback rules
 - article hero: admin hero asset -> media registry asset -> canonical article hero asset -> category visual fallback
