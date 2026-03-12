@@ -420,4 +420,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   reindexRowCells();
+
+  document.addEventListener('click', async (event) => {
+    const trigger = event.target.closest('[data-copy-value]');
+    if (!(trigger instanceof HTMLButtonElement)) {
+      return;
+    }
+
+    const value = trigger.getAttribute('data-copy-value') || '';
+    if (!value) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(value);
+      const original = trigger.textContent;
+      trigger.textContent = 'Skopirovane';
+      window.setTimeout(() => {
+        trigger.textContent = original;
+      }, 1200);
+    } catch (error) {
+      console.error(error);
+    }
+  });
 });

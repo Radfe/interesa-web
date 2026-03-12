@@ -146,3 +146,17 @@ Update `AGENT_STATUS.md` only when:
 - Product editor now shows affiliate diagnostics, registry source and current target link
 - Product editor also includes a queue of products that still need a final local packshot
 - This helps prioritize which merchant images should be mirrored into the canonical local asset paths first
+
+## New admin helpers
+
+- Article editor now shows `Preview odporucanych produktov` so money pages can preview resolved products from admin recommendations or the fallback commerce box.
+- Product editor now shows `Kde sa produkt pouziva`, which lists articles that reference the selected product through admin recommendations or commerce boxes.
+- Product image workflow now includes `Rychly upload packshotu`, so a local WebP packshot can be uploaded without re-saving the whole product form.
+- Product image and hero backlogs are filterable directly in admin, and both CSV exports are working again.`r`n- New article creation now supports a `Typ clanku` starter selector (guide, comparison, review) that prebuilds sections, meta description, and a starter comparison structure.
+- Article editor now previews resolved recommended products, while product editor shows article usage diagnostics and a quick packshot-only upload form.
+## Current milestone additions
+- article creation now supports starter profiles for `guide`, `comparison` and `review`
+- save article flow now merges manual recommended products and checkbox-selected products safely
+- image backlog export now uses the full hero and packshot queues correctly
+- products section now shows where the selected product is used across admin recommendations and commerce boxes
+- hero image queue now shows target filename, alt text and dimensions directly in the backlog list

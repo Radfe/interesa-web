@@ -8,6 +8,7 @@ require_once dirname(__DIR__) . '/inc/hero-prompts.php';
 require_once dirname(__DIR__) . '/inc/admin-content.php';
 require_once dirname(__DIR__) . '/inc/admin-auth.php';
 require_once dirname(__DIR__) . '/inc/admin-feed-import.php';
+require_once dirname(__DIR__) . '/inc/article-commerce.php';
 
 function interessa_admin_selected_section(): string {
     $section = strtolower(trim((string) ($_GET['section'] ?? 'articles')));
@@ -53,6 +54,61 @@ function interessa_admin_collect_sections(): array {
     }
 
     return $sections;
+}
+
+function interessa_admin_article_starter(string $type, string $title, string $intro): array {
+    $type = strtolower(trim($type));
+    $title = trim($title);
+    $intro = trim($intro);
+
+    $base = [
+        'title' => $title,
+        'intro' => $intro,
+        'meta_title' => $title,
+        'meta_description' => $intro,
+        'sections' => [],
+        'comparison' => ['columns' => [], 'rows' => []],
+        'recommended_products' => [],
+    ];
+
+    if ($type === 'comparison') {
+        $base['sections'] = [
+            ['heading' => 'Rychly vyber', 'body' => 'Kratky uvod do porovnania a pre koho je urcene.'],
+            ['heading' => 'Ako vyberat', 'body' => 'Zhrnutie, na co sa pri porovnani zamerat.'],
+        ];
+        $base['comparison'] = [
+            'title' => 'Rychle porovnanie',
+            'intro' => 'Prehlad hlavnych rozdielov na jednom mieste.',
+            'columns' => [
+                ['key' => 'product', 'label' => 'Produkt', 'type' => 'product'],
+                ['key' => 'best_for', 'label' => 'Najlepsie pre', 'type' => 'text'],
+                ['key' => 'cta', 'label' => 'Odkaz', 'type' => 'cta'],
+            ],
+            'rows' => [],
+        ];
+        return $base;
+    }
+
+    if ($type === 'review') {
+        $base['sections'] = [
+            ['heading' => 'Pre koho je produkt', 'body' => 'Strucne zhrnutie, komu dava produkt zmysel.'],
+            ['heading' => 'Co sa nam paci', 'body' => 'Silne stranky produktu a prakticke plusy.'],
+            ['heading' => 'Na co si dat pozor', 'body' => 'Slabsie stranky, limity alebo kompromisy.'],
+        ];
+        return $base;
+    }
+
+    $base['sections'] = [
+        ['heading' => 'Co sa v clanku dozvies', 'body' => 'Strucny uvod k teme a hlavny prinos clanku.'],
+        ['heading' => 'Na co sa pri vybere zamerat', 'body' => 'Zhrnutie najdolezitejsich kriterii.'],
+    ];
+    return $base;
+}
+
+function interessa_admin_recommended_selection(): array {
+    $manual = interessa_admin_lines_to_array((string) ($_POST['recommended_products'] ?? ''));
+    $checked = interessa_admin_lines_to_array($_POST['recommended_product_checks'] ?? []);
+    return array_values(array_unique(array_merge($manual, $checked)));
 }
 
 function interessa_admin_collect_comparison_visual(): array {
@@ -196,6 +252,9 @@ function interessa_admin_image_queue(array $articleOptions, string $filter = 'mi
             'slug' => (string) $slug,
             'title' => interessa_admin_clean_label((string) ($item['title'] ?? $slug)),
             'asset_path' => (string) ($promptMeta['asset_path'] ?? ''),
+            'file_name' => (string) ($promptMeta['file_name'] ?? ''),
+            'alt_text' => (string) ($promptMeta['alt_text'] ?? ''),
+            'dimensions' => (string) ($promptMeta['dimensions'] ?? '1200x800'),
             'has_final_webp' => $isFinalWebp,
             'source_type' => (string) ($meta['source_type'] ?? 'placeholder'),
             'article_url' => article_url((string) $slug),
@@ -266,7 +325,7 @@ function interessa_admin_output_image_backlog_csv(array $articleOptions, array $
     header('Content-Disposition: attachment; filename="interesa-image-backlog.csv"');
     $out = fopen('php://output', 'w');
     fputcsv($out, ['type', 'slug', 'title', 'merchant', 'status', 'asset_path', 'code']);
-    foreach (interessa_admin_image_queue($articleOptions, max(count($articleOptions), 1)) as $row) {
+    foreach (interessa_admin_image_queue($articleOptions, 'all', max(count($articleOptions), 1)) as $row) {
         fputcsv($out, [
             'hero',
             $row['slug'] ?? '',
@@ -277,7 +336,7 @@ function interessa_admin_output_image_backlog_csv(array $articleOptions, array $
             '',
         ]);
     }
-    foreach (interessa_admin_product_image_queue($catalog, max(count($catalog), 1)) as $row) {
+    foreach (interessa_admin_product_image_queue($catalog, 'all', max(count($catalog), 1)) as $row) {
         fputcsv($out, [
             'product',
             $row['slug'] ?? '',
@@ -361,19 +420,20 @@ if ($isAuthed) {
             if ($action === 'create_article') {
                 $slugInput = trim((string) ($_POST['new_article_slug'] ?? ''));
                 $titleInput = trim((string) ($_POST['new_article_title'] ?? ''));
+                $articleType = trim((string) ($_POST['new_article_type'] ?? 'guide'));
                 $slug = interessa_admin_slugify($slugInput !== '' ? $slugInput : $titleInput);
                 if ($slug === '') {
                     throw new RuntimeException('Vypln slug alebo titulok noveho clanku.');
                 }
 
-                interessa_admin_save_article_override($slug, [
-                    'title' => $titleInput,
-                    'intro' => (string) ($_POST['new_article_intro'] ?? ''),
-                    'category' => (string) ($_POST['new_article_category'] ?? ''),
-                    'sections' => [],
-                    'comparison' => ['columns' => [], 'rows' => []],
-                    'recommended_products' => [],
-                ]);
+                $payload = interessa_admin_article_starter(
+                    $articleType,
+                    $titleInput,
+                    (string) ($_POST['new_article_intro'] ?? '')
+                );
+                $payload['category'] = (string) ($_POST['new_article_category'] ?? '');
+
+                interessa_admin_save_article_override($slug, $payload);
                 interessa_admin_redirect('articles', ['slug' => $slug, 'saved' => 'article-created']);
             }
 
@@ -386,10 +446,7 @@ if ($isAuthed) {
                 $comparisonRows = $visualComparison['rows'] !== []
                     ? $visualComparison['rows']
                     : interessa_admin_decode_json_textarea((string) ($_POST['comparison_rows_json'] ?? ''), 'Riadky porovnania');
-                $recommended = array_values(array_unique(array_merge(
-                    $recommended,
-                    interessa_admin_lines_to_array($_POST['recommended_product_checks'] ?? [])
-                )));
+                $recommended = interessa_admin_recommended_selection();
                 $payload = [
                     'title' => (string) ($_POST['title'] ?? ''),
                     'intro' => (string) ($_POST['intro'] ?? ''),
@@ -776,6 +833,14 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php endforeach; ?>
                     </select>
                   </label>
+                  <label>
+                    <span>Typ clanku</span>
+                    <select name="new_article_type">
+                      <option value="guide">Guide</option>
+                      <option value="comparison">Comparison</option>
+                      <option value="review">Review</option>
+                    </select>
+                  </label>
                 </div>
                 <label>
                   <span>Startovacie intro</span>
@@ -1046,6 +1111,30 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
             </section>
 
+            <section class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <h3>Kde sa produkt pouziva</h3>
+              </div>
+              <?php if ($selectedProductUsage === []): ?>
+                <p class="admin-note">Tento produkt zatial nie je naviazany na odporucane produkty ani commerce boxy.</p>
+              <?php else: ?>
+                <div class="admin-queue-list">
+                  <?php foreach ($selectedProductUsage as $usageRow): ?>
+                    <article class="admin-queue-item is-done">
+                      <div>
+                        <strong><?= esc((string) ($usageRow['title'] ?? '')) ?></strong>
+                        <p><?= esc((string) ($usageRow['slug'] ?? '')) ?> / <?= esc((string) ($usageRow['source'] ?? '')) ?></p>
+                      </div>
+                      <div class="admin-queue-actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc((string) ($usageRow['slug'] ?? '')) ?>">Otvorit v admine</a>
+                        <a class="btn btn-secondary btn-small" href="<?= esc((string) ($usageRow['url'] ?? '#')) ?>" target="_blank" rel="noopener">Clanok</a>
+                      </div>
+                    </article>
+                  <?php endforeach; ?>
+                </div>
+              <?php endif; ?>
+            </section>
+
             <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
               <input type="hidden" name="action" value="save_product" />
               <div class="admin-grid three-up">
@@ -1138,6 +1227,11 @@ require dirname(__DIR__) . '/inc/head.php';
                 <p><strong>Dimensions:</strong><br><?= esc((string) ($articlePrompt['dimensions'] ?? '1200x800')) ?></p>
                 <p><strong>Target path:</strong><br><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></p>
                 <p><strong>Style brief:</strong><br><?= esc((string) ($articlePrompt['style_brief'] ?? '')) ?></p>
+                <div class="admin-inline-actions">
+                  <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['prompt'] ?? '')) ?>">Kopirovat prompt</button>
+                  <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['file_name'] ?? '')) ?>">Kopirovat filename</button>
+                  <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?>">Kopirovat path</button>
+                </div>
               </div>
               <div class="admin-brief-card">
                 <h3>Workflow</h3>
@@ -1181,6 +1275,10 @@ require dirname(__DIR__) . '/inc/head.php';
                     <strong><?= esc((string) $queueRow['title']) ?></strong>
                     <p><?= esc((string) $queueRow['slug']) ?> / <?= esc((string) ($queueRow['source_type'] ?? 'placeholder')) ?></p>
                     <code><?= esc((string) $queueRow['asset_path']) ?></code>
+                    <small class="admin-note"><?= esc((string) ($queueRow['file_name'] ?? '')) ?> / <?= esc((string) ($queueRow['dimensions'] ?? '1200x800')) ?></small>
+                    <?php if (trim((string) ($queueRow['alt_text'] ?? '')) !== ''): ?>
+                      <small class="admin-note"><?= esc((string) ($queueRow['alt_text'] ?? '')) ?></small>
+                    <?php endif; ?>
                   </div>
                   <div class="admin-queue-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc((string) $queueRow['slug']) ?>&amp;image_filter=<?= esc($imageFilter) ?>">Otvorit</a>

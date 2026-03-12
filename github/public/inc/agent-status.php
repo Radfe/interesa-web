@@ -95,3 +95,43 @@ function interessa_agent_status_write(array $status, ?string $path = null): void
 
     file_put_contents($path, implode(PHP_EOL, $lines));
 }
+
+function interessa_agent_status_git_modified_files(string $rootPath): array {
+    $rootPath = rtrim(str_replace('\\', '/', $rootPath), '/');
+    $command = 'git -C ' . escapeshellarg($rootPath) . ' status --short';
+    $output = [];
+    $exitCode = 1;
+
+    @exec($command, $output, $exitCode);
+    if ($exitCode !== 0) {
+        return [];
+    }
+
+    $files = [];
+    foreach ($output as $line) {
+        $line = trim((string) $line);
+        if ($line === '' || strlen($line) < 4) {
+            continue;
+        }
+
+        $path = trim(substr($line, 3));
+        if ($path === '') {
+            continue;
+        }
+
+        $files[] = str_replace('\\', '/', $path);
+    }
+
+    return array_values(array_unique($files));
+}
+
+function interessa_agent_status_for_dashboard(?string $path = null): array {
+    $status = interessa_agent_status_read($path);
+    $gitFiles = interessa_agent_status_git_modified_files(dirname(__DIR__, 2));
+
+    if ($gitFiles !== []) {
+        $status['Files currently modified'] = $gitFiles;
+    }
+
+    return $status;
+}

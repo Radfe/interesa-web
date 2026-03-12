@@ -26,33 +26,33 @@ if (!function_exists('interessa_article_methodology_points')) {
     function interessa_article_methodology_points(string $slug, array $meta, ?array $commerce): array {
         $category = trim((string) ($meta['category'] ?? ''));
         $points = [
-            'Obsah porovnĂˇvame podÄľa cieÄľa, zloĹľenia, formy produktu a praktickĂ©ho pouĹľitia.',
-            'KrĂˇtke shortlisty majĂş zjednoduĹˇiĹĄ orientĂˇciu, nie nahradiĹĄ vlastnĂ© rozhodnutie podÄľa potrieb.',
+            'Obsah porovnavame podla ciela, zlozenia, formy produktu a praktickeho pouzitia.',
+            'Kratke shortlisty maju zjednodusit orientaciu, nie nahradit vlastne rozhodnutie podla potrieb.',
         ];
 
         if ($commerce !== null) {
-            $points[] = 'Produkty v nĂˇkupnĂ˝ch boxoch vyberĂˇme podÄľa relevancie k tĂ©me ÄŤlĂˇnku a ÄŤitateÄľskĂ©mu zĂˇmeru.';
-            $points[] = 'Odkazy do obchodov spravujeme centrĂˇlne cez internĂ© /go/ route, takĹľe ich vieme aktualizovaĹĄ bez zĂˇsahu do textu ÄŤlĂˇnku.';
+            $points[] = 'Produkty v nakupnych boxoch vyberame podla relevancie k teme clanku a citatelskemu zameru.';
+            $points[] = 'Odkazy do obchodov spravujeme centralne cez interne /go/ route, takze ich vieme aktualizovat bez zasahu do textu clanku.';
         }
 
         switch ($category) {
             case 'proteiny':
-                $points[] = 'Pri proteĂ­noch sledujeme typ suroviny, mnoĹľstvo bielkovĂ­n na dĂˇvku, toleranciu laktĂłzy a pomer cena-vĂ˝kon.';
+                $points[] = 'Pri proteinoch sledujeme typ suroviny, mnozstvo bielkovin na davku, toleranciu laktozy a pomer cena-vykon.';
                 break;
             case 'kreatin':
             case 'sila':
-                $points[] = 'Pri vĂ˝konnostnĂ˝ch doplnkoch dĂˇvame dĂ´raz na formu lĂˇtky, dĂˇvkovanie a to, ÄŤi mĂˇ produkt oporu v beĹľnej praxi.';
+                $points[] = 'Pri vykonnostnych doplnkoch davame doraz na formu latky, davkovanie a to, ci ma produkt oporu v beznej praxi.';
                 break;
             case 'mineraly':
             case 'imunita':
-                $points[] = 'Pri vitamĂ­noch a minerĂˇloch sledujeme najmĂ¤ formu, dĂˇvku a reĂˇlne pouĹľitie, nie len marketingovĂ© tvrdenia.';
+                $points[] = 'Pri vitaminoch a mineraloch sledujeme najma formu, davku a realne pouzitie, nie len marketingove tvrdenia.';
                 break;
             case 'probiotika-travenie':
             case 'vyziva':
-                $points[] = 'Pri trĂˇvenĂ­ a vĂ˝Ĺľive sledujeme zloĹľenie, ÄŤitateÄľnosĹĄ etikety a to, ÄŤi produkt rieĹˇi reĂˇlny problĂ©m, nie len trend.';
+                $points[] = 'Pri traveni a vyzive sledujeme zlozenie, citatelnost etikety a to, ci produkt riesi realny problem, nie len trend.';
                 break;
             case 'klby-koza':
-                $points[] = 'Pri kolagĂ©ne a kÄşbovej vĂ˝Ĺľive sledujeme typ kolagĂ©nu, dĂˇvku na porciu a dlhodobĂ© praktickĂ© pouĹľitie.';
+                $points[] = 'Pri kolagene a klbovej vyzive sledujeme typ kolagenu, davku na porciu a dlhodobe prakticke pouzitie.';
                 break;
         }
 
@@ -85,15 +85,15 @@ if (!function_exists('interessa_render_article_trust_box')) {
         $categoryTitle = trim((string) ($categoryMeta['title'] ?? ''));
         $disclosure = interessa_affiliate_disclosure_text();
 
-        echo '<section class="article-trust" aria-label="RedakÄŤnĂ© poznĂˇmky">';
+        echo '<section class="article-trust" aria-label="Redakcne poznamky">';
         echo '<div class="section-head">';
-        echo '<h2>Ako s ÄŤlĂˇnkom pracovaĹĄ</h2>';
-        echo '<p class="meta">KrĂˇtke vysvetlenie, ako je obsah pripravenĂ˝, ako fungujĂş odkazy a kedy bol naposledy kontrolovanĂ˝.</p>';
+        echo '<h2>Ako s clankom pracovat</h2>';
+        echo '<p class="meta">Kratke vysvetlenie, ako je obsah pripraveny, ako funguju odkazy a kedy bol naposledy kontrolovany.</p>';
         echo '</div>';
         echo '<div class="article-trust-grid">';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>Ako hodnotĂ­me</h3>';
+        echo '<h3>Ako hodnotime</h3>';
         echo '<ul class="article-trust-list">';
         foreach ($points as $point) {
             echo '<li>' . esc($point) . '</li>';
@@ -102,20 +102,20 @@ if (!function_exists('interessa_render_article_trust_box')) {
         echo '</article>';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>Ako fungujĂş odkazy</h3>';
+        echo '<h3>Ako funguju odkazy</h3>';
         echo '<p>' . esc($commerce !== null
             ? $disclosure
-            : 'Aj pri informaÄŤnĂ˝ch ÄŤlĂˇnkoch zachovĂˇvame ÄŤistĂ© internĂ© odkazy a priebeĹľne upratujeme ĹˇtruktĂşru tak, aby bol obsah dlhodobo udrĹľateÄľnĂ˝.') . '</p>';
-        echo '<p class="article-meta-inline"><strong>Forma odkazov:</strong> internĂ© <code>/go/</code> route a centrĂˇlna sprĂˇva partnerov.</p>';
+            : 'Aj pri informacnych clankoch zachovavame ciste interne odkazy a priebezne upratujeme strukturu tak, aby bol obsah dlhodobo udrzatelny.') . '</p>';
+        echo '<p class="article-meta-inline"><strong>Forma odkazov:</strong> interne <code>/go/</code> route a centralna sprava partnerov.</p>';
         echo '</article>';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>PoslednĂˇ kontrola</h3>';
+        echo '<h3>Posledna kontrola</h3>';
         if ($updated !== null) {
-            echo '<p class="article-meta-inline"><strong>Obsah skontrolovanĂ˝:</strong> ' . esc($updated['date']) . '</p>';
+            echo '<p class="article-meta-inline"><strong>Obsah skontrolovany:</strong> ' . esc($updated['date']) . '</p>';
         }
         if ($categoryTitle !== '') {
-            echo '<p class="article-meta-inline"><strong>TĂ©ma:</strong> ' . esc($categoryTitle) . '</p>';
+            echo '<p class="article-meta-inline"><strong>Tema:</strong> ' . esc($categoryTitle) . '</p>';
         }
         echo '<p class="article-meta-inline"><strong>Slug:</strong> ' . esc(canonical_article_slug($slug)) . '</p>';
         echo '</article>';

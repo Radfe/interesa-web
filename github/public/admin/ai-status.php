@@ -13,7 +13,7 @@ if (!interessa_admin_is_authenticated()) {
     exit;
 }
 
-$status = interessa_agent_status_read();
+$status = interessa_agent_status_for_dashboard();
 $page_title = 'AI Status | Interesa';
 $page_description = 'Interny AI dashboard pre sledovanie stavu vyvoja projektu.';
 $page_canonical = '/admin/ai-status';
