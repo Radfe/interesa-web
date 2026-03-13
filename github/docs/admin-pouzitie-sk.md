@@ -18,6 +18,7 @@ Je to lahka interna vrstva nad tymto webom.
 - `Produkty` = reusable produkty, obrazky produktov, rating, plusy, minusy, affiliate kod
 - `Images` = hero obrazky clankov a chybajuce obrazky produktov v konkretnom clanku
 - `Affiliate odkazy` = finalne Dognet deeplinky za internymi `/go/` linkami
+- `Import / export` = feed importy, batch reporty a money page image gaps
 - `Pomoc / quickstart` = rychla pomoc priamo v admine
 
 ## Najjednoduchsie odporucane poradie
@@ -77,6 +78,24 @@ Postup:
 4. admin stiahne schvaleny merchant obrazok do lokalneho assetu
 5. otvor live clanok a skontroluj kartu produktu
 
+### A2. Automaticky doplnit z produktu
+Toto pouzi vtedy, ked produkt este nema `remote` obrazok alebo mu chyba kratky popis.
+
+Postup:
+1. otvor `Produkty`
+2. otvor konkretny produkt
+3. klikni `Zistit data z produktu`, ak chces len doplnit data z partner stranky
+4. klikni `Automaticky doplnit`, ak chces naraz:
+   - doplnit data z partner stranky
+   - zistit remote obrazok
+   - a hned sa pokusit zrkadlit obrazok do lokalneho assetu
+5. skontroluj, ci sa zmenil:
+   - nazov
+   - summary
+   - remote source
+   - lokalny obrazok
+6. otvor live clanok a skontroluj produktovu kartu
+
 ### B. Nahrat obrazok rucne
 Pouzi to vtedy, ked `Zrkadlit remote` nie je k dispozicii alebo chces vlastny obrazok.
 
@@ -99,6 +118,10 @@ Tip:
 3. vloz finalny Dognet deeplink
 4. klikni `Ulozit affiliate odkaz`
 5. otvor `/go/...` link alebo live clanok a skontroluj CTA
+
+Ak chces podrobnejsi navod:
+- pozri `docs/admin-dognet-workflow-sk.md`
+- pri vacsom batchi pouzi sablonu `docs/affiliate-import-template.csv`
 
 ## Ked robis novy nakupny clanok
 Najjednoduchsi postup je:
@@ -126,10 +149,27 @@ Ak nevies, co otvorit:
 - chces vidiet, kde na hlavnych money pages este chybaju realne obrazky -> `Import / export` a blok `Money page image gaps`
 - chces riesit obrazky po jednom merchantovi -> `Import / export`, v bloku `Money page image gaps` zapni filter merchanta
 - chces si stiahnut batch zadanie pre chybujuce obrazky produktov -> v tom istom bloku pouzi `Exportovat gaps + briefy CSV`
+- chces skusit, aby admin sam dotiahol data a obrazky z referencnych produktov partnera -> v tom istom bloku pouzi `Skusit doplnit z produktu` alebo na merchant karte `Auto doplnit`
 - chces pripravit docasny packshot fallback pre konkretny produkt -> otvor produkt a pouzi `Packshot brief`
 - aj ked produkt este nema plny reusable zaznam, gap report aj export ti uz pripravia pouzitelny brief automaticky
 - ak chces ist merchant po merchantovi, v `Money page image gaps` pouzi hornu sadu kariet a klikni `Otvorit vyrez` alebo rovno `Export CSV`
+- ak chces skusit davkovo dotiahnut partner data a obrazky pre jedneho merchanta, na tej istej karte pouzi `Auto doplnit`
 - ak chces robit obrazky po davkach v Canve alebo AI nastroji, po zapnuti merchant filtra si skopiruj `Batch brief pack`
+
+## Najjednoduchsi sposob pre produktove obrazky
+Ak nechces riesit techniku, drz sa tohto poradia:
+
+1. otvor `Pomoc / quickstart`
+2. pozri bloky:
+   - `Produktove obrazky este chyba`
+   - `Money page image gaps`
+3. otvor produkt alebo tools
+4. skus najprv:
+   - `Automaticky doplnit`
+   - alebo `Skusit doplnit z produktu`
+5. ked to nestaci:
+   - pouzi `Zrkadlit remote`
+   - alebo `Packshot brief`
 
 ## Co si kontrolovat pred publikovanim
 - clanok ma nazov, intro a meta description

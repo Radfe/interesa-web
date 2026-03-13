@@ -1,0 +1,3 @@
+code,url,merchant,merchant_slug,product_slug,link_type
+protein-na-chudnutie-gymbeam,https://go.dognet.com/?cid=0000&url=https%3A%2F%2Fmerchant.example.com%2Fprodukt,GymBeam,gymbeam,gymbeam-true-whey,affiliate
+kreatin-porovnanie-gymbeam,https://go.dognet.com/?cid=0000&url=https%3A%2F%2Fmerchant.example.com%2Fkreatin,GymBeam,gymbeam,gymbeam-kreatin-monohydrat,affiliate

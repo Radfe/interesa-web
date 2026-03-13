@@ -309,6 +309,19 @@ if (!function_exists('interessa_admin_save_products')) {
     }
 }
 
+if (!function_exists('interessa_admin_product_record')) {
+    function interessa_admin_product_record(string $slug): ?array {
+        $slug = interessa_admin_slugify($slug);
+        if ($slug === '') {
+            return null;
+        }
+
+        $products = interessa_admin_products();
+        $record = $products[$slug] ?? null;
+        return is_array($record) ? $record : null;
+    }
+}
+
 if (!function_exists('interessa_admin_normalize_product_record')) {
     function interessa_admin_normalize_product_record(string $slug, array $product): array {
         $slug = interessa_admin_slugify($slug);
@@ -650,6 +663,396 @@ if (!function_exists('interessa_admin_mirror_remote_product_image')) {
         }
 
         return interessa_admin_product_image_target_asset_for_ext($productSlug, $merchantSlug, $ext);
+    }
+}
+
+if (!function_exists('interessa_admin_fetch_remote_html_via_curl_exe')) {
+    function interessa_admin_fetch_remote_html_via_curl_exe(string $url): string {
+        if (!function_exists('exec')) {
+            throw new RuntimeException('Systemovy curl.exe nie je dostupny.');
+        }
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'interessa-html-');
+        if ($tempFile === false) {
+            throw new RuntimeException('Nepodarilo sa pripravit docasny subor pre HTML.');
+        }
+
+        $command = 'curl.exe -L --fail --silent --show-error '
+            . '--output ' . escapeshellarg($tempFile) . ' '
+            . escapeshellarg($url) . ' 2>&1';
+
+        $output = [];
+        $exitCode = 0;
+        exec($command, $output, $exitCode);
+        if ($exitCode !== 0) {
+            @unlink($tempFile);
+            $message = trim((string) implode("\n", $output));
+            throw new RuntimeException('Nepodarilo sa stiahnut produktovu stranku: ' . ($message !== '' ? $message : 'curl.exe zlyhal.'));
+        }
+
+        $body = @file_get_contents($tempFile);
+        @unlink($tempFile);
+        if (!is_string($body) || trim($body) === '') {
+            throw new RuntimeException('Stiahnuta produktova stranka je prazdna.');
+        }
+
+        return $body;
+    }
+}
+
+if (!function_exists('interessa_admin_fetch_remote_html')) {
+    function interessa_admin_fetch_remote_html(string $url): string {
+        $url = trim($url);
+        if ($url === '' || !preg_match('~^https?://~i', $url)) {
+            throw new RuntimeException('URL produktu nie je validna.');
+        }
+
+        $body = false;
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_CONNECTTIMEOUT => 10,
+                CURLOPT_TIMEOUT => 20,
+                CURLOPT_USERAGENT => 'InteresaAdmin/1.0',
+                CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_SSL_VERIFYHOST => 2,
+                CURLOPT_HTTPHEADER => [
+                    'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                ],
+            ]);
+            $body = curl_exec($ch);
+            if ($body === false) {
+                $error = (string) curl_error($ch);
+                curl_close($ch);
+                throw new RuntimeException('Nepodarilo sa stiahnut produktovu stranku: ' . $error);
+            }
+            $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if ($status >= 400) {
+                throw new RuntimeException('Produktova stranka vratila HTTP ' . $status . '.');
+            }
+        } else {
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'GET',
+                    'timeout' => 20,
+                    'follow_location' => 1,
+                    'user_agent' => 'InteresaAdmin/1.0',
+                    'header' => "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n",
+                ],
+            ]);
+            $body = @file_get_contents($url, false, $context);
+        }
+
+        if ((!is_string($body) || trim($body) === '') && strtoupper(substr(PHP_OS_FAMILY, 0, 7)) === 'WINDOWS') {
+            return interessa_admin_fetch_remote_html_via_curl_exe($url);
+        }
+
+        if (!is_string($body) || trim($body) === '') {
+            throw new RuntimeException('Produktova stranka je prazdna.');
+        }
+
+        return $body;
+    }
+}
+
+if (!function_exists('interessa_admin_url_join')) {
+    function interessa_admin_url_join(string $baseUrl, string $candidate): string {
+        $candidate = trim($candidate);
+        if ($candidate === '') {
+            return '';
+        }
+        if (preg_match('~^https?://~i', $candidate)) {
+            return $candidate;
+        }
+        if (str_starts_with($candidate, '//')) {
+            $scheme = (string) parse_url($baseUrl, PHP_URL_SCHEME);
+            return ($scheme !== '' ? $scheme : 'https') . ':' . $candidate;
+        }
+
+        $parts = parse_url($baseUrl);
+        $scheme = (string) ($parts['scheme'] ?? 'https');
+        $host = (string) ($parts['host'] ?? '');
+        if ($host === '') {
+            return $candidate;
+        }
+
+        if (str_starts_with($candidate, '/')) {
+            return $scheme . '://' . $host . $candidate;
+        }
+
+        $path = (string) ($parts['path'] ?? '/');
+        $dir = rtrim(str_replace('\\', '/', dirname($path)), '/');
+        if ($dir === '' || $dir === '.') {
+            $dir = '';
+        }
+
+        return $scheme . '://' . $host . ($dir !== '' ? $dir . '/' : '/') . ltrim($candidate, '/');
+    }
+}
+
+if (!function_exists('interessa_admin_html_extract_meta')) {
+    function interessa_admin_html_extract_meta(string $html, array $keys): string {
+        foreach ($keys as $key) {
+            $patterns = [
+                '~<meta[^>]+(?:property|name)\s*=\s*["\']' . preg_quote($key, '~') . '["\'][^>]+content\s*=\s*["\']([^"\']+)["\']~i',
+                '~<meta[^>]+content\s*=\s*["\']([^"\']+)["\'][^>]+(?:property|name)\s*=\s*["\']' . preg_quote($key, '~') . '["\']~i',
+            ];
+            foreach ($patterns as $pattern) {
+                if (preg_match($pattern, $html, $match) === 1) {
+                    return trim(html_entity_decode((string) ($match[1] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                }
+            }
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('interessa_admin_html_extract_title')) {
+    function interessa_admin_html_extract_title(string $html): string {
+        if (preg_match('~<title[^>]*>(.*?)</title>~is', $html, $match) !== 1) {
+            return '';
+        }
+
+        $title = html_entity_decode(strip_tags((string) ($match[1] ?? '')), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $title = preg_replace('~\s+~u', ' ', $title) ?? $title;
+        return trim($title);
+    }
+}
+
+if (!function_exists('interessa_admin_json_ld_field_value')) {
+    function interessa_admin_json_ld_field_value(mixed $node, string $field): string {
+        if (!is_array($node)) {
+            return '';
+        }
+
+        if (array_key_exists($field, $node)) {
+            $value = $node[$field];
+            if (is_string($value)) {
+                return trim($value);
+            }
+            if (is_array($value)) {
+                if ($field === 'image') {
+                    if (isset($value['url']) && is_string($value['url'])) {
+                        return trim($value['url']);
+                    }
+                    foreach ($value as $item) {
+                        $resolved = is_array($item)
+                            ? interessa_admin_json_ld_field_value($item, 'url')
+                            : trim((string) $item);
+                        if ($resolved !== '') {
+                            return $resolved;
+                        }
+                    }
+                }
+                if ($field === 'brand') {
+                    if (isset($value['name']) && is_string($value['name'])) {
+                        return trim($value['name']);
+                    }
+                    foreach ($value as $item) {
+                        $resolved = is_array($item)
+                            ? interessa_admin_json_ld_field_value($item, 'name')
+                            : trim((string) $item);
+                        if ($resolved !== '') {
+                            return $resolved;
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ($node as $child) {
+            if (!is_array($child)) {
+                continue;
+            }
+            $resolved = interessa_admin_json_ld_field_value($child, $field);
+            if ($resolved !== '') {
+                return $resolved;
+            }
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('interessa_admin_extract_json_ld_data')) {
+    function interessa_admin_extract_json_ld_data(string $html): array {
+        $payload = [
+            'name' => '',
+            'description' => '',
+            'image' => '',
+            'brand' => '',
+        ];
+
+        if (preg_match_all('~<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>~is', $html, $matches) < 1) {
+            return $payload;
+        }
+
+        foreach (($matches[1] ?? []) as $scriptBody) {
+            $decoded = json_decode(html_entity_decode((string) $scriptBody, ENT_QUOTES | ENT_HTML5, 'UTF-8'), true);
+            if (!is_array($decoded)) {
+                continue;
+            }
+
+            foreach (['name', 'description', 'image', 'brand'] as $field) {
+                if ($payload[$field] !== '') {
+                    continue;
+                }
+                $payload[$field] = interessa_admin_json_ld_field_value($decoded, $field);
+            }
+        }
+
+        return $payload;
+    }
+}
+
+if (!function_exists('interessa_admin_extract_product_page_data')) {
+    function interessa_admin_extract_product_page_data(string $url): array {
+        $html = interessa_admin_fetch_remote_html($url);
+        $jsonLd = interessa_admin_extract_json_ld_data($html);
+
+        $name = $jsonLd['name'] !== '' ? $jsonLd['name'] : interessa_admin_html_extract_meta($html, ['og:title']);
+        if ($name === '') {
+            $name = interessa_admin_html_extract_title($html);
+        }
+
+        $summary = $jsonLd['description'] !== '' ? $jsonLd['description'] : interessa_admin_html_extract_meta($html, ['description', 'og:description', 'twitter:description']);
+        $image = $jsonLd['image'] !== '' ? $jsonLd['image'] : interessa_admin_html_extract_meta($html, ['og:image', 'twitter:image']);
+        $brand = $jsonLd['brand'];
+
+        $clean = static function (string $value): string {
+            $value = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $value = strip_tags($value);
+            $value = preg_replace('~\s+~u', ' ', $value) ?? $value;
+            return trim($value);
+        };
+
+        return [
+            'name' => $clean($name),
+            'summary' => $clean($summary),
+            'brand' => $clean($brand),
+            'image_remote_src' => interessa_admin_url_join($url, $image),
+            'source_url' => $url,
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_enrich_product_record_from_source')) {
+    function interessa_admin_enrich_product_record_from_source(string $slug): array {
+        $slug = interessa_admin_slugify($slug);
+        if ($slug === '') {
+            throw new RuntimeException('Chyba slug produktu.');
+        }
+
+        $product = interessa_product($slug);
+        if (!is_array($product)) {
+            throw new RuntimeException('Vybrany produkt sa nenasiel v katalogu.');
+        }
+
+        $normalized = interessa_normalize_product($product);
+        $override = interessa_admin_product_record($slug) ?? [];
+        $fallbackUrl = trim((string) ($override['fallback_url'] ?? $normalized['fallback_url'] ?? ''));
+        if ($fallbackUrl === '') {
+            throw new RuntimeException('Produkt nema referencnu produktovu URL na obchode.');
+        }
+
+        $detected = interessa_admin_extract_product_page_data($fallbackUrl);
+        $payload = array_replace($normalized, $override);
+        $updated = [];
+
+        if (trim((string) ($payload['name'] ?? '')) === '' && trim((string) ($detected['name'] ?? '')) !== '') {
+            $payload['name'] = (string) $detected['name'];
+            $updated[] = 'name';
+        }
+        if (trim((string) ($payload['brand'] ?? '')) === '' && trim((string) ($detected['brand'] ?? '')) !== '') {
+            $payload['brand'] = (string) $detected['brand'];
+            $updated[] = 'brand';
+        }
+        if (trim((string) ($payload['summary'] ?? '')) === '' && trim((string) ($detected['summary'] ?? '')) !== '') {
+            $payload['summary'] = (string) $detected['summary'];
+            $updated[] = 'summary';
+        }
+        if (trim((string) ($payload['fallback_url'] ?? '')) === '' && $fallbackUrl !== '') {
+            $payload['fallback_url'] = $fallbackUrl;
+            $updated[] = 'fallback_url';
+        }
+        if (trim((string) ($payload['image_remote_src'] ?? '')) === '' && trim((string) ($detected['image_remote_src'] ?? '')) !== '') {
+            $payload['image_remote_src'] = (string) $detected['image_remote_src'];
+            $updated[] = 'image_remote_src';
+        }
+
+        if ($updated !== []) {
+            interessa_admin_save_product_record($slug, $payload);
+        }
+
+        return [
+            'slug' => $slug,
+            'updated_fields' => $updated,
+            'detected' => $detected,
+            'saved' => $updated !== [],
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_autofill_product_image_gaps')) {
+    function interessa_admin_autofill_product_image_gaps(array $rows): array {
+        $seen = [];
+        $result = [
+            'processed' => 0,
+            'enriched' => 0,
+            'mirrored' => 0,
+            'failed' => 0,
+            'errors' => [],
+        ];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $slug = interessa_admin_slugify((string) ($row['product_slug'] ?? ''));
+            if ($slug === '' || isset($seen[$slug])) {
+                continue;
+            }
+            $seen[$slug] = true;
+            $result['processed']++;
+
+            try {
+                $enrichment = interessa_admin_enrich_product_record_from_source($slug);
+                if (!empty($enrichment['saved'])) {
+                    $result['enriched']++;
+                }
+
+                $product = interessa_product($slug);
+                if (!is_array($product)) {
+                    continue;
+                }
+
+                $normalized = interessa_normalize_product($product);
+                if (!empty($normalized['has_local_image'])) {
+                    continue;
+                }
+
+                $remoteSrc = trim((string) ($normalized['image_remote_src'] ?? ''));
+                if ($remoteSrc === '') {
+                    continue;
+                }
+
+                $merchantSlug = trim((string) ($normalized['merchant_slug'] ?? ''));
+                $asset = interessa_admin_mirror_remote_product_image($slug, $merchantSlug, $remoteSrc);
+                $payload = array_replace($normalized, interessa_admin_product_record($slug) ?? []);
+                $payload['image_asset'] = $asset;
+                interessa_admin_save_product_record($slug, $payload);
+                $result['mirrored']++;
+            } catch (Throwable $e) {
+                $result['failed']++;
+                $result['errors'][$slug] = trim($e->getMessage());
+            }
+        }
+
+        return $result;
     }
 }
 

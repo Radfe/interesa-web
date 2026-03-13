@@ -296,3 +296,20 @@ Update `AGENT_STATUS.md` only when:
   - direct upload
 - The article-level image workflow and the tools gap report now use the same packshot-brief data, so there is a single fallback prompt/path workflow no matter where you start
 
+## Automatic merchant-page enrichment
+- Product editing now supports `Zistit data z produktu`, which pulls basic product data from the partner product page referenced in `fallback_url`
+- The same workflow can populate missing:
+  - product name
+  - brand
+  - short summary
+  - remote product image URL
+- Product editing also supports `Automaticky doplnit`, which does the same enrichment and then tries to mirror the discovered remote image into the canonical local asset path
+- `Money page image gaps` now supports a batch action `Skusit doplnit z produktu` for the current merchant filter or current filtered gap list
+- Merchant batch cards in Tools also expose `Auto doplnit`, so remaining image gaps can be handled merchant-by-merchant instead of only product-by-product
+
+## Practical operator docs
+- Daily admin usage is documented in `docs/admin-pouzitie-sk.md`
+- Product-image workflow is documented in `docs/admin-images-workflow-sk.md`
+- Dognet workflow is documented in `docs/admin-dognet-workflow-sk.md`
+- CSV batch import can start from `docs/affiliate-import-template.csv`
+
