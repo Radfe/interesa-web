@@ -22,10 +22,19 @@ function interessa_go_links(): array {
     $csv = dirname(__DIR__).$csvRel;
     if(!is_file($csv) || !is_readable($csv)) continue;
     $fh=fopen($csv,'r'); if(!$fh) continue;
-    $header=fgetcsv($fh,0,','); $sep=',';
-    if($header && count($header)===1 && strpos($header[0],';')!==false){ fclose($fh); $fh=fopen($csv,'r'); $header=fgetcsv($fh,0,';'); $sep=';'; }
+    $first = fgets($fh);
+    if ($first === false) { fclose($fh); continue; }
+    $sep = str_contains($first, ';') ? ';' : ',';
+    rewind($fh);
+
+    $header=fgetcsv($fh,0,$sep);
     $hmap=[]; foreach((array)$header as $i=>$h){ $hmap[$i]=strtolower(trim((string)$h)); }
-    $iC=array_search('code',$hmap); $iU=array_search('url',$hmap);
+    $iC=array_search('code',$hmap);
+    $iU=false;
+    foreach (['url', 'deeplink', 'link'] as $key) {
+      $idx = array_search($key, $hmap, true);
+      if ($idx !== false) { $iU = $idx; break; }
+    }
     if($iC!==false && $iU!==false){
       while(($row=fgetcsv($fh,0,$sep))!==false){
         $c=trim((string)($row[$iC]??'')); $u=trim((string)($row[$iU]??''));

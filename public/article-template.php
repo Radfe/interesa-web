@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/inc/functions.php';
-$slug = $GLOBALS['__ARTICLE_SLUG'] ?? '';
+$slug = $GLOBALS['__ARTICLE_SLUG'] ?? ($GLOBALS['slug'] ?? '');
 $ART = require __DIR__ . '/inc/articles.php';
 [$PAGE_TITLE,$PAGE_DESCRIPTION] = $ART[$slug] ?? ['Článok',''];
 require __DIR__ . '/inc/head.php';
