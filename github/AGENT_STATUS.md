@@ -4,18 +4,19 @@ Current branch:
 codex/feature/admin-system
 
 Current task:
-Continuing from a calmer public/admin baseline: the public site now uses simpler wording and less technical UI, local mirrored merchant images count correctly, and the next pass focuses on the remaining real-image gaps that still need actual source imagery
+Continuing from a calmer public/admin baseline: the public site now uses simpler, more user-facing wording, local mirrored merchant images count correctly, and the admin now uses one shared merchant-aware packshot-brief workflow across products, article image queues and the money-page image-gap report
 
 Next planned task:
-Generate a practical backlog of the remaining top money-page product images that still need real source artwork, then use that backlog to keep filling visible gaps without adding more public complexity
+Use the merchant-filtered image-gap backlog plus the shared packshot-brief workflow to keep closing the remaining real image gaps on top commercial pages without adding more public complexity
 
 Last completed task:
-Finished the frontend simplification and image-detection milestone: local mirrored merchant PNGs now count as real local product images, the public site no longer shows the most confusing technical coverage language, and category/article headers are calmer and easier to understand
+Finished the shared packshot-brief milestone: remaining missing real product images on tracked money pages are grouped by merchant inside admin Tools, filtered views export to CSV together with packshot brief data, and products, article image queues and the gap report now all share the same merchant-aware fallback brief plus reference-product workflow
 
 Files currently modified:
 - AGENT_STATUS.md
 - docs/admin-quickstart-sk.md
 - docs/admin-images-workflow-sk.md
+- docs/admin-pouzitie-sk.md
 - docs/admin-system.md
 - public/admin/index.php
 - public/article.php

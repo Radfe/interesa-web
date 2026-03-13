@@ -459,6 +459,14 @@ function interessa_admin_brief_rows(array $articleOptions): array {
     return $rows;
 }
 
+function interessa_admin_product_image_brief(array $product): array {
+    $brief = interessa_product_packshot_brief($product);
+    $brief['name'] = interessa_admin_clean_label((string) ($brief['name'] ?? 'Produkt'));
+    $brief['merchant'] = interessa_admin_clean_label((string) ($brief['merchant'] ?? ''));
+    $brief['alt_text'] = interessa_admin_clean_label((string) ($brief['alt_text'] ?? ''));
+    return $brief;
+}
+
 function interessa_admin_image_queue(array $articleOptions, string $filter = 'missing', int $limit = 12): array {
     $rows = [];
     foreach ($articleOptions as $slug => $item) {
@@ -580,6 +588,154 @@ function interessa_admin_product_affiliate_queue(array $catalog, int $limit = 12
     return array_slice($rows, 0, $limit);
 }
 
+function interessa_admin_money_page_image_gap_report(string $merchantFilter = 'all'): array {
+    $articleSlugs = [
+        'protein-na-chudnutie',
+        'najlepsie-proteiny-2025',
+        'kreatin-porovnanie',
+        'horcik-ktory-je-najlepsi-a-preco',
+        'probiotika-ako-vybrat',
+        'pre-workout-ako-vybrat',
+        'kolagen-recenzia',
+        'veganske-proteiny-top-vyber-2025',
+    ];
+
+    $flatRows = [];
+
+    foreach ($articleSlugs as $articleSlug) {
+        $articleMeta = article_meta($articleSlug);
+        $articleTitle = trim((string) ($articleMeta['title'] ?? humanize_slug($articleSlug)));
+        if (function_exists('interessa_fix_mojibake')) {
+            $articleTitle = interessa_fix_mojibake($articleTitle);
+        }
+
+        $commerce = interessa_article_commerce($articleSlug);
+        $products = is_array($commerce['products'] ?? null) ? $commerce['products'] : [];
+        foreach ($products as $productRow) {
+            $resolved = interessa_resolve_product_reference(is_array($productRow) ? $productRow : []);
+            $imageMode = trim((string) ($resolved['image_mode'] ?? 'placeholder'));
+            if ($imageMode === 'local' || $imageMode === 'remote') {
+                continue;
+            }
+
+            $productSlug = trim((string) ($resolved['slug'] ?? ''));
+            $productName = trim((string) ($resolved['product_name'] ?? $resolved['name'] ?? $productSlug));
+            $merchant = trim((string) ($resolved['merchant'] ?? ''));
+            if (function_exists('interessa_fix_mojibake')) {
+                $productName = interessa_fix_mojibake($productName);
+                $merchant = interessa_fix_mojibake($merchant);
+            }
+
+            $product = $productSlug !== '' ? interessa_product($productSlug) : null;
+            $brief = is_array($product) ? interessa_admin_product_image_brief($product) : [];
+            $merchantSlug = interessa_admin_slugify($merchant);
+            if ($merchantSlug === '') {
+                $merchantSlug = 'nezaradene';
+            }
+
+            $flatRows[] = [
+                'article_slug' => $articleSlug,
+                'article_title' => $articleTitle,
+                'product_slug' => $productSlug,
+                'product_name' => $productName,
+                'merchant' => $merchant,
+                'merchant_slug' => $merchantSlug,
+                'affiliate_code' => trim((string) ($resolved['code'] ?? $resolved['affiliate_code'] ?? '')),
+                'target_asset' => trim((string) ($resolved['image_target_asset'] ?? '')),
+                'fallback_url' => trim((string) ($resolved['fallback_url'] ?? $resolved['url'] ?? '')),
+                'image_brief' => $brief,
+                'article_url' => article_url($articleSlug),
+                'workflow_url' => '/admin?section=images&slug=' . rawurlencode($articleSlug),
+                'product_url' => $productSlug !== '' ? '/admin?section=products&product=' . rawurlencode($productSlug) . '&return_section=images&return_slug=' . rawurlencode($articleSlug) : '',
+            ];
+        }
+    }
+
+    $merchantGroups = [];
+    foreach ($flatRows as $row) {
+        $merchantSlug = (string) ($row['merchant_slug'] ?? 'nezaradene');
+        $merchantName = trim((string) ($row['merchant'] ?? '')) !== '' ? (string) ($row['merchant'] ?? '') : 'Nezaradene';
+        if (!isset($merchantGroups[$merchantSlug])) {
+            $merchantGroups[$merchantSlug] = [
+                'merchant_slug' => $merchantSlug,
+                'merchant' => $merchantName,
+                'count' => 0,
+                'articles' => [],
+            ];
+        }
+
+        $merchantGroups[$merchantSlug]['count']++;
+        $merchantGroups[$merchantSlug]['articles'][(string) ($row['article_slug'] ?? '')] = true;
+    }
+
+    uasort($merchantGroups, static function (array $left, array $right): int {
+        $countSort = ((int) ($right['count'] ?? 0)) <=> ((int) ($left['count'] ?? 0));
+        if ($countSort !== 0) {
+            return $countSort;
+        }
+
+        return strcasecmp((string) ($left['merchant'] ?? ''), (string) ($right['merchant'] ?? ''));
+    });
+
+    $merchantGroups = array_values(array_map(static function (array $group): array {
+        $group['article_count'] = count($group['articles'] ?? []);
+        unset($group['articles']);
+        return $group;
+    }, $merchantGroups));
+
+    $merchantFilter = interessa_admin_slugify($merchantFilter);
+    if ($merchantFilter === '') {
+        $merchantFilter = 'all';
+    }
+
+    $filteredRows = $flatRows;
+    if ($merchantFilter !== 'all') {
+        $filteredRows = array_values(array_filter($flatRows, static function (array $row) use ($merchantFilter): bool {
+            return (string) ($row['merchant_slug'] ?? '') === $merchantFilter;
+        }));
+    }
+
+    $groupMap = [];
+    foreach ($filteredRows as $row) {
+        $articleSlug = (string) ($row['article_slug'] ?? '');
+        if ($articleSlug === '') {
+            continue;
+        }
+
+        if (!isset($groupMap[$articleSlug])) {
+            $groupMap[$articleSlug] = [
+                'article_slug' => $articleSlug,
+                'article_title' => (string) ($row['article_title'] ?? humanize_slug($articleSlug)),
+                'count' => 0,
+                'article_url' => (string) ($row['article_url'] ?? article_url($articleSlug)),
+                'workflow_url' => '/admin?section=images&slug=' . rawurlencode($articleSlug),
+                'rows' => [],
+            ];
+        }
+
+        $groupMap[$articleSlug]['rows'][] = $row;
+        $groupMap[$articleSlug]['count']++;
+    }
+
+    $groups = [];
+    foreach ($articleSlugs as $articleSlug) {
+        if (isset($groupMap[$articleSlug])) {
+            $groups[] = $groupMap[$articleSlug];
+        }
+    }
+
+    return [
+        'tracked_pages' => count($articleSlugs),
+        'filtered_pages' => count($groups),
+        'missing_products_total' => count($flatRows),
+        'missing_products' => count($filteredRows),
+        'merchant_filter' => $merchantFilter,
+        'merchant_groups' => $merchantGroups,
+        'rows' => $filteredRows,
+        'groups' => $groups,
+    ];
+}
+
 
 function interessa_admin_product_quality_queue(array $catalog, int $limit = 12): array {
     $rows = [];
@@ -685,6 +841,58 @@ function interessa_admin_output_briefs_csv(array $rows): never {
             $row['prompt'] ?? '',
         ]);
     }
+    fclose($out);
+    exit;
+}
+
+function interessa_admin_output_money_page_image_gap_csv(array $report): never {
+    $merchantFilter = trim((string) ($report['merchant_filter'] ?? 'all'));
+    $suffix = $merchantFilter !== '' && $merchantFilter !== 'all' ? '-' . $merchantFilter : '';
+
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="money-page-image-gaps' . $suffix . '.csv"');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, [
+        'article_slug',
+        'article_title',
+        'product_slug',
+        'product_name',
+        'merchant',
+        'merchant_slug',
+        'affiliate_code',
+        'target_asset',
+        'fallback_url',
+        'brief_filename',
+        'brief_alt_text',
+        'brief_dimensions',
+        'brief_prompt',
+        'workflow_url',
+        'product_url',
+        'article_url',
+    ]);
+
+    foreach ((array) ($report['rows'] ?? []) as $row) {
+        $brief = is_array($row['image_brief'] ?? null) ? $row['image_brief'] : [];
+        fputcsv($out, [
+            (string) ($row['article_slug'] ?? ''),
+            (string) ($row['article_title'] ?? ''),
+            (string) ($row['product_slug'] ?? ''),
+            (string) ($row['product_name'] ?? ''),
+            (string) ($row['merchant'] ?? ''),
+            (string) ($row['merchant_slug'] ?? ''),
+            (string) ($row['affiliate_code'] ?? ''),
+            (string) ($row['target_asset'] ?? ''),
+            (string) ($row['fallback_url'] ?? ''),
+            (string) ($brief['file_name'] ?? ''),
+            (string) ($brief['alt_text'] ?? ''),
+            (string) ($brief['dimensions'] ?? ''),
+            (string) ($brief['prompt'] ?? ''),
+            (string) ($row['workflow_url'] ?? ''),
+            (string) ($row['product_url'] ?? ''),
+            (string) ($row['article_url'] ?? ''),
+        ]);
+    }
+
     fclose($out);
     exit;
 }
@@ -1031,6 +1239,11 @@ if ($isAuthed) {
             if ($action === 'export_briefs_csv') {
                 interessa_admin_output_briefs_csv(interessa_admin_brief_rows(interessa_admin_article_options()));
             }
+
+            if ($action === 'export_money_page_image_gap_csv') {
+                $merchantFilter = trim((string) ($_POST['merchant_filter'] ?? 'all'));
+                interessa_admin_output_money_page_image_gap_csv(interessa_admin_money_page_image_gap_report($merchantFilter));
+            }
         }
     } catch (Throwable $e) {
         $error = trim($e->getMessage());
@@ -1054,6 +1267,7 @@ $selectedProduct = $selectedProductSlug !== '' ? interessa_product($selectedProd
 $selectedProduct = is_array($selectedProduct) ? interessa_normalize_product($selectedProduct) : null;
 $selectedProductImage = is_array($selectedProduct) ? ($selectedProduct['image'] ?? null) : null;
 $selectedProductImageSource = is_array($selectedProduct) ? (string) ($selectedProduct['image_mode'] ?? 'placeholder') : 'missing';
+$selectedProductImageBrief = is_array($selectedProduct) ? interessa_admin_product_image_brief($selectedProduct) : [];
 $selectedProductAffiliate = is_array($selectedProduct) && trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== '' ? aff_record((string) $selectedProduct['affiliate_code']) : null;
 $selectedProductAffiliateUrl = is_array($selectedProduct) && trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== '' ? aff_resolve((string) $selectedProduct['affiliate_code']) : null;
 $selectedProductAffiliateType = $selectedProductAffiliate !== null ? aff_link_type($selectedProductAffiliate) : '';
@@ -1146,6 +1360,12 @@ $productAffiliateQueueCount = count($productAffiliateQueueAll);
 $productQualityQueueAll = interessa_admin_product_quality_queue($catalog, max(count($catalog), 1));
 $productQualityQueue = array_slice($productQualityQueueAll, 0, 12);
 $productQualityQueueCount = count($productQualityQueueAll);
+$moneyPageMerchantFilter = interessa_admin_slugify((string) ($_GET['merchant_filter'] ?? 'all'));
+if ($moneyPageMerchantFilter === '') {
+    $moneyPageMerchantFilter = 'all';
+}
+$moneyPageImageGapReport = interessa_admin_money_page_image_gap_report($moneyPageMerchantFilter);
+$briefRows = interessa_admin_brief_rows($articleOptions);
 
 $dashboardStats = [
     'article_overrides' => count(interessa_admin_all_article_overrides()),
@@ -1184,6 +1404,13 @@ $missingRecommendedProducts = interessa_admin_missing_product_rows(
 $recommendedDiagnostics = interessa_admin_recommended_diagnostics($articleEditorProductSlugs);
 $recommendedDiagnosticsSummary = is_array($recommendedDiagnostics['summary'] ?? null) ? $recommendedDiagnostics['summary'] : [];
 $recommendedDiagnosticsRows = is_array($recommendedDiagnostics['rows'] ?? null) ? $recommendedDiagnostics['rows'] : [];
+$recommendedDiagnosticsBySlug = [];
+foreach ($recommendedDiagnosticsRows as $diagnosticRow) {
+    $diagnosticSlug = trim((string) ($diagnosticRow['slug'] ?? ''));
+    if ($diagnosticSlug !== '') {
+        $recommendedDiagnosticsBySlug[$diagnosticSlug] = $diagnosticRow;
+    }
+}
 $recommendedActionRows = is_array($recommendedDiagnostics['action_rows'] ?? null) ? $recommendedDiagnostics['action_rows'] : [];
 $recommendedCatalogCoverage = (int) ($recommendedDiagnosticsSummary['catalog'] ?? 0);
 $recommendedTotalCount = (int) ($recommendedDiagnosticsSummary['total'] ?? 0);
@@ -1192,9 +1419,20 @@ $recommendedAffiliateReadyCount = (int) ($recommendedDiagnosticsSummary['affilia
 $recommendedPackshotReadyCount = (int) ($recommendedDiagnosticsSummary['packshot_ready'] ?? 0);
 $recommendedMoneyReadyCount = (int) ($recommendedDiagnosticsSummary['money_ready'] ?? 0);
 $recommendedCardReadyCount = (int) ($recommendedDiagnosticsSummary['card_ready'] ?? 0);
-$selectedArticlePackshotGaps = array_values(array_filter($recommendedDiagnosticsRows, static function (array $row): bool {
+$selectedArticlePackshotGaps = array_values(array_map(static function (array $row): array {
+    $brief = [];
+    $slug = trim((string) ($row['slug'] ?? ''));
+    if (!empty($row['exists']) && $slug !== '') {
+        $product = interessa_product($slug);
+        if (is_array($product)) {
+            $brief = interessa_admin_product_image_brief($product);
+        }
+    }
+    $row['image_brief'] = $brief;
+    return $row;
+}, array_filter($recommendedDiagnosticsRows, static function (array $row): bool {
     return !empty($row['exists']) && empty($row['packshot_ready']);
-}));
+})));
 $selectedArticlePackshotGapCount = count($selectedArticlePackshotGaps);
 
 
@@ -2011,6 +2249,40 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
             </section>
 
+            <?php if (!$selectedProductPackshotReady && $selectedProductImageBrief !== []): ?>
+              <section class="admin-subsection">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Packshot brief</h3>
+                    <p class="admin-meta">Pouzi najprv realny merchant obrazok. Tento brief je pripraveny ako fallback workflow, ked este nemas oficialny packshot.</p>
+                  </div>
+                </div>
+                <div class="admin-brief-grid">
+                  <div class="admin-brief-card">
+                    <h3>Brief</h3>
+                    <p><?= esc((string) ($selectedProductImageBrief['prompt'] ?? '')) ?></p>
+                    <div class="admin-inline-actions">
+                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProductImageBrief['prompt'] ?? '')) ?>">Kopirovat prompt</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProductImageBrief['asset_path'] ?? '')) ?>">Kopirovat path</button>
+                      <?php if (trim((string) ($selectedProductImageBrief['reference_url'] ?? '')) !== ''): ?>
+                        <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProductImageBrief['reference_url'] ?? '')) ?>" target="_blank" rel="noopener">Referencny produkt</a>
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                  <div class="admin-brief-card">
+                    <h3>Export</h3>
+                    <p><strong>Filename:</strong><br><?= esc((string) ($selectedProductImageBrief['file_name'] ?? '')) ?></p>
+                    <p><strong>Alt text:</strong><br><?= esc((string) ($selectedProductImageBrief['alt_text'] ?? '')) ?></p>
+                    <p><strong>Dimensions:</strong><br><?= esc((string) ($selectedProductImageBrief['dimensions'] ?? '1200x1200')) ?></p>
+                    <p><strong>Target path:</strong><br><code><?= esc((string) ($selectedProductImageBrief['asset_path'] ?? '')) ?></code></p>
+                    <?php if (trim((string) ($selectedProductImageBrief['merchant_note'] ?? '')) !== ''): ?>
+                      <p><strong>Poznamka:</strong><br><?= esc((string) ($selectedProductImageBrief['merchant_note'] ?? '')) ?></p>
+                    <?php endif; ?>
+                  </div>
+                </div>
+              </section>
+            <?php endif; ?>
+
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <h3>Kde sa produkt pouziva</h3>
@@ -2193,6 +2465,9 @@ require dirname(__DIR__) . '/inc/head.php';
                         <?php if (trim((string) ($queueRow['image_target_asset'] ?? '')) !== ''): ?>
                           <code><?= esc((string) ($queueRow['image_target_asset'] ?? '')) ?></code>
                         <?php endif; ?>
+                        <?php if (is_array($queueRow['image_brief'] ?? null) && trim((string) (($queueRow['image_brief']['prompt'] ?? ''))) !== ''): ?>
+                          <small class="admin-note">Packshot brief: <?= esc((string) ($queueRow['image_brief']['file_name'] ?? 'main.webp')) ?> / <?= esc((string) ($queueRow['image_brief']['dimensions'] ?? '1200x1200')) ?></small>
+                        <?php endif; ?>
                         <div class="admin-status-pills">
                           <span class="admin-status-pill<?= !empty($queueRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($queueRow['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
                           <span class="admin-status-pill is-warning">Obrazok chyba</span>
@@ -2203,6 +2478,12 @@ require dirname(__DIR__) . '/inc/head.php';
                         <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
                         <?php if (trim((string) ($queueRow['image_target_asset'] ?? '')) !== ''): ?>
                           <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['image_target_asset'] ?? '')) ?>">Kopirovat path</button>
+                        <?php endif; ?>
+                        <?php if (is_array($queueRow['image_brief'] ?? null) && trim((string) (($queueRow['image_brief']['prompt'] ?? ''))) !== ''): ?>
+                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['image_brief']['prompt'] ?? '')) ?>">Kopirovat prompt</button>
+                        <?php endif; ?>
+                        <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
+                          <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Referencny produkt</a>
                         <?php endif; ?>
                         <?php if (trim((string) ($queueRow['remote_src'] ?? '')) !== ''): ?>
                           <form method="post" class="admin-inline-form">
@@ -2508,6 +2789,14 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php if ($selectedAffiliateCode !== ''): ?><a class="btn btn-secondary btn-small" href="/go/<?= rawurlencode($selectedAffiliateCode) ?>" target="_blank" rel="noopener">Otvorit /go/</a><?php endif; ?>
                   </div>
                 </article>
+                <article class="admin-help-card">
+                  <h3>Pozriet co este chyba</h3>
+                  <p class="admin-note">Najdolezitejsie obrazkove medzery na money pages najdes v nastrojoch.</p>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=tools">Otvorit Tools</a>
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Image workflow</a>
+                  </div>
+                </article>
               </div>
             </section>
             <div class="admin-help-grid">
@@ -2694,6 +2983,20 @@ require dirname(__DIR__) . '/inc/head.php';
               </section>
 
               <section class="admin-subsection">
+                <h3>Money page image gaps</h3>
+                <p>
+                  Sledujeme <?= esc((string) ($moneyPageImageGapReport['tracked_pages'] ?? 0)) ?> hlavnych money pages.
+                  Aktualne chyba <?= esc((string) ($moneyPageImageGapReport['missing_products'] ?? 0)) ?> realnych produktovych obrazkov<?= ($moneyPageImageGapReport['merchant_filter'] ?? 'all') !== 'all' ? ' pre vybraneho merchanta' : '' ?>.
+                </p>
+                <p class="admin-note">Najrychlejsia cesta je otvorit image workflow konkretneho clanku a doplnat obrazky po clankoch.</p>
+                <form method="post" class="admin-form">
+                  <input type="hidden" name="action" value="export_money_page_image_gap_csv" />
+                  <input type="hidden" name="merchant_filter" value="<?= esc((string) ($moneyPageImageGapReport['merchant_filter'] ?? 'all')) ?>" />
+                  <button class="btn btn-secondary" type="submit">Exportovat gaps + briefy CSV</button>
+                </form>
+              </section>
+
+              <section class="admin-subsection">
                 <h3>Import admin balika</h3>
                 <p>Nahraj skor exportovany JSON balik a admin ho sluci s aktualnymi override datami.</p>
                 <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
@@ -2777,6 +3080,97 @@ require dirname(__DIR__) . '/inc/head.php';
                 </table>
               </div>
             </div>
+
+            <?php if (($moneyPageImageGapReport['groups'] ?? []) !== []): ?>
+              <div class="admin-subsection">
+                <h3>Prehlad chybajucich obrazkov na money pages</h3>
+                <?php if (($moneyPageImageGapReport['merchant_groups'] ?? []) !== []): ?>
+                  <div class="admin-filter-pills">
+                    <?php $gapAllActive = ($moneyPageImageGapReport['merchant_filter'] ?? 'all') === 'all'; ?>
+                    <a class="admin-filter-pill<?= $gapAllActive ? ' is-active' : '' ?>" href="/admin?section=tools">Vsetci merchanti <span><?= esc((string) ($moneyPageImageGapReport['missing_products_total'] ?? 0)) ?></span></a>
+                    <?php foreach (($moneyPageImageGapReport['merchant_groups'] ?? []) as $merchantGroup): ?>
+                      <a class="admin-filter-pill<?= ($moneyPageImageGapReport['merchant_filter'] ?? 'all') === ($merchantGroup['merchant_slug'] ?? '') ? ' is-active' : '' ?>" href="/admin?section=tools&amp;merchant_filter=<?= esc((string) ($merchantGroup['merchant_slug'] ?? '')) ?>">
+                        <?= esc((string) ($merchantGroup['merchant'] ?? 'Merchant')) ?>
+                        <span><?= esc((string) ($merchantGroup['count'] ?? 0)) ?></span>
+                      </a>
+                    <?php endforeach; ?>
+                  </div>
+                  <div class="admin-status-grid">
+                    <?php foreach (($moneyPageImageGapReport['merchant_groups'] ?? []) as $merchantGroup): ?>
+                      <article class="admin-status-card">
+                        <strong><?= esc((string) ($merchantGroup['count'] ?? 0)) ?></strong>
+                        <span><?= esc((string) ($merchantGroup['merchant'] ?? 'Merchant')) ?></span>
+                        <small><?= esc((string) ($merchantGroup['article_count'] ?? 0)) ?> clankov</small>
+                      </article>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
+                <?php if (($moneyPageImageGapReport['merchant_filter'] ?? 'all') !== 'all'): ?>
+                  <p class="admin-note">Filter je zapnuty pre merchanta <strong><?= esc((string) ($moneyPageImageGapReport['merchant_filter'] ?? '')) ?></strong>. Export CSV aj tabulka nizsie uz beru len tento vyrez.</p>
+                <?php endif; ?>
+                <div class="admin-brief-table-wrap">
+                  <table class="admin-brief-table">
+                    <thead>
+                      <tr>
+                        <th>Clanok</th>
+                        <th>Chyba</th>
+                        <th>Produkty</th>
+                        <th>Akcia</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php foreach (($moneyPageImageGapReport['groups'] ?? []) as $group): ?>
+                        <tr>
+                          <td>
+                            <strong><?= esc((string) ($group['article_title'] ?? '')) ?></strong><br>
+                            <small><?= esc((string) ($group['article_slug'] ?? '')) ?></small>
+                          </td>
+                          <td><?= esc((string) ($group['count'] ?? 0)) ?> obrazky</td>
+                          <td>
+                            <ul class="admin-inline-list">
+                              <?php foreach ((array) ($group['rows'] ?? []) as $row): ?>
+                                <li>
+                                  <strong><?= esc((string) ($row['product_name'] ?? '')) ?></strong>
+                                  <?php if ((string) ($row['merchant'] ?? '') !== ''): ?>
+                                    <span class="admin-note">(<?= esc((string) ($row['merchant'] ?? '')) ?>)</span>
+                                  <?php endif; ?>
+                                  <?php if ((string) ($row['target_asset'] ?? '') !== ''): ?>
+                                    <br><small><?= esc((string) ($row['target_asset'] ?? '')) ?></small>
+                                  <?php endif; ?>
+                                  <?php if (is_array($row['image_brief'] ?? null) && trim((string) (($row['image_brief']['file_name'] ?? ''))) !== ''): ?>
+                                    <br><small class="admin-note">Brief: <?= esc((string) ($row['image_brief']['file_name'] ?? 'main.webp')) ?> / <?= esc((string) ($row['image_brief']['dimensions'] ?? '1200x1200')) ?></small>
+                                  <?php endif; ?>
+                                  <div class="admin-inline-actions">
+                                    <?php if ((string) ($row['target_asset'] ?? '') !== ''): ?>
+                                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($row['target_asset'] ?? '')) ?>">Kopirovat path</button>
+                                    <?php endif; ?>
+                                    <?php if (is_array($row['image_brief'] ?? null) && trim((string) (($row['image_brief']['prompt'] ?? ''))) !== ''): ?>
+                                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($row['image_brief']['prompt'] ?? '')) ?>">Kopirovat prompt</button>
+                                    <?php endif; ?>
+                                    <?php if ((string) ($row['fallback_url'] ?? '') !== ''): ?>
+                                      <a class="btn btn-secondary btn-small" href="<?= esc((string) ($row['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Referencny produkt</a>
+                                    <?php endif; ?>
+                                    <?php if ((string) ($row['product_url'] ?? '') !== ''): ?>
+                                      <a class="btn btn-secondary btn-small" href="<?= esc((string) ($row['product_url'] ?? '')) ?>">Produkt</a>
+                                    <?php endif; ?>
+                                  </div>
+                                </li>
+                              <?php endforeach; ?>
+                            </ul>
+                          </td>
+                          <td>
+                            <div class="admin-inline-actions">
+                              <a class="btn btn-secondary btn-small" href="<?= esc((string) ($group['workflow_url'] ?? '')) ?>">Image workflow</a>
+                              <a class="btn btn-secondary btn-small" href="<?= esc((string) ($group['article_url'] ?? '')) ?>" target="_blank" rel="noreferrer">Live clanok</a>
+                            </div>
+                          </td>
+                        </tr>
+                      <?php endforeach; ?>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            <?php endif; ?>
           </section>
         <?php endif; ?>
       </div>

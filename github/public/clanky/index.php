@@ -134,7 +134,7 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
         <a class="filter-chip<?= $commercialOnly ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $commercialOnly ? (($categoryMeta !== null || $formatFilter !== '' || $coverageFilter !== '') ? '/?' . esc(http_build_query(array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]))) : '/') : '/?' . esc(http_build_query($commercialQuery)) ?>">S odporucaniami (<?= esc((string) $commercialCountInScope) ?>)</a>
         <?php $coverageQuery = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => 'full']); ?>
         <?php $coverageResetQuery = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null]); ?>
-        <a class="filter-chip<?= $coverageFilter === 'full' ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $coverageFilter === 'full' ? ($coverageResetQuery !== [] ? '/?' . esc(http_build_query($coverageResetQuery)) : '/') : '/?' . esc(http_build_query($coverageQuery)) ?>">Najviac pripravene (<?= esc((string) $fullCoverageCountInScope) ?>)</a>
+          <a class="filter-chip<?= $coverageFilter === 'full' ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $coverageFilter === 'full' ? ($coverageResetQuery !== [] ? '/?' . esc(http_build_query($coverageResetQuery)) : '/') : '/?' . esc(http_build_query($coverageQuery)) ?>">Kompletne vybery (<?= esc((string) $fullCoverageCountInScope) ?>)</a>
       </div>
 
       <?php if ($topFormats !== []): ?>
@@ -164,7 +164,7 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
           <?php endif; ?>
         </p>
         <?php if ($commercialOnly || $coverageFilter === 'full'): ?>
-          <p class="muted">Skus vypnut filter <strong><?= $coverageFilter === 'full' ? 'Najviac pripravene' : 'S odporucaniami' ?></strong> alebo otvor inu temu, kde je uz pripraveny komercny obsah.</p>
+            <p class="muted">Skus vypnut filter <strong><?= $coverageFilter === 'full' ? 'Kompletne vybery' : 'S odporucaniami' ?></strong> alebo otvor inu temu, kde je uz hotovy komercny obsah.</p>
         <?php endif; ?>
       <?php else: ?>
         <p class="search-summary muted">

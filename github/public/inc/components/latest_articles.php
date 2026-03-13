@@ -65,7 +65,6 @@ foreach ($items as $item) {
     }
     echo '<span class="date">' . esc($date) . '</span>';
     echo '</div>';
-    echo interessa_render_article_commerce_submeta((string) $item['slug'], 'compact');
     echo '<a class="latest-card-title" href="' . esc($url) . '">' . esc((string) $item['title']) . '</a>';
     echo '</div>';
     echo '</li>';

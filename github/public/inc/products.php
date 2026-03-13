@@ -252,6 +252,48 @@ if (!function_exists('interessa_product_catalog_resolved')) {
     }
 }
 
+if (!function_exists('interessa_product_packshot_brief')) {
+    function interessa_product_packshot_brief(array $product): array {
+        $normalized = interessa_normalize_product($product);
+        $name = trim((string) ($normalized['name'] ?? $normalized['slug'] ?? 'Produkt'));
+        $merchant = trim((string) ($normalized['merchant'] ?? ''));
+        $merchantSlug = interessa_guess_slug_from_text((string) ($normalized['merchant_slug'] ?? $merchant));
+        $targetAsset = trim((string) ($normalized['image_target_asset'] ?? ''));
+        $fileName = $targetAsset !== '' ? basename($targetAsset) : 'product-packshot.webp';
+        $altText = trim($name . ($merchant !== '' ? ' - ' . $merchant : ''));
+        $referenceUrl = trim((string) ($normalized['fallback_url'] ?? ''));
+        $merchantNote = 'Pouzi cisty packshot na svetlom neutralnom pozadi a drz produkt v strede bez dekoracii.';
+
+        if ($merchantSlug === 'aktin') {
+            $merchantNote = 'Vizual drz minimalisticky, s cistym bielym pozadim a prirodzenym ecommerce stylom podobnym produktom z Aktinu.';
+        } elseif ($merchantSlug === 'myprotein') {
+            $merchantNote = 'Vizual nech je cisty, studiovy a mierne kontrastnejsi, podobny klasickym ecommerce packshotom Myprotein.';
+        } elseif ($merchantSlug === 'proteinsk' || $merchantSlug === 'protein-sk') {
+            $merchantNote = 'Vizual nech zostane jednoduchy a funkcny, ako bezny packshot doplnku vyzivy v lokalnom eshope.';
+        } elseif ($merchantSlug === 'gymbeam') {
+            $merchantNote = 'Ak mas referencny GymBeam packshot, drz sa jeho realistickeho ecommerce stylu bez dalsich grafickych prvkov.';
+        }
+
+        $prompt = 'Realisticky ecommerce packshot produktu ' . $name;
+        if ($merchant !== '') {
+            $prompt .= ' od ' . $merchant;
+        }
+        $prompt .= ', cisty obal doplnku vyzivy na svetlom neutralnom pozadi, jemny tien, produkt v strede, bez textovych overlayov, bez dekoracii, moderny health and fitness look, stvorcovy format. ' . $merchantNote;
+
+        return [
+            'name' => $name,
+            'merchant' => $merchant,
+            'asset_path' => $targetAsset,
+            'file_name' => $fileName,
+            'alt_text' => $altText,
+            'dimensions' => '1200x1200',
+            'prompt' => $prompt,
+            'reference_url' => $referenceUrl,
+            'merchant_note' => $merchantNote,
+        ];
+    }
+}
+
 if (!function_exists('interessa_affiliate_target')) {
     function interessa_affiliate_target(array $row): array {
         $row = interessa_resolve_product_reference($row);

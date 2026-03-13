@@ -83,9 +83,15 @@ Pouzi to vtedy, ked `Zrkadlit remote` nie je k dispozicii alebo chces vlastny ob
 Postup:
 1. otvor produkt
 2. skopiruj `target path`
-3. priprav finalny obrazok
-4. klikni `Nahrat obrazok`
-5. skontroluj live clanok
+3. ak nemas oficialny packshot, pouzi blok `Packshot brief`
+4. priprav finalny obrazok
+5. klikni `Nahrat obrazok`
+6. skontroluj live clanok
+
+Tip:
+- ak si v `Images` pri konkretnom clanku, pri chybajucom produkte uz vidis aj kratky `Packshot brief`
+- vies si tam hned skopirovat prompt aj target path bez toho, aby si musel najprv otvarat plny detail produktu
+- ak je to uzitocne, pouzi aj tlacidlo `Referencny produkt`, aby si mal otvoreny realny produktovy detail merchanta ako vizualnu predlohu
 
 ## Ked chces doplnit Dognet link
 1. otvor `Affiliate odkazy`
@@ -117,6 +123,10 @@ Ak nevies, co otvorit:
 - chces menit hlavny obrazok clanku -> `Images`
 - chces menit produkt a jeho kartu -> `Produkty`
 - chces menit Dognet link -> `Affiliate odkazy`
+- chces vidiet, kde na hlavnych money pages este chybaju realne obrazky -> `Import / export` a blok `Money page image gaps`
+- chces riesit obrazky po jednom merchantovi -> `Import / export`, v bloku `Money page image gaps` zapni filter merchanta
+- chces si stiahnut batch zadanie pre chybujuce obrazky produktov -> v tom istom bloku pouzi `Exportovat gaps + briefy CSV`
+- chces pripravit docasny packshot fallback pre konkretny produkt -> otvor produkt a pouzi `Packshot brief`
 
 ## Co si kontrolovat pred publikovanim
 - clanok ma nazov, intro a meta description

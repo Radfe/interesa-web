@@ -540,8 +540,8 @@ if (!function_exists('interessa_shortlist_coverage_state')) {
 if (!function_exists('interessa_shortlist_coverage_label')) {
     function interessa_shortlist_coverage_label(?array $stats): string {
         return match (interessa_shortlist_coverage_state($stats)) {
-            'full' => 'plne pokrytie',
-            'partial' => 'ciastocne pokrytie',
+            'full' => 'kompletny vyber',
+            'partial' => 'vyber produktov',
             default => 'obrazky este doplname',
         };
     }

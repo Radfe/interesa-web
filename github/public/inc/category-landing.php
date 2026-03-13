@@ -205,7 +205,6 @@ include dirname(__DIR__) . '/inc/head.php';
                   <span class="hub-card-label"><?= esc($label) ?></span>
                   <?php if ($guideDate !== ''): ?><span class="article-card-date"><?= esc($guideDate) ?></span><?php endif; ?>
                 </div>
-                <?= interessa_render_article_commerce_submeta($guideSlug, 'compact') ?>
                 <h3><a href="<?= esc(article_url($guideSlug)) ?>"><?= esc($title) ?></a></h3>
                 <?php if ($description !== ''): ?><p><?= esc($description) ?></p><?php endif; ?>
                 <a class="btn" href="<?= esc(article_url($guideSlug)) ?>"><?= esc(interessa_article_cta_label($guideSlug, $title)) ?></a>
@@ -250,7 +249,6 @@ include dirname(__DIR__) . '/inc/head.php';
                   <span class="hub-card-label"><?= esc($hub['title']) ?></span>
                   <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
                 </div>
-                <?= interessa_render_article_commerce_submeta($itemSlug, 'compact') ?>
                 <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
                 <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
                 <a class="card-link" href="<?= esc(article_url($itemSlug)) ?>"><?= esc(interessa_article_cta_label($itemSlug, $itemTitle)) ?></a>

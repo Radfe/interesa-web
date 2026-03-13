@@ -21,6 +21,8 @@ foreach ($articleSlugs as $articleSlug) {
     $articleMeta = article_meta($articleSlug);
     $commerce = interessa_article_commerce($articleSlug);
     $products = is_array($commerce['products'] ?? null) ? $commerce['products'] : [];
+    $articleTitle = trim((string) ($articleMeta['title'] ?? humanize_slug($articleSlug)));
+    $articleTitle = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake($articleTitle) : $articleTitle;
 
     foreach ($products as $row) {
         $resolved = interessa_resolve_product_reference(is_array($row) ? $row : []);
@@ -29,15 +31,22 @@ foreach ($articleSlugs as $articleSlug) {
             continue;
         }
 
+        $productName = trim((string) ($resolved['product_name'] ?? $resolved['name'] ?? ''));
+        $productName = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake($productName) : $productName;
+        $merchant = trim((string) ($resolved['merchant'] ?? ''));
+        $merchant = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake($merchant) : $merchant;
+
         $rows[] = [
             'article_slug' => $articleSlug,
-            'article_title' => trim((string) ($articleMeta['title'] ?? humanize_slug($articleSlug))),
+            'article_title' => $articleTitle,
             'product_slug' => trim((string) ($resolved['slug'] ?? '')),
-            'product_name' => trim((string) ($resolved['product_name'] ?? $resolved['name'] ?? '')),
-            'merchant' => trim((string) ($resolved['merchant'] ?? '')),
+            'product_name' => $productName,
+            'merchant' => $merchant,
             'affiliate_code' => trim((string) ($resolved['code'] ?? $resolved['affiliate_code'] ?? '')),
             'fallback_url' => trim((string) ($resolved['fallback_url'] ?? $resolved['url'] ?? '')),
+            'target_asset' => trim((string) ($resolved['image_target_asset'] ?? '')),
             'image_mode' => $imageMode !== '' ? $imageMode : 'placeholder',
+            'brief' => is_array(interessa_product($resolved['slug'] ?? '')) ? interessa_product_packshot_brief(interessa_product((string) ($resolved['slug'] ?? '')) ?? []) : [],
         ];
     }
 }
@@ -49,9 +58,24 @@ $csv = fopen($csvPath, 'wb');
 if ($csv === false) {
     throw new RuntimeException('Nepodarilo sa otvorit CSV report pre image gaps.');
 }
-fputcsv($csv, ['article_slug', 'article_title', 'product_slug', 'product_name', 'merchant', 'affiliate_code', 'fallback_url', 'image_mode']);
+fputcsv($csv, ['article_slug', 'article_title', 'product_slug', 'product_name', 'merchant', 'affiliate_code', 'fallback_url', 'target_asset', 'image_mode', 'brief_filename', 'brief_alt_text', 'brief_dimensions', 'brief_prompt']);
 foreach ($rows as $row) {
-    fputcsv($csv, $row);
+    $brief = is_array($row['brief'] ?? null) ? $row['brief'] : [];
+    fputcsv($csv, [
+        $row['article_slug'] ?? '',
+        $row['article_title'] ?? '',
+        $row['product_slug'] ?? '',
+        $row['product_name'] ?? '',
+        $row['merchant'] ?? '',
+        $row['affiliate_code'] ?? '',
+        $row['fallback_url'] ?? '',
+        $row['target_asset'] ?? '',
+        $row['image_mode'] ?? '',
+        $brief['file_name'] ?? '',
+        $brief['alt_text'] ?? '',
+        $brief['dimensions'] ?? '',
+        $brief['prompt'] ?? '',
+    ]);
 }
 fclose($csv);
 
@@ -91,7 +115,10 @@ foreach ($articleSlugs as $articleSlug) {
             $line .= ' (' . $row['merchant'] . ')';
         }
         if ($row['affiliate_code'] !== '') {
-            $line .= ' — affiliate code: `' . $row['affiliate_code'] . '`';
+            $line .= ' - affiliate code: `' . $row['affiliate_code'] . '`';
+        }
+        if (($row['target_asset'] ?? '') !== '') {
+            $line .= ' - asset: `' . $row['target_asset'] . '`';
         }
         $markdown[] = $line;
     }

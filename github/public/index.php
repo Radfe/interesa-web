@@ -241,7 +241,6 @@ include __DIR__ . '/inc/head.php';
           <?php if (is_array($guide['category_meta'] ?? null)): ?><span class="article-card-chip"><?= esc((string) ($guide['category_meta']['title'] ?? '')) ?></span><?php endif; ?>
           <?php if (($guide['updated_date'] ?? '') !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc((string) $guide['updated_date']) ?></span><?php endif; ?>
         </div>
-        <?= interessa_render_article_commerce_submeta((string) $guide['slug'], 'compact') ?>
         <h3><a href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc((string) $guide['title']) ?></a></h3>
         <?php if ($guide['description'] !== ''): ?><p><?= esc((string) $guide['description']) ?></p><?php endif; ?>
           <a class="btn" href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc(interessa_article_cta_label((string) $guide['slug'], (string) $guide['title'])) ?></a>
@@ -254,8 +253,8 @@ include __DIR__ . '/inc/head.php';
 <?php if ($readyShortlistGuides !== []): ?>
 <section class="container home-section">
   <div class="section-head">
-    <h2>Najviac pripravene clanky</h2>
-    <p class="meta">Nakupne clanky, kde uz mas odporucania prehladne usporiadane a pripraveny rychly vyber produktu.</p>
+    <h2>Odporucane vybery</h2>
+    <p class="meta">Nakupne clanky, kde uz mas odporucania prehladne usporiadane a vies sa rychlo zorientovat v produktoch.</p>
   </div>
 
   <div class="hub-grid article-teaser-grid">
@@ -293,7 +292,6 @@ include __DIR__ . '/inc/head.php';
           <?php if ($homeLeadCategory !== null): ?><span class="article-card-chip"><?= esc((string) ($homeLeadCategory['title'] ?? '')) ?></span><?php endif; ?>
           <?php if ($homeLeadUpdated !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc($homeLeadUpdated) ?></span><?php endif; ?>
         </div>
-        <?= interessa_render_article_commerce_submeta($homeLeadSlug, 'compact') ?>
         <p class="meta">Ak prave riesis chudnutie alebo chces rozumiet rozdielu medzi WPC a WPI, tu ma zmysel zacat.</p>
       </header>
 

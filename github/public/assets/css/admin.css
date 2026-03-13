@@ -226,6 +226,17 @@
   flex-wrap: wrap;
 }
 
+.admin-inline-list {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-inline-list li {
+  line-height: 1.45;
+}
+
 .btn-small {
   padding: 0.55rem 0.8rem;
   font-size: 0.9rem;

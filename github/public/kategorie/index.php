@@ -97,7 +97,7 @@ include __DIR__ . '/../inc/head.php';
     </div>
     <div class="hero-cta">
       <a class="btn btn-ghost" href="/clanky?commercial=1">Otvorit clanky s odporucaniami</a>
-      <a class="btn btn-ghost" href="/clanky?coverage=full">Pozriet najviac pripravene</a>
+      <a class="btn btn-ghost" href="/clanky?coverage=full">Pozriet kompletne vybery</a>
     </div>
   </article>
 </section>
@@ -126,7 +126,7 @@ include __DIR__ . '/../inc/head.php';
             <div class="article-card-submeta">
               <span class="article-card-subchip">Odporucania v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php if ($fullCoverageCount > 0): ?>
-                <span class="article-card-subchip is-coverage is-full">Najviac pripravene v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <span class="article-card-subchip is-coverage is-full">Kompletne vybery v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php endif; ?>
             </div>
           <?php endif; ?>
@@ -163,7 +163,7 @@ include __DIR__ . '/../inc/head.php';
             <div class="article-card-submeta">
               <span class="article-card-subchip">Odporucania v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php if ($fullCoverageCount > 0): ?>
-                <span class="article-card-subchip is-coverage is-full">Najviac pripravene v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+                <span class="article-card-subchip is-coverage is-full">Kompletne vybery v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php endif; ?>
             </div>
           <?php endif; ?>

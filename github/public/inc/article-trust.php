@@ -138,7 +138,7 @@ if (!function_exists('interessa_render_article_trust_box')) {
             echo '<p class="article-meta-inline"><strong>' . esc('Tema:') . '</strong> ' . esc($categoryTitle) . '</p>';
         }
         if ($shortlistMeta !== null) {
-            echo '<p class="article-meta-inline"><strong>' . esc('Odporucany vyber:') . '</strong> ' . esc((string) $shortlistMeta['count']) . ' ' . esc(interessa_pluralize_slovak((int) $shortlistMeta['count'], 'produkt', 'produkty', 'produktov')) . '</p>';
+            echo '<p class="article-meta-inline"><strong>' . esc('Vyber produktov:') . '</strong> ' . esc((string) $shortlistMeta['count']) . ' ' . esc(interessa_pluralize_slovak((int) $shortlistMeta['count'], 'produkt', 'produkty', 'produktov')) . '</p>';
             if (($shortlistMeta['merchant_count'] ?? 0) > 0) {
                 echo '<p class="article-meta-inline"><strong>' . esc('Porovnane obchody:') . '</strong> ' . esc((string) $shortlistMeta['merchant_count']) . '</p>';
             }

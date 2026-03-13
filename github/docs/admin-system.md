@@ -258,3 +258,38 @@ Update `AGENT_STATUS.md` only when:
   - finally the live frontend check
 - The goal is to make daily usage possible without remembering internal file paths
 
+## Money-page image gap report
+- Tools now include a direct `Money page image gaps` overview
+- It groups the remaining missing real product images by article, so you can close image debt article-by-article instead of searching through the whole catalog
+- Each row links back to the article image workflow and the live article preview
+- Rows also expose the target asset path and direct product access, so the gap report can be used as a practical work queue
+- The same report now supports merchant filters directly in Tools, so you can work merchant-by-merchant when you want to close all remaining image debt for GymBeam, Aktin, Myprotein or another shop in one pass
+- Tools can also export the currently filtered money-page image gaps as CSV, including the packshot brief fields:
+  - target asset path
+  - filename
+  - alt text
+  - dimensions
+  - prompt
+
+## Product packshot brief
+- Product editing now includes a lightweight `Packshot brief` block whenever the selected product still has no real product image
+- The brief provides:
+  - prompt
+  - target filename
+  - alt text
+  - dimensions
+  - canonical target path
+- It now also includes a direct reference-product URL and a short merchant-specific note, so the fallback packshot can stay closer to the visual style of the real merchant product page
+- This is meant as a fallback workflow after checking whether a real merchant packshot can be mirrored first
+
+## Article image workflow bridge
+- The article-level `Images` workflow now also surfaces packshot briefs for recommended products that still miss a real product image
+- This means image work can now be closed article-by-article from one screen:
+  - hero prompt
+  - missing product-image queue
+  - packshot prompt copy
+  - reference product link
+  - direct product jump
+  - direct upload
+- The article-level image workflow and the tools gap report now use the same packshot-brief data, so there is a single fallback prompt/path workflow no matter where you start
+
