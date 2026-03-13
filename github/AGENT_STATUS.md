@@ -4,13 +4,13 @@ Current branch:
 codex/feature/admin-system
 
 Current task:
-Continuing from a calmer public/admin baseline: the public site now uses simpler, more user-facing wording, local mirrored merchant images count correctly, and the admin now uses one shared merchant-aware packshot-brief workflow across products, article image queues and the money-page image-gap report
+Continuing from a calmer public/admin baseline: the public site now uses simpler, more user-facing wording, local mirrored merchant images count correctly, and the admin now supports merchant-batch image-gap handling plus a copyable batch brief pack for Canva/AI image production
 
 Next planned task:
-Use the merchant-filtered image-gap backlog plus the shared packshot-brief workflow to keep closing the remaining real image gaps on top commercial pages without adding more public complexity
+Use the merchant-batch image-gap workflow plus the batch brief pack to keep closing the remaining real image gaps on top commercial pages without adding more public complexity
 
 Last completed task:
-Finished the shared packshot-brief milestone: remaining missing real product images on tracked money pages are grouped by merchant inside admin Tools, filtered views export to CSV together with packshot brief data, and products, article image queues and the gap report now all share the same merchant-aware fallback brief plus reference-product workflow
+Finished the merchant batch-pack milestone: remaining missing real product images on tracked money pages are grouped by merchant inside admin Tools with one-click filtered views, CSV exports and a copyable batch brief pack, while products, article image queues and the gap report all share the same merchant-aware packshot brief and reference-product workflow
 
 Files currently modified:
 - AGENT_STATUS.md

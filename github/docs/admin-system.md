@@ -264,12 +264,15 @@ Update `AGENT_STATUS.md` only when:
 - Each row links back to the article image workflow and the live article preview
 - Rows also expose the target asset path and direct product access, so the gap report can be used as a practical work queue
 - The same report now supports merchant filters directly in Tools, so you can work merchant-by-merchant when you want to close all remaining image debt for GymBeam, Aktin, Myprotein or another shop in one pass
+- Tools now also expose merchant batch cards with one-click `Otvorit vyrez` and `Export CSV` actions, so the image work can be tackled merchant-by-merchant without manually setting up the filter every time
+- When a merchant filter is active, Tools also show a `Batch brief pack` textarea that can be copied in one click and pasted into Canva / AI workflow as a whole merchant batch
 - Tools can also export the currently filtered money-page image gaps as CSV, including the packshot brief fields:
   - target asset path
   - filename
   - alt text
   - dimensions
   - prompt
+- The packshot brief is now generated even for lightweight product references that do not yet have a full reusable catalog record, so every missing row in the report stays actionable
 
 ## Product packshot brief
 - Product editing now includes a lightweight `Packshot brief` block whenever the selected product still has no real product image

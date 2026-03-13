@@ -252,27 +252,45 @@ if (!function_exists('interessa_product_catalog_resolved')) {
     }
 }
 
-if (!function_exists('interessa_product_packshot_brief')) {
-    function interessa_product_packshot_brief(array $product): array {
-        $normalized = interessa_normalize_product($product);
-        $name = trim((string) ($normalized['name'] ?? $normalized['slug'] ?? 'Produkt'));
-        $merchant = trim((string) ($normalized['merchant'] ?? ''));
-        $merchantSlug = interessa_guess_slug_from_text((string) ($normalized['merchant_slug'] ?? $merchant));
-        $targetAsset = trim((string) ($normalized['image_target_asset'] ?? ''));
+if (!function_exists('interessa_product_packshot_merchant_note')) {
+    function interessa_product_packshot_merchant_note(string $merchantSlug): string {
+        $merchantSlug = interessa_guess_slug_from_text($merchantSlug);
+        if ($merchantSlug === 'aktin') {
+            return 'Vizual drz minimalisticky, s cistym bielym pozadim a prirodzenym ecommerce stylom podobnym produktom z Aktinu.';
+        }
+        if ($merchantSlug === 'myprotein') {
+            return 'Vizual nech je cisty, studiovy a mierne kontrastnejsi, podobny klasickym ecommerce packshotom Myprotein.';
+        }
+        if ($merchantSlug === 'proteinsk' || $merchantSlug === 'protein-sk') {
+            return 'Vizual nech zostane jednoduchy a funkcny, ako bezny packshot doplnku vyzivy v lokalnom eshope.';
+        }
+        if ($merchantSlug === 'gymbeam') {
+            return 'Ak mas referencny GymBeam packshot, drz sa jeho realistickeho ecommerce stylu bez dalsich grafickych prvkov.';
+        }
+
+        return 'Pouzi cisty packshot na svetlom neutralnom pozadi a drz produkt v strede bez dekoracii.';
+    }
+}
+
+if (!function_exists('interessa_product_packshot_brief_from_reference')) {
+    function interessa_product_packshot_brief_from_reference(array $reference): array {
+        $slug = trim((string) ($reference['slug'] ?? $reference['product_slug'] ?? ''));
+        $name = trim((string) ($reference['name'] ?? $reference['product_name'] ?? humanize_slug($slug !== '' ? $slug : 'produkt')));
+        $merchant = trim((string) ($reference['merchant'] ?? ''));
+        $merchantSlug = trim((string) ($reference['merchant_slug'] ?? ''));
+        if ($merchantSlug === '' && $merchant !== '') {
+            $merchantSlug = interessa_guess_slug_from_text($merchant);
+        }
+
+        $targetAsset = trim((string) ($reference['image_target_asset'] ?? $reference['target_asset'] ?? ''));
+        if ($targetAsset === '' && $slug !== '') {
+            $targetAsset = interessa_product_image_target_asset($slug, $merchantSlug);
+        }
+
         $fileName = $targetAsset !== '' ? basename($targetAsset) : 'product-packshot.webp';
         $altText = trim($name . ($merchant !== '' ? ' - ' . $merchant : ''));
-        $referenceUrl = trim((string) ($normalized['fallback_url'] ?? ''));
-        $merchantNote = 'Pouzi cisty packshot na svetlom neutralnom pozadi a drz produkt v strede bez dekoracii.';
-
-        if ($merchantSlug === 'aktin') {
-            $merchantNote = 'Vizual drz minimalisticky, s cistym bielym pozadim a prirodzenym ecommerce stylom podobnym produktom z Aktinu.';
-        } elseif ($merchantSlug === 'myprotein') {
-            $merchantNote = 'Vizual nech je cisty, studiovy a mierne kontrastnejsi, podobny klasickym ecommerce packshotom Myprotein.';
-        } elseif ($merchantSlug === 'proteinsk' || $merchantSlug === 'protein-sk') {
-            $merchantNote = 'Vizual nech zostane jednoduchy a funkcny, ako bezny packshot doplnku vyzivy v lokalnom eshope.';
-        } elseif ($merchantSlug === 'gymbeam') {
-            $merchantNote = 'Ak mas referencny GymBeam packshot, drz sa jeho realistickeho ecommerce stylu bez dalsich grafickych prvkov.';
-        }
+        $referenceUrl = trim((string) ($reference['fallback_url'] ?? $reference['url'] ?? ''));
+        $merchantNote = interessa_product_packshot_merchant_note($merchantSlug !== '' ? $merchantSlug : $merchant);
 
         $prompt = 'Realisticky ecommerce packshot produktu ' . $name;
         if ($merchant !== '') {
@@ -291,6 +309,13 @@ if (!function_exists('interessa_product_packshot_brief')) {
             'reference_url' => $referenceUrl,
             'merchant_note' => $merchantNote,
         ];
+    }
+}
+
+if (!function_exists('interessa_product_packshot_brief')) {
+    function interessa_product_packshot_brief(array $product): array {
+        $normalized = interessa_normalize_product($product);
+        return interessa_product_packshot_brief_from_reference($normalized);
     }
 }
 

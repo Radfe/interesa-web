@@ -127,6 +127,9 @@ Ak nevies, co otvorit:
 - chces riesit obrazky po jednom merchantovi -> `Import / export`, v bloku `Money page image gaps` zapni filter merchanta
 - chces si stiahnut batch zadanie pre chybujuce obrazky produktov -> v tom istom bloku pouzi `Exportovat gaps + briefy CSV`
 - chces pripravit docasny packshot fallback pre konkretny produkt -> otvor produkt a pouzi `Packshot brief`
+- aj ked produkt este nema plny reusable zaznam, gap report aj export ti uz pripravia pouzitelny brief automaticky
+- ak chces ist merchant po merchantovi, v `Money page image gaps` pouzi hornu sadu kariet a klikni `Otvorit vyrez` alebo rovno `Export CSV`
+- ak chces robit obrazky po davkach v Canve alebo AI nastroji, po zapnuti merchant filtra si skopiruj `Batch brief pack`
 
 ## Co si kontrolovat pred publikovanim
 - clanok ma nazov, intro a meta description

@@ -36,7 +36,7 @@ foreach ($articleSlugs as $articleSlug) {
         $merchant = trim((string) ($resolved['merchant'] ?? ''));
         $merchant = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake($merchant) : $merchant;
 
-        $rows[] = [
+        $reference = [
             'article_slug' => $articleSlug,
             'article_title' => $articleTitle,
             'product_slug' => trim((string) ($resolved['slug'] ?? '')),
@@ -46,8 +46,14 @@ foreach ($articleSlugs as $articleSlug) {
             'fallback_url' => trim((string) ($resolved['fallback_url'] ?? $resolved['url'] ?? '')),
             'target_asset' => trim((string) ($resolved['image_target_asset'] ?? '')),
             'image_mode' => $imageMode !== '' ? $imageMode : 'placeholder',
-            'brief' => is_array(interessa_product($resolved['slug'] ?? '')) ? interessa_product_packshot_brief(interessa_product((string) ($resolved['slug'] ?? '')) ?? []) : [],
         ];
+
+        $product = interessa_product((string) ($resolved['slug'] ?? ''));
+        $reference['brief'] = is_array($product)
+            ? interessa_product_packshot_brief($product)
+            : interessa_product_packshot_brief_from_reference($reference);
+
+        $rows[] = $reference;
     }
 }
 
@@ -84,6 +90,36 @@ foreach ($rows as $row) {
     $grouped[$row['article_slug']][] = $row;
 }
 
+$merchantGrouped = [];
+foreach ($rows as $row) {
+    $merchantSlug = interessa_guess_slug_from_text((string) ($row['merchant'] ?? ''));
+    if ($merchantSlug === '') {
+        $merchantSlug = 'nezaradene';
+    }
+
+    if (!isset($merchantGrouped[$merchantSlug])) {
+        $merchantGrouped[$merchantSlug] = [
+            'merchant' => (string) ($row['merchant'] ?? 'Nezaradene'),
+            'count' => 0,
+            'articles' => [],
+            'rows' => [],
+        ];
+    }
+
+    $merchantGrouped[$merchantSlug]['count']++;
+    $merchantGrouped[$merchantSlug]['articles'][(string) ($row['article_slug'] ?? '')] = true;
+    $merchantGrouped[$merchantSlug]['rows'][] = $row;
+}
+
+uasort($merchantGrouped, static function (array $left, array $right): int {
+    $countSort = ((int) ($right['count'] ?? 0)) <=> ((int) ($left['count'] ?? 0));
+    if ($countSort !== 0) {
+        return $countSort;
+    }
+
+    return strcasecmp((string) ($left['merchant'] ?? ''), (string) ($right['merchant'] ?? ''));
+});
+
 $markdown = [];
 $markdown[] = '# Money Page Image Gaps';
 $markdown[] = '';
@@ -96,6 +132,26 @@ $markdown[] = '';
 $markdown[] = '- Pocet sledovanych money pages: ' . count($articleSlugs);
 $markdown[] = '- Produkty bez realneho obrazku: ' . count($rows);
 $markdown[] = '';
+$markdown[] = '## Podla merchanta';
+$markdown[] = '';
+foreach ($merchantGrouped as $merchantGroup) {
+    $markdown[] = '- ' . ($merchantGroup['merchant'] ?? 'Nezaradene') . ': ' . (int) ($merchantGroup['count'] ?? 0) . ' produktov / ' . count((array) ($merchantGroup['articles'] ?? [])) . ' clankov';
+}
+$markdown[] = '';
+
+foreach ($merchantGrouped as $merchantGroup) {
+    $markdown[] = '## Merchant: ' . ($merchantGroup['merchant'] ?? 'Nezaradene');
+    $markdown[] = '';
+    foreach ((array) ($merchantGroup['rows'] ?? []) as $row) {
+        $line = '- ' . ($row['product_name'] !== '' ? $row['product_name'] : $row['product_slug']);
+        $line .= ' -> /clanky/' . ($row['article_slug'] ?? '');
+        if (($row['target_asset'] ?? '') !== '') {
+            $line .= ' - asset: `' . $row['target_asset'] . '`';
+        }
+        $markdown[] = $line;
+    }
+    $markdown[] = '';
+}
 
 foreach ($articleSlugs as $articleSlug) {
     $articleRows = $grouped[$articleSlug] ?? [];

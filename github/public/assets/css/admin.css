@@ -713,3 +713,7 @@
 .admin-help-checklist {
   margin-top: 1rem;
 }
+
+.admin-help-card .admin-inline-actions form {
+  margin: 0;
+}

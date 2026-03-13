@@ -627,7 +627,17 @@ function interessa_admin_money_page_image_gap_report(string $merchantFilter = 'a
             }
 
             $product = $productSlug !== '' ? interessa_product($productSlug) : null;
-            $brief = is_array($product) ? interessa_admin_product_image_brief($product) : [];
+            $briefSource = is_array($product) ? $product : [
+                'slug' => $productSlug,
+                'product_slug' => $productSlug,
+                'name' => $productName,
+                'product_name' => $productName,
+                'merchant' => $merchant,
+                'merchant_slug' => $merchant,
+                'fallback_url' => trim((string) ($resolved['fallback_url'] ?? $resolved['url'] ?? '')),
+                'target_asset' => trim((string) ($resolved['image_target_asset'] ?? '')),
+            ];
+            $brief = interessa_admin_product_image_brief($briefSource);
             $merchantSlug = interessa_admin_slugify($merchant);
             if ($merchantSlug === '') {
                 $merchantSlug = 'nezaradene';
@@ -661,11 +671,13 @@ function interessa_admin_money_page_image_gap_report(string $merchantFilter = 'a
                 'merchant' => $merchantName,
                 'count' => 0,
                 'articles' => [],
+                'rows' => [],
             ];
         }
 
         $merchantGroups[$merchantSlug]['count']++;
         $merchantGroups[$merchantSlug]['articles'][(string) ($row['article_slug'] ?? '')] = true;
+        $merchantGroups[$merchantSlug]['rows'][] = $row;
     }
 
     uasort($merchantGroups, static function (array $left, array $right): int {
@@ -679,6 +691,9 @@ function interessa_admin_money_page_image_gap_report(string $merchantFilter = 'a
 
     $merchantGroups = array_values(array_map(static function (array $group): array {
         $group['article_count'] = count($group['articles'] ?? []);
+        $group['sample_products'] = array_values(array_slice(array_map(static function (array $row): string {
+            return (string) ($row['product_name'] ?? $row['product_slug'] ?? 'Produkt');
+        }, (array) ($group['rows'] ?? [])), 0, 3));
         unset($group['articles']);
         return $group;
     }, $merchantGroups));
@@ -733,6 +748,61 @@ function interessa_admin_money_page_image_gap_report(string $merchantFilter = 'a
         'merchant_groups' => $merchantGroups,
         'rows' => $filteredRows,
         'groups' => $groups,
+    ];
+}
+
+function interessa_admin_money_page_gap_brief_pack(array $report): array {
+    $merchantFilter = trim((string) ($report['merchant_filter'] ?? 'all'));
+    if ($merchantFilter === '' || $merchantFilter === 'all') {
+        return [
+            'title' => 'Batch brief pack',
+            'text' => '',
+            'count' => 0,
+        ];
+    }
+
+    $merchantName = $merchantFilter;
+    foreach ((array) ($report['merchant_groups'] ?? []) as $merchantGroup) {
+        if ((string) ($merchantGroup['merchant_slug'] ?? '') === $merchantFilter) {
+            $merchantName = (string) ($merchantGroup['merchant'] ?? $merchantFilter);
+            break;
+        }
+    }
+
+    $lines = [];
+    $lines[] = 'Merchant batch: ' . $merchantName;
+    $lines[] = 'Pocet chybejucich obrazkov: ' . (string) ($report['missing_products'] ?? 0);
+    $lines[] = '';
+
+    foreach ((array) ($report['rows'] ?? []) as $row) {
+        $brief = is_array($row['image_brief'] ?? null) ? $row['image_brief'] : [];
+        $lines[] = 'Produkt: ' . (string) ($row['product_name'] ?? $row['product_slug'] ?? 'Produkt');
+        $lines[] = 'Clanok: ' . (string) ($row['article_title'] ?? $row['article_slug'] ?? '');
+        if (trim((string) ($brief['file_name'] ?? '')) !== '') {
+            $lines[] = 'Filename: ' . (string) ($brief['file_name'] ?? '');
+        }
+        if (trim((string) ($brief['alt_text'] ?? '')) !== '') {
+            $lines[] = 'Alt text: ' . (string) ($brief['alt_text'] ?? '');
+        }
+        if (trim((string) ($brief['dimensions'] ?? '')) !== '') {
+            $lines[] = 'Dimensions: ' . (string) ($brief['dimensions'] ?? '');
+        }
+        if (trim((string) ($row['target_asset'] ?? '')) !== '') {
+            $lines[] = 'Target path: ' . (string) ($row['target_asset'] ?? '');
+        }
+        if (trim((string) ($brief['reference_url'] ?? '')) !== '') {
+            $lines[] = 'Referencia: ' . (string) ($brief['reference_url'] ?? '');
+        }
+        if (trim((string) ($brief['prompt'] ?? '')) !== '') {
+            $lines[] = 'Prompt: ' . (string) ($brief['prompt'] ?? '');
+        }
+        $lines[] = '';
+    }
+
+    return [
+        'title' => 'Batch brief pack pre ' . $merchantName,
+        'text' => trim(implode(PHP_EOL, $lines)),
+        'count' => count((array) ($report['rows'] ?? [])),
     ];
 }
 
@@ -1365,6 +1435,7 @@ if ($moneyPageMerchantFilter === '') {
     $moneyPageMerchantFilter = 'all';
 }
 $moneyPageImageGapReport = interessa_admin_money_page_image_gap_report($moneyPageMerchantFilter);
+$moneyPageGapBriefPack = interessa_admin_money_page_gap_brief_pack($moneyPageImageGapReport);
 $briefRows = interessa_admin_brief_rows($articleOptions);
 
 $dashboardStats = [
@@ -3085,6 +3156,29 @@ require dirname(__DIR__) . '/inc/head.php';
               <div class="admin-subsection">
                 <h3>Prehlad chybajucich obrazkov na money pages</h3>
                 <?php if (($moneyPageImageGapReport['merchant_groups'] ?? []) !== []): ?>
+                  <div class="admin-help-grid">
+                    <?php foreach (($moneyPageImageGapReport['merchant_groups'] ?? []) as $merchantGroup): ?>
+                      <article class="admin-help-card">
+                        <h3><?= esc((string) ($merchantGroup['merchant'] ?? 'Merchant')) ?></h3>
+                        <p class="admin-note"><?= esc((string) ($merchantGroup['count'] ?? 0)) ?> produktov / <?= esc((string) ($merchantGroup['article_count'] ?? 0)) ?> clankov</p>
+                        <?php if (($merchantGroup['sample_products'] ?? []) !== []): ?>
+                          <ul class="admin-quickstart-list">
+                            <?php foreach ((array) ($merchantGroup['sample_products'] ?? []) as $sampleProduct): ?>
+                              <li><?= esc((string) $sampleProduct) ?></li>
+                            <?php endforeach; ?>
+                          </ul>
+                        <?php endif; ?>
+                        <div class="admin-inline-actions">
+                          <a class="btn btn-secondary btn-small" href="/admin?section=tools&amp;merchant_filter=<?= esc((string) ($merchantGroup['merchant_slug'] ?? '')) ?>">Otvorit vyrez</a>
+                          <form method="post" class="admin-inline-form">
+                            <input type="hidden" name="action" value="export_money_page_image_gap_csv" />
+                            <input type="hidden" name="merchant_filter" value="<?= esc((string) ($merchantGroup['merchant_slug'] ?? '')) ?>" />
+                            <button class="btn btn-secondary btn-small" type="submit">Export CSV</button>
+                          </form>
+                        </div>
+                      </article>
+                    <?php endforeach; ?>
+                  </div>
                   <div class="admin-filter-pills">
                     <?php $gapAllActive = ($moneyPageImageGapReport['merchant_filter'] ?? 'all') === 'all'; ?>
                     <a class="admin-filter-pill<?= $gapAllActive ? ' is-active' : '' ?>" href="/admin?section=tools">Vsetci merchanti <span><?= esc((string) ($moneyPageImageGapReport['missing_products_total'] ?? 0)) ?></span></a>
@@ -3107,6 +3201,21 @@ require dirname(__DIR__) . '/inc/head.php';
                 <?php endif; ?>
                 <?php if (($moneyPageImageGapReport['merchant_filter'] ?? 'all') !== 'all'): ?>
                   <p class="admin-note">Filter je zapnuty pre merchanta <strong><?= esc((string) ($moneyPageImageGapReport['merchant_filter'] ?? '')) ?></strong>. Export CSV aj tabulka nizsie uz beru len tento vyrez.</p>
+                <?php endif; ?>
+                <?php if (trim((string) ($moneyPageGapBriefPack['text'] ?? '')) !== ''): ?>
+                  <div class="admin-brief-grid">
+                    <article class="admin-brief-card">
+                      <h3><?= esc((string) ($moneyPageGapBriefPack['title'] ?? 'Batch brief pack')) ?></h3>
+                      <p class="admin-meta">Jednym klikom si vies skopirovat zadanie pre cely merchant batch a potom len postupne dorabat obrazky.</p>
+                      <div class="admin-inline-actions">
+                        <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($moneyPageGapBriefPack['text'] ?? '')) ?>">Kopirovat cely batch</button>
+                      </div>
+                      <label class="admin-form">
+                        <span>Batch brief text</span>
+                        <textarea rows="14" readonly><?= esc((string) ($moneyPageGapBriefPack['text'] ?? '')) ?></textarea>
+                      </label>
+                    </article>
+                  </div>
                 <?php endif; ?>
                 <div class="admin-brief-table-wrap">
                   <table class="admin-brief-table">

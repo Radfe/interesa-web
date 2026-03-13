@@ -1,6 +1,6 @@
 # Money Page Image Gaps
 
-Aktualizovane: 13.03.2026 13:44
+Aktualizovane: 13.03.2026 13:51
 
 Tento report ukazuje produkty na hlavnych komercnych clankoch, ktore este nemaju realny lokalny ani merchant obrazok a stale padaju na editorialny vizual.
 
@@ -8,6 +8,37 @@ Tento report ukazuje produkty na hlavnych komercnych clankoch, ktore este nemaju
 
 - Pocet sledovanych money pages: 8
 - Produkty bez realneho obrazku: 16
+
+## Podla merchanta
+
+- Aktin: 8 produktov / 8 clankov
+- Myprotein: 7 produktov / 7 clankov
+- Protein.sk: 1 produktov / 1 clankov
+
+## Merchant: Aktin
+
+- Whey Isolate / nízkokalorický WPI -> /clanky/protein-na-chudnutie - asset: `img/products/aktin/aktin-whey-isolate-cut/main.webp`
+- Whey Isolate / nízkokalorický WPI -> /clanky/najlepsie-proteiny-2025 - asset: `img/products/aktin/aktin-whey-isolate-cut/main.webp`
+- Creatine Monohydrate / osvedčený základ -> /clanky/kreatin-porovnanie - asset: `img/products/aktin/aktin-creatine-monohydrate/main.webp`
+- Magnézium bisglycinát -> /clanky/horcik-ktory-je-najlepsi-a-preco - asset: `img/products/aktin/aktin-magnesium-bisglycinate/main.webp`
+- Multi-strain probiotiká -> /clanky/probiotika-ako-vybrat - asset: `img/products/aktin/aktin-probiotics-multistrain/main.webp`
+- Balanced stim pre-workout -> /clanky/pre-workout-ako-vybrat - asset: `img/products/aktin/aktin-balanced-preworkout/main.webp`
+- Kolagén + vitamín C -> /clanky/kolagen-recenzia - asset: `img/products/aktin/kolag-en-vitam-in-c/main.webp`
+- Blend hrach + ryža -> /clanky/veganske-proteiny-top-vyber-2025 - asset: `img/products/aktin/blend-hrach-ryza/main.webp`
+
+## Merchant: Myprotein
+
+- Clear protein / ľahší drink -> /clanky/protein-na-chudnutie - asset: `img/products/myprotein/myprotein-clear-protein-light/main.webp`
+- Performance isolate blend -> /clanky/najlepsie-proteiny-2025 - asset: `img/products/myprotein/performance-isolate-blend/main.webp`
+- Kreatín HCl / alternatíva -> /clanky/kreatin-porovnanie - asset: `img/products/myprotein/myprotein-creatine-hcl/main.webp`
+- Magnézium malát -> /clanky/horcik-ktory-je-najlepsi-a-preco - asset: `img/products/myprotein/myprotein-magnesium-malate/main.webp`
+- Probiotiká / cestovné kapsuly -> /clanky/probiotika-ako-vybrat - asset: `img/products/myprotein/myprotein-probiotics-capsules/main.webp`
+- Non-stim pump formula -> /clanky/pre-workout-ako-vybrat - asset: `img/products/myprotein/myprotein-non-stim-pump/main.webp`
+- Rastlinný protein mix -> /clanky/veganske-proteiny-top-vyber-2025 - asset: `img/products/myprotein/rastlinn-y-protein-mix/main.webp`
+
+## Merchant: Protein.sk
+
+- Čistý hydrolyzovaný kolagén -> /clanky/kolagen-recenzia - asset: `img/products/protein-sk/ist-y-hydrolyzovan-y-kolag-en/main.webp`
 
 ## Proteín na chudnutie – ako vyberať a dávkovať
 
