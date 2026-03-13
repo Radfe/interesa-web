@@ -27,6 +27,11 @@ $commerce = interessa_article_commerce($slug);
 $categoryMeta = $meta['category'] !== '' ? category_meta($meta['category']) : null;
 $updatedMeta = is_file($file) ? interessa_article_updated_meta($file) : null;
 $faq = interessa_article_faq_items($slug);
+$heroAsset = trim((string) ($articleHero['asset'] ?? ''));
+$heroIsSvg = $heroAsset !== '' && str_ends_with(strtolower($heroAsset), '.svg');
+$articleFormatLabel = interessa_article_format_label($slug, (string) ($meta['title'] ?? ''));
+$categoryStats = interessa_article_category_stats($slug, (string) ($meta['category'] ?? ''));
+$shortlistStats = interessa_commerce_shortlist_stats($commerce);
 
 if ($usesAdminContent) {
     $adminPayload = interessa_admin_article_content_payload($slug);
@@ -124,6 +129,7 @@ include __DIR__ . '/inc/head.php';
       </nav>
 
       <div class="article-meta-bar">
+        <span class="article-meta-chip"><?= esc($articleFormatLabel) ?></span>
         <?php if ($categoryMeta !== null): ?>
           <span class="article-meta-chip"><?= esc($categoryMeta['title']) ?></span>
         <?php endif; ?>
@@ -137,9 +143,64 @@ include __DIR__ . '/inc/head.php';
       <?php if ($articleLead !== ''): ?><p class="lead"><?= esc($articleLead) ?></p><?php endif; ?>
 
       <?php if ($articleHero !== null): ?>
-        <figure class="article-hero">
+        <figure class="article-hero<?= $heroIsSvg ? ' is-editorial' : '' ?>">
           <?= interessa_render_image($articleHero, ['class' => 'article-hero-image']) ?>
+          <figcaption class="article-hero-caption">
+            <span class="article-hero-chip"><?= esc($articleFormatLabel) ?></span>
+            <?php if ($categoryMeta !== null): ?>
+              <span class="article-hero-chip"><?= esc($categoryMeta['title']) ?></span>
+            <?php endif; ?>
+            <?php if ($updatedMeta !== null): ?>
+              <span class="article-hero-chip"><?= esc('Aktualizovane ' . $updatedMeta['date']) ?></span>
+            <?php endif; ?>
+            <?php if ($heroIsSvg): ?>
+              <span class="article-hero-chip is-soft"><?= esc('Editorial vizual') ?></span>
+            <?php endif; ?>
+          </figcaption>
         </figure>
+      <?php endif; ?>
+
+      <?php if ($commerce !== null || $faq !== []): ?>
+        <div class="article-quick-actions" aria-label="Rychla navigacia v clanku">
+          <?php if ($categoryMeta !== null): ?>
+            <a class="btn btn-ghost" href="<?= esc(category_url((string) $categoryMeta['slug'])) ?>">Otvorit hub temy</a>
+          <?php endif; ?>
+          <?php if ($commerce !== null): ?>
+            <a class="btn btn-ghost" href="#odporucane-produkty">Preskocit na odporucania</a>
+          <?php endif; ?>
+          <?php if ($faq !== []): ?>
+            <a class="btn btn-ghost" href="#caste-otazky">Otvorit FAQ</a>
+          <?php endif; ?>
+        </div>
+      <?php endif; ?>
+
+      <?php if ($categoryStats !== null || $shortlistStats !== null): ?>
+        <div class="article-context-strip" aria-label="Kontext clanku">
+          <?php if ($categoryStats !== null): ?>
+            <div class="article-context-card">
+              <strong><?= esc((string) ($categoryStats['count'] ?? 0)) ?></strong>
+              <span><?= esc(interessa_pluralize_slovak((int) ($categoryStats['count'] ?? 0), 'clanok v teme', 'clanky v teme', 'clankov v teme')) ?></span>
+            </div>
+            <div class="article-context-card">
+              <strong><?= esc((string) ($categoryStats['recent_count'] ?? 0)) ?></strong>
+              <span>aktualizovanych za 60 dni</span>
+            </div>
+          <?php endif; ?>
+          <?php if ($shortlistStats !== null): ?>
+            <div class="article-context-card">
+              <strong><?= esc((string) ($shortlistStats['count'] ?? 0)) ?></strong>
+              <span><?= esc(interessa_pluralize_slovak((int) ($shortlistStats['count'] ?? 0), 'produkt v shortlistu', 'produkty v shortlistu', 'produktov v shortlistu')) ?></span>
+            </div>
+            <div class="article-context-card">
+              <strong><?= esc((string) ($shortlistStats['real_packshots'] ?? 0)) ?>/<?= esc((string) ($shortlistStats['count'] ?? 0)) ?></strong>
+              <span>realne packshoty</span>
+            </div>
+          <?php endif; ?>
+        </div>
+      <?php endif; ?>
+
+      <?php if ($commerce !== null): ?>
+        <?php interessa_render_commerce_verdict($commerce); ?>
       <?php endif; ?>
 
       <?php interessa_render_article_audience_box($slug); ?>
@@ -154,11 +215,12 @@ include __DIR__ . '/inc/head.php';
           interessa_render_top_products(
               $commerce['products'] ?? [],
               $commerce['title'] ?? 'Odporucane produkty',
-              $commerce['intro'] ?? null
+              $commerce['intro'] ?? null,
+              'odporucane-produkty'
           );
       }
       interessa_render_article_trust_box($slug, $meta, $commerce, is_file($file) ? $file : null);
-      interessa_render_article_faq_box($slug);
+      interessa_render_article_faq_box($slug, 'caste-otazky');
       interessa_render_related_articles($slug, 3);
       ?>
     </article>

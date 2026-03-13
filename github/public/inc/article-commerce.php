@@ -420,3 +420,60 @@ if (!function_exists('interessa_article_commerce')) {
         return interessa_article_commerce_clean($section);
     }
 }
+
+if (!function_exists('interessa_article_commerce_summary')) {
+    function interessa_article_commerce_summary(string $slug): ?array {
+        $commerce = interessa_article_commerce($slug);
+        if ($commerce === null) {
+            return null;
+        }
+
+        $stats = function_exists('interessa_commerce_shortlist_stats')
+            ? interessa_commerce_shortlist_stats($commerce)
+            : null;
+
+        if (!is_array($stats)) {
+            $products = is_array($commerce['products'] ?? null) ? $commerce['products'] : [];
+            $stats = ['count' => count($products)];
+        }
+
+        return [
+            'label' => trim((string) ($commerce['title'] ?? 'Odporucane produkty')),
+            'count' => (int) ($stats['count'] ?? 0),
+            'merchant_count' => (int) ($stats['merchant_count'] ?? 0),
+            'real_packshots' => (int) ($stats['real_packshots'] ?? 0),
+            'editorial_visuals' => (int) ($stats['editorial_visuals'] ?? 0),
+        ];
+    }
+}
+
+if (!function_exists('interessa_render_article_commerce_submeta')) {
+    function interessa_render_article_commerce_submeta(string $slug): string {
+        $summary = interessa_article_commerce_summary($slug);
+        if ($summary === null || (int) ($summary['count'] ?? 0) <= 0) {
+            return '';
+        }
+
+        $count = (int) ($summary['count'] ?? 0);
+        $merchantCount = (int) ($summary['merchant_count'] ?? 0);
+        $realPackshots = (int) ($summary['real_packshots'] ?? 0);
+        $coverageState = interessa_shortlist_coverage_state($summary);
+
+        $html = '<div class="article-card-submeta">';
+        $html .= '<span class="article-card-subchip">Shortlist ' . esc((string) $count) . '</span>';
+        if ($merchantCount > 0) {
+            $html .= '<span class="article-card-subchip">' . esc((string) $merchantCount) . ' ' . esc(interessa_pluralize_slovak($merchantCount, 'obchod', 'obchody', 'obchodov')) . '</span>';
+        }
+        $html .= '<span class="article-card-subchip is-coverage is-' . esc($coverageState) . '">Packshot ' . esc((string) $realPackshots) . '/' . esc((string) $count) . '</span>';
+        $html .= '</div>';
+
+        return $html;
+    }
+}
+
+if (!function_exists('interessa_article_has_commerce')) {
+    function interessa_article_has_commerce(string $slug): bool {
+        $summary = interessa_article_commerce_summary($slug);
+        return $summary !== null && (int) ($summary['count'] ?? 0) > 0;
+    }
+}

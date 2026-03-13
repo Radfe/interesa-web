@@ -60,6 +60,22 @@ if (!function_exists('interessa_article_methodology_points')) {
     }
 }
 
+if (!function_exists('interessa_article_trust_shortlist_meta')) {
+    function interessa_article_trust_shortlist_meta(?array $commerce): ?array {
+        $stats = interessa_commerce_shortlist_stats($commerce);
+        if ($stats === null) {
+            return null;
+        }
+
+        return [
+            'count' => (int) ($stats['count'] ?? 0),
+            'real_packshots' => (int) ($stats['real_packshots'] ?? 0),
+            'merchant_count' => (int) ($stats['merchant_count'] ?? 0),
+            'editorial_visuals' => (int) ($stats['editorial_visuals'] ?? 0),
+        ];
+    }
+}
+
 if (!function_exists('interessa_render_article_trust_box')) {
     function interessa_render_article_trust_box(string $slug, array $meta, ?array $commerce, ?string $file): void {
         $updated = ($file !== null && $file !== '') ? interessa_article_updated_meta($file) : null;
@@ -84,16 +100,18 @@ if (!function_exists('interessa_render_article_trust_box')) {
         $categoryMeta = category_meta((string) ($meta['category'] ?? ''));
         $categoryTitle = trim((string) ($categoryMeta['title'] ?? ''));
         $disclosure = interessa_affiliate_disclosure_text();
+        $formatLabel = interessa_article_format_label($slug, (string) ($meta['title'] ?? ''));
+        $shortlistMeta = interessa_article_trust_shortlist_meta($commerce);
 
-        echo '<section class="article-trust" aria-label="' . esc('Redak?n? pozn?mky') . '">';
+        echo '<section class="article-trust" aria-label="' . esc('Redakcne poznamky') . '">';
         echo '<div class="section-head">';
-        echo '<h2>' . esc('Ako s ?l?nkom pracova?') . '</h2>';
-        echo '<p class="meta">' . esc('Kr?tke vysvetlenie, ako je obsah pripraven?, ako funguj? odkazy a kedy bol naposledy kontrolovan?.') . '</p>';
+        echo '<h2>' . esc('Ako s clankom pracovat') . '</h2>';
+        echo '<p class="meta">' . esc('Kratke vysvetlenie, ako je obsah pripraveny, ako funguju odkazy a kedy bol naposledy kontrolovany.') . '</p>';
         echo '</div>';
         echo '<div class="article-trust-grid">';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>' . esc('Ako hodnot?me') . '</h3>';
+        echo '<h3>' . esc('Ako hodnotime') . '</h3>';
         echo '<ul class="article-trust-list">';
         foreach ($points as $point) {
             echo '<li>' . esc($point) . '</li>';
@@ -102,20 +120,36 @@ if (!function_exists('interessa_render_article_trust_box')) {
         echo '</article>';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>' . esc('Ako funguj? odkazy') . '</h3>';
+        echo '<h3>' . esc('Ako funguju odkazy') . '</h3>';
         echo '<p>' . esc($commerce !== null
             ? $disclosure
-            : 'Aj pri informa?n?ch ?l?nkoch zachov?vame ?ist? intern? odkazy a priebe?ne upratujeme ?trukt?ru tak, aby bol obsah dlhodobo udr?ate?n?.') . '</p>';
-        echo '<p class="article-meta-inline"><strong>' . esc('Forma odkazov:') . '</strong> interne <code>/go/</code> route a ' . esc('centr?lna spr?va partnerov.') . '</p>';
+            : 'Aj pri informacnych clankoch zachovavame ciste interne odkazy a priebezne upratujeme strukturu tak, aby bol obsah dlhodobo udrzatelny.') . '</p>';
+        echo '<p class="article-meta-inline"><strong>' . esc('Forma odkazov:') . '</strong> interne <code>/go/</code> route a ' . esc('centralna sprava partnerov.') . '</p>';
         echo '</article>';
 
         echo '<article class="article-trust-card">';
-        echo '<h3>' . esc('Posledn? kontrola') . '</h3>';
+        echo '<h3>' . esc('Posledna kontrola') . '</h3>';
         if ($updated !== null) {
-            echo '<p class="article-meta-inline"><strong>' . esc('Obsah skontrolovan?:') . '</strong> ' . esc($updated['date']) . '</p>';
+            echo '<p class="article-meta-inline"><strong>' . esc('Obsah skontrolovany:') . '</strong> ' . esc($updated['date']) . '</p>';
         }
+        echo '<p class="article-meta-inline"><strong>' . esc('Format:') . '</strong> ' . esc($formatLabel) . '</p>';
         if ($categoryTitle !== '') {
-            echo '<p class="article-meta-inline"><strong>' . esc('T?ma:') . '</strong> ' . esc($categoryTitle) . '</p>';
+            echo '<p class="article-meta-inline"><strong>' . esc('Tema:') . '</strong> ' . esc($categoryTitle) . '</p>';
+        }
+        if ($shortlistMeta !== null) {
+            $coveragePercent = interessa_shortlist_coverage_percent($shortlistMeta);
+            $coverageState = interessa_shortlist_coverage_state($shortlistMeta);
+            echo '<p class="article-meta-inline"><strong>' . esc('Shortlist:') . '</strong> ' . esc((string) $shortlistMeta['count']) . ' ' . esc('produkty, z toho') . ' ' . esc((string) $shortlistMeta['real_packshots']) . ' ' . esc('s realnym packshotom') . '</p>';
+            echo '<div class="shortlist-coverage is-compact is-' . esc($coverageState) . '" aria-label="' . esc('Pokrytie shortlistu packshotmi') . '">';
+            echo '<div class="shortlist-coverage-bar"><span class="shortlist-coverage-fill" style="width:' . esc((string) $coveragePercent) . '%"></span></div>';
+            echo '<p class="shortlist-coverage-copy">' . esc((string) $coveragePercent) . '% shortlistu ma realny packshot</p>';
+            echo '</div>';
+            if (($shortlistMeta['merchant_count'] ?? 0) > 0) {
+                echo '<p class="article-meta-inline"><strong>' . esc('Obchody v shortlistu:') . '</strong> ' . esc((string) $shortlistMeta['merchant_count']) . '</p>';
+            }
+            if (($shortlistMeta['editorial_visuals'] ?? 0) > 0) {
+                echo '<p class="article-meta-inline"><strong>' . esc('Prechodne editorial vizualy:') . '</strong> ' . esc((string) $shortlistMeta['editorial_visuals']) . '</p>';
+            }
         }
         echo '<p class="article-meta-inline"><strong>' . esc('Slug:') . '</strong> ' . esc(canonical_article_slug($slug)) . '</p>';
         echo '</article>';

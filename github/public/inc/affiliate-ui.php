@@ -35,12 +35,49 @@ if (!function_exists('interessa_affiliate_cta_html')) {
     }
 }
 
+if (!function_exists('interessa_product_image_status_label')) {
+    function interessa_product_image_status_label(string $sourceType): string {
+        $sourceType = trim($sourceType);
+
+        return match ($sourceType) {
+            'local' => interessa_text('Lokalny packshot'),
+            'remote' => interessa_text('Merchant packshot'),
+            default => interessa_text('Editorialny vizual'),
+        };
+    }
+}
+
+if (!function_exists('interessa_product_merchant_initials')) {
+    function interessa_product_merchant_initials(string $merchant): string {
+        $merchant = trim($merchant);
+        if ($merchant === '') {
+            return 'I';
+        }
+
+        $parts = preg_split('~\s+~', $merchant) ?: [];
+        $initials = '';
+        foreach ($parts as $part) {
+            $part = trim($part);
+            if ($part === '') {
+                continue;
+            }
+            $initials .= strtoupper(substr($part, 0, 1));
+            if (strlen($initials) >= 2) {
+                break;
+            }
+        }
+
+        return $initials !== '' ? $initials : strtoupper(substr($merchant, 0, 1));
+    }
+}
+
 if (!function_exists('interessa_product_media_meta')) {
     function interessa_product_media_meta(array $row): array {
         $resolved = interessa_resolve_product_reference($row);
         $image = is_array($resolved['_image'] ?? null) ? $resolved['_image'] : null;
         $sourceType = trim((string) ($image['source_type'] ?? $resolved['image_mode'] ?? 'placeholder')) ?: 'placeholder';
         $merchant = trim((string) ($resolved['merchant'] ?? ''));
+        $merchantSlug = trim((string) ($resolved['merchant_slug'] ?? ''));
         $productName = trim((string) ($resolved['product_name'] ?? $resolved['name'] ?? ''));
         $summary = trim((string) ($resolved['product_summary'] ?? $resolved['subtitle'] ?? $resolved['summary'] ?? ''));
         $categorySlug = normalize_category_slug((string) ($resolved['category'] ?? ''));
@@ -51,6 +88,7 @@ if (!function_exists('interessa_product_media_meta')) {
             'image' => $image,
             'source_type' => $sourceType,
             'merchant' => $merchant,
+            'merchant_slug' => $merchantSlug,
             'product_name' => $productName,
             'summary' => $summary,
             'category_label' => $categoryMeta['title'] ?? humanize_slug($categorySlug),
@@ -64,6 +102,7 @@ if (!function_exists('interessa_render_product_media')) {
         $image = $meta['image'];
         $sourceType = $meta['source_type'];
         $merchant = $meta['merchant'];
+        $merchantSlug = trim((string) ($meta['merchant_slug'] ?? ''));
         $productName = $meta['product_name'];
         $summary = $meta['summary'];
         $categoryLabel = $meta['category_label'];
@@ -87,10 +126,15 @@ if (!function_exists('interessa_render_product_media')) {
             return $html;
         }
 
-        $html = '<div class="' . esc($wrapperClass . ' is-fallback') . '">';
+        $merchantSlugClass = $merchantSlug !== '' ? ' is-merchant-' . $merchantSlug : '';
+        $html = '<div class="' . esc($wrapperClass . ' is-fallback' . $merchantSlugClass) . '">';
         if ($showBadge && $merchant !== '') {
             $html .= '<span class="' . esc($badgeClass) . '">' . esc($merchant) . '</span>';
         }
+        $html .= '<div class="' . esc($frameClass . ' is-fallback-frame') . '">';
+        $html .= '<div class="product-fallback-copy">';
+        $html .= '<span class="product-fallback-emblem" aria-hidden="true">' . esc(interessa_product_merchant_initials($merchant)) . '</span>';
+        $html .= '<span class="product-fallback-kicker">' . esc(interessa_text('Redakcny vyber')) . '</span>';
         if ($productName !== '') {
             $html .= '<strong class="' . esc($titleClass) . '">' . esc($productName) . '</strong>';
         }
@@ -98,6 +142,10 @@ if (!function_exists('interessa_render_product_media')) {
         if ($fallbackMeta !== '') {
             $html .= '<span class="' . esc($metaClass) . '">' . esc($fallbackMeta) . '</span>';
         }
+        if ($summary !== '' && strcasecmp($summary, $fallbackMeta) !== 0) {
+            $html .= '<span class="product-fallback-summary">' . esc($summary) . '</span>';
+        }
+        $html .= '</div></div>';
         $html .= '</div>';
 
         return $html;
@@ -114,12 +162,17 @@ if (!function_exists('interessa_render_product_box')) {
 
         $summary = trim((string) ($row['subtitle'] ?? ''));
         $productName = trim((string) ($row['product_name'] ?? ''));
-        $showProductName = $productName !== '' && strcasecmp($productName, $name) !== 0;
+        $catalogResolved = interessa_product_catalog_resolved($row);
+        $showProductName = $catalogResolved && $productName !== '' && strcasecmp($productName, $name) !== 0;
         $bestFor = trim((string) ($row['best_for'] ?? ''));
         $pros = is_array($row['pros'] ?? null) ? array_values($row['pros']) : [];
         $cons = is_array($row['cons'] ?? null) ? array_values($row['cons']) : [];
         $merchant = trim((string) ($row['merchant'] ?? ''));
         $showDisclosure = (bool) ($options['show_disclosure'] ?? false);
+        $imageMode = trim((string) ($row['image_mode'] ?? (($row['_image']['source_type'] ?? 'placeholder'))));
+        $imageStatus = interessa_product_image_status_label($imageMode);
+        $rating = (float) ($row['rating'] ?? 0);
+        $showEditorialNote = !$catalogResolved && $imageMode === 'placeholder' && $merchant !== '';
 
         $html = '<article class="affiliate-product-box">';
         $html .= interessa_render_product_media($row, [
@@ -138,8 +191,21 @@ if (!function_exists('interessa_render_product_box')) {
         if ($bestFor !== '') {
             $html .= '<p class="affiliate-product-bestfor"><strong>' . esc(interessa_text('Najlepsie pre:')) . '</strong> ' . esc($bestFor) . '</p>';
         }
+        if ($rating > 0 || $imageStatus !== '') {
+            $html .= '<div class="affiliate-product-meta-row">';
+            if ($rating > 0) {
+                $html .= '<div class="affiliate-product-rating">' . interessa_render_stars($rating) . '</div>';
+            }
+            if ($imageStatus !== '') {
+                $html .= '<span class="affiliate-product-image-status">' . esc($imageStatus) . '</span>';
+            }
+            $html .= '</div>';
+        }
         if ($merchant !== '') {
             $html .= '<p class="affiliate-product-merchant">' . esc(interessa_text('Obchod:')) . ' ' . esc($merchant) . '</p>';
+        }
+        if ($showEditorialNote) {
+            $html .= '<p class="affiliate-product-editorial-note">' . esc(interessa_text('Odporucany typ produktu pre tento obchod. Konkretne balenie doplnime, ked bude k dispozicii plny merchant produkt alebo packshot.')) . '</p>';
         }
         if ($pros !== [] || $cons !== []) {
             $html .= '<div class="affiliate-product-columns">';
@@ -202,6 +268,10 @@ if (!function_exists('interessa_render_comparison_table')) {
                 $value = $resolved[$key] ?? '';
 
                 if ($type === 'product') {
+                    $merchant = trim((string) ($resolved['merchant'] ?? ''));
+                    $imageMode = trim((string) ($resolved['image_mode'] ?? (($resolved['_image']['source_type'] ?? 'placeholder'))));
+                    $imageStatus = interessa_product_image_status_label($imageMode);
+                    $catalogResolved = interessa_product_catalog_resolved($resolved);
                     $html .= '<td>';
                     $html .= '<div class="comparison-product-cell">';
                     $html .= interessa_render_product_media($resolved, [
@@ -211,8 +281,18 @@ if (!function_exists('interessa_render_comparison_table')) {
                     ]);
                     $html .= '<div class="comparison-product-copy">';
                     $html .= '<strong>' . esc((string) ($resolved['name'] ?? '')) . '</strong>';
-                    if (!empty($resolved['product_name']) && strcasecmp((string) $resolved['product_name'], (string) ($resolved['name'] ?? '')) !== 0) {
+                    if ($catalogResolved && !empty($resolved['product_name']) && strcasecmp((string) $resolved['product_name'], (string) ($resolved['name'] ?? '')) !== 0) {
                         $html .= '<span>' . esc((string) $resolved['product_name']) . '</span>';
+                    }
+                    if ($merchant !== '' || $imageStatus !== '') {
+                        $html .= '<div class="comparison-product-meta-row">';
+                        if ($merchant !== '') {
+                            $html .= '<span class="comparison-product-merchant">' . esc($merchant) . '</span>';
+                        }
+                        if ($imageStatus !== '') {
+                            $html .= '<span class="comparison-product-image-status">' . esc($imageStatus) . '</span>';
+                        }
+                        $html .= '</div>';
                     }
                     $html .= '</div></div></td>';
                     continue;

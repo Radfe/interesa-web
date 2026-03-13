@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/category-hubs.php';
+require_once __DIR__ . '/article-commerce.php';
 
 $slug = $category_landing_slug ?? '';
 $hub = interessa_category_hub($slug);
@@ -40,6 +41,28 @@ foreach ($featuredGuides as $guide) {
 
 $categoryArticles = array_values(category_articles($slug));
 $articleCount = count($categoryArticles);
+$featuredCount = count($featuredGuides);
+$recentWindow = strtotime('-60 days');
+$recentCount = 0;
+$commercialCount = 0;
+$formatCounts = [];
+foreach ($categoryArticles as $articleItem) {
+    $articleSlug = (string) ($articleItem['slug'] ?? '');
+    $articleTitle = (string) ($articleItem['title'] ?? '');
+    $formatLabel = interessa_article_format_label($articleSlug, $articleTitle);
+    if (interessa_article_has_commerce($articleSlug)) {
+        $commercialCount++;
+    }
+    $articleFile = dirname(__DIR__) . '/content/articles/' . $articleSlug . '.html';
+    if (is_file($articleFile) && (int) @filemtime($articleFile) >= $recentWindow) {
+        $recentCount++;
+    }
+    if ($formatLabel !== '') {
+        $formatCounts[$formatLabel] = ($formatCounts[$formatLabel] ?? 0) + 1;
+    }
+}
+arsort($formatCounts);
+$topFormats = array_slice($formatCounts, 0, 4, true);
 $extraArticles = array_values(array_filter($categoryArticles, static function (array $item) use ($featuredSlugs): bool {
     return !in_array((string) ($item['slug'] ?? ''), $featuredSlugs, true);
 }));
@@ -76,6 +99,11 @@ include dirname(__DIR__) . '/inc/head.php';
       <?php if ($categoryHero !== null): ?>
         <figure class="hub-hero-media">
           <?= interessa_render_image($categoryHero, ['class' => 'hub-card-image', 'loading' => 'eager', 'fetchpriority' => 'high']) ?>
+          <figcaption class="article-hero-caption">
+            <span class="article-hero-chip"><?= esc($hub['title']) ?></span>
+            <span class="article-hero-chip"><?= esc((string) $articleCount) ?> <?= esc(interessa_pluralize_slovak($articleCount, 'clanok', 'clanky', 'clankov')) ?> v teme</span>
+            <span class="article-hero-chip is-soft">Tematicky hub</span>
+          </figcaption>
         </figure>
       <?php endif; ?>
       <p class="hub-eyebrow">Tematicky hub</p>
@@ -85,9 +113,37 @@ include dirname(__DIR__) . '/inc/head.php';
       </div>
       <p class="lead"><?= esc($hub['intro']) ?></p>
       <div class="hub-meta-row">
-        <span class="article-meta-chip"><?= esc((string) $articleCount) ?> clankov v teme</span>
+        <span class="article-meta-chip"><?= esc((string) $articleCount) ?> <?= esc(interessa_pluralize_slovak($articleCount, 'clanok', 'clanky', 'clankov')) ?> v teme</span>
         <a class="card-link" href="/clanky/?category=<?= esc($slug) ?>">Vsetky clanky v teme</a>
       </div>
+      <div class="hub-stats-inline" aria-label="Prehlad obsahu v kategorii">
+        <div class="hub-stat-inline">
+          <strong><?= esc((string) $featuredCount) ?></strong>
+          <span><?= esc(interessa_pluralize_slovak($featuredCount, 'klucovy clanok', 'klucove clanky', 'klucovych clankov')) ?></span>
+        </div>
+        <div class="hub-stat-inline">
+          <strong><?= esc((string) $recentCount) ?></strong>
+          <span>aktualizovane za 60 dni</span>
+        </div>
+        <div class="hub-stat-inline">
+          <strong><?= esc((string) $articleCount) ?></strong>
+          <span>spolu v teme</span>
+        </div>
+        <div class="hub-stat-inline">
+          <strong><?= esc((string) $commercialCount) ?></strong>
+          <span>clanky so shortlistom</span>
+        </div>
+      </div>
+      <?php if ($topFormats !== []): ?>
+        <div class="filters-bar archive-format-bar hub-format-summary" aria-label="Formaty clankov v tejto teme">
+          <?php foreach ($topFormats as $label => $count): ?>
+            <span class="filter-chip is-muted">
+              <span class="article-card-chip is-format"><?= esc((string) $label) ?></span>
+              <?= esc((string) $count) ?>
+            </span>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
       <?php if (!empty($hub['focus_points'])): ?>
         <ul class="hub-checklist">
           <?php foreach ($hub['focus_points'] as $point): ?>
@@ -113,21 +169,27 @@ include dirname(__DIR__) . '/inc/head.php';
             $meta = article_meta($guideSlug);
             $title = trim((string) ($guide['title'] ?? $meta['title']));
             $description = trim((string) ($guide['description'] ?? $meta['description']));
+            if ($description === '') {
+                $description = interessa_article_teaser_description($guideSlug);
+            }
             $label = trim((string) ($guide['label'] ?? 'Sprievodca'));
             $guideImage = interessa_article_image_meta($guideSlug, 'thumb', true);
             $guideFile = dirname(__DIR__) . '/content/articles/' . $guideSlug . '.html';
             $guideDate = is_file($guideFile) ? date('d.m.Y', (int) @filemtime($guideFile)) : '';
+            $formatLabel = interessa_article_format_label($guideSlug, $title);
             ?>
             <article class="hub-card">
               <?= interessa_render_image($guideImage, ['class' => 'hub-card-image', 'alt' => $title]) ?>
               <div class="hub-card-body">
                 <div class="article-card-meta">
+                  <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
                   <span class="hub-card-label"><?= esc($label) ?></span>
                   <?php if ($guideDate !== ''): ?><span class="article-card-date"><?= esc($guideDate) ?></span><?php endif; ?>
                 </div>
+                <?= interessa_render_article_commerce_submeta($guideSlug) ?>
                 <h3><a href="<?= esc(article_url($guideSlug)) ?>"><?= esc($title) ?></a></h3>
                 <?php if ($description !== ''): ?><p><?= esc($description) ?></p><?php endif; ?>
-                <a class="btn" href="<?= esc(article_url($guideSlug)) ?>">Otvorit clanok</a>
+                <a class="btn" href="<?= esc(article_url($guideSlug)) ?>"><?= esc(interessa_article_cta_label($guideSlug, $title)) ?></a>
               </div>
             </article>
           <?php endforeach; ?>
@@ -143,14 +205,40 @@ include dirname(__DIR__) . '/inc/head.php';
           <h2>Dalsie clanky v teme</h2>
           <p class="meta">Doplnujuce clanky pre hlbsie prestudovanie temy.</p>
         </div>
-        <ul class="article-list">
+        <div class="hub-grid article-related-grid">
           <?php foreach ($extraArticles as $item): ?>
-            <li>
-              <a href="<?= esc(article_url($item['slug'])) ?>"><?= esc($item['title']) ?></a>
-              <?php if (!empty($item['description'])): ?><p class="meta"><?= esc($item['description']) ?></p><?php endif; ?>
-            </li>
+            <?php
+            $itemSlug = (string) ($item['slug'] ?? '');
+            $itemTitle = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake((string) ($item['title'] ?? '')) : (string) ($item['title'] ?? '');
+            $itemDescription = trim((string) ($item['description'] ?? ''));
+            if ($itemDescription === '') {
+                $itemDescription = interessa_article_teaser_description($itemSlug);
+            } else {
+                $itemDescription = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake($itemDescription) : $itemDescription;
+            }
+            $itemImage = interessa_article_image_meta($itemSlug, 'thumb', true);
+            $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
+            $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
+            $formatLabel = interessa_article_format_label($itemSlug, $itemTitle);
+            ?>
+            <article class="hub-card article-teaser-card">
+              <a href="<?= esc(article_url($itemSlug)) ?>">
+                <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
+              </a>
+              <div class="hub-card-body article-teaser-body">
+                <div class="article-card-meta">
+                  <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
+                  <span class="hub-card-label"><?= esc($hub['title']) ?></span>
+                  <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
+                </div>
+                <?= interessa_render_article_commerce_submeta($itemSlug) ?>
+                <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
+                <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
+                <a class="card-link" href="<?= esc(article_url($itemSlug)) ?>"><?= esc(interessa_article_cta_label($itemSlug, $itemTitle)) ?></a>
+              </div>
+            </article>
           <?php endforeach; ?>
-        </ul>
+        </div>
       </section>
     <?php endif; ?>
   </div>

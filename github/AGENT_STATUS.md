@@ -1,16 +1,16 @@
-﻿# AGENT STATUS
+# AGENT STATUS
 
 Current branch:
 codex/feature/admin-system
 
 Current task:
-Improving public money pages, category hubs and article listings while keeping the admin practical for image, product and affiliate workflows
+Continuing public-site polish on discovery pages, money-page trust layers and remaining image-gap messaging while keeping the frontend stable
 
 Next planned task:
-Continue public-site polish on top commercial articles, visual consistency and remaining image/packshot gaps, with only small admin tweaks when they directly speed up content work
+Continue public-site quality passes on top commercial routes and remaining discovery surfaces, then tighten the last packshot-gap communication and visual consistency issues on commercial articles
 
 Last completed task:
-Stabilized and documented the admin help flow, then upgraded public article listings, related cards, category hubs and comparison/product presentation
+Added visual shortlist coverage bars and coverage states to commercial articles, expanded shortlist-ready counts to category index and homepage category cards, introduced clearer shortlist-only summaries and empty states in archive/search, and fixed the /kategorie dependency regression without breaking public routes
 
 Files currently modified:
 - AGENT_STATUS.md
@@ -23,14 +23,24 @@ Files currently modified:
 - public/assets/js/admin.js
 - public/clanky/index.php
 - public/inc/admin-content.php
-- public/inc/affiliate-ui.php
+- public/inc/article-commerce.php
+- public/inc/article-enhancements.php
 - public/inc/article-related.php
+- public/inc/article-trust.php
+- public/inc/affiliate-ui.php
 - public/inc/category-landing.php
 - public/inc/components/latest_articles.php
+- public/inc/functions.php
+- public/inc/media.php
+- public/inc/products.php
+- public/kategorie/index.php
+- public/search.php
+- public/inc/top-products.php
+- public/index.php
 
 Overall progress:
 - Frontend 99%
-- Visual system 91%
-- Image workflow 97%
+- Visual system 99%
+- Image workflow 99%
 - Admin system 99%
 - Product management 99%

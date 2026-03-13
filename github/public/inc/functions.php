@@ -216,6 +216,73 @@ if (!function_exists('humanize_slug')) {
     }
 }
 
+if (!function_exists('interessa_pluralize_slovak')) {
+    function interessa_pluralize_slovak(int $count, string $one, string $few, string $many): string {
+        $abs = abs($count);
+        if ($abs === 1) {
+            return $one;
+        }
+
+        $mod100 = $abs % 100;
+        $mod10 = $abs % 10;
+        if ($mod10 >= 2 && $mod10 <= 4 && !($mod100 >= 12 && $mod100 <= 14)) {
+            return $few;
+        }
+
+        return $many;
+    }
+}
+
+if (!function_exists('interessa_article_format_slug')) {
+    function interessa_article_format_slug(string $slug, string $title = ''): string {
+        $haystack = strtolower(trim($slug . ' ' . $title));
+
+        return match (true) {
+            str_contains($haystack, 'porovnanie'),
+            str_contains($haystack, 'vs ') => 'porovnanie',
+            str_contains($haystack, 'recenzia') => 'recenzia',
+            str_contains($haystack, 'top-vyber'),
+            str_contains($haystack, 'top vyber'),
+            str_contains($haystack, 'najlepsie') => 'top-vyber',
+            str_contains($haystack, 'ako-vybrat'),
+            str_contains($haystack, 'ako vybrat') => 'nakupny-navod',
+            default => 'sprievodca',
+        };
+    }
+}
+
+if (!function_exists('interessa_article_format_map')) {
+    function interessa_article_format_map(): array {
+        return [
+            'porovnanie' => 'Porovnanie',
+            'recenzia' => 'Recenzia',
+            'top-vyber' => 'Top vyber',
+            'nakupny-navod' => 'Nakupny navod',
+            'sprievodca' => 'Sprievodca',
+        ];
+    }
+}
+
+if (!function_exists('interessa_article_format_label')) {
+    function interessa_article_format_label(string $slug, string $title = ''): string {
+        $formatSlug = interessa_article_format_slug($slug, $title);
+        $map = interessa_article_format_map();
+        return $map[$formatSlug] ?? 'Sprievodca';
+    }
+}
+
+if (!function_exists('interessa_article_cta_label')) {
+    function interessa_article_cta_label(string $slug, string $title = ''): string {
+        return match (interessa_article_format_slug($slug, $title)) {
+            'porovnanie' => 'Pozriet porovnanie',
+            'recenzia' => 'Otvorit recenziu',
+            'top-vyber' => 'Pozriet vyber',
+            'nakupny-navod' => 'Otvorit navod',
+            default => 'Citat clanok',
+        };
+    }
+}
+
 if (!function_exists('normalize_category_slug')) {
     function normalize_category_slug(?string $slug): string {
         $slug = strtolower(trim((string) $slug));
@@ -382,13 +449,177 @@ if (!function_exists('article_meta')) {
     function article_meta(string $slug): array {
         $articles = article_registry();
         $row = $articles[$slug] ?? [humanize_slug($slug), '', ''];
+        $title = (string) ($row[0] ?? humanize_slug($slug));
+        $description = (string) ($row[1] ?? '');
+
+        if (function_exists('interessa_fix_mojibake')) {
+            $title = interessa_fix_mojibake($title);
+            $description = interessa_fix_mojibake($description);
+        }
 
         return [
             'slug' => $slug,
-            'title' => $row[0] ?? humanize_slug($slug),
-            'description' => $row[1] ?? '',
+            'title' => $title,
+            'description' => $description,
             'category' => normalize_category_slug($row[2] ?? ''),
         ];
+    }
+}
+
+if (!function_exists('interessa_commerce_shortlist_stats')) {
+    function interessa_commerce_shortlist_stats(?array $commerce): ?array {
+        $products = is_array($commerce['products'] ?? null) ? $commerce['products'] : [];
+        if ($products === []) {
+            return null;
+        }
+
+        if (!function_exists('interessa_resolve_product_reference')) {
+            require_once __DIR__ . '/products.php';
+        }
+
+        $resolvedProducts = array_map(
+            static fn(array $item): array => interessa_resolve_product_reference($item),
+            $products
+        );
+
+        $merchantNames = array_values(array_unique(array_values(array_filter(array_map(
+            static fn(array $item): string => trim((string) ($item['merchant'] ?? '')),
+            $resolvedProducts
+        )))));
+
+        $realPackshotCount = count(array_filter($resolvedProducts, static function (array $item): bool {
+            $mode = trim((string) ($item['image_mode'] ?? (($item['_image']['source_type'] ?? 'placeholder'))));
+            return $mode === 'remote' || $mode === 'local';
+        }));
+
+        $catalogResolvedCount = count(array_filter($resolvedProducts, static function (array $item): bool {
+            return interessa_product_catalog_resolved($item);
+        }));
+
+        $count = count($resolvedProducts);
+
+        return [
+            'count' => $count,
+            'merchant_names' => $merchantNames,
+            'merchant_count' => count($merchantNames),
+            'real_packshots' => $realPackshotCount,
+            'editorial_visuals' => max(0, $count - $realPackshotCount),
+            'catalog_resolved' => $catalogResolvedCount,
+        ];
+    }
+}
+
+if (!function_exists('interessa_shortlist_coverage_percent')) {
+    function interessa_shortlist_coverage_percent(?array $stats): int {
+        $count = (int) ($stats['count'] ?? 0);
+        $realPackshots = (int) ($stats['real_packshots'] ?? 0);
+        if ($count <= 0) {
+            return 0;
+        }
+
+        return (int) round(($realPackshots / $count) * 100);
+    }
+}
+
+if (!function_exists('interessa_shortlist_coverage_state')) {
+    function interessa_shortlist_coverage_state(?array $stats): string {
+        $count = (int) ($stats['count'] ?? 0);
+        $realPackshots = (int) ($stats['real_packshots'] ?? 0);
+
+        if ($count <= 0 || $realPackshots <= 0) {
+            return 'none';
+        }
+        if ($realPackshots >= $count) {
+            return 'full';
+        }
+
+        return 'partial';
+    }
+}
+
+if (!function_exists('interessa_article_category_stats')) {
+    function interessa_article_category_stats(string $slug, ?string $categorySlug = null): ?array {
+        $normalized = normalize_category_slug((string) ($categorySlug ?? ''));
+        if ($normalized === '') {
+            $meta = article_meta($slug);
+            $normalized = normalize_category_slug((string) ($meta['category'] ?? ''));
+        }
+
+        if ($normalized === '') {
+            return null;
+        }
+
+        $items = array_values(category_articles($normalized));
+        if ($items === []) {
+            return null;
+        }
+
+        $recentWindow = strtotime('-60 days');
+        $recentCount = 0;
+        foreach ($items as $item) {
+            $itemSlug = trim((string) ($item['slug'] ?? ''));
+            if ($itemSlug === '') {
+                continue;
+            }
+
+            $articleFile = __DIR__ . '/../content/articles/' . $itemSlug . '.html';
+            if (is_file($articleFile) && (int) @filemtime($articleFile) >= $recentWindow) {
+                $recentCount++;
+            }
+        }
+
+        $categoryMeta = category_meta($normalized);
+
+        return [
+            'slug' => $normalized,
+            'title' => (string) ($categoryMeta['title'] ?? humanize_slug($normalized)),
+            'count' => count($items),
+            'recent_count' => $recentCount,
+            'url' => category_url($normalized),
+        ];
+    }
+}
+
+if (!function_exists('interessa_trim_words')) {
+    function interessa_trim_words(string $text, int $limit = 28): string {
+        $text = trim(preg_replace('~\s+~u', ' ', strip_tags($text)) ?? $text);
+        if ($text === '') {
+            return '';
+        }
+
+        $words = preg_split('~\s+~u', $text) ?: [];
+        if (count($words) <= $limit) {
+            return $text;
+        }
+
+        $slice = array_slice($words, 0, $limit);
+        return trim(implode(' ', $slice)) . '...';
+    }
+}
+
+if (!function_exists('interessa_article_teaser_description')) {
+    function interessa_article_teaser_description(string $slug): string {
+        $meta = article_meta($slug);
+        $description = trim((string) ($meta['description'] ?? ''));
+        if ($description !== '') {
+            return interessa_fix_mojibake($description);
+        }
+
+        $file = __DIR__ . '/../content/articles/' . $slug . '.html';
+        if (!is_file($file)) {
+            return '';
+        }
+
+        $html = interessa_fix_mojibake((string) file_get_contents($file));
+        if (preg_match('~<p[^>]*>(.*?)</p>~isu', $html, $match)) {
+            $text = interessa_trim_words(html_entity_decode(strip_tags((string) ($match[1] ?? '')), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            if ($text !== '') {
+                return $text;
+            }
+        }
+
+        $text = interessa_trim_words(html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        return $text;
     }
 }
 
@@ -400,10 +631,17 @@ if (!function_exists('category_meta')) {
             return null;
         }
 
+        $title = (string) ($categories[$normalized]['title'] ?? '');
+        $description = (string) ($categories[$normalized]['description'] ?? '');
+        if (function_exists('interessa_fix_mojibake')) {
+            $title = interessa_fix_mojibake($title);
+            $description = interessa_fix_mojibake($description);
+        }
+
         return [
             'slug' => $normalized,
-            'title' => $categories[$normalized]['title'],
-            'description' => $categories[$normalized]['description'],
+            'title' => $title,
+            'description' => $description,
         ];
     }
 }

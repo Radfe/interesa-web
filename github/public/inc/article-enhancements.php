@@ -215,8 +215,8 @@ if (!function_exists('interessa_render_article_audience_box')) {
 
         echo '<section class="article-audience">';
         echo '<div class="section-head">';
-        echo '<h2>Pre koho je článok</h2>';
-        echo '<p class="meta">Rýchla orientácia, či je tento článok relevantný pre tvoju situáciu.</p>';
+        echo '<h2>Pre koho je clanok</h2>';
+        echo '<p class="meta">Rychla orientacia, ci je tento clanok relevantny pre tvoju situaciu.</p>';
         echo '</div>';
         echo '<div class="article-audience-box">';
         echo '<ul class="article-audience-list">';
@@ -230,16 +230,17 @@ if (!function_exists('interessa_render_article_audience_box')) {
 }
 
 if (!function_exists('interessa_render_article_faq_box')) {
-    function interessa_render_article_faq_box(string $slug): void {
+    function interessa_render_article_faq_box(string $slug, string $sectionId = ''): void {
         $faq = interessa_article_faq_items($slug);
         if ($faq === []) {
             return;
         }
 
-        echo '<section class="article-faq">';
+        $sectionId = trim($sectionId);
+        echo '<section class="article-faq"' . ($sectionId !== '' ? ' id="' . esc($sectionId) . '"' : '') . '>';
         echo '<div class="section-head">';
-        echo '<h2>Časté otázky</h2>';
-        echo '<p class="meta">Krátke odpovede na veci, ktoré si čitatelia pri tejto téme riešia najčastejšie.</p>';
+        echo '<h2>Caste otazky</h2>';
+        echo '<p class="meta">Kratke odpovede na veci, ktore si citatelia pri tejto teme riesia najcastejsie.</p>';
         echo '</div>';
         echo '<div class="article-faq-list">';
         foreach ($faq as $item) {

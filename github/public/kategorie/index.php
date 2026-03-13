@@ -3,9 +3,10 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../inc/functions.php';
 require_once __DIR__ . '/../inc/category-hubs.php';
+require_once __DIR__ . '/../inc/article-commerce.php';
 
-$page_title = 'Kategórie | Interesa';
-$page_description = 'Tematické huby pre proteíny, výživu, vitamíny a minerály, imunitu, silu a výkon aj kĺby a kožu.';
+$page_title = 'Kategorie | Interesa';
+$page_description = 'Tematicke huby pre proteiny, vyzivu, vitaminy a mineraly, imunitu, silu a vykon aj klby a kozu.';
 $page_canonical = '/kategorie';
 $page_image = asset('img/brand/og-default.svg');
 $page_og_type = 'website';
@@ -16,31 +17,40 @@ $secondarySlugs = ['chudnutie', 'kreatin', 'pre-workout', 'probiotika-travenie',
 
 $primaryHubs = [];
 foreach ($primarySlugs as $slug) {
-    if (!isset($hubs[$slug])) {
-        continue;
+    if (isset($hubs[$slug])) {
+        $primaryHubs[$slug] = $hubs[$slug];
     }
-
-    $primaryHubs[$slug] = $hubs[$slug];
 }
 
 $secondaryHubs = [];
 foreach ($secondarySlugs as $slug) {
-    if (!isset($hubs[$slug])) {
-        continue;
+    if (isset($hubs[$slug])) {
+        $secondaryHubs[$slug] = $hubs[$slug];
     }
-
-    $secondaryHubs[$slug] = $hubs[$slug];
 }
+
+$hubArticleCount = [];
+$hubCommercialCount = [];
+$totalCommercialArticles = 0;
+foreach (array_keys($hubs) as $slug) {
+    $articles = array_values(category_articles($slug));
+    $hubArticleCount[$slug] = count($articles);
+    $hubCommercialCount[$slug] = count(array_filter($articles, static function (array $item): bool {
+        return interessa_article_has_commerce((string) ($item['slug'] ?? ''));
+    }));
+    $totalCommercialArticles += (int) ($hubCommercialCount[$slug] ?? 0);
+}
+$activeCommercialHubs = count(array_filter($hubCommercialCount, static fn(int $count): bool => $count > 0));
 
 $page_schema = [
     breadcrumb_schema([
         ['name' => 'Domov', 'url' => '/'],
-        ['name' => 'Kategórie', 'url' => '/kategorie'],
+        ['name' => 'Kategorie', 'url' => '/kategorie'],
     ]),
     [
         '@context' => 'https://schema.org',
         '@type' => 'CollectionPage',
-        'name' => 'Kategórie',
+        'name' => 'Kategorie',
         'description' => $page_description,
         'url' => absolute_url('/kategorie'),
     ],
@@ -50,21 +60,29 @@ include __DIR__ . '/../inc/head.php';
 ?>
 <section class="container home-section">
   <article class="card hub-hero-card categories-overview">
-    <p class="hub-eyebrow">Obsahové huby</p>
-    <h1>Kategórie</h1>
-    <p class="lead">Kategórie na Interese sú postavené ako tematické huby. Každá z nich sa má dostať od všeobecnej orientácie k najdôležitejším článkom a až potom ku konkrétnym produktom.</p>
-    <div class="stats-strip categories-stats" aria-label="Prehľad kategórií">
+    <p class="hub-eyebrow">Obsahove huby</p>
+    <h1>Kategorie</h1>
+    <p class="lead">Kategorie na Interese su stavane ako tematicke huby. Ich cielom je dostat citatela od sirokej orientacie k najdolezitejsim clankom a az potom ku konkretnym produktom.</p>
+    <div class="stats-strip categories-stats" aria-label="Prehlad kategorii">
       <article class="stats-card">
         <strong><?= count($primaryHubs) ?></strong>
-        <p>hlavných kategórií s najväčším SEO a obchodným potenciálom</p>
+        <p>hlavnych kategorii s najvacsim SEO a obchodnym potencialom</p>
       </article>
       <article class="stats-card">
         <strong><?= count($secondaryHubs) ?></strong>
-        <p>špecializovaných tém pre interné prelinkovanie a dlhší chvost</p>
+        <p>specializovanych tem pre interne prelinkovanie a dlhsi chvost</p>
       </article>
       <article class="stats-card">
         <strong><?= count($hubs) ?></strong>
-        <p>hubov pripravených na ďalšie články, porovnania a recenzie</p>
+        <p>hubov pripravenych na dalsie clanky, porovnania a recenzie</p>
+      </article>
+      <article class="stats-card">
+        <strong><?= esc((string) $totalCommercialArticles) ?></strong>
+        <p>clankov so shortlistom napriec kategoriami</p>
+      </article>
+      <article class="stats-card">
+        <strong><?= esc((string) $activeCommercialHubs) ?></strong>
+        <p>hubov, kde uz je pripraveny komercny obsah</p>
       </article>
     </div>
   </article>
@@ -72,21 +90,31 @@ include __DIR__ . '/../inc/head.php';
 
 <section class="container home-section">
   <div class="section-head">
-    <h2>Hlavné kategórie</h2>
-    <p class="meta">Najsilnejšie témy webu, na ktorých stojí väčšina nákupných návodov, porovnaní a recenzií.</p>
+    <h2>Hlavne kategorie</h2>
+    <p class="meta">Najsilnejsie temy webu, na ktorych stoji vacsina nakupnych navodov, porovnani a recenzii.</p>
   </div>
 
   <div class="hub-grid">
     <?php foreach ($primaryHubs as $slug => $hub): ?>
       <?php $guideCount = count((array) ($hub['featured_guides'] ?? [])); ?>
+      <?php $articleCount = (int) ($hubArticleCount[$slug] ?? 0); ?>
+      <?php $commercialCount = (int) ($hubCommercialCount[$slug] ?? 0); ?>
       <article class="hub-card">
         <?= interessa_render_image(interessa_category_image_meta($slug, 'hero', true), ['class' => 'hub-card-image', 'alt' => $hub['title']]) ?>
         <div class="hub-card-body">
           <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon((string) $slug) ?></span>
-          <span class="hub-card-label"><?= esc((string) $guideCount) ?> kľúčové články</span>
+          <div class="article-card-meta">
+            <span class="hub-card-label"><?= esc((string) $guideCount) ?> klucove clanky</span>
+            <span class="article-card-chip"><?= esc((string) $articleCount) ?> <?= esc(interessa_pluralize_slovak($articleCount, 'clanok', 'clanky', 'clankov')) ?></span>
+          </div>
+          <?php if ($commercialCount > 0): ?>
+            <div class="article-card-submeta">
+              <span class="article-card-subchip">Shortlist v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+            </div>
+          <?php endif; ?>
           <h3><a href="<?= esc(category_url($slug)) ?>"><?= esc((string) $hub['title']) ?></a></h3>
           <p><?= esc((string) ($hub['description'] ?? '')) ?></p>
-          <a class="btn" href="<?= esc(category_url($slug)) ?>">Otvoriť kategóriu</a>
+          <a class="btn" href="<?= esc(category_url($slug)) ?>">Otvorit kategoriu</a>
         </div>
       </article>
     <?php endforeach; ?>
@@ -95,21 +123,31 @@ include __DIR__ . '/../inc/head.php';
 
 <section class="container home-section">
   <div class="section-head">
-    <h2>Špecializované témy</h2>
-    <p class="meta">Podporné huby pre detailnejšie otázky, konkrétne typy doplnkov a lepšie tematické prelinkovanie.</p>
+    <h2>Specializovane temy</h2>
+    <p class="meta">Podporne huby pre detailnejsie otazky, konkretne typy doplnkov a lepsie tematicke prelinkovanie.</p>
   </div>
 
   <div class="hub-grid">
     <?php foreach ($secondaryHubs as $slug => $hub): ?>
       <?php $guideCount = count((array) ($hub['featured_guides'] ?? [])); ?>
+      <?php $articleCount = (int) ($hubArticleCount[$slug] ?? 0); ?>
+      <?php $commercialCount = (int) ($hubCommercialCount[$slug] ?? 0); ?>
       <article class="hub-card">
         <?= interessa_render_image(interessa_category_image_meta($slug, 'hero', true), ['class' => 'hub-card-image', 'alt' => $hub['title']]) ?>
         <div class="hub-card-body">
           <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon((string) $slug) ?></span>
-          <span class="hub-card-label"><?= esc((string) $guideCount) ?> články</span>
+          <div class="article-card-meta">
+            <span class="hub-card-label"><?= esc((string) $guideCount) ?> klucove clanky</span>
+            <span class="article-card-chip"><?= esc((string) $articleCount) ?> <?= esc(interessa_pluralize_slovak($articleCount, 'clanok', 'clanky', 'clankov')) ?></span>
+          </div>
+          <?php if ($commercialCount > 0): ?>
+            <div class="article-card-submeta">
+              <span class="article-card-subchip">Shortlist v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+            </div>
+          <?php endif; ?>
           <h3><a href="<?= esc(category_url($slug)) ?>"><?= esc((string) $hub['title']) ?></a></h3>
           <p><?= esc((string) ($hub['description'] ?? '')) ?></p>
-          <a class="btn" href="<?= esc(category_url($slug)) ?>">Pozrieť hub</a>
+          <a class="btn" href="<?= esc(category_url($slug)) ?>">Pozriet hub</a>
         </div>
       </article>
     <?php endforeach; ?>
@@ -118,27 +156,27 @@ include __DIR__ . '/../inc/head.php';
 
 <section class="container home-section">
   <div class="section-head">
-    <h2>Ako s kategóriami pracovať</h2>
-    <p class="meta">Najlepší workflow pre návštevníka aj pre budúce dopĺňanie obsahu.</p>
+    <h2>Ako s kategoriami pracovat</h2>
+    <p class="meta">Jednoduchy workflow pre navstevnika aj pre dalsie doplnanie obsahu.</p>
   </div>
 
   <div class="card-grid home-trust-grid">
     <article class="card">
       <div class="card-body">
-        <h3>1. Začni širokou témou</h3>
-        <p>Najprv si otvor hlavnú kategóriu podľa cieľa, napríklad proteíny, sila a výkon alebo vitamíny a minerály.</p>
+        <h3>1. Zacni sirsou temou</h3>
+        <p>Najprv otvor hlavnu kategoriu podla ciela, napr. proteiny, sila a vykon alebo vitaminy a mineraly.</p>
       </div>
     </article>
     <article class="card">
       <div class="card-body">
-        <h3>2. Prejdi kľúčové články</h3>
-        <p>Každý hub má vlastný shortlist článkov, ktoré majú byť vstupom do témy, nie len ďalším zoznamom odkazov.</p>
+        <h3>2. Prejdi klucove clanky</h3>
+        <p>Kazdy hub ma vlastny shortlist clankov, ktore maju byt vstupom do temy, nie len dalsim zoznamom odkazov.</p>
       </div>
     </article>
     <article class="card">
       <div class="card-body">
-        <h3>3. Až potom rieš produkt</h3>
-        <p>Produktové boxy a CTA dávajú najväčší zmysel až v momente, keď používateľ rozumie typu produktu a svojmu cieľu.</p>
+        <h3>3. Az potom ries produkt</h3>
+        <p>Produktove boxy a CTA davaju najvacsi zmysel az v momente, ked citatel rozumie typu produktu a svojmu cielu.</p>
       </div>
     </article>
   </div>

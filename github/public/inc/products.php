@@ -105,6 +105,19 @@ if (!function_exists('interessa_product')) {
     }
 }
 
+if (!function_exists('interessa_guess_slug_from_text')) {
+    function interessa_guess_slug_from_text(string $value): string {
+        $value = strtolower(trim($value));
+        if ($value === '') {
+            return '';
+        }
+
+        $value = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value) ?: $value;
+        $value = preg_replace('~[^a-z0-9]+~', '-', $value);
+        return trim((string) $value, '-');
+    }
+}
+
 if (!function_exists('interessa_normalize_product')) {
     function interessa_normalize_product(array $product): array {
         $slug = trim((string) ($product['slug'] ?? ''));
@@ -164,6 +177,20 @@ if (!function_exists('interessa_resolve_product_reference')) {
         }
 
         if ($product === null) {
+            $row['code'] = $code;
+            $row['_catalog_resolved'] = false;
+            $row['product_name'] = trim((string) ($row['product_name'] ?? $row['name'] ?? ''));
+            $row['product_summary'] = trim((string) ($row['product_summary'] ?? $row['subtitle'] ?? $row['summary'] ?? ''));
+            $row['merchant'] = trim((string) ($row['merchant'] ?? ''));
+            $row['merchant_slug'] = trim((string) ($row['merchant_slug'] ?? ''));
+            if ($row['merchant_slug'] === '' && $row['merchant'] !== '') {
+                $row['merchant_slug'] = interessa_guess_slug_from_text($row['merchant']);
+            }
+            $row['slug'] = trim((string) ($row['slug'] ?? ''));
+            if ($row['slug'] === '' && $row['product_name'] !== '') {
+                $row['slug'] = interessa_guess_slug_from_text($row['product_name']);
+            }
+
             if (empty($row['img']) && !empty($row['slug'])) {
                 $image = interessa_product_image_meta(
                     (string) $row['slug'],
@@ -177,6 +204,9 @@ if (!function_exists('interessa_resolve_product_reference')) {
                     $row['image_target_asset'] = trim((string) ($image['target_asset'] ?? ''));
                 }
             }
+            if (!isset($row['image_mode']) || trim((string) $row['image_mode']) === '') {
+                $row['image_mode'] = 'placeholder';
+            }
             return $row;
         }
 
@@ -184,6 +214,7 @@ if (!function_exists('interessa_resolve_product_reference')) {
         $catalogName = trim((string) ($normalized['name'] ?? ''));
         $catalogSummary = trim((string) ($normalized['summary'] ?? ''));
         $merged = array_replace($normalized, $row);
+        $merged['_catalog_resolved'] = true;
         $merged['code'] = trim((string) ($merged['code'] ?? $normalized['affiliate_code'] ?? ''));
         $merged['url'] = trim((string) ($merged['url'] ?? $normalized['fallback_url'] ?? ''));
         $merged['subtitle'] = trim((string) ($merged['subtitle'] ?? $normalized['summary'] ?? ''));
@@ -205,6 +236,12 @@ if (!function_exists('interessa_resolve_product_reference')) {
         }
 
         return $merged;
+    }
+}
+
+if (!function_exists('interessa_product_catalog_resolved')) {
+    function interessa_product_catalog_resolved(array $row): bool {
+        return (bool) ($row['_catalog_resolved'] ?? false);
     }
 }
 

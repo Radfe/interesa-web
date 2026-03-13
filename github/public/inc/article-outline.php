@@ -95,8 +95,8 @@ if (!function_exists('interessa_render_article_outline')) {
 
         echo '<section class="article-outline">';
         echo '<div class="section-head">';
-        echo '<h2>Obsah článku</h2>';
-        echo '<p class="meta">Odhad čítania: ' . esc((string) $readingTime) . ' min.</p>';
+        echo '<h2>Obsah clanku</h2>';
+        echo '<p class="meta">Odhad citania: ' . esc((string) $readingTime) . ' min.</p>';
         echo '</div>';
 
         if ($headings !== []) {
