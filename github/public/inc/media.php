@@ -11,7 +11,7 @@ if (!function_exists('interesa_media_registry')) {
             return $registry;
         }
 
-        $file = __DIR__ . '/../storage/media.json';
+        $file = interesa_media_storage_path();
         if (!is_file($file)) {
             $registry = ['articles' => [], 'categories' => [], 'products' => []];
             return $registry;
@@ -24,6 +24,12 @@ if (!function_exists('interesa_media_registry')) {
         $registry['products'] = is_array($registry['products'] ?? null) ? $registry['products'] : [];
 
         return $registry;
+    }
+}
+
+if (!function_exists('interesa_media_storage_path')) {
+    function interesa_media_storage_path(): string {
+        return __DIR__ . '/../storage/media.json';
     }
 }
 
@@ -320,6 +326,27 @@ if (!function_exists('interesa_media_fallback_url')) {
     }
 }
 
+if (!function_exists('interesa_product_key')) {
+    function interesa_product_key(array $product, int $index): string {
+        $source = (string) ($product['key'] ?? $product['code'] ?? $product['name'] ?? ('product-' . ($index + 1)));
+        $source = strtolower(trim($source));
+        $source = preg_replace('~[^a-z0-9]+~', '-', $source) ?? $source;
+        $source = trim($source, '-');
+
+        return $source !== '' ? $source : 'product-' . ($index + 1);
+    }
+}
+
+if (!function_exists('interesa_product_fallback_url')) {
+    function interesa_product_fallback_url(string $articleSlug, string $productKey, string $label): string {
+        return '/tools/media-fallback.php?type=product'
+            . '&slug=' . rawurlencode($articleSlug)
+            . '&product=' . rawurlencode($productKey)
+            . '&label=' . rawurlencode($label)
+            . '&context=card';
+    }
+}
+
 if (!function_exists('article_media')) {
     function article_media(string $slug): array {
         $meta = article_meta($slug);
@@ -372,5 +399,42 @@ if (!function_exists('category_visual')) {
         }
 
         return interesa_media_fallback_url('category', $normalized, $context);
+    }
+}
+
+if (!function_exists('article_products')) {
+    function article_products(string $slug): array {
+        $file = __DIR__ . '/../content/products/' . $slug . '.php';
+        if (!is_file($file)) {
+            return [];
+        }
+
+        $TOP_PRODUCTS = [];
+        include $file;
+        $rows = is_array($TOP_PRODUCTS) ? $TOP_PRODUCTS : [];
+        $overrides = interesa_media_registry()['products'][$slug] ?? [];
+
+        foreach ($rows as $index => &$row) {
+            $key = interesa_product_key($row, $index);
+            $override = is_array($overrides[$key] ?? null) ? $overrides[$key] : [];
+            $name = (string) ($override['name'] ?? $row['name'] ?? '');
+            $subtitle = (string) ($override['subtitle'] ?? $row['subtitle'] ?? '');
+            $code = (string) ($override['code'] ?? $row['code'] ?? '');
+            $url = (string) ($override['url'] ?? $row['url'] ?? '');
+            $img = interesa_media_resolve_url($override['image'] ?? $row['img'] ?? '');
+            if ($img === '') {
+                $img = interesa_product_fallback_url($slug, $key, $name !== '' ? $name : humanize_slug($key));
+            }
+
+            $row['key'] = $key;
+            $row['name'] = $name;
+            $row['subtitle'] = $subtitle;
+            $row['code'] = $code;
+            $row['url'] = $url;
+            $row['img'] = $img;
+        }
+        unset($row);
+
+        return $rows;
     }
 }

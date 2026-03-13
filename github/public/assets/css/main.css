@@ -203,10 +203,22 @@ a:hover{color:#0954aa}
 .article-shell{display:grid;gap:1rem}
 .article-shell h1{margin:0;line-height:1.2}
 .article-shell .lead{color:var(--muted);margin:0}
+.article-hero-media,.category-hero-media{margin:0;overflow:hidden;border-radius:20px;border:1px solid var(--line);box-shadow:var(--shadow)}
+.article-hero-media img,.category-hero-media img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.article-products{display:grid}
 .article-body{display:grid;gap:1rem}
 .article-body img{max-width:100%;height:auto;border-radius:14px}
 .article-body table{width:100%;border-collapse:collapse;background:#fff}
 .article-body th,.article-body td{border:1px solid var(--line);padding:.75rem;text-align:left}
+.topbox{display:grid;gap:1rem;padding:1.1rem;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:var(--shadow)}
+.topbox h2{margin:0}
+.top-products{width:100%;border-collapse:collapse}
+.top-products td{padding:.9rem .4rem;border-top:1px solid var(--line);vertical-align:middle}
+.top-products tr:first-child td{border-top:0}
+.top-products .pimg img{width:92px;height:92px;border-radius:16px;object-fit:cover;background:#eef2f7}
+.top-products .pname{font-weight:700}
+.top-products .pattrs{color:var(--muted);margin-top:.2rem}
+.top-products .pcta{text-align:right}
 .article-list{list-style:none;padding:0;margin:1rem 0 0;display:grid;gap:.75rem}
 .article-list li{background:#fff;border:1px solid var(--line);border-radius:12px;padding:.85rem 1rem;box-shadow:var(--shadow)}
 .article-list a{color:var(--text);font-weight:600}
@@ -293,4 +305,9 @@ a:hover{color:#0954aa}
   .footer-grid{grid-template-columns:1fr}
   .article-actions{padding:1rem}
   .post-card .thumb{height:200px}
+  .top-products,.top-products tbody,.top-products tr,.top-products td{display:block;width:100%}
+  .top-products td{border-top:0;padding:.35rem 0}
+  .top-products tr{padding:1rem 0;border-top:1px solid var(--line)}
+  .top-products tr:first-child{border-top:0;padding-top:0}
+  .top-products .pcta{text-align:left}
 }

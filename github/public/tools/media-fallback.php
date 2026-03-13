@@ -6,7 +6,7 @@ define('INTERESA_SKIP_HTML_HEADER', 1);
 require_once __DIR__ . '/../inc/functions.php';
 
 $type = (string) ($_GET['type'] ?? 'article');
-$type = in_array($type, ['article', 'category'], true) ? $type : 'article';
+$type = in_array($type, ['article', 'category', 'product'], true) ? $type : 'article';
 $context = (string) ($_GET['context'] ?? 'card');
 $context = in_array($context, ['card', 'hero'], true) ? $context : 'card';
 $slug = preg_replace('~[^a-z0-9\-_]+~i', '', (string) ($_GET['slug'] ?? '')) ?? '';
@@ -21,6 +21,12 @@ if ($type === 'category') {
     $title = $meta['title'] ?? humanize_slug($slug);
     $eyebrow = 'KATEGORIA';
     $svg = interesa_media_svg('category', $slug, $title, $eyebrow, $context);
+} elseif ($type === 'product') {
+    $label = trim((string) ($_GET['label'] ?? ''));
+    $productKey = preg_replace('~[^a-z0-9\-_]+~i', '', (string) ($_GET['product'] ?? '')) ?? '';
+    $title = $label !== '' ? $label : ($productKey !== '' ? humanize_slug($productKey) : humanize_slug($slug));
+    $eyebrow = 'PRODUKT';
+    $svg = interesa_media_svg('article', $slug . '-' . $productKey, $title, $eyebrow, $context);
 } else {
     $meta = article_meta($slug);
     $title = $meta['title'] ?? humanize_slug($slug);

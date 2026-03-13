@@ -27,6 +27,19 @@ if ($path === '') {
     exit;
 }
 
+if ($path === '/_admin' || $path === '/_admin/') {
+    require __DIR__ . '/_admin/index.php';
+    exit;
+}
+
+if (preg_match('~^/_admin/([a-z0-9-]+)\.php$~i', $path, $m)) {
+    $adminFile = __DIR__ . '/_admin/' . $m[1] . '.php';
+    if (is_file($adminFile)) {
+        require $adminFile;
+        exit;
+    }
+}
+
 $staticPages = [
     '/affiliate' => __DIR__ . '/stranky/affiliate.php',
     '/kontakt' => __DIR__ . '/stranky/kontakt.php',
