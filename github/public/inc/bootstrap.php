@@ -8,7 +8,7 @@ if (!ob_get_level()) {
     ob_start();
 }
 
-if (!headers_sent()) {
+if (!headers_sent() && !defined('INTERESA_SKIP_HTML_HEADER')) {
     header('Content-Type: text/html; charset=UTF-8');
 }
 

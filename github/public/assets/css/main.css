@@ -241,7 +241,9 @@ a:hover{color:#0954aa}
 .hub-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow);display:grid;gap:.8rem}
 .hub-card h2,.hub-card h3{margin:0;line-height:1.2}
 .hub-card p{margin:0;color:var(--muted)}
-.hub-icon-wrap{width:56px;height:56px;border-radius:18px;background:rgba(17,169,109,.1);display:grid;place-items:center}
+.hub-media{position:relative;overflow:hidden;border-radius:20px;min-height:180px;background:#e8f4ef}
+.hub-visual{width:100%;height:180px;object-fit:cover;display:block}
+.hub-icon-wrap{width:56px;height:56px;border-radius:18px;background:rgba(255,255,255,.92);display:grid;place-items:center;position:absolute;left:1rem;bottom:1rem;box-shadow:0 10px 26px rgba(15,23,42,.18)}
 .hub-icon-wrap img{width:32px;height:32px;object-fit:contain}
 .hub-label{display:inline-flex;align-items:center;gap:.35rem;font-size:.8rem;font-weight:700;color:var(--primary-600);background:rgba(17,169,109,.1);border-radius:999px;padding:.35rem .65rem;justify-self:start}
 .hub-actions,.action-row{display:flex;gap:.75rem;flex-wrap:wrap}

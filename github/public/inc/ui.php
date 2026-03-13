@@ -38,8 +38,8 @@ function render_top_products(array $TOP, string $title='Top produkty'): void {
     $attrs  = $row['attrs']  ?? '';
     $rating = (float)($row['rating'] ?? 0);
     $code   = $row['code']   ?? '';
-    $img    = $row['image']  ?? '/assets/img/placeholder.svg';
-    if (!is_file($_SERVER['DOCUMENT_ROOT'].$img)) $img = '/assets/img/placeholder.svg';
+    $img    = $row['image']  ?? '/assets/img/placeholder-16x9.svg';
+    if (!is_file($_SERVER['DOCUMENT_ROOT'].$img)) $img = '/assets/img/placeholder-16x9.svg';
     $link   = '/go/'.rawurlencode($code);
 
     echo '<tr>'.

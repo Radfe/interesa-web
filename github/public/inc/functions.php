@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/media.php';
 
 if (defined('INTERESA_FUNCS_V5')) { return; }
 define('INTERESA_FUNCS_V5', 1);
@@ -433,13 +434,6 @@ if (!function_exists('category_url')) {
 
 if (!function_exists('article_img')) {
     function article_img(string $slug): string {
-        $dir = __DIR__ . '/../assets/img/articles/';
-        foreach (['.webp', '.jpg', '.jpeg', '.png', '.svg'] as $ext) {
-            if (is_file($dir . $slug . $ext)) {
-                return asset('img/articles/' . $slug . $ext);
-            }
-        }
-
-        return asset('img/placeholder-16x9.svg');
+        return article_media($slug)['card_image'];
     }
 }

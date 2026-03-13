@@ -1,0 +1,37 @@
+{
+  "articles": {
+    "najlepsi-protein-na-chudnutie-wpc-vs-wpi": {
+      "hero_image": "/assets/img/articles/najlepsi-protein-na-chudnutie-wpc-vs-wpi-1600.webp",
+      "card_image": "/assets/img/articles/najlepsi-protein-na-chudnutie-wpc-vs-wpi-800.webp",
+      "brief": "Editorial hero focused on whey protein tubs, measuring scoop, and a clean nutrition setting.",
+      "canva_prompt": "Create a 16:9 editorial cover for an article about choosing the best protein for weight loss. Show premium whey tubs, shaker, minimal fitness styling, clean green-teal accents, realistic photography look, no text overlay."
+    },
+    "protein-na-chudnutie": {
+      "brief": "Editorial hero for protein and weight-loss guidance with clean nutrition cues.",
+      "canva_prompt": "Create a 16:9 editorial image for a Slovak nutrition article about protein for weight loss. Use a light modern kitchen scene, protein pouch, shaker, oats, and a clean wellness aesthetic. No text overlay."
+    },
+    "doplnky-vyzivy": {
+      "brief": "Editorial collage of core supplements for a practical buying guide.",
+      "canva_prompt": "Create a 16:9 editorial hero for a supplements buying guide. Show magnesium, vitamin D3, omega-3, collagen, and creatine in a neat flat lay. Bright natural light, magazine-style composition, no text."
+    },
+    "vitamin-d3": {
+      "brief": "Editorial hero about vitamin D3 with immune support cues and clean packaging.",
+      "canva_prompt": "Create a 16:9 editorial hero image for a vitamin D3 article. Show a premium vitamin bottle, soft daylight, immune and wellness mood, subtle blue accents, realistic product editorial style, no text."
+    }
+  },
+  "categories": {
+    "proteiny": {
+      "brief": "Category visual for protein comparisons, whey and plant protein.",
+      "canva_prompt": "Create a 16:9 editorial category visual for protein guides. Show whey tubs, shaker, scoop, and clean athletic styling. Premium realistic look, no text."
+    },
+    "vyziva": {
+      "brief": "Category visual for healthy nutrition and functional foods.",
+      "canva_prompt": "Create a 16:9 editorial category visual for healthy nutrition. Show oats, nuts, healthy snacks, breakfast bowl, and clean natural styling. Realistic magazine look, no text."
+    },
+    "mineraly": {
+      "brief": "Category visual for vitamins and minerals with premium supplement packaging.",
+      "canva_prompt": "Create a 16:9 editorial category visual for vitamins and minerals. Show magnesium, zinc, vitamin C, and vitamin D bottles in a bright clinical-natural setting. No text."
+    }
+  },
+  "products": {}
+}
