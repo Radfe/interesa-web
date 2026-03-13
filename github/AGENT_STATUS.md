@@ -2,26 +2,60 @@
 
 Updated: 2026-03-13
 
-## Current State
+## Completed In This Session
 
-- Frontend is a file-based PHP site under `public/`.
-- Shared rendering helpers live mainly in `public/inc/functions.php`.
-- Homepage uses a mix of hardcoded hero/card images and helper-driven category/article links.
-- Article cards and category article cards use `article_img($slug)`.
-- `article_img($slug)` currently falls back to the same `placeholder-16x9.svg` for most articles.
-- Existing article image discovery only matches exact filenames like `{slug}.webp`, but current assets already include responsive files like `najlepsi-protein-na-chudnutie-wpc-vs-wpi-1600.webp`.
+1. Inspected the current frontend and confirmed the previous image flow was mostly file-based with duplicate placeholder fallback behavior.
+2. Added a shared media layer in `public/inc/media.php`.
+3. Improved homepage image rendering so important cards resolve through the same media helpers.
+4. Removed duplicate placeholder files and normalized legacy placeholder usage to `placeholder-16x9.svg`.
+5. Made article and category cards use the shared media assignment path.
+6. Added article hero image rendering and hooked article product blocks into the shared media workflow.
+7. Added a lightweight admin in `public/_admin/` with login, article edit screens, hero/card image fields, product image fields, image brief, and Canva prompt storage.
+8. Documented the editor workflow in `ADMIN_IMAGE_WORKFLOW.md`.
 
-## Admin/Image Workflow Findings
+## Current Image Workflow
 
-- `public/_admin/` currently contains only `info.php` and `tree.php`.
-- There is no working login flow, article edit screen, or image assignment UI in this branch.
-- Product image data exists only as per-article PHP arrays in `public/content/products/`.
-- Product rendering helpers exist in `public/inc/top-products.php`, but the current article flow is not yet using an admin-managed image source.
+- Media metadata is stored in `public/storage/media.json`.
+- Article image resolution now works in this order:
+  1. admin-assigned image from `media.json`
+  2. matching real local article asset under `public/assets/img/articles/`
+  3. generated editorial fallback from `public/tools/media-fallback.php`
+- Category visuals use the same shared metadata/fallback pattern.
+- Product rows use per-article product definitions from `public/content/products/<slug>.php` plus optional admin overrides from `media.json`.
 
-## Priority Direction
+## Admin Workflow
 
-1. Add a shared media layer without rebuilding the architecture.
-2. Remove duplicate placeholder behavior on homepage and article/category cards.
-3. Make article, category, and homepage card visuals resolve through consistent helpers.
-4. Add a practical lightweight admin flow for hero images, product images, and Canva/image briefs.
-5. Update this file again after implementation milestones are complete.
+- Admin entry point: `/_admin/`
+- Default login:
+  - username: `admin`
+  - password: `interesa-admin`
+- Main edit flow:
+  - open article
+  - set hero image
+  - optionally set a dedicated card image
+  - manage product packshots
+  - store image brief
+  - store Canva prompt
+
+## Important Practical Note
+
+- The system is ready to use real merchant packshots, but those image URLs still need to be provided article by article where you want real product images instead of generated/product fallback visuals.
+
+## Milestone Commits
+
+- `6f7d8e5` Document image workflow baseline
+- `8bf83ec` Improve homepage media rendering
+- `ae72586` Add admin media assignment workflow
+- `e480ba1` Document admin image workflow
+
+## Recommended Next Content Operation
+
+1. Open `/_admin/`
+2. Start with the highest-value articles:
+   - `najlepsie-proteiny-2025`
+   - `protein-na-chudnutie`
+   - `horcik-ktory-je-najlepsi-a-preco`
+   - `vitamin-d3`
+3. Fill image brief + Canva prompt first.
+4. Upload/export hero visuals to `public/assets/img/articles/`.
+5. Add real merchant packshots to product rows where available.
