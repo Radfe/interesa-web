@@ -456,15 +456,18 @@ if (!function_exists('interessa_render_article_commerce_submeta')) {
 
         $count = (int) ($summary['count'] ?? 0);
         $merchantCount = (int) ($summary['merchant_count'] ?? 0);
-        $realPackshots = (int) ($summary['real_packshots'] ?? 0);
         $coverageState = interessa_shortlist_coverage_state($summary);
 
         $html = '<div class="article-card-submeta">';
-        $html .= '<span class="article-card-subchip">Shortlist ' . esc((string) $count) . '</span>';
+        $html .= '<span class="article-card-subchip">Vyber ' . esc((string) $count) . '</span>';
         if ($merchantCount > 0) {
             $html .= '<span class="article-card-subchip">' . esc((string) $merchantCount) . ' ' . esc(interessa_pluralize_slovak($merchantCount, 'obchod', 'obchody', 'obchodov')) . '</span>';
         }
-        $html .= '<span class="article-card-subchip is-coverage is-' . esc($coverageState) . '">Packshot ' . esc((string) $realPackshots) . '/' . esc((string) $count) . '</span>';
+        if ($coverageState === 'full') {
+            $html .= '<span class="article-card-subchip is-coverage is-full">Pripraveny vyber</span>';
+        } elseif ($coverageState === 'partial') {
+            $html .= '<span class="article-card-subchip is-coverage is-partial">Odporucany vyber</span>';
+        }
         $html .= '</div>';
 
         return $html;
@@ -475,5 +478,22 @@ if (!function_exists('interessa_article_has_commerce')) {
     function interessa_article_has_commerce(string $slug): bool {
         $summary = interessa_article_commerce_summary($slug);
         return $summary !== null && (int) ($summary['count'] ?? 0) > 0;
+    }
+}
+
+if (!function_exists('interessa_article_commerce_coverage_state')) {
+    function interessa_article_commerce_coverage_state(string $slug): ?string {
+        $summary = interessa_article_commerce_summary($slug);
+        if ($summary === null || (int) ($summary['count'] ?? 0) <= 0) {
+            return null;
+        }
+
+        return interessa_shortlist_coverage_state($summary);
+    }
+}
+
+if (!function_exists('interessa_article_has_full_packshot_coverage')) {
+    function interessa_article_has_full_packshot_coverage(string $slug): bool {
+        return interessa_article_commerce_coverage_state($slug) === 'full';
     }
 }

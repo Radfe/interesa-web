@@ -7,6 +7,7 @@ require_once __DIR__ . '/../inc/article-commerce.php';
 $categoryFilter = normalize_category_slug((string) ($_GET['category'] ?? ''));
 $formatFilter = trim((string) ($_GET['format'] ?? ''));
 $commercialOnly = (string) ($_GET['commercial'] ?? '') === '1';
+$coverageFilter = trim((string) ($_GET['coverage'] ?? ''));
 $categoryMeta = $categoryFilter !== '' ? category_meta($categoryFilter) : null;
 $page_title = ($categoryMeta !== null ? $categoryMeta['title'] . ' | ' . interessa_text('Clanky') : interessa_text('Clanky')) . ' | Interesa';
 $page_description = $categoryMeta !== null
@@ -30,6 +31,7 @@ foreach ($allItems as &$item) {
     $item['format_slug'] = interessa_article_format_slug($slug, (string) ($item['title'] ?? ''));
     $item['format_label'] = $formatLabels[(string) ($item['format_slug'] ?? '')] ?? interessa_article_format_label($slug, (string) ($item['title'] ?? ''));
     $item['has_commerce'] = interessa_article_has_commerce($slug);
+    $item['coverage_state'] = interessa_article_commerce_coverage_state($slug);
     if ($itemCategorySlug !== '') {
         $categoryCounts[$itemCategorySlug] = ($categoryCounts[$itemCategorySlug] ?? 0) + 1;
     }
@@ -60,6 +62,14 @@ if ($commercialOnly) {
         return !empty($item['has_commerce']);
     }));
 }
+if ($coverageFilter === 'full') {
+    $items = array_values(array_filter($items, static function (array $item): bool {
+        return (string) ($item['coverage_state'] ?? '') === 'full';
+    }));
+}
+$fullCoverageCountInScope = count(array_filter($items, static function (array $item): bool {
+    return (string) ($item['coverage_state'] ?? '') === 'full';
+}));
 
 usort($items, static fn(array $a, array $b): int => ((int) ($b['mtime'] ?? 0)) <=> ((int) ($a['mtime'] ?? 0)));
 $categories = [];
@@ -113,49 +123,57 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
       </div>
 
       <div class="filters-bar" aria-label="Filtre kategorii">
-        <?php $baseQuery = array_filter(['format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null]); ?>
+        <?php $baseQuery = array_filter(['format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]); ?>
         <a class="filter-chip<?= $categoryMeta === null ? ' is-active' : '' ?>" href="/clanky<?= $baseQuery !== [] ? '/?' . esc(http_build_query($baseQuery)) : '/' ?>"><?= interessa_text('Vsetko') ?> (<?= esc((string) count($allItems)) ?>)</a>
         <?php foreach ($categories as $slug => $row): ?>
           <?php $active = $categoryMeta !== null && $categoryMeta['slug'] === $slug; ?>
-          <?php $query = array_filter(['category' => $slug, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null]); ?>
+          <?php $query = array_filter(['category' => $slug, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]); ?>
           <a class="filter-chip<?= $active ? ' is-active' : '' ?>" href="/clanky/?<?= esc(http_build_query($query)) ?>"><span class="filter-chip__icon" aria-hidden="true"><?= interessa_category_icon((string) $slug) ?></span><?= esc((string) $row['title']) ?> (<?= esc((string) ($categoryCounts[$slug] ?? 0)) ?>)</a>
         <?php endforeach; ?>
-        <?php $commercialQuery = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => '1']); ?>
-        <a class="filter-chip<?= $commercialOnly ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $commercialOnly ? ($categoryMeta !== null || $formatFilter !== '' ? '/?' . esc(http_build_query(array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null]))) : '/') : '/?' . esc(http_build_query($commercialQuery)) ?>">S shortlistom (<?= esc((string) $commercialCountInScope) ?>)</a>
+        <?php $commercialQuery = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => '1', 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]); ?>
+        <a class="filter-chip<?= $commercialOnly ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $commercialOnly ? (($categoryMeta !== null || $formatFilter !== '' || $coverageFilter !== '') ? '/?' . esc(http_build_query(array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]))) : '/') : '/?' . esc(http_build_query($commercialQuery)) ?>">S shortlistom (<?= esc((string) $commercialCountInScope) ?>)</a>
+        <?php $coverageQuery = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => 'full']); ?>
+        <?php $coverageResetQuery = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null]); ?>
+        <a class="filter-chip<?= $coverageFilter === 'full' ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $coverageFilter === 'full' ? ($coverageResetQuery !== [] ? '/?' . esc(http_build_query($coverageResetQuery)) : '/') : '/?' . esc(http_build_query($coverageQuery)) ?>">Plne packshoty (<?= esc((string) $fullCoverageCountInScope) ?>)</a>
       </div>
 
       <?php if ($topFormats !== []): ?>
         <div class="filters-bar archive-format-bar" aria-label="Najcastejsie formaty clankov">
           <?php foreach ($topFormats as $formatSlug => $count): ?>
             <?php $isActiveFormat = $formatFilter !== '' && $formatFilter === (string) $formatSlug; ?>
-            <?php $query = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatSlug]); ?>
+            <?php $query = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatSlug, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]); ?>
             <a class="filter-chip<?= $isActiveFormat ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $query !== [] ? '/?' . esc(http_build_query($query)) : '/' ?>">
               <span class="article-card-chip is-format"><?= esc((string) ($formatLabels[(string) $formatSlug] ?? humanize_slug((string) $formatSlug))) ?></span>
               <?= esc((string) $count) ?>
             </a>
           <?php endforeach; ?>
           <?php if ($formatFilter !== ''): ?>
-            <a class="filter-chip" href="/clanky<?= $categoryMeta !== null ? '/?category=' . esc((string) $categoryMeta['slug']) : '/' ?>">Zrusit format</a>
-          <?php endif; ?>
-        </div>
+              <a class="filter-chip" href="/clanky<?= ($categoryMeta !== null || $commercialOnly || $coverageFilter !== '') ? '/?' . esc(http_build_query(array_filter(['category' => $categoryMeta['slug'] ?? null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]))) : '/' ?>">Zrusit format</a>
+            <?php endif; ?>
+          </div>
       <?php endif; ?>
 
       <?php if (!$items): ?>
         <p class="note">
-          <?php if ($commercialOnly): ?>
+          <?php if ($coverageFilter === 'full'): ?>
+            Pre tento filter zatial nie su ziadne clanky s plnym packshot pokrytim.
+          <?php elseif ($commercialOnly): ?>
             Pre tento filter zatial nie su ziadne clanky so shortlistom produktov.
           <?php else: ?>
             Pre tento filter zatial nie su ziadne clanky.
           <?php endif; ?>
         </p>
-        <?php if ($commercialOnly): ?>
-          <p class="muted">Skus vypnut filter <strong>S shortlistom</strong> alebo otvor inu temu, kde je uz pripraveny komercny obsah.</p>
+        <?php if ($commercialOnly || $coverageFilter === 'full'): ?>
+          <p class="muted">Skus vypnut filter <strong><?= $coverageFilter === 'full' ? 'Plne packshoty' : 'S shortlistom' ?></strong> alebo otvor inu temu, kde je uz pripraveny komercny obsah.</p>
         <?php endif; ?>
       <?php else: ?>
         <p class="search-summary muted">
           Zobrazene clanky: <strong><?= esc((string) count($items)) ?></strong>
           <?php if ($commercialOnly): ?>
             <span class="search-summary-chip">iba so shortlistom produktov</span>
+          <?php endif; ?>
+          <?php if ($coverageFilter === 'full'): ?>
+            <span class="search-summary-chip">iba s plnym packshot pokrytim</span>
           <?php endif; ?>
           <?php if ($categoryMeta !== null): ?>
             <span class="search-summary-chip">tema: <?= esc((string) $categoryMeta['title']) ?></span>

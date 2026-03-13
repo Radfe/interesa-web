@@ -122,11 +122,7 @@ if (!function_exists('interessa_render_commerce_verdict')) {
         $shortlistStats = interessa_commerce_shortlist_stats(['products' => $resolvedProducts]);
         $merchantNames = is_array($shortlistStats['merchant_names'] ?? null) ? $shortlistStats['merchant_names'] : [];
         $merchantCount = (int) ($shortlistStats['merchant_count'] ?? 0);
-        $realPackshotCount = (int) ($shortlistStats['real_packshots'] ?? 0);
         $editorialCount = (int) ($shortlistStats['editorial_visuals'] ?? 0);
-        $coveragePercent = interessa_shortlist_coverage_percent($shortlistStats);
-        $coverageState = interessa_shortlist_coverage_state($shortlistStats);
-
         echo '<section class="commerce-verdict" aria-label="Rychly vyber">';
         echo '<div class="commerce-verdict-copy">';
         echo '<p class="hub-eyebrow">Rychly vyber</p>';
@@ -139,7 +135,7 @@ if (!function_exists('interessa_render_commerce_verdict')) {
         }
         echo '<div class="commerce-verdict-actions">';
         echo interessa_affiliate_cta_html($lead, ['class' => 'btn btn-primary']);
-        echo '<a class="btn btn-ghost" href="#odporucane-produkty">Pozriet cely shortlist</a>';
+        echo '<a class="btn btn-ghost" href="#odporucane-produkty">Pozriet cely vyber</a>';
         echo '</div>';
         if ($merchantNames !== []) {
             echo '<div class="commerce-verdict-merchants" aria-label="Porovnane obchody">';
@@ -148,24 +144,17 @@ if (!function_exists('interessa_render_commerce_verdict')) {
             }
             echo '</div>';
         }
-        echo '<div class="shortlist-coverage is-' . esc($coverageState) . '" aria-label="Pokrytie shortlistu packshotmi">';
-        echo '<div class="shortlist-coverage-bar"><span class="shortlist-coverage-fill" style="width:' . esc((string) $coveragePercent) . '%"></span></div>';
-        echo '<p class="shortlist-coverage-copy">' . esc((string) $coveragePercent) . '% shortlistu ma realny packshot</p>';
-        echo '</div>';
         if ($editorialCount > 0) {
-            echo '<p class="commerce-verdict-coverage-note">' . esc('Shortlist este nema plne packshot pokrytie. Produkty bez realneho balenia su oznacene ako editorialny vizual.') . '</p>';
+            echo '<p class="commerce-verdict-coverage-note">' . esc('Obrazky niektorych produktov este doplname. Samotne odporucania a odkazy to neovplyvnuje.') . '</p>';
         } else {
-            echo '<p class="commerce-verdict-coverage-note is-complete">' . esc('Vsetky odporucane produkty uz maju realny packshot.') . '</p>';
+            echo '<p class="commerce-verdict-coverage-note is-complete">' . esc('Vyber je pripraveny na rychle porovnanie aj prechod do obchodu.') . '</p>';
         }
         echo '</div>';
+
         echo '<div class="commerce-verdict-stats">';
         echo '<div class="commerce-verdict-stat"><strong>' . esc((string) count($resolvedProducts)) . '</strong><span>odporucane produkty</span></div>';
         if ($merchantCount > 0) {
             echo '<div class="commerce-verdict-stat"><strong>' . esc((string) $merchantCount) . '</strong><span>porovnane obchody</span></div>';
-        }
-        echo '<div class="commerce-verdict-stat"><strong>' . esc((string) $realPackshotCount) . '/' . esc((string) count($resolvedProducts)) . '</strong><span>produkty s realnym packshotom</span></div>';
-        if ($editorialCount > 0) {
-            echo '<div class="commerce-verdict-stat"><strong>' . esc((string) $editorialCount) . '</strong><span>produkty s editorialnym vizualom</span></div>';
         }
         if ($rating > 0) {
             echo '<div class="commerce-verdict-stat"><strong>' . esc(number_format($rating, 1)) . '/5</strong><span>redakcne hodnotenie top volby</span></div>';
@@ -188,14 +177,11 @@ if (!function_exists('interessa_render_top_products')) {
         foreach ($products as $row) {
             $resolvedProducts[] = interessa_resolve_product_reference($row);
         }
+
         $shortlistStats = interessa_commerce_shortlist_stats(['products' => $resolvedProducts]) ?? [];
         $merchantNames = is_array($shortlistStats['merchant_names'] ?? null) ? $shortlistStats['merchant_names'] : [];
-        $realPackshotCount = (int) ($shortlistStats['real_packshots'] ?? 0);
         $catalogResolvedCount = (int) ($shortlistStats['catalog_resolved'] ?? 0);
         $editorialCount = (int) ($shortlistStats['editorial_visuals'] ?? 0);
-        $coveragePercent = interessa_shortlist_coverage_percent($shortlistStats);
-        $coverageState = interessa_shortlist_coverage_state($shortlistStats);
-
         $sectionId = trim($sectionId);
         echo '<section class="topbox"' . ($sectionId !== '' ? ' id="' . esc($sectionId) . '"' : '') . '>';
         echo '<div class="topbox-head">';
@@ -208,20 +194,15 @@ if (!function_exists('interessa_render_top_products')) {
         echo '<span class="topbox-legend-item"><span class="topbox-legend-dot is-local" aria-hidden="true"></span>' . esc(interessa_product_image_status_label('local')) . '</span>';
         echo '<span class="topbox-legend-item"><span class="topbox-legend-dot is-editorial" aria-hidden="true"></span>' . esc(interessa_product_image_status_label('placeholder')) . '</span>';
         echo '</div>';
-        echo '<div class="topbox-metrics" aria-label="Prehlad shortlistu">';
-        echo '<span class="topbox-metric"><strong>' . esc((string) count($resolvedProducts)) . '</strong><span>produkty v shortlistu</span></span>';
+        echo '<div class="topbox-metrics" aria-label="Prehlad vyberu">';
+        echo '<span class="topbox-metric"><strong>' . esc((string) count($resolvedProducts)) . '</strong><span>produkty vo vybere</span></span>';
         if ($merchantNames !== []) {
             echo '<span class="topbox-metric"><strong>' . esc((string) count($merchantNames)) . '</strong><span>porovnane obchody</span></span>';
         }
-        echo '<span class="topbox-metric"><strong>' . esc((string) $realPackshotCount) . '/' . esc((string) count($resolvedProducts)) . '</strong><span>realne packshoty</span></span>';
         echo '<span class="topbox-metric"><strong>' . esc((string) $catalogResolvedCount) . '/' . esc((string) count($resolvedProducts)) . '</strong><span>konkretne produkty v katalogu</span></span>';
         echo '</div>';
-        echo '<div class="shortlist-coverage is-compact is-' . esc($coverageState) . '" aria-label="Pokrytie shortlistu packshotmi">';
-        echo '<div class="shortlist-coverage-bar"><span class="shortlist-coverage-fill" style="width:' . esc((string) $coveragePercent) . '%"></span></div>';
-        echo '<p class="shortlist-coverage-copy">' . esc((string) $coveragePercent) . '% shortlistu ma realny packshot</p>';
-        echo '</div>';
         if ($editorialCount > 0) {
-            echo '<p class="topbox-coverage-note">' . esc('Niektore produkty v tomto shortlistu zatial pouzivaju editorialny vizual. Realne packshoty doplname priebezne bez zmeny obsahu clanku.') . '</p>';
+            echo '<p class="topbox-coverage-note">' . esc('Pri niektorych produktoch este doplname finalne obrazky baleni. Vyber aj odkazy uz mozes bez obav pouzit.') . '</p>';
         }
         echo '</div>';
         echo '<div class="top-products-grid">';
@@ -279,7 +260,7 @@ if (!function_exists('interessa_render_top_products')) {
                 echo '</div>';
             }
             if ($showEditorialNote) {
-                echo '<p class="top-product-editorial-note">' . esc(interessa_text('Redakcny tip pre tento obchod. Konkretne balenie doplnime, ked bude k dispozicii plny merchant produkt alebo packshot.')) . '</p>';
+                echo '<p class="top-product-editorial-note">' . esc(interessa_text('K tomuto produktu este doplnime finalny obrazok balenia.')) . '</p>';
             }
             if ($pros !== [] || $cons !== []) {
                 echo '<div class="top-product-highlights">';

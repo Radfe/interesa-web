@@ -63,6 +63,9 @@ foreach ($items as $item) {
     if ($categoryMeta !== null) {
         echo '<span class="article-card-chip">' . esc((string) ($categoryMeta['title'] ?? '')) . '</span>';
     }
+    if (interessa_article_has_full_packshot_coverage((string) $item['slug'])) {
+        echo '<span class="article-card-chip">Plne packshoty</span>';
+    }
     echo '<span class="date">' . esc($date) . '</span>';
     echo '</div>';
     echo interessa_render_article_commerce_submeta((string) $item['slug']);

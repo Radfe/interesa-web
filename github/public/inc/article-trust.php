@@ -27,11 +27,11 @@ if (!function_exists('interessa_article_methodology_points')) {
         $category = trim((string) ($meta['category'] ?? ''));
         $points = [
             'Obsah porovnavame podla ciela, zlozenia, formy produktu a praktickeho pouzitia.',
-            'Kratke shortlisty maju zjednodusit orientaciu, nie nahradit vlastne rozhodnutie podla potrieb.',
+            'Kratke vybery maju ulahcit orientaciu, nie nahradit vlastne rozhodnutie podla potrieb.',
         ];
 
         if ($commerce !== null) {
-            $points[] = 'Produkty v nakupnych boxoch vyberame podla relevancie k teme clanku a citatelskemu zameru.';
+            $points[] = 'Produkty vo vybere vyberame podla relevancie k teme clanku a tomu, co citatel najcastejsie hlada.';
             $points[] = 'Odkazy do obchodov spravujeme centralne cez interne /go/ route, takze ich vieme aktualizovat bez zasahu do textu clanku.';
         }
 
@@ -96,6 +96,7 @@ if (!function_exists('interessa_render_article_trust_box')) {
                 }
             }
         }
+
         $points = interessa_article_methodology_points($slug, $meta, $commerce);
         $categoryMeta = category_meta((string) ($meta['category'] ?? ''));
         $categoryTitle = trim((string) ($categoryMeta['title'] ?? ''));
@@ -137,18 +138,12 @@ if (!function_exists('interessa_render_article_trust_box')) {
             echo '<p class="article-meta-inline"><strong>' . esc('Tema:') . '</strong> ' . esc($categoryTitle) . '</p>';
         }
         if ($shortlistMeta !== null) {
-            $coveragePercent = interessa_shortlist_coverage_percent($shortlistMeta);
-            $coverageState = interessa_shortlist_coverage_state($shortlistMeta);
-            echo '<p class="article-meta-inline"><strong>' . esc('Shortlist:') . '</strong> ' . esc((string) $shortlistMeta['count']) . ' ' . esc('produkty, z toho') . ' ' . esc((string) $shortlistMeta['real_packshots']) . ' ' . esc('s realnym packshotom') . '</p>';
-            echo '<div class="shortlist-coverage is-compact is-' . esc($coverageState) . '" aria-label="' . esc('Pokrytie shortlistu packshotmi') . '">';
-            echo '<div class="shortlist-coverage-bar"><span class="shortlist-coverage-fill" style="width:' . esc((string) $coveragePercent) . '%"></span></div>';
-            echo '<p class="shortlist-coverage-copy">' . esc((string) $coveragePercent) . '% shortlistu ma realny packshot</p>';
-            echo '</div>';
+            echo '<p class="article-meta-inline"><strong>' . esc('Odporucany vyber:') . '</strong> ' . esc((string) $shortlistMeta['count']) . ' ' . esc(interessa_pluralize_slovak((int) $shortlistMeta['count'], 'produkt', 'produkty', 'produktov')) . '</p>';
             if (($shortlistMeta['merchant_count'] ?? 0) > 0) {
-                echo '<p class="article-meta-inline"><strong>' . esc('Obchody v shortlistu:') . '</strong> ' . esc((string) $shortlistMeta['merchant_count']) . '</p>';
+                echo '<p class="article-meta-inline"><strong>' . esc('Porovnane obchody:') . '</strong> ' . esc((string) $shortlistMeta['merchant_count']) . '</p>';
             }
             if (($shortlistMeta['editorial_visuals'] ?? 0) > 0) {
-                echo '<p class="article-meta-inline"><strong>' . esc('Prechodne editorial vizualy:') . '</strong> ' . esc((string) $shortlistMeta['editorial_visuals']) . '</p>';
+                echo '<p class="article-meta-inline">' . esc('Pri niektorych produktoch este doplname finalne obrazky baleni.') . '</p>';
             }
         }
         echo '<p class="article-meta-inline"><strong>' . esc('Slug:') . '</strong> ' . esc(canonical_article_slug($slug)) . '</p>';

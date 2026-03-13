@@ -101,6 +101,9 @@ if (!function_exists('interessa_render_related_articles')) {
             if ($itemCategoryMeta !== null) {
                 echo '<span class="article-card-chip">' . esc((string) ($itemCategoryMeta['title'] ?? '')) . '</span>';
             }
+            if (interessa_article_has_full_packshot_coverage($itemSlug)) {
+                echo '<span class="article-card-chip">Plne packshoty</span>';
+            }
             if ($itemDate !== '') {
                 echo '<span class="article-card-date">' . esc($itemDate) . '</span>';
             }

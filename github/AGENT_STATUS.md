@@ -4,13 +4,13 @@ Current branch:
 codex/feature/admin-system
 
 Current task:
-Continuing public-site polish on discovery pages, money-page trust layers and remaining image-gap messaging while keeping the frontend stable
+Continuing public-site simplification and quality polish, with the focus now on clearer public wording, calmer article headers and finishing the remaining real-image gaps
 
 Next planned task:
-Continue public-site quality passes on top commercial routes and remaining discovery surfaces, then tighten the last packshot-gap communication and visual consistency issues on commercial articles
+Continue public-site quality passes on the highest-value money pages, replace more remaining generic visuals with real images and then hand over a practical admin/image workflow guide
 
 Last completed task:
-Added visual shortlist coverage bars and coverage states to commercial articles, expanded shortlist-ready counts to category index and homepage category cards, introduced clearer shortlist-only summaries and empty states in archive/search, and fixed the /kategorie dependency regression without breaking public routes
+Simplified the public UX: article headers and trust boxes show less internal production language, category pages use plainer wording, and money-page boxes now explain missing images without technical packshot percentages
 
 Files currently modified:
 - AGENT_STATUS.md

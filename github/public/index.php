@@ -70,6 +70,9 @@ foreach ($featuredCategorySlugs as $slug) {
         'commercial_count' => count(array_filter(array_values(category_articles($slug)), static function (array $item): bool {
             return interessa_article_has_commerce((string) ($item['slug'] ?? ''));
         })),
+        'full_coverage_count' => count(array_filter(array_values(category_articles($slug)), static function (array $item): bool {
+            return interessa_article_has_full_packshot_coverage((string) ($item['slug'] ?? ''));
+        })),
     ];
 }
 
@@ -105,6 +108,37 @@ $recentArticlesCount = count(array_filter($allIndexedArticles, static function (
 $commercialArticleCount = count(array_filter($allIndexedArticles, static function (array $item): bool {
     return interessa_article_has_commerce((string) ($item['slug'] ?? ''));
 }));
+$readyShortlistGuides = [];
+foreach ($allIndexedArticles as $item) {
+    $slug = (string) ($item['slug'] ?? '');
+    $summary = interessa_article_commerce_summary($slug);
+    if ($slug === '' || !is_array($summary) || (int) ($summary['count'] ?? 0) <= 0) {
+        continue;
+    }
+    $meta = article_meta($slug);
+    $categorySlug = normalize_category_slug((string) ($meta['category'] ?? ''));
+    $articleFile = __DIR__ . '/content/articles/' . $slug . '.html';
+    $readyShortlistGuides[] = [
+        'slug' => $slug,
+        'title' => $meta['title'],
+        'description' => trim((string) ($meta['description'] ?? '')) !== '' ? $meta['description'] : interessa_article_teaser_description($slug),
+        'image' => interessa_article_image_meta($slug, 'thumb', true),
+        'format_label' => interessa_article_format_label($slug, (string) ($meta['title'] ?? '')),
+        'category_meta' => $categorySlug !== '' ? category_meta($categorySlug) : null,
+        'coverage_percent' => interessa_shortlist_coverage_percent($summary),
+        'coverage_label' => interessa_shortlist_coverage_label($summary),
+        'updated_ts' => is_file($articleFile) ? (int) @filemtime($articleFile) : 0,
+        'updated_date' => is_file($articleFile) ? date('d.m.Y', (int) @filemtime($articleFile)) : '',
+    ];
+}
+usort($readyShortlistGuides, static function (array $a, array $b): int {
+    $coverageCompare = ((int) ($b['coverage_percent'] ?? 0)) <=> ((int) ($a['coverage_percent'] ?? 0));
+    if ($coverageCompare !== 0) {
+        return $coverageCompare;
+    }
+    return ((int) ($b['updated_ts'] ?? 0)) <=> ((int) ($a['updated_ts'] ?? 0));
+});
+$readyShortlistGuides = array_slice($readyShortlistGuides, 0, 3);
 $categoryCount = count(category_registry());
 $guideCount = count($allIndexedArticles);
 
@@ -145,9 +179,17 @@ include __DIR__ . '/inc/head.php';
     <p>Affiliate vrstva je oddelena od obsahu a spravovana cez interne <code>/go/</code> route.</p>
   </article>
   <article class="stats-card">
-    <strong><?= esc((string) $commercialArticleCount) ?> clankov so shortlistom</strong>
+    <strong><?= esc((string) $commercialArticleCount) ?> clankov s odporucaniami</strong>
     <p>Na tychto strankach uz vies prejst priamo na porovnane produkty a obchody.</p>
   </article>
+</section>
+
+<section class="container home-section home-discovery-links">
+  <div class="hero-cta">
+    <a class="btn btn-ghost" href="/clanky?commercial=1">Clanky s odporucaniami</a>
+    <a class="btn btn-ghost" href="/clanky?coverage=full">Najlepsie pripravene vybery</a>
+    <a class="btn btn-ghost" href="/search?q=protein&commercial=1">Hladat nakupne navody</a>
+  </div>
 </section>
 
 <section class="container home-section">
@@ -168,7 +210,10 @@ include __DIR__ . '/inc/head.php';
           </div>
           <?php if ((int) ($category['commercial_count'] ?? 0) > 0): ?>
             <div class="article-card-submeta">
-              <span class="article-card-subchip">Shortlist v <?= esc((string) $category['commercial_count']) ?> <?= esc(interessa_pluralize_slovak((int) $category['commercial_count'], 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <span class="article-card-subchip">Odporucania v <?= esc((string) $category['commercial_count']) ?> <?= esc(interessa_pluralize_slovak((int) $category['commercial_count'], 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <?php if ((int) ($category['full_coverage_count'] ?? 0) > 0): ?>
+                <span class="article-card-subchip is-coverage is-full">Najlepsie pripravene v <?= esc((string) $category['full_coverage_count']) ?> <?= esc(interessa_pluralize_slovak((int) $category['full_coverage_count'], 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <?php endif; ?>
             </div>
           <?php endif; ?>
           <h3><a href="<?= esc(category_url((string) $category['slug'])) ?>"><?= esc((string) $category['title']) ?></a></h3>
@@ -194,6 +239,7 @@ include __DIR__ . '/inc/head.php';
         <div class="article-card-meta">
           <span class="article-card-chip is-format"><?= esc((string) ($guide['format_label'] ?? 'Sprievodca')) ?></span>
           <?php if (is_array($guide['category_meta'] ?? null)): ?><span class="article-card-chip"><?= esc((string) ($guide['category_meta']['title'] ?? '')) ?></span><?php endif; ?>
+          <?php if (interessa_article_has_full_packshot_coverage((string) $guide['slug'])): ?><span class="article-card-chip">Pripraveny vyber</span><?php endif; ?>
           <?php if (($guide['updated_date'] ?? '') !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc((string) $guide['updated_date']) ?></span><?php endif; ?>
         </div>
         <?= interessa_render_article_commerce_submeta((string) $guide['slug']) ?>
@@ -206,6 +252,37 @@ include __DIR__ . '/inc/head.php';
   </div>
 </section>
 
+<?php if ($readyShortlistGuides !== []): ?>
+<section class="container home-section">
+  <div class="section-head">
+    <h2>Najlepsie pripravene vybery</h2>
+    <p class="meta">Money pages s najlepsim aktualnym packshot pokrytim. Realne packshoty doplname priebezne, ale tieto clanky uz patria medzi najviac pripravene obchodne vstupy na webe.</p>
+  </div>
+
+  <div class="hub-grid article-teaser-grid">
+    <?php foreach ($readyShortlistGuides as $guide): ?>
+      <article class="hub-card article-teaser-card">
+        <a href="<?= esc(article_url((string) $guide['slug'])) ?>">
+          <?= interessa_render_image((array) $guide['image'], ['class' => 'hub-card-image', 'alt' => (string) $guide['title']]) ?>
+        </a>
+        <div class="hub-card-body article-teaser-body">
+          <div class="article-card-meta">
+            <span class="article-card-chip is-format"><?= esc((string) ($guide['format_label'] ?? 'Clanok')) ?></span>
+            <?php if (is_array($guide['category_meta'] ?? null)): ?><span class="article-card-chip"><?= esc((string) ($guide['category_meta']['title'] ?? '')) ?></span><?php endif; ?>
+            <span class="article-card-chip"><?= esc((string) ($guide['coverage_percent'] ?? 0)) ?>% packshotov</span>
+            <?php if (($guide['updated_date'] ?? '') !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc((string) $guide['updated_date']) ?></span><?php endif; ?>
+          </div>
+          <?= interessa_render_article_commerce_submeta((string) $guide['slug']) ?>
+          <h3><a href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc((string) $guide['title']) ?></a></h3>
+          <?php if (($guide['description'] ?? '') !== ''): ?><p><?= esc((string) $guide['description']) ?></p><?php endif; ?>
+          <a class="btn" href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc(interessa_article_cta_label((string) $guide['slug'], (string) $guide['title'])) ?></a>
+        </div>
+      </article>
+    <?php endforeach; ?>
+  </div>
+</section>
+<?php endif; ?>
+
 <section class="container two-col home-story">
   <div class="content">
     <article class="lead-article">
@@ -216,6 +293,7 @@ include __DIR__ . '/inc/head.php';
           <span class="article-card-chip is-format"><?= esc(interessa_article_format_label($homeLeadSlug, (string) $homeLeadMeta['title'])) ?></span>
           <?php $homeLeadCategory = category_meta(normalize_category_slug((string) ($homeLeadMeta['category'] ?? ''))); ?>
           <?php if ($homeLeadCategory !== null): ?><span class="article-card-chip"><?= esc((string) ($homeLeadCategory['title'] ?? '')) ?></span><?php endif; ?>
+          <?php if (interessa_article_has_full_packshot_coverage($homeLeadSlug)): ?><span class="article-card-chip">Pripraveny vyber</span><?php endif; ?>
           <?php if ($homeLeadUpdated !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc($homeLeadUpdated) ?></span><?php endif; ?>
         </div>
         <?= interessa_render_article_commerce_submeta($homeLeadSlug) ?>
@@ -230,7 +308,7 @@ include __DIR__ . '/inc/head.php';
       <ul class="hub-checklist">
         <li>WPC byva praktickejsie pri rozpocte a kazdodennom pouzivani.</li>
         <li>WPI dava vacsi zmysel pri diete alebo citlivosti na laktozu.</li>
-        <li>V clanku uz mas aj pripraveny shortlist produktov a ciste CTA do obchodu.</li>
+        <li>V clanku uz mas aj pripraveny vyber produktov a ciste CTA do obchodu.</li>
       </ul>
       <p><a class="btn btn-primary" href="<?= esc(article_url($homeLeadSlug)) ?>"><?= esc(interessa_article_cta_label($homeLeadSlug, (string) $homeLeadMeta['title'])) ?></a></p>
     </article>

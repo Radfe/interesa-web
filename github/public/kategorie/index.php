@@ -31,14 +31,20 @@ foreach ($secondarySlugs as $slug) {
 
 $hubArticleCount = [];
 $hubCommercialCount = [];
+$hubFullCoverageCount = [];
 $totalCommercialArticles = 0;
+$totalFullCoverageArticles = 0;
 foreach (array_keys($hubs) as $slug) {
     $articles = array_values(category_articles($slug));
     $hubArticleCount[$slug] = count($articles);
     $hubCommercialCount[$slug] = count(array_filter($articles, static function (array $item): bool {
         return interessa_article_has_commerce((string) ($item['slug'] ?? ''));
     }));
+    $hubFullCoverageCount[$slug] = count(array_filter($articles, static function (array $item): bool {
+        return interessa_article_has_full_packshot_coverage((string) ($item['slug'] ?? ''));
+    }));
     $totalCommercialArticles += (int) ($hubCommercialCount[$slug] ?? 0);
+    $totalFullCoverageArticles += (int) ($hubFullCoverageCount[$slug] ?? 0);
 }
 $activeCommercialHubs = count(array_filter($hubCommercialCount, static fn(int $count): bool => $count > 0));
 
@@ -84,6 +90,14 @@ include __DIR__ . '/../inc/head.php';
         <strong><?= esc((string) $activeCommercialHubs) ?></strong>
         <p>hubov, kde uz je pripraveny komercny obsah</p>
       </article>
+      <article class="stats-card">
+        <strong><?= esc((string) $totalFullCoverageArticles) ?></strong>
+        <p>clankov s plnym packshot pokrytim</p>
+      </article>
+    </div>
+    <div class="hero-cta">
+      <a class="btn btn-ghost" href="/clanky?commercial=1">Otvorit clanky so shortlistom</a>
+      <a class="btn btn-ghost" href="/clanky?coverage=full">Pozriet plne packshoty</a>
     </div>
   </article>
 </section>
@@ -99,6 +113,7 @@ include __DIR__ . '/../inc/head.php';
       <?php $guideCount = count((array) ($hub['featured_guides'] ?? [])); ?>
       <?php $articleCount = (int) ($hubArticleCount[$slug] ?? 0); ?>
       <?php $commercialCount = (int) ($hubCommercialCount[$slug] ?? 0); ?>
+      <?php $fullCoverageCount = (int) ($hubFullCoverageCount[$slug] ?? 0); ?>
       <article class="hub-card">
         <?= interessa_render_image(interessa_category_image_meta($slug, 'hero', true), ['class' => 'hub-card-image', 'alt' => $hub['title']]) ?>
         <div class="hub-card-body">
@@ -110,6 +125,9 @@ include __DIR__ . '/../inc/head.php';
           <?php if ($commercialCount > 0): ?>
             <div class="article-card-submeta">
               <span class="article-card-subchip">Shortlist v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <?php if ($fullCoverageCount > 0): ?>
+                <span class="article-card-subchip is-coverage is-full">Plne packshoty v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <?php endif; ?>
             </div>
           <?php endif; ?>
           <h3><a href="<?= esc(category_url($slug)) ?>"><?= esc((string) $hub['title']) ?></a></h3>
@@ -132,6 +150,7 @@ include __DIR__ . '/../inc/head.php';
       <?php $guideCount = count((array) ($hub['featured_guides'] ?? [])); ?>
       <?php $articleCount = (int) ($hubArticleCount[$slug] ?? 0); ?>
       <?php $commercialCount = (int) ($hubCommercialCount[$slug] ?? 0); ?>
+      <?php $fullCoverageCount = (int) ($hubFullCoverageCount[$slug] ?? 0); ?>
       <article class="hub-card">
         <?= interessa_render_image(interessa_category_image_meta($slug, 'hero', true), ['class' => 'hub-card-image', 'alt' => $hub['title']]) ?>
         <div class="hub-card-body">
@@ -143,6 +162,9 @@ include __DIR__ . '/../inc/head.php';
           <?php if ($commercialCount > 0): ?>
             <div class="article-card-submeta">
               <span class="article-card-subchip">Shortlist v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <?php if ($fullCoverageCount > 0): ?>
+                <span class="article-card-subchip is-coverage is-full">Plne packshoty v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <?php endif; ?>
             </div>
           <?php endif; ?>
           <h3><a href="<?= esc(category_url($slug)) ?>"><?= esc((string) $hub['title']) ?></a></h3>

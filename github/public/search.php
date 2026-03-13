@@ -8,6 +8,7 @@ $q = trim((string) ($_GET['q'] ?? ''));
 $categoryFilter = normalize_category_slug((string) ($_GET['category'] ?? ''));
 $formatFilter = trim((string) ($_GET['format'] ?? ''));
 $commercialOnly = (string) ($_GET['commercial'] ?? '') === '1';
+$coverageFilter = trim((string) ($_GET['coverage'] ?? ''));
 $categoryMeta = $categoryFilter !== '' ? category_meta($categoryFilter) : null;
 $page_title = ($q !== '' ? interessa_text('Hladat: ') . $q : interessa_text('Hladat clanky')) . ' | Interesa';
 $page_description = interessa_text('Vyhladavanie clankov na Interesa.sk');
@@ -20,7 +21,7 @@ $page_schema = [
         '@type' => 'SearchResultsPage',
         'name' => $q !== '' ? interessa_text('Hladat: ') . $q : interessa_text('Hladat clanky'),
         'description' => $page_description,
-        'url' => absolute_url('/search' . (($q !== '' || $categoryMeta !== null || $formatFilter !== '' || $commercialOnly) ? '?' . http_build_query(array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null])) : '')),
+        'url' => absolute_url('/search' . (($q !== '' || $categoryMeta !== null || $formatFilter !== '' || $commercialOnly || $coverageFilter !== '') ? '?' . http_build_query(array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null])) : '')),
     ],
 ];
 include __DIR__ . '/inc/head.php';
@@ -84,6 +85,7 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
         'format_slug' => interessa_article_format_slug($slug, $title),
         'format_label' => interessa_article_format_label($slug, $title),
         'has_commerce' => interessa_article_has_commerce($slug),
+        'coverage_state' => interessa_article_commerce_coverage_state($slug),
         'mtime' => is_file($file) ? (int) @filemtime($file) : 0,
     ];
 }
@@ -165,6 +167,14 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
               return !empty($hit['has_commerce']);
           }));
       }
+      if ($coverageFilter === 'full') {
+          $hits = array_values(array_filter($hits, static function (array $hit): bool {
+              return (string) ($hit['coverage_state'] ?? '') === 'full';
+          }));
+      }
+      $fullCoverageCountInScope = count(array_filter($hits, static function (array $hit): bool {
+          return (string) ($hit['coverage_state'] ?? '') === 'full';
+      }));
       arsort($topFormats);
       $topFormats = array_slice($topFormats, 0, 4, true);
       ?>
@@ -174,16 +184,19 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
       <?php else: ?>
         <?php if ($searchCategories !== []): ?>
           <div class="filters-bar" aria-label="Filtre vysledkov">
-            <?php $baseQuery = array_filter(['q' => $q, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null]); ?>
+            <?php $baseQuery = array_filter(['q' => $q, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]); ?>
             <a class="filter-chip<?= $categoryMeta === null ? ' is-active' : '' ?>" href="/search?<?= esc(http_build_query($baseQuery)) ?>">Vsetky temy</a>
             <?php foreach ($searchCategories as $slug => $row): ?>
               <?php $active = $categoryMeta !== null && $categoryMeta['slug'] === $slug; ?>
-              <?php $query = array_filter(['q' => $q, 'category' => $slug, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null]); ?>
+              <?php $query = array_filter(['q' => $q, 'category' => $slug, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]); ?>
               <a class="filter-chip<?= $active ? ' is-active' : '' ?>" href="/search?<?= esc(http_build_query($query)) ?>"><span class="filter-chip__icon" aria-hidden="true"><?= interessa_category_icon((string) $slug) ?></span><?= esc((string) $row['title']) ?> (<?= esc((string) $row['count']) ?>)</a>
             <?php endforeach; ?>
-            <?php $commercialQuery = array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => '1']); ?>
-            <?php $commercialResetQuery = array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null]); ?>
+            <?php $commercialQuery = array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => '1', 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]); ?>
+            <?php $commercialResetQuery = array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]); ?>
             <a class="filter-chip<?= $commercialOnly ? ' is-active' : ' is-muted' ?>" href="/search?<?= esc(http_build_query($commercialOnly ? $commercialResetQuery : $commercialQuery)) ?>">S shortlistom (<?= esc((string) $commercialCountInScope) ?>)</a>
+            <?php $coverageQuery = array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => 'full']); ?>
+            <?php $coverageResetQuery = array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null]); ?>
+            <a class="filter-chip<?= $coverageFilter === 'full' ? ' is-active' : ' is-muted' ?>" href="/search?<?= esc(http_build_query($coverageFilter === 'full' ? $coverageResetQuery : $coverageQuery)) ?>">Plne packshoty (<?= esc((string) $fullCoverageCountInScope) ?>)</a>
           </div>
         <?php endif; ?>
 
@@ -191,14 +204,14 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
           <div class="filters-bar archive-format-bar" aria-label="Formaty vysledkov">
             <?php foreach ($topFormats as $formatSlug => $count): ?>
               <?php $isActiveFormat = $formatFilter !== '' && $formatFilter === (string) $formatSlug; ?>
-              <?php $query = array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatSlug]); ?>
+              <?php $query = array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatSlug, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]); ?>
               <a class="filter-chip<?= $isActiveFormat ? ' is-active' : ' is-muted' ?>" href="/search?<?= esc(http_build_query($query)) ?>">
                 <span class="article-card-chip is-format"><?= esc((string) ($formatLabels[(string) $formatSlug] ?? humanize_slug((string) $formatSlug))) ?></span>
                 <?= esc((string) $count) ?>
               </a>
             <?php endforeach; ?>
             <?php if ($formatFilter !== ''): ?>
-              <a class="filter-chip" href="/search?<?= esc(http_build_query(array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null]))) ?>">Zrusit format</a>
+              <a class="filter-chip" href="/search?<?= esc(http_build_query(array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]))) ?>">Zrusit format</a>
             <?php endif; ?>
           </div>
         <?php endif; ?>
@@ -206,7 +219,9 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
         <?php if (!$hits): ?>
           <div class="empty-state">
             <p class="note">
-              <?php if ($commercialOnly): ?>
+              <?php if ($coverageFilter === 'full'): ?>
+                Nenasli sa ziadne clanky s plnym packshot pokrytim.
+              <?php elseif ($commercialOnly): ?>
                 Nenasli sa ziadne clanky so shortlistom produktov.
               <?php else: ?>
                 Nenasli sa ziadne clanky.
@@ -230,6 +245,9 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
             Najdene vysledky: <strong><?= esc((string) count($hits)) ?></strong>
             <?php if ($commercialOnly): ?>
               <span class="search-summary-chip">iba so shortlistom produktov</span>
+            <?php endif; ?>
+            <?php if ($coverageFilter === 'full'): ?>
+              <span class="search-summary-chip">iba s plnym packshot pokrytim</span>
             <?php endif; ?>
             <?php if ($categoryMeta !== null): ?>
               <span class="search-summary-chip">tema: <?= esc((string) $categoryMeta['title']) ?></span>

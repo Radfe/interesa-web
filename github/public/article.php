@@ -32,6 +32,8 @@ $heroIsSvg = $heroAsset !== '' && str_ends_with(strtolower($heroAsset), '.svg');
 $articleFormatLabel = interessa_article_format_label($slug, (string) ($meta['title'] ?? ''));
 $categoryStats = interessa_article_category_stats($slug, (string) ($meta['category'] ?? ''));
 $shortlistStats = interessa_commerce_shortlist_stats($commerce);
+$shortlistCoveragePercent = interessa_shortlist_coverage_percent($shortlistStats);
+$shortlistCoverageLabel = interessa_shortlist_coverage_label($shortlistStats);
 
 if ($usesAdminContent) {
     $adminPayload = interessa_admin_article_content_payload($slug);
@@ -160,16 +162,16 @@ include __DIR__ . '/inc/head.php';
         </figure>
       <?php endif; ?>
 
-      <?php if ($commerce !== null || $faq !== []): ?>
+      <?php if ($categoryMeta !== null || $commerce !== null || $faq !== []): ?>
         <div class="article-quick-actions" aria-label="Rychla navigacia v clanku">
           <?php if ($categoryMeta !== null): ?>
-            <a class="btn btn-ghost" href="<?= esc(category_url((string) $categoryMeta['slug'])) ?>">Otvorit hub temy</a>
+            <a class="btn btn-ghost" href="<?= esc(category_url((string) $categoryMeta['slug'])) ?>">Pozriet temu</a>
           <?php endif; ?>
           <?php if ($commerce !== null): ?>
-            <a class="btn btn-ghost" href="#odporucane-produkty">Preskocit na odporucania</a>
+            <a class="btn btn-ghost" href="#odporucane-produkty">Odporucane produkty</a>
           <?php endif; ?>
           <?php if ($faq !== []): ?>
-            <a class="btn btn-ghost" href="#caste-otazky">Otvorit FAQ</a>
+            <a class="btn btn-ghost" href="#caste-otazky">Caste otazky</a>
           <?php endif; ?>
         </div>
       <?php endif; ?>
@@ -189,12 +191,14 @@ include __DIR__ . '/inc/head.php';
           <?php if ($shortlistStats !== null): ?>
             <div class="article-context-card">
               <strong><?= esc((string) ($shortlistStats['count'] ?? 0)) ?></strong>
-              <span><?= esc(interessa_pluralize_slovak((int) ($shortlistStats['count'] ?? 0), 'produkt v shortlistu', 'produkty v shortlistu', 'produktov v shortlistu')) ?></span>
+              <span><?= esc(interessa_pluralize_slovak((int) ($shortlistStats['count'] ?? 0), 'odporucany produkt', 'odporucane produkty', 'odporucanych produktov')) ?></span>
             </div>
-            <div class="article-context-card">
-              <strong><?= esc((string) ($shortlistStats['real_packshots'] ?? 0)) ?>/<?= esc((string) ($shortlistStats['count'] ?? 0)) ?></strong>
-              <span>realne packshoty</span>
-            </div>
+            <?php if ((int) ($shortlistStats['merchant_count'] ?? 0) > 1): ?>
+              <div class="article-context-card">
+                <strong><?= esc((string) ($shortlistStats['merchant_count'] ?? 0)) ?></strong>
+                <span><?= esc(interessa_pluralize_slovak((int) ($shortlistStats['merchant_count'] ?? 0), 'porovnany obchod', 'porovnane obchody', 'porovnanych obchodov')) ?></span>
+              </div>
+            <?php endif; ?>
           <?php endif; ?>
         </div>
       <?php endif; ?>
