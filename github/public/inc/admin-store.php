@@ -483,6 +483,176 @@ if (!function_exists('interessa_admin_store_uploaded_product_image')) {
     }
 }
 
+if (!function_exists('interessa_admin_detect_remote_image_extension')) {
+    function interessa_admin_detect_remote_image_extension(string $url, string $contentType = ''): string {
+        $contentType = strtolower(trim($contentType));
+        if (str_contains($contentType, 'webp')) {
+            return 'webp';
+        }
+        if (str_contains($contentType, 'png')) {
+            return 'png';
+        }
+        if (str_contains($contentType, 'jpeg') || str_contains($contentType, 'jpg')) {
+            return 'jpg';
+        }
+
+        $path = (string) parse_url($url, PHP_URL_PATH);
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (in_array($ext, ['webp', 'png', 'jpg', 'jpeg'], true)) {
+            return $ext === 'jpeg' ? 'jpg' : $ext;
+        }
+
+        return 'png';
+    }
+}
+
+if (!function_exists('interessa_admin_product_image_target_asset_for_ext')) {
+    function interessa_admin_product_image_target_asset_for_ext(string $productSlug, string $merchantSlug, string $ext): string {
+        $productSlug = trim($productSlug);
+        $merchantSlug = trim($merchantSlug);
+        $ext = strtolower(trim($ext)) ?: 'webp';
+        return 'img/products/' . ($merchantSlug !== '' ? $merchantSlug . '/' : '') . $productSlug . '/main.' . $ext;
+    }
+}
+
+if (!function_exists('interessa_admin_product_image_target_path_for_ext')) {
+    function interessa_admin_product_image_target_path_for_ext(string $productSlug, string $merchantSlug, string $ext): string {
+        return dirname(__DIR__) . '/assets/' . interessa_admin_product_image_target_asset_for_ext($productSlug, $merchantSlug, $ext);
+    }
+}
+
+if (!function_exists('interessa_admin_fetch_remote_image_bytes_via_curl_exe')) {
+    function interessa_admin_fetch_remote_image_bytes_via_curl_exe(string $url): array {
+        if (!function_exists('exec')) {
+            throw new RuntimeException('Systemovy curl.exe nie je dostupny.');
+        }
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'interessa-packshot-');
+        if ($tempFile === false) {
+            throw new RuntimeException('Nepodarilo sa pripravit docasny subor pre packshot.');
+        }
+
+        $contentType = '';
+        $command = 'curl.exe -L --fail --silent --show-error '
+            . '--output ' . escapeshellarg($tempFile) . ' '
+            . '--write-out ' . escapeshellarg('%{content_type}') . ' '
+            . escapeshellarg($url) . ' 2>&1';
+
+        $output = [];
+        $exitCode = 0;
+        exec($command, $output, $exitCode);
+        $contentType = trim((string) implode("\n", $output));
+
+        if ($exitCode !== 0) {
+            @unlink($tempFile);
+            $message = trim($contentType);
+            throw new RuntimeException('Nepodarilo sa stiahnut remote packshot: ' . ($message !== '' ? $message : 'curl.exe zlyhal.'));
+        }
+
+        $body = @file_get_contents($tempFile);
+        @unlink($tempFile);
+
+        if (!is_string($body) || $body === '') {
+            throw new RuntimeException('Stiahnuty remote packshot je prazdny.');
+        }
+
+        return [
+            'body' => $body,
+            'content_type' => $contentType,
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_fetch_remote_image_bytes')) {
+    function interessa_admin_fetch_remote_image_bytes(string $url): array {
+        $url = trim($url);
+        if ($url === '' || !preg_match('~^https?://~i', $url)) {
+            throw new RuntimeException('Remote URL pre packshot nie je validna.');
+        }
+
+        $contentType = '';
+        $body = false;
+
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_CONNECTTIMEOUT => 10,
+                CURLOPT_TIMEOUT => 20,
+                CURLOPT_USERAGENT => 'InteresaAdmin/1.0',
+                CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_SSL_VERIFYHOST => 2,
+            ]);
+            $body = curl_exec($ch);
+            if ($body === false) {
+                $error = (string) curl_error($ch);
+                curl_close($ch);
+                throw new RuntimeException('Nepodarilo sa stiahnut remote packshot: ' . $error);
+            }
+            $contentType = (string) curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+            $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if ($status >= 400) {
+                throw new RuntimeException('Remote packshot vratil HTTP ' . $status . '.');
+            }
+        } else {
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'GET',
+                    'timeout' => 20,
+                    'follow_location' => 1,
+                    'user_agent' => 'InteresaAdmin/1.0',
+                ],
+            ]);
+            $body = @file_get_contents($url, false, $context);
+            if ($body !== false) {
+                $headers = $http_response_header ?? [];
+                foreach ($headers as $header) {
+                    if (stripos((string) $header, 'Content-Type:') === 0) {
+                        $contentType = trim((string) substr((string) $header, strlen('Content-Type:')));
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ((!is_string($body) || $body === '') && strtoupper(substr(PHP_OS_FAMILY, 0, 7)) === 'WINDOWS') {
+            return interessa_admin_fetch_remote_image_bytes_via_curl_exe($url);
+        }
+
+        if (!is_string($body) || $body === '') {
+            throw new RuntimeException('Remote packshot je prazdny.');
+        }
+
+        return [
+            'body' => $body,
+            'content_type' => $contentType,
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_mirror_remote_product_image')) {
+    function interessa_admin_mirror_remote_product_image(string $productSlug, string $merchantSlug, string $remoteUrl): string {
+        $productSlug = trim($productSlug);
+        $merchantSlug = trim($merchantSlug);
+        if ($productSlug === '') {
+            throw new RuntimeException('Chyba slug produktu.');
+        }
+
+        $download = interessa_admin_fetch_remote_image_bytes($remoteUrl);
+        $ext = interessa_admin_detect_remote_image_extension($remoteUrl, (string) ($download['content_type'] ?? ''));
+        $target = interessa_admin_product_image_target_path_for_ext($productSlug, $merchantSlug, $ext);
+        interessa_admin_ensure_dir(dirname($target));
+
+        if (@file_put_contents($target, (string) ($download['body'] ?? '')) === false) {
+            throw new RuntimeException('Nepodarilo sa ulozit zrkadleny packshot.');
+        }
+
+        return interessa_admin_product_image_target_asset_for_ext($productSlug, $merchantSlug, $ext);
+    }
+}
+
 if (!function_exists('interessa_admin_export_bundle')) {
     function interessa_admin_export_bundle(): array {
         return [

@@ -448,7 +448,7 @@ if (!function_exists('interessa_article_commerce_summary')) {
 }
 
 if (!function_exists('interessa_render_article_commerce_submeta')) {
-    function interessa_render_article_commerce_submeta(string $slug): string {
+    function interessa_render_article_commerce_submeta(string $slug, string $variant = 'full'): string {
         $summary = interessa_article_commerce_summary($slug);
         if ($summary === null || (int) ($summary['count'] ?? 0) <= 0) {
             return '';
@@ -457,8 +457,16 @@ if (!function_exists('interessa_render_article_commerce_submeta')) {
         $count = (int) ($summary['count'] ?? 0);
         $merchantCount = (int) ($summary['merchant_count'] ?? 0);
         $coverageState = interessa_shortlist_coverage_state($summary);
+        $variant = strtolower(trim($variant));
 
         $html = '<div class="article-card-submeta">';
+        if ($variant === 'compact') {
+            $html .= '<span class="article-card-subchip">S odporucaniami</span>';
+            $html .= '</div>';
+
+            return $html;
+        }
+
         $html .= '<span class="article-card-subchip">Vyber ' . esc((string) $count) . '</span>';
         if ($merchantCount > 0) {
             $html .= '<span class="article-card-subchip">' . esc((string) $merchantCount) . ' ' . esc(interessa_pluralize_slovak($merchantCount, 'obchod', 'obchody', 'obchodov')) . '</span>';

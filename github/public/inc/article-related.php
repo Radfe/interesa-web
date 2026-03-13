@@ -102,13 +102,13 @@ if (!function_exists('interessa_render_related_articles')) {
                 echo '<span class="article-card-chip">' . esc((string) ($itemCategoryMeta['title'] ?? '')) . '</span>';
             }
             if (interessa_article_has_full_packshot_coverage($itemSlug)) {
-                echo '<span class="article-card-chip">Plne packshoty</span>';
+                echo '<span class="article-card-chip">Hotove obrazky</span>';
             }
             if ($itemDate !== '') {
                 echo '<span class="article-card-date">' . esc($itemDate) . '</span>';
             }
             echo '</div>';
-            echo interessa_render_article_commerce_submeta($itemSlug);
+        echo interessa_render_article_commerce_submeta($itemSlug, 'compact');
             echo '<h3><a href="' . esc(article_url($itemSlug)) . '">' . esc($itemTitle) . '</a></h3>';
             if ($itemDescription !== '') {
                 echo '<p>' . esc($itemDescription) . '</p>';

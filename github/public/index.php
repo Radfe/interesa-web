@@ -187,7 +187,7 @@ include __DIR__ . '/inc/head.php';
 <section class="container home-section home-discovery-links">
   <div class="hero-cta">
     <a class="btn btn-ghost" href="/clanky?commercial=1">Clanky s odporucaniami</a>
-    <a class="btn btn-ghost" href="/clanky?coverage=full">Najlepsie pripravene vybery</a>
+    <a class="btn btn-ghost" href="/clanky?coverage=full">Najviac pripravene clanky</a>
     <a class="btn btn-ghost" href="/search?q=protein&commercial=1">Hladat nakupne navody</a>
   </div>
 </section>
@@ -242,7 +242,7 @@ include __DIR__ . '/inc/head.php';
           <?php if (interessa_article_has_full_packshot_coverage((string) $guide['slug'])): ?><span class="article-card-chip">Pripraveny vyber</span><?php endif; ?>
           <?php if (($guide['updated_date'] ?? '') !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc((string) $guide['updated_date']) ?></span><?php endif; ?>
         </div>
-        <?= interessa_render_article_commerce_submeta((string) $guide['slug']) ?>
+        <?= interessa_render_article_commerce_submeta((string) $guide['slug'], 'compact') ?>
         <h3><a href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc((string) $guide['title']) ?></a></h3>
         <?php if ($guide['description'] !== ''): ?><p><?= esc((string) $guide['description']) ?></p><?php endif; ?>
           <a class="btn" href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc(interessa_article_cta_label((string) $guide['slug'], (string) $guide['title'])) ?></a>
@@ -255,8 +255,8 @@ include __DIR__ . '/inc/head.php';
 <?php if ($readyShortlistGuides !== []): ?>
 <section class="container home-section">
   <div class="section-head">
-    <h2>Najlepsie pripravene vybery</h2>
-    <p class="meta">Money pages s najlepsim aktualnym packshot pokrytim. Realne packshoty doplname priebezne, ale tieto clanky uz patria medzi najviac pripravene obchodne vstupy na webe.</p>
+    <h2>Najviac pripravene clanky</h2>
+    <p class="meta">Nakupne clanky, kde uz mas odporucania prehladne usporiadane a pripraveny rychly vyber produktu.</p>
   </div>
 
   <div class="hub-grid article-teaser-grid">
@@ -269,10 +269,10 @@ include __DIR__ . '/inc/head.php';
           <div class="article-card-meta">
             <span class="article-card-chip is-format"><?= esc((string) ($guide['format_label'] ?? 'Clanok')) ?></span>
             <?php if (is_array($guide['category_meta'] ?? null)): ?><span class="article-card-chip"><?= esc((string) ($guide['category_meta']['title'] ?? '')) ?></span><?php endif; ?>
-            <span class="article-card-chip"><?= esc((string) ($guide['coverage_percent'] ?? 0)) ?>% packshotov</span>
+            <span class="article-card-chip">Pripraveny vyber</span>
             <?php if (($guide['updated_date'] ?? '') !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc((string) $guide['updated_date']) ?></span><?php endif; ?>
           </div>
-          <?= interessa_render_article_commerce_submeta((string) $guide['slug']) ?>
+          <?= interessa_render_article_commerce_submeta((string) $guide['slug'], 'compact') ?>
           <h3><a href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc((string) $guide['title']) ?></a></h3>
           <?php if (($guide['description'] ?? '') !== ''): ?><p><?= esc((string) $guide['description']) ?></p><?php endif; ?>
           <a class="btn" href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc(interessa_article_cta_label((string) $guide['slug'], (string) $guide['title'])) ?></a>
@@ -296,7 +296,7 @@ include __DIR__ . '/inc/head.php';
           <?php if (interessa_article_has_full_packshot_coverage($homeLeadSlug)): ?><span class="article-card-chip">Pripraveny vyber</span><?php endif; ?>
           <?php if ($homeLeadUpdated !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc($homeLeadUpdated) ?></span><?php endif; ?>
         </div>
-        <?= interessa_render_article_commerce_submeta($homeLeadSlug) ?>
+        <?= interessa_render_article_commerce_submeta($homeLeadSlug, 'compact') ?>
         <p class="meta">Ak prave riesis chudnutie alebo chces rozumiet rozdielu medzi WPC a WPI, tu ma zmysel zacat.</p>
       </header>
 

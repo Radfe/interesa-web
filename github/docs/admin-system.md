@@ -18,14 +18,14 @@ Recommended order for normal work:
 2. update title, intro, sections and comparison content
 3. add reusable products
 4. generate or upload the hero image
-5. upload missing product packshots
+5. upload missing product images
 6. finish Dognet affiliate links
 7. open the live page and verify the frontend
 
 Shortcut:
 - use `Pomoc / quickstart` inside `/admin` for step-by-step guidance
 - use `Image briefy` for Canva / AI prompts and final upload paths
-- use `Produkty` for reusable product quality, packshots and affiliate diagnostics
+- use `Produkty` for reusable product quality, product images and affiliate diagnostics
 - use `Affiliate odkazy` only when the final `/go/` target still needs to be connected
 
 - Default local password: `interesa-admin`
@@ -87,6 +87,9 @@ Uploaded product images are stored in:
 5. Upload the hero image in admin
 6. The article automatically uses the new hero asset
 
+Practical guide:
+- `docs/admin-images-workflow-sk.md`
+
 ## Canva / AI prompt generation
 The brief generator uses the hero prompt registry and article metadata.
 It outputs:
@@ -113,7 +116,7 @@ The importer:
 
 ## Fallback rules
 - article hero: admin hero asset -> media registry asset -> canonical article hero asset -> category visual fallback
-- product image: local mirrored packshot -> approved remote merchant image -> product placeholder
+- product image: local mirrored product image -> approved remote merchant image -> product placeholder
 - affiliate links: admin link override -> PHP registries -> CSV fallback
 
 ## Reset and delete actions
@@ -147,7 +150,7 @@ Update `AGENT_STATUS.md` only when:
 - These flows create lightweight admin overrides first, then open the full editor for enrichment
 
 ## Admin image previews
-- Products section shows the current packshot preview, source type and target asset path
+- Products section shows the current product image preview, source type and target asset path
 - Images section shows the current hero preview, source type and target output path
 - This makes it easier to verify whether the site is using local WebP, remote merchant image or fallback
 
@@ -162,12 +165,14 @@ Update `AGENT_STATUS.md` only when:
 - The comparison editor can generate rows directly from selected recommended products
 - This reduces repetitive manual setup when building money pages and comparison articles
 
-## Product diagnostics and packshot workflow
+## Product diagnostics and product-image workflow
 - Product editor shows affiliate diagnostics, registry source and current target link
-- Product editor includes a queue of products that still need a final local packshot
+- Product editor includes a queue of products that still need a final local product image
 - Product editor shows `Kde sa produkt pouziva`, which lists articles that reference the selected product through admin recommendations or commerce boxes
-- Packshot preview now includes quick copy actions for the target asset path and remote source URL
-- Queue rows now include direct copy actions for canonical packshot asset paths
+- Product image preview now includes quick copy actions for the target asset path and remote source URL
+- Queue rows now include direct copy actions for canonical product-image asset paths
+- If a product already has an approved remote merchant image, the admin can now mirror it locally via `Zrkadlit remote`
+- This creates a canonical local product-image asset without forcing a manual download / upload round trip first
 
 ## Hero workflow helpers
 - Hero image backlog is filterable and exports correctly to CSV
@@ -180,7 +185,7 @@ Update `AGENT_STATUS.md` only when:
 - Recommended product preview cards can jump directly to the product editor, affiliate editor and current live target
 - Recommended product selector cards now include direct actions for product edit, affiliate edit, live target and slug copy
 - Product editor can jump directly to the affiliate editor for the selected product code
-- Packshot preview and queue rows support copy actions for canonical asset paths
+- Product-image preview and queue rows support copy actions for canonical asset paths
 
 ## Richer comparison helpers
 - Article editor now includes a `Preset katalog` option for product-driven comparison tables
@@ -197,7 +202,7 @@ Update `AGENT_STATUS.md` only when:
 - Product quick-create also accepts prefilled values through admin workflow links for future bridge extensions
 
 ## Recommendation workflow diagnostics
-- Article editor now shows a `Workflow odporucanych produktov` panel with summary counts for reusable catalog coverage, affiliate readiness, packshot readiness, money-page-ready products and fully reusable-card-ready products
+- Article editor now shows a `Workflow odporucanych produktov` panel with summary counts for reusable catalog coverage, affiliate readiness, image readiness, money-page-ready products and fully reusable-card-ready products
 - The same panel surfaces action rows for anything that is still incomplete and now also shows readiness percentages plus missing editorial/commercial areas for each product
 - Missing product slugs can be turned into reusable products directly from the article workflow and returned back into the editor
 
@@ -207,21 +212,22 @@ Update `AGENT_STATUS.md` only when:
 - Quick-create product flows can now return back to the originating article editor automatically
 
 ## Ready-only comparison helper
-- Comparison tools now include `Len money-page ready`, which fills rows only from selected reusable products that already have both affiliate wiring and a usable packshot
+- Comparison tools now include `Len money-page ready`, which fills rows only from selected reusable products that already have both affiliate wiring and a usable product image
 - This makes it easier to build cleaner money-page comparisons from the shared product catalog without pulling in unfinished product cards
 ## Product quality queue
 - Products section now includes `Queue nedokoncenych produktov`
-- This queue surfaces reusable products that are still missing editorial or commerce essentials such as summary, rating, pros, cons, affiliate wiring or a final packshot
-- Queue rows expose quick jumps back to product editing, affiliate setup and packshot workflow, so weak product cards can be completed faster
+- This queue surfaces reusable products that are still missing editorial or commerce essentials such as summary, rating, pros, cons, affiliate wiring or a final product image
+- Queue rows expose quick jumps back to product editing, affiliate setup and image workflow, so weak product cards can be completed faster
 
 ## Faster comparison scaffolds
-- Article comparison tools now include `Top 3 ready shortlist`
-- This helper builds a short top-picks comparison only from selected reusable products that already have both affiliate wiring and a usable packshot
-- Recommended product selector cards now also show affiliate and packshot readiness directly in the picker itself
-## Direct packshot uploads in image workflow
-- The image workflow for a selected article now supports direct packshot uploads for recommended products that are still missing a final local image
-- This works both from the Packshot medzery pre tento clanok queue and from the Produkty v tomto clanku preview cards
+- Article comparison tools now include `Top 3 hotove vybery`
+- This helper builds a short top-picks comparison only from selected reusable products that already have both affiliate wiring and a usable product image
+- Recommended product selector cards now also show affiliate and image readiness directly in the picker itself
+## Direct product-image uploads in image workflow
+- The image workflow for a selected article now supports direct product-image uploads for recommended products that are still missing a final local image
+- This works both from the queue of missing product images for the article and from the product preview cards in the article image workflow
 - The goal is to close article-specific image gaps without forcing a detour through the full product editor first
+- When a recommended product already has a remote merchant image, the same workflow can now use `Zrkadlit remote` to pull that image into the canonical local asset path in one click
 ## Cross-screen return bridges
 - Product and affiliate editors can now be opened from the article image workflow with return context for the selected article
 - Product save and affiliate save/create flows can redirect back to the originating article workflow when return context is present
@@ -233,13 +239,13 @@ Update `AGENT_STATUS.md` only when:
 ## Faster reusable-product drafting
 - Product editor now includes quick scaffold buttons for Starter summary, Starter plusy, Starter minusy, Iba doplnit prazdne and Vyplnit vsetko
 - The same editor now includes rating preset buttons plus an Auto rating helper for quicker first-pass scoring
-- A live checklist shows whether summary, rating, pros, cons, affiliate wiring and packshot are already ready for the selected reusable product
+- A live checklist shows whether summary, rating, pros, cons, affiliate wiring and the product image are already ready for the selected reusable product
 - These drafts are generated from the current product name, brand, merchant and category so reusable products can be prepared much faster before manual refinement
 - The goal is to reduce repetitive typing when building product cards for comparisons, top picks and money pages
 ## Live money-page polish
 - Money-page scaffold now prefers fully card-ready reusable products first, then falls back to money-page-ready ones if needed
 - Recommended-product diagnostics in the article editor now distinguish between basic money-page readiness and a fully reusable-card-ready state
-- Live affiliate product boxes now use richer product summaries and can render rating plus real-packshot status when the reusable product record contains that data
+- Live affiliate product boxes now use richer product summaries and can render rating plus real-image status when the reusable product record contains that data
 
 
 ## In-admin help
@@ -247,7 +253,7 @@ Update `AGENT_STATUS.md` only when:
 - The help screen explains the normal order of work:
   - article first
   - then reusable products and comparison blocks
-  - then hero images and packshots
+  - then hero images and product images
   - then Dognet affiliate links
   - finally the live frontend check
 - The goal is to make daily usage possible without remembering internal file paths

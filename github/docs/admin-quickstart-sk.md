@@ -7,7 +7,7 @@ Co admin robi:
 - sprava reusable produktov
 - sprava affiliate /go/ odkazov
 - hero workflow pre clanky
-- packshot workflow pre produkty
+- workflow obrazkov produktov
 - porovnania a money-page scaffoldy
 
 ## Kde co najdes
@@ -24,7 +24,7 @@ Co admin robi:
 3. pridaj reusable produkty
 4. pouzi comparison helper alebo `Money-page scaffold`
 5. otvor `Image briefy` a dopln hero obrazok
-6. dopln packshoty produktov, ak chyba realny obrazok
+6. dopln obrazky produktov, ak chyba realny obrazok
 7. dopln alebo skontroluj Dognet deeplinky v `Affiliate odkazy`
 8. otvor live stranku a skontroluj frontend
 
@@ -48,7 +48,7 @@ Co admin robi:
 4. ak chces rychle porovnanie iba z najlepsich produktov, pouzi:
    - `Len money-page ready`
    - `Len karty ready`
-   - `Top 3 ready shortlist`
+   - `Top 3 hotove vybery`
 5. dolad text, poradie a finalne CTA
 
 ## Ako doplnit hero obrazok
@@ -68,13 +68,18 @@ Odporucania pre hero:
 - ciste svetle pozadie
 - konzistentny look s ostatnymi clankami
 
-## Ako doplnit packshot produktu
+## Ako doplnit obrazok produktu
 1. otvor `/admin?section=products`
 2. vyber produkt
-3. skontroluj blok packshotu
-4. ak chyba lokalny packshot, nahraj ho cez upload
-5. ak produkt este nema obrazok, pouzi canonical path, ktoru admin ukaze
-6. vrat sa na live clanok a skontroluj kartu produktu
+3. skontroluj blok obrazka produktu
+4. ak ma produkt `remote` obrazok od merchanta, klikni `Zrkadlit remote`
+5. ak remote obrazok nie je k dispozicii alebo ho nechces pouzit, nahraj lokalny obrazok cez upload
+6. ak produkt este nema obrazok, pouzi canonical path, ktoru admin ukaze
+7. vrat sa na live clanok a skontroluj kartu produktu
+
+Poznamka:
+- `Zrkadlit remote` je najrychlejsia cesta, ked uz mame schvaleny merchant image z feedu alebo katalogu
+- admin z neho vytvori lokalny obrazok v canonical ceste, aby sa frontend neopieral len o vzdialenu URL
 
 ## Ako doplnit Dognet link
 1. otvor `/admin?section=affiliates`
@@ -86,16 +91,18 @@ Odporucania pre hero:
 Dolezite:
 - na webe maju zostat ciste interne `/go/` odkazy
 - finalny Dognet deeplink sa spravuje centralne v admine
+- jednoduchy navod pre beznu pracu je v `docs/admin-pouzitie-sk.md`
+- detailny obrazkovy workflow je v `docs/admin-images-workflow-sk.md`
 
 ## Ako zistit, co este chyba
 Pouzi queue a backlogy v admine:
 - v `Products` je queue nedokoncenych produktov
-- v `Images` je backlog hero obrazkov a packshot medzier
+- v `Images` je backlog hero obrazkov a chybajucich obrazkov produktov
 - v `Articles` je workflow odporucanych produktov a pripravenosti money page
 
 ## Co kontrolovat pred publikovanim
 - clanok ma titulok, intro a meta description
 - hero obrazok je finalny WebP
-- odporucane produkty maju affiliate a packshot
+- odporucane produkty maju affiliate a obrazok
 - CTA vedu na spravne `/go/` linky
 - live stranka vyzera dobre na fronte

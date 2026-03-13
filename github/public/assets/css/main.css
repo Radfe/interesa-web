@@ -296,7 +296,6 @@ a:hover{color:#0954aa}
   letter-spacing:.08em;
   box-shadow:0 12px 24px rgba(15,23,42,.12);
 }
-.product-fallback-kicker{display:inline-flex;align-items:center;justify-content:center;width:max-content;padding:.26rem .55rem;border-radius:999px;background:#edf8f3;color:#0f5f46;font-size:.74rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 .product-fallback-summary{font-size:.88rem;line-height:1.55;color:#667a71}
 .top-product-media.is-fallback.is-merchant-gymbeam .top-product-media-frame,
 .affiliate-product-media.is-fallback.is-merchant-gymbeam .affiliate-product-media-frame,

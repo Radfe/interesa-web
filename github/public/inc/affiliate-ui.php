@@ -37,13 +37,7 @@ if (!function_exists('interessa_affiliate_cta_html')) {
 
 if (!function_exists('interessa_product_image_status_label')) {
     function interessa_product_image_status_label(string $sourceType): string {
-        $sourceType = trim($sourceType);
-
-        return match ($sourceType) {
-            'local' => interessa_text('Lokalny packshot'),
-            'remote' => interessa_text('Merchant packshot'),
-            default => interessa_text('Editorialny vizual'),
-        };
+        return '';
     }
 }
 
@@ -134,7 +128,6 @@ if (!function_exists('interessa_render_product_media')) {
         $html .= '<div class="' . esc($frameClass . ' is-fallback-frame') . '">';
         $html .= '<div class="product-fallback-copy">';
         $html .= '<span class="product-fallback-emblem" aria-hidden="true">' . esc(interessa_product_merchant_initials($merchant)) . '</span>';
-        $html .= '<span class="product-fallback-kicker">' . esc(interessa_text('Redakcny vyber')) . '</span>';
         if ($productName !== '') {
             $html .= '<strong class="' . esc($titleClass) . '">' . esc($productName) . '</strong>';
         }
@@ -205,7 +198,7 @@ if (!function_exists('interessa_render_product_box')) {
             $html .= '<p class="affiliate-product-merchant">' . esc(interessa_text('Obchod:')) . ' ' . esc($merchant) . '</p>';
         }
         if ($showEditorialNote) {
-            $html .= '<p class="affiliate-product-editorial-note">' . esc(interessa_text('Odporucany typ produktu pre tento obchod. Konkretne balenie doplnime, ked bude k dispozicii plny merchant produkt alebo packshot.')) . '</p>';
+            $html .= '<p class="affiliate-product-editorial-note">' . esc(interessa_text('Produktovy obrazok este priebezne doplname.')) . '</p>';
         }
         if ($pros !== [] || $cons !== []) {
             $html .= '<div class="affiliate-product-columns">';

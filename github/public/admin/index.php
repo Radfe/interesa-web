@@ -229,7 +229,7 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
             $issues[] = 'Affiliate nie je hotovy';
         }
         if (!$packshotReady) {
-            $issues[] = 'Packshot nie je hotovy';
+            $issues[] = 'Obrazok produktu nie je hotovy';
         }
 
         $summary['catalog']++;
@@ -608,7 +608,7 @@ function interessa_admin_product_quality_queue(array $catalog, int $limit = 12):
             $issues[] = 'Affiliate nie je hotovy';
         }
         if (!$packshotReady) {
-            $issues[] = 'Packshot nie je hotovy';
+            $issues[] = 'Obrazok produktu nie je hotovy';
         }
 
         if ($issues === []) {
@@ -944,6 +944,37 @@ if ($isAuthed) {
                 interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'packshot']);
             }
 
+            if ($action === 'mirror_packshot_from_remote') {
+                $slug = trim((string) ($_POST['product_slug'] ?? ''));
+                $returnSection = trim((string) ($_POST['return_section'] ?? 'products'));
+                $returnArticleSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                $product = interessa_product($slug);
+                if (!is_array($product)) {
+                    throw new RuntimeException('Vybrany produkt sa nenasiel v katalogu.');
+                }
+
+                $normalizedProduct = interessa_normalize_product($product);
+                $merchantSlug = trim((string) ($normalizedProduct['merchant_slug'] ?? ''));
+                $remoteSrc = trim((string) ($normalizedProduct['image_remote_src'] ?? ''));
+                if ($remoteSrc === '') {
+                    throw new RuntimeException('Tento produkt nema dostupny remote obrazok.');
+                }
+
+                $asset = interessa_admin_mirror_remote_product_image($slug, $merchantSlug, $remoteSrc);
+                $payload = array_replace($normalizedProduct, interessa_admin_product_record($slug) ?? []);
+                $payload['image_asset'] = $asset;
+                interessa_admin_save_product_record($slug, $payload);
+
+                if ($returnSection === 'images' && $returnArticleSlug !== '') {
+                    interessa_admin_redirect('images', ['slug' => $returnArticleSlug, 'saved' => 'packshot-mirrored']);
+                }
+                if ($returnSection === 'articles' && $returnArticleSlug !== '') {
+                    interessa_admin_redirect('articles', ['slug' => $returnArticleSlug, 'saved' => 'packshot-mirrored']);
+                }
+
+                interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'packshot-mirrored']);
+            }
+
 
             if ($action === 'export_bundle') {
                 header('Content-Type: application/json; charset=UTF-8');
@@ -1037,7 +1068,7 @@ $selectedProductChecklist = [
     'Plusy' => $selectedProductPros !== [],
     'Minusy' => $selectedProductCons !== [],
     'Affiliate' => $selectedProductAffiliateReady,
-    'Packshot' => $selectedProductPackshotReady,
+    'Obrazok' => $selectedProductPackshotReady,
 ];
 $selectedProductChecklistReadyCount = count(array_filter($selectedProductChecklist));
 $selectedProductChecklistTotal = count($selectedProductChecklist);
@@ -1093,6 +1124,8 @@ $productImageQueueCounts = [
     'remote' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'remote')),
     'placeholder' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'placeholder')),
 ];
+$helpPriorityHeroes = array_slice(array_values(array_filter($allImageQueue, static fn(array $row): bool => empty($row['has_final_webp']))), 0, 5);
+$helpPriorityProductImages = array_slice(array_values(array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot']) && trim((string) ($row['remote_src'] ?? '')) !== '')), 0, 5);
 
 $missingHeroSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allImageQueue, static fn(array $row): bool => empty($row['has_final_webp'])))));
 $selectedHeroQueueIndex = array_search($selectedArticleSlug, $missingHeroSlugs, true);
@@ -1229,12 +1262,12 @@ require dirname(__DIR__) . '/inc/head.php';
             <ol class="admin-quickstart-list">
               <li>Skopiruj prompt, filename a target path.</li>
               <li>Vytvor hero v Canve alebo AI nastroji a exportuj WebP.</li>
-              <li>Nahraj hero alebo packshot a vrat sa na clanok.</li>
+              <li>Nahraj hero alebo produktovy obrazok a vrat sa na clanok.</li>
             </ol>
           <?php elseif ($section === 'products'): ?>
             <ol class="admin-quickstart-list">
               <li>Dopln nazov, obchod, summary, rating, plusy a minusy.</li>
-              <li>Skontroluj affiliate kod a packshot.</li>
+              <li>Skontroluj affiliate kod a produktovy obrazok.</li>
               <li>Pozri pouzitie produktu v clankoch a vrat sa spat do workflowu.</li>
             </ol>
           <?php elseif ($section === 'affiliates'): ?>
@@ -1252,7 +1285,7 @@ require dirname(__DIR__) . '/inc/head.php';
           <?php else: ?>
             <ol class="admin-quickstart-list">
               <li>Articles: obsah, porovnania a odporucane produkty.</li>
-              <li>Products: reusable produkty, packshoty a affiliate diagnostika.</li>
+              <li>Products: reusable produkty, obrazky produktov a affiliate diagnostika.</li>
               <li>Images: hero briefy, Canva workflow a upload obrazkov.</li>
             </ol>
           <?php endif; ?>
@@ -1437,7 +1470,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <button class="btn btn-secondary btn-small" type="button" data-fill-card-ready>Len karty ready</button>
                     <button class="btn btn-secondary btn-small" type="button" data-fill-money-scaffold>Money-page scaffold</button>
                     <button class="btn btn-secondary btn-small" type="button" data-sync-products-from-comparison>Porovnanie -> produkty</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-fill-ready-shortlist>Top 3 ready shortlist</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-fill-ready-shortlist>Top 3 hotove vybery</button>
                   </div>
                 </div>
                 <div class="admin-grid two-up">
@@ -1519,7 +1552,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         </label>
                         <div class="admin-status-pills">
                           <span class="admin-status-pill<?= $productAffiliateReady ? ' is-good' : ' is-warning' ?>"><?= $productAffiliateReady ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
-                          <span class="admin-status-pill<?= $productPackshotReady ? ' is-good' : ' is-warning' ?>"><?= $productPackshotReady ? 'Packshot pripraveny' : 'Packshot chyba' ?></span>
+                          <span class="admin-status-pill<?= $productPackshotReady ? ' is-good' : ' is-warning' ?>"><?= $productPackshotReady ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
                         </div>
                         <div class="admin-inline-actions admin-check-card__actions">
                           <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $productSlug) ?>">Produkt</a>
@@ -1584,7 +1617,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   </article>
                   <article class="admin-status-card">
                     <strong><?= esc((string) $recommendedPackshotReadyCount) ?> / <?= esc((string) max($recommendedCatalogCoverage, 1)) ?></strong>
-                    <span>Packshot pripraveny</span>
+                    <span>Obrazok pripraveny</span>
                   </article>
                   <article class="admin-status-card">
                     <strong><?= esc((string) $recommendedMissingCount) ?></strong>
@@ -1592,7 +1625,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   </article>
                 </div>
                 <?php if ($recommendedActionRows === []): ?>
-                  <p class="admin-note">Vsetky odporucane produkty su pripravene pre penazne clanky.</p>
+                  <p class="admin-note">Vsetky odporucane produkty su pripravene pre komercny clanok.</p>
                 <?php else: ?>
                   <div class="admin-queue-list">
                     <?php foreach ($recommendedActionRows as $actionRow): ?>
@@ -1603,7 +1636,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <div class="admin-status-pills">
                             <span class="admin-status-pill<?= !empty($actionRow['exists']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['exists']) ? 'V katalogu' : 'Mimo katalogu' ?></span>
                             <span class="admin-status-pill<?= !empty($actionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
-                            <span class="admin-status-pill<?= !empty($actionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['packshot_ready']) ? 'Packshot pripraveny' : 'Packshot chyba' ?></span>
+                            <span class="admin-status-pill<?= !empty($actionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['packshot_ready']) ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
                           </div>
                             <small class="admin-note">Pripravenost: <?= esc((string) ($actionRow['checklist_percent'] ?? 0)) ?>% / chybaju <?= esc((string) count($actionRow['issues'] ?? [])) ?> oblasti</small>
                             <div class="admin-status-pills">
@@ -1625,7 +1658,7 @@ require dirname(__DIR__) . '/inc/head.php';
                             <?php else: ?>
                               <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($actionRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($actionRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($actionRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc((string) ($actionRow['slug'] ?? '')) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vytvorit affiliate</a>
                             <?php endif; ?>
-                            <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($actionRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Packshot workflow</a>
+                            <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($actionRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Obrazok produktu</a>
                             <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Image workflow</a>
                             <?php if (trim((string) ($actionRow['image_target_asset'] ?? '')) !== ''): ?>
                               <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($actionRow['image_target_asset'] ?? '')) ?>">Kopirovat path</button>
@@ -1660,7 +1693,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <small><?= esc((string) ($previewRow['slug'] ?? '')) ?><?php if (trim((string) ($previewRow['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($previewRow['merchant'] ?? '')) ?><?php endif; ?></small>
                           <div class="admin-status-pills">
                             <span class="admin-status-pill<?= !empty($previewStatus['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
-                            <span class="admin-status-pill<?= !empty($previewStatus['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['packshot_ready']) ? 'Packshot pripraveny' : 'Packshot chyba' ?></span>
+                            <span class="admin-status-pill<?= !empty($previewStatus['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['packshot_ready']) ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
                           </div>
                           <small class="admin-note">Pripravenost: <?= esc((string) ($previewStatus['checklist_percent'] ?? 0)) ?>%</small>
                           <?php if (trim((string) ($previewRow['summary'] ?? '')) !== ''): ?>
@@ -1784,8 +1817,8 @@ require dirname(__DIR__) . '/inc/head.php';
             <section class="admin-subsection">
               <div class="admin-subsection-head">
                 <div>
-                  <h3>Queue chybajucich packshotov</h3>
-                  <p class="admin-meta">Preferujeme lokalny WebP packshot v cielovej asset ceste. Remote obrazok je len prechodny fallback.</p>
+                  <h3>Queue chybajucich obrazkov produktov</h3>
+                  <p class="admin-meta">Preferujeme lokalny WebP obrazok produktu v cielovej asset ceste. Remote obrazok je len prechodny fallback.</p>
                 </div>
                 <div class="admin-filter-pills">
                   <a class="admin-filter-pill<?= $productImageFilter === 'missing' ? ' is-active' : '' ?>" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=missing">Chyba lokalny (<?= esc((string) $productImageQueueCounts['missing']) ?>)</a>
@@ -1809,6 +1842,13 @@ require dirname(__DIR__) . '/inc/head.php';
                       <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['target_asset'] ?? '')) ?>">Kopirovat asset</button>
                       <?php if (trim((string) ($queueRow['remote_src'] ?? '')) !== ''): ?>
                         <a class="btn btn-secondary btn-small" href="<?= esc((string) $queueRow['remote_src']) ?>" target="_blank" rel="noopener">Remote preview</a>
+                        <?php if (!empty($queueRow['needs_local_packshot'])): ?>
+                          <form method="post" class="admin-inline-form">
+                            <input type="hidden" name="action" value="mirror_packshot_from_remote" />
+                            <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
+                            <button class="btn btn-secondary btn-small" type="submit">Zrkadlit remote</button>
+                          </form>
+                        <?php endif; ?>
                       <?php endif; ?>
                     </div>
                   </article>
@@ -1880,7 +1920,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <span class="admin-status-pill<?= !empty($queueRow['pros_ready']) ? ' is-good' : ' is-warning' ?>">Plusy</span>
                           <span class="admin-status-pill<?= !empty($queueRow['cons_ready']) ? ' is-good' : ' is-warning' ?>">Minusy</span>
                           <span class="admin-status-pill<?= !empty($queueRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>">Affiliate</span>
-                          <span class="admin-status-pill<?= !empty($queueRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>">Packshot</span>
+                          <span class="admin-status-pill<?= !empty($queueRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>">Obrazok</span>
                         </div>
                         <small class="admin-note"><?= esc(implode(', ', array_values(array_slice($queueRow['issues'] ?? [], 0, 3)))) ?></small>
                       </div>
@@ -1891,7 +1931,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <?php else: ?>
                           <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($queueRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($queueRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc((string) ($queueRow['slug'] ?? '')) ?>">Vytvorit affiliate</a>
                         <?php endif; ?>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Packshot workflow</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Obrazok produktu</a>
                       </div>
                     </article>
                   <?php endforeach; ?>
@@ -1901,7 +1941,7 @@ require dirname(__DIR__) . '/inc/head.php';
 
             <section class="admin-subsection admin-asset-preview">
               <div class="admin-subsection-head">
-                <h3>Aktualny packshot a zdroj</h3>
+                <h3>Aktualny obrazok produktu</h3>
               </div>
               <div class="admin-asset-preview__grid">
                 <div class="admin-asset-preview__media">
@@ -1917,7 +1957,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php endif; ?>
                   </div>
                   <?php if ($selectedPackshotQueuePosition > 0): ?>
-                    <p class="admin-note">Packshot backlog: <?= esc((string) $selectedPackshotQueuePosition) ?> / <?= esc((string) count($missingPackshotSlugs)) ?></p>
+                    <p class="admin-note">Backlog obrazkov: <?= esc((string) $selectedPackshotQueuePosition) ?> / <?= esc((string) count($missingPackshotSlugs)) ?></p>
                   <?php endif; ?>
                   <?php if ($prevMissingPackshotSlug !== '' || $nextMissingPackshotSlug !== ''): ?>
                     <div class="admin-inline-actions">
@@ -1930,6 +1970,20 @@ require dirname(__DIR__) . '/inc/head.php';
                     </div>
                   <?php endif; ?>
                   <p><strong>Remote source:</strong> <?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?></p>
+                  <?php if (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
+                    <div class="admin-inline-actions">
+                      <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>" target="_blank" rel="noopener">Remote preview</a>
+                      <?php if (!$selectedProductPackshotReady): ?>
+                        <form method="post" class="admin-inline-form">
+                          <input type="hidden" name="action" value="mirror_packshot_from_remote" />
+                          <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
+                          <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
+                          <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
+                          <button class="btn btn-secondary btn-small" type="submit">Stiahnut remote obrazok</button>
+                        </form>
+                      <?php endif; ?>
+                    </div>
+                  <?php endif; ?>
                   <div class="admin-diagnostic-list">
                     <p><strong>Affiliate kod:</strong> <?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?: 'chyba' ?></p>
                     <p><strong>Typ linku:</strong> <?= esc($selectedProductAffiliateType !== '' ? $selectedProductAffiliateType : 'neznamy') ?></p>
@@ -2056,7 +2110,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <input type="url" name="image_remote_src" value="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>" />
                 </label>
                 <label>
-                  <span>Nahrat lokalny packshot</span>
+                  <span>Nahrat lokalny obrazok produktu</span>
                   <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" />
                   <small class="admin-note">Cielovy asset pre upload: <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></small>
                 </label>
@@ -2123,8 +2177,8 @@ require dirname(__DIR__) . '/inc/head.php';
               <section class="admin-subsection is-compact">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>Packshot medzery pre tento clanok</h3>
-                    <p class="admin-meta">Odporucane produkty v tomto clanku, ktore este nemaju finalny packshot.</p>
+                    <h3>Chybajuce obrazky produktov v tomto clanku</h3>
+                    <p class="admin-meta">Odporucane produkty v tomto clanku, ktore este nemaju finalny obrazok produktu.</p>
                   </div>
                   <span class="admin-note"><?= esc((string) $selectedArticlePackshotGapCount) ?> zaznamov</span>
                 </div>
@@ -2139,14 +2193,23 @@ require dirname(__DIR__) . '/inc/head.php';
                         <?php endif; ?>
                         <div class="admin-status-pills">
                           <span class="admin-status-pill<?= !empty($queueRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($queueRow['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
-                          <span class="admin-status-pill is-warning">Packshot chyba</span>
+                          <span class="admin-status-pill is-warning">Obrazok chyba</span>
                         </div>
                       </div>
                       <div class="admin-queue-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Packshot workflow</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Obrazok produktu</a>
                         <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
                         <?php if (trim((string) ($queueRow['image_target_asset'] ?? '')) !== ''): ?>
                           <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['image_target_asset'] ?? '')) ?>">Kopirovat path</button>
+                        <?php endif; ?>
+                        <?php if (trim((string) ($queueRow['remote_src'] ?? '')) !== ''): ?>
+                          <form method="post" class="admin-inline-form">
+                            <input type="hidden" name="action" value="mirror_packshot_from_remote" />
+                            <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
+                            <input type="hidden" name="return_section" value="images" />
+                            <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
+                            <button class="btn btn-secondary btn-small" type="submit">Zrkadlit remote</button>
+                          </form>
                         <?php endif; ?>
                         <form method="post" enctype="multipart/form-data" class="admin-inline-upload">
                           <input type="hidden" name="action" value="upload_packshot_only" />
@@ -2154,10 +2217,10 @@ require dirname(__DIR__) . '/inc/head.php';
                           <input type="hidden" name="return_section" value="images" />
                           <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
                           <label class="admin-inline-upload__label">
-                            <span>Packshot</span>
+                            <span>Obrazok</span>
                             <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
                           </label>
-                          <button class="btn btn-secondary btn-small" type="submit">Nahrat packshot</button>
+                          <button class="btn btn-secondary btn-small" type="submit">Nahrat obrazok</button>
                         </form>
                       </div>
                     </article>
@@ -2171,7 +2234,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Produkty v tomto clanku</h3>
-                    <p class="admin-meta">Prehlad odporucanych produktov aj s packshot a affiliate stavom priamo v image workflowe.</p>
+                    <p class="admin-meta">Prehlad odporucanych produktov aj so stavom obrazka a affiliate priamo v image workflowe.</p>
                   </div>
                 </div>
                 <div class="admin-mini-product-grid">
@@ -2186,7 +2249,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <small><?= esc((string) ($previewRow['slug'] ?? '')) ?><?php if (trim((string) ($previewRow['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($previewRow['merchant'] ?? '')) ?><?php endif; ?></small>
                         <div class="admin-status-pills">
                           <span class="admin-status-pill<?= !empty($previewStatus['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
-                          <span class="admin-status-pill<?= !empty($previewStatus['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['packshot_ready']) ? 'Packshot pripraveny' : 'Packshot chyba' ?></span>
+                          <span class="admin-status-pill<?= !empty($previewStatus['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($previewStatus['packshot_ready']) ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
                         </div>
                         <?php if (trim((string) ($previewStatus['image_target_asset'] ?? '')) !== ''): ?>
                           <small><code><?= esc((string) ($previewStatus['image_target_asset'] ?? '')) ?></code></small>
@@ -2194,7 +2257,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       </div>
                       <div class="admin-inline-actions admin-mini-product-card__actions">
                         <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Packshot workflow</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Obrazok produktu</a>
                         <?php if (trim((string) ($previewStatus['affiliate_code'] ?? '')) !== ''): ?>
                           <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($previewStatus['affiliate_code'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Affiliate</a>
                         <?php else: ?>
@@ -2202,6 +2265,15 @@ require dirname(__DIR__) . '/inc/head.php';
                         <?php endif; ?>
                         <?php if (trim((string) ($previewStatus['image_target_asset'] ?? '')) !== ''): ?>
                           <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($previewStatus['image_target_asset'] ?? '')) ?>">Kopirovat path</button>
+                        <?php endif; ?>
+                        <?php if (trim((string) ($previewStatus['image_remote_src'] ?? '')) !== '' && empty($previewStatus['packshot_ready'])): ?>
+                          <form method="post" class="admin-inline-form">
+                            <input type="hidden" name="action" value="mirror_packshot_from_remote" />
+                            <input type="hidden" name="product_slug" value="<?= esc((string) ($previewRow['slug'] ?? '')) ?>" />
+                            <input type="hidden" name="return_section" value="images" />
+                            <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
+                            <button class="btn btn-secondary btn-small" type="submit">Zrkadlit remote</button>
+                          </form>
                         <?php endif; ?>
                       </div>
                         <?php if (empty($previewStatus['packshot_ready'])): ?>
@@ -2211,10 +2283,10 @@ require dirname(__DIR__) . '/inc/head.php';
                             <input type="hidden" name="return_section" value="images" />
                             <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
                             <label class="admin-inline-upload__label">
-                              <span>Packshot</span>
+                              <span>Obrazok</span>
                               <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
                             </label>
-                            <button class="btn btn-secondary btn-small" type="submit">Nahrat packshot</button>
+                            <button class="btn btn-secondary btn-small" type="submit">Nahrat obrazok</button>
                           </form>
                         <?php endif; ?>
                     </article>
@@ -2416,12 +2488,12 @@ require dirname(__DIR__) . '/inc/head.php';
               </article>
 
               <article class="admin-help-card">
-                <h3>3. Chcem doplnit packshot produktu</h3>
+                <h3>3. Chcem doplnit obrazok produktu</h3>
                 <ol class="admin-quickstart-list">
-                  <li>Otvor <a href="/admin?section=products&product=<?= esc($selectedProductSlug) ?>">Produkty</a> alebo packshot queue v image workflowe.</li>
-                  <li>Skopiruj cielovu asset cestu.</li>
-                  <li>Nahraj packshot cez rychly upload.</li>
-                  <li>Vrat sa na clanok a skontroluj, ci karta uz ukazuje realny packshot.</li>
+                  <li>Otvor <a href="/admin?section=products&product=<?= esc($selectedProductSlug) ?>">Produkty</a> alebo queue chybajucich obrazkov v image workflowe.</li>
+                  <li>Ak uz produkt ma remote obrazok od merchanta, klikni <strong>Zrkadlit remote</strong>.</li>
+                  <li>Ak remote obrazok nie je k dispozicii, skopiruj cielovu asset cestu a nahraj obrazok cez rychly upload.</li>
+                  <li>Vrat sa na clanok a skontroluj, ci karta uz ukazuje finalny produktovy obrazok.</li>
                 </ol>
               </article>
 
@@ -2440,8 +2512,8 @@ require dirname(__DIR__) . '/inc/head.php';
                 <ol class="admin-quickstart-list">
                   <li>V Clankoch vytvor novy clanok ako <strong>comparison</strong> alebo <strong>review</strong>.</li>
                   <li>Pridaj reusable produkty z katalogu.</li>
-                  <li>Pouzi <strong>Money-page scaffold</strong> alebo <strong>Top 3 ready shortlist</strong>.</li>
-                  <li>Dopln hero obrazok, packshoty a affiliate linky iba tam, kde queue ukazuje medzery.</li>
+                  <li>Pouzi <strong>Money-page scaffold</strong> alebo <strong>Top 3 hotove vybery</strong>.</li>
+                  <li>Dopln hero obrazok, obrazky produktov a affiliate linky iba tam, kde queue ukazuje medzery.</li>
                 </ol>
               </article>
 
@@ -2450,11 +2522,69 @@ require dirname(__DIR__) . '/inc/head.php';
                 <ol class="admin-quickstart-list">
                   <li>Najprv clanok a struktura.</li>
                   <li>Potom reusable produkty a porovnanie.</li>
-                  <li>Potom hero obrazok a packshoty.</li>
+                  <li>Potom hero obrazok a obrazky produktov.</li>
                   <li>Az nakoniec Dognet deeplinky a finalna kontrola live stranky.</li>
                 </ol>
               </article>
             </div>
+
+            <?php if ($helpPriorityHeroes !== [] || $helpPriorityProductImages !== []): ?>
+              <section class="admin-subsection admin-help-checklist">
+                <h3>Co urobit najblizsie</h3>
+                <div class="admin-check-card-wrap">
+                  <?php if ($helpPriorityHeroes !== []): ?>
+                    <div class="admin-check-card">
+                      <div>
+                        <strong>Hero obrazky s najvyssou prioritou</strong>
+                        <small>Zacni tymito clankami, aby sa najrychlejsie zlepsili hlavne vstupne stranky a money pages.</small>
+                        <div class="admin-queue-list">
+                          <?php foreach ($helpPriorityHeroes as $heroRow): ?>
+                            <article class="admin-queue-item is-done">
+                              <div>
+                                <strong><?= esc((string) ($heroRow['title'] ?? '')) ?></strong>
+                                <p><?= esc((string) ($heroRow['slug'] ?? '')) ?></p>
+                                <?php if (trim((string) ($heroRow['asset_path'] ?? '')) !== ''): ?>
+                                  <code><?= esc((string) ($heroRow['asset_path'] ?? '')) ?></code>
+                                <?php endif; ?>
+                              </div>
+                              <div class="admin-queue-actions">
+                                <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc((string) ($heroRow['slug'] ?? '')) ?>">Image brief</a>
+                                <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Hero helper</a>
+                              </div>
+                            </article>
+                          <?php endforeach; ?>
+                        </div>
+                      </div>
+                    </div>
+                  <?php endif; ?>
+
+                  <?php if ($helpPriorityProductImages !== []): ?>
+                    <div class="admin-check-card">
+                      <div>
+                        <strong>Produktove obrazky, ktore vies doplnit hned</strong>
+                        <small>Tieto produkty uz maju remote zdroj, takze ich vies zvycajne uzavriet jednym klikom cez <strong>Zrkadlit remote</strong>.</small>
+                        <div class="admin-queue-list">
+                          <?php foreach ($helpPriorityProductImages as $productRow): ?>
+                            <article class="admin-queue-item is-done">
+                              <div>
+                                <strong><?= esc((string) ($productRow['name'] ?? '')) ?></strong>
+                                <p><?= esc((string) ($productRow['slug'] ?? '')) ?><?php if (trim((string) ($productRow['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($productRow['merchant'] ?? '')) ?><?php endif; ?></p>
+                                <?php if (trim((string) ($productRow['target_asset'] ?? '')) !== ''): ?>
+                                  <code><?= esc((string) ($productRow['target_asset'] ?? '')) ?></code>
+                                <?php endif; ?>
+                              </div>
+                              <div class="admin-queue-actions">
+                                <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($productRow['slug'] ?? '')) ?>&amp;product_image_filter=missing">Produkt</a>
+                              </div>
+                            </article>
+                          <?php endforeach; ?>
+                        </div>
+                      </div>
+                    </div>
+                  <?php endif; ?>
+                </div>
+              </section>
+            <?php endif; ?>
 
             <section class="admin-subsection admin-help-checklist">
               <h3>Pred publikovanim skontroluj</h3>
@@ -2469,7 +2599,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <label class="admin-check-card">
                   <input type="checkbox" />
                   <div>
-                    <strong>Odporucane produkty maju affiliate a packshot</strong>
+                    <strong>Odporucane produkty maju affiliate a obrazok</strong>
                     <small>Ak nie, otvor queue nedokoncenych produktov alebo affiliate queue.</small>
                   </div>
                 </label>
@@ -2512,7 +2642,7 @@ require dirname(__DIR__) . '/inc/head.php';
 
               <section class="admin-subsection">
                 <h3>Export image backlog CSV</h3>
-                <p>Stiahne zoznam chybajucich hero obrazkov a packshotov aj s cielovymi asset cestami.</p>
+                <p>Stiahne zoznam chybajucich hero obrazkov a obrazkov produktov aj s cielovymi asset cestami.</p>
                 <form method="post" class="admin-form">
                   <input type="hidden" name="action" value="export_image_backlog_csv" />
                   <button class="btn btn-secondary" type="submit">Exportovat image backlog</button>

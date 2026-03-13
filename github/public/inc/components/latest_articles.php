@@ -64,11 +64,11 @@ foreach ($items as $item) {
         echo '<span class="article-card-chip">' . esc((string) ($categoryMeta['title'] ?? '')) . '</span>';
     }
     if (interessa_article_has_full_packshot_coverage((string) $item['slug'])) {
-        echo '<span class="article-card-chip">Plne packshoty</span>';
+        echo '<span class="article-card-chip">Hotove obrazky</span>';
     }
     echo '<span class="date">' . esc($date) . '</span>';
     echo '</div>';
-    echo interessa_render_article_commerce_submeta((string) $item['slug']);
+    echo interessa_render_article_commerce_submeta((string) $item['slug'], 'compact');
     echo '<a class="latest-card-title" href="' . esc($url) . '">' . esc((string) $item['title']) . '</a>';
     echo '</div>';
     echo '</li>';

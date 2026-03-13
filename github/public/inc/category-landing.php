@@ -164,7 +164,7 @@ include dirname(__DIR__) . '/inc/head.php';
         </div>
         <div class="hub-stat-inline">
           <strong><?= esc((string) $fullCoverageCount) ?></strong>
-          <span>clanky s plnym packshot pokrytim</span>
+          <span>clanky s hotovymi obrazkami</span>
         </div>
       </div>
       <?php if ($topFormats !== []): ?>
@@ -220,7 +220,7 @@ include dirname(__DIR__) . '/inc/head.php';
                   <?php if (interessa_article_has_full_packshot_coverage($guideSlug)): ?><span class="article-card-chip">Pripraveny vyber</span><?php endif; ?>
                   <?php if ($guideDate !== ''): ?><span class="article-card-date"><?= esc($guideDate) ?></span><?php endif; ?>
                 </div>
-                <?= interessa_render_article_commerce_submeta($guideSlug) ?>
+                <?= interessa_render_article_commerce_submeta($guideSlug, 'compact') ?>
                 <h3><a href="<?= esc(article_url($guideSlug)) ?>"><?= esc($title) ?></a></h3>
                 <?php if ($description !== ''): ?><p><?= esc($description) ?></p><?php endif; ?>
                 <a class="btn" href="<?= esc(article_url($guideSlug)) ?>"><?= esc(interessa_article_cta_label($guideSlug, $title)) ?></a>
@@ -236,8 +236,8 @@ include dirname(__DIR__) . '/inc/head.php';
     <?php if ($readyArticles !== []): ?>
       <section class="card">
         <div class="section-head">
-          <h2>Najlepsie pripravene vybery v teme</h2>
-          <p class="meta">Clanky v tejto teme, kde je vyber produktov uz najprehladnejsi a pripraveny na rychlu orientaciu.</p>
+          <h2>Najviac pripravene clanky v teme</h2>
+          <p class="meta">Clanky v tejto teme, kde su odporucania uz najprehladnejsie a pripraveny rychly vyber je najjednoduchsi.</p>
         </div>
         <div class="hub-grid article-related-grid">
           <?php foreach ($readyArticles as $item): ?>
@@ -263,10 +263,10 @@ include dirname(__DIR__) . '/inc/head.php';
                 <div class="article-card-meta">
                   <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
                   <span class="hub-card-label"><?= esc($hub['title']) ?></span>
-                  <span class="article-card-chip"><?= esc((string) ($item['_coverage_percent'] ?? 0)) ?>% packshotov</span>
+                  <span class="article-card-chip">Pripraveny vyber</span>
                   <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
                 </div>
-                <?= interessa_render_article_commerce_submeta($itemSlug) ?>
+                <?= interessa_render_article_commerce_submeta($itemSlug, 'compact') ?>
                 <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
                 <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
                 <a class="card-link" href="<?= esc(article_url($itemSlug)) ?>"><?= esc(interessa_article_cta_label($itemSlug, $itemTitle)) ?></a>
@@ -307,10 +307,10 @@ include dirname(__DIR__) . '/inc/head.php';
                 <div class="article-card-meta">
                   <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
                   <span class="hub-card-label"><?= esc($hub['title']) ?></span>
-                  <?php if (interessa_article_has_full_packshot_coverage($itemSlug)): ?><span class="article-card-chip">Plne packshoty</span><?php endif; ?>
+                  <?php if (interessa_article_has_full_packshot_coverage($itemSlug)): ?><span class="article-card-chip">Pripraveny vyber</span><?php endif; ?>
                   <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
                 </div>
-                <?= interessa_render_article_commerce_submeta($itemSlug) ?>
+                <?= interessa_render_article_commerce_submeta($itemSlug, 'compact') ?>
                 <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
                 <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
                 <a class="card-link" href="<?= esc(article_url($itemSlug)) ?>"><?= esc(interessa_article_cta_label($itemSlug, $itemTitle)) ?></a>

@@ -84,7 +84,7 @@ include __DIR__ . '/../inc/head.php';
       </article>
       <article class="stats-card">
         <strong><?= esc((string) $totalCommercialArticles) ?></strong>
-        <p>clankov so shortlistom napriec kategoriami</p>
+        <p>clankov s odporucaniami napriec kategoriami</p>
       </article>
       <article class="stats-card">
         <strong><?= esc((string) $activeCommercialHubs) ?></strong>
@@ -92,12 +92,12 @@ include __DIR__ . '/../inc/head.php';
       </article>
       <article class="stats-card">
         <strong><?= esc((string) $totalFullCoverageArticles) ?></strong>
-        <p>clankov s plnym packshot pokrytim</p>
+        <p>clankov s hotovymi obrazkami</p>
       </article>
     </div>
     <div class="hero-cta">
-      <a class="btn btn-ghost" href="/clanky?commercial=1">Otvorit clanky so shortlistom</a>
-      <a class="btn btn-ghost" href="/clanky?coverage=full">Pozriet plne packshoty</a>
+      <a class="btn btn-ghost" href="/clanky?commercial=1">Otvorit clanky s odporucaniami</a>
+      <a class="btn btn-ghost" href="/clanky?coverage=full">Pozriet najviac pripravene</a>
     </div>
   </article>
 </section>
@@ -124,9 +124,9 @@ include __DIR__ . '/../inc/head.php';
           </div>
           <?php if ($commercialCount > 0): ?>
             <div class="article-card-submeta">
-              <span class="article-card-subchip">Shortlist v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <span class="article-card-subchip">Odporucania v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php if ($fullCoverageCount > 0): ?>
-                <span class="article-card-subchip is-coverage is-full">Plne packshoty v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+                <span class="article-card-subchip is-coverage is-full">Najviac pripravene v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php endif; ?>
             </div>
           <?php endif; ?>
@@ -161,9 +161,9 @@ include __DIR__ . '/../inc/head.php';
           </div>
           <?php if ($commercialCount > 0): ?>
             <div class="article-card-submeta">
-              <span class="article-card-subchip">Shortlist v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <span class="article-card-subchip">Odporucania v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php if ($fullCoverageCount > 0): ?>
-                <span class="article-card-subchip is-coverage is-full">Plne packshoty v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+                <span class="article-card-subchip is-coverage is-full">Najviac pripravene v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php endif; ?>
             </div>
           <?php endif; ?>
@@ -192,7 +192,7 @@ include __DIR__ . '/../inc/head.php';
     <article class="card">
       <div class="card-body">
         <h3>2. Prejdi klucove clanky</h3>
-        <p>Kazdy hub ma vlastny shortlist clankov, ktore maju byt vstupom do temy, nie len dalsim zoznamom odkazov.</p>
+        <p>Kazda tema ma vlastny vyber clankov, ktore maju byt vstupom do temy, nie len dalsim zoznamom odkazov.</p>
       </div>
     </article>
     <article class="card">

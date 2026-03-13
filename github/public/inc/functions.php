@@ -542,7 +542,7 @@ if (!function_exists('interessa_shortlist_coverage_label')) {
         return match (interessa_shortlist_coverage_state($stats)) {
             'full' => 'plne pokrytie',
             'partial' => 'ciastocne pokrytie',
-            default => 'bez realneho packshotu',
+            default => 'obrazky este doplname',
         };
     }
 }
