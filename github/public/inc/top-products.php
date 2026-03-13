@@ -189,11 +189,6 @@ if (!function_exists('interessa_render_top_products')) {
         if ($intro !== null && $intro !== '') {
             echo '<p class="topbox-intro">' . esc($intro) . '</p>';
         }
-        echo '<div class="topbox-legend" aria-label="Legenda vizualov produktov">';
-        echo '<span class="topbox-legend-item"><span class="topbox-legend-dot is-remote" aria-hidden="true"></span>' . esc(interessa_product_image_status_label('remote')) . '</span>';
-        echo '<span class="topbox-legend-item"><span class="topbox-legend-dot is-local" aria-hidden="true"></span>' . esc(interessa_product_image_status_label('local')) . '</span>';
-        echo '<span class="topbox-legend-item"><span class="topbox-legend-dot is-editorial" aria-hidden="true"></span>' . esc(interessa_product_image_status_label('placeholder')) . '</span>';
-        echo '</div>';
         echo '<div class="topbox-metrics" aria-label="Prehlad vyberu">';
         echo '<span class="topbox-metric"><strong>' . esc((string) count($resolvedProducts)) . '</strong><span>produkty vo vybere</span></span>';
         if ($merchantNames !== []) {
@@ -249,14 +244,9 @@ if (!function_exists('interessa_render_top_products')) {
             if ($bestFor !== '') {
                 echo '<div class="top-product-bestfor"><span>' . esc(interessa_text('Najlepsie pre:')) . '</span> ' . esc($bestFor) . '</div>';
             }
-            if ($rating > 0 || $imageStatus !== '') {
+            if ($rating > 0) {
                 echo '<div class="top-product-meta-row">';
-                if ($rating > 0) {
-                    echo '<div class="top-product-rating">' . interessa_render_stars($rating) . '</div>';
-                }
-                if ($imageStatus !== '') {
-                    echo '<span class="top-product-image-status">' . esc($imageStatus) . '</span>';
-                }
+                echo '<div class="top-product-rating">' . interessa_render_stars($rating) . '</div>';
                 echo '</div>';
             }
             if ($showEditorialNote) {

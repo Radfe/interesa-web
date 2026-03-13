@@ -124,14 +124,8 @@ include dirname(__DIR__) . '/inc/head.php';
       <?php if ($categoryHero !== null): ?>
         <figure class="hub-hero-media">
           <?= interessa_render_image($categoryHero, ['class' => 'hub-card-image', 'loading' => 'eager', 'fetchpriority' => 'high']) ?>
-          <figcaption class="article-hero-caption">
-            <span class="article-hero-chip"><?= esc($hub['title']) ?></span>
-            <span class="article-hero-chip"><?= esc((string) $articleCount) ?> <?= esc(interessa_pluralize_slovak($articleCount, 'clanok', 'clanky', 'clankov')) ?> v teme</span>
-            <span class="article-hero-chip is-soft">Prehlad temy</span>
-          </figcaption>
         </figure>
       <?php endif; ?>
-      <p class="hub-eyebrow">Prehlad temy</p>
       <div class="hub-heading-row">
         <span class="hub-icon-badge" aria-hidden="true"><?= interessa_category_icon($slug) ?></span>
         <h1><?= esc($hub['title']) ?></h1>
@@ -157,14 +151,6 @@ include dirname(__DIR__) . '/inc/head.php';
         <div class="hub-stat-inline">
           <strong><?= esc((string) $articleCount) ?></strong>
           <span>spolu v teme</span>
-        </div>
-        <div class="hub-stat-inline">
-          <strong><?= esc((string) $commercialCount) ?></strong>
-          <span>clanky s odporucaniami</span>
-        </div>
-        <div class="hub-stat-inline">
-          <strong><?= esc((string) $fullCoverageCount) ?></strong>
-          <span>clanky s hotovymi obrazkami</span>
         </div>
       </div>
       <?php if ($topFormats !== []): ?>
@@ -217,7 +203,6 @@ include dirname(__DIR__) . '/inc/head.php';
                 <div class="article-card-meta">
                   <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
                   <span class="hub-card-label"><?= esc($label) ?></span>
-                  <?php if (interessa_article_has_full_packshot_coverage($guideSlug)): ?><span class="article-card-chip">Pripraveny vyber</span><?php endif; ?>
                   <?php if ($guideDate !== ''): ?><span class="article-card-date"><?= esc($guideDate) ?></span><?php endif; ?>
                 </div>
                 <?= interessa_render_article_commerce_submeta($guideSlug, 'compact') ?>
@@ -236,8 +221,8 @@ include dirname(__DIR__) . '/inc/head.php';
     <?php if ($readyArticles !== []): ?>
       <section class="card">
         <div class="section-head">
-          <h2>Najviac pripravene clanky v teme</h2>
-          <p class="meta">Clanky v tejto teme, kde su odporucania uz najprehladnejsie a pripraveny rychly vyber je najjednoduchsi.</p>
+          <h2>Odporucane vybery v teme</h2>
+          <p class="meta">Vybrane clanky, kde sa da rychlo zorientovat v produktoch a dalsich krokoch.</p>
         </div>
         <div class="hub-grid article-related-grid">
           <?php foreach ($readyArticles as $item): ?>
@@ -263,7 +248,6 @@ include dirname(__DIR__) . '/inc/head.php';
                 <div class="article-card-meta">
                   <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
                   <span class="hub-card-label"><?= esc($hub['title']) ?></span>
-                  <span class="article-card-chip">Pripraveny vyber</span>
                   <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
                 </div>
                 <?= interessa_render_article_commerce_submeta($itemSlug, 'compact') ?>
@@ -307,7 +291,6 @@ include dirname(__DIR__) . '/inc/head.php';
                 <div class="article-card-meta">
                   <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
                   <span class="hub-card-label"><?= esc($hub['title']) ?></span>
-                  <?php if (interessa_article_has_full_packshot_coverage($itemSlug)): ?><span class="article-card-chip">Pripraveny vyber</span><?php endif; ?>
                   <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
                 </div>
                 <?= interessa_render_article_commerce_submeta($itemSlug, 'compact') ?>

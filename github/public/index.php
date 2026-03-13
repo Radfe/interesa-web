@@ -239,7 +239,6 @@ include __DIR__ . '/inc/head.php';
         <div class="article-card-meta">
           <span class="article-card-chip is-format"><?= esc((string) ($guide['format_label'] ?? 'Sprievodca')) ?></span>
           <?php if (is_array($guide['category_meta'] ?? null)): ?><span class="article-card-chip"><?= esc((string) ($guide['category_meta']['title'] ?? '')) ?></span><?php endif; ?>
-          <?php if (interessa_article_has_full_packshot_coverage((string) $guide['slug'])): ?><span class="article-card-chip">Pripraveny vyber</span><?php endif; ?>
           <?php if (($guide['updated_date'] ?? '') !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc((string) $guide['updated_date']) ?></span><?php endif; ?>
         </div>
         <?= interessa_render_article_commerce_submeta((string) $guide['slug'], 'compact') ?>
@@ -269,7 +268,6 @@ include __DIR__ . '/inc/head.php';
           <div class="article-card-meta">
             <span class="article-card-chip is-format"><?= esc((string) ($guide['format_label'] ?? 'Clanok')) ?></span>
             <?php if (is_array($guide['category_meta'] ?? null)): ?><span class="article-card-chip"><?= esc((string) ($guide['category_meta']['title'] ?? '')) ?></span><?php endif; ?>
-            <span class="article-card-chip">Pripraveny vyber</span>
             <?php if (($guide['updated_date'] ?? '') !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc((string) $guide['updated_date']) ?></span><?php endif; ?>
           </div>
           <?= interessa_render_article_commerce_submeta((string) $guide['slug'], 'compact') ?>
@@ -293,7 +291,6 @@ include __DIR__ . '/inc/head.php';
           <span class="article-card-chip is-format"><?= esc(interessa_article_format_label($homeLeadSlug, (string) $homeLeadMeta['title'])) ?></span>
           <?php $homeLeadCategory = category_meta(normalize_category_slug((string) ($homeLeadMeta['category'] ?? ''))); ?>
           <?php if ($homeLeadCategory !== null): ?><span class="article-card-chip"><?= esc((string) ($homeLeadCategory['title'] ?? '')) ?></span><?php endif; ?>
-          <?php if (interessa_article_has_full_packshot_coverage($homeLeadSlug)): ?><span class="article-card-chip">Pripraveny vyber</span><?php endif; ?>
           <?php if ($homeLeadUpdated !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc($homeLeadUpdated) ?></span><?php endif; ?>
         </div>
         <?= interessa_render_article_commerce_submeta($homeLeadSlug, 'compact') ?>

@@ -89,6 +89,67 @@ if (!function_exists('interessa_product_image_target_path')) {
     }
 }
 
+if (!function_exists('interessa_product_image_candidate_bases')) {
+    function interessa_product_image_candidate_bases(string $slug, string $merchantSlug = ''): array {
+        $slug = trim($slug);
+        $merchantSlug = trim($merchantSlug);
+        if ($slug === '') {
+            return [];
+        }
+
+        $bases = [];
+        $targetAsset = interessa_product_image_target_asset($slug, $merchantSlug);
+        $canonicalBase = preg_replace('~\.(webp|jpe?g|png|svg)$~i', '', $targetAsset) ?: $targetAsset;
+        $bases[] = ltrim($targetAsset, '/');
+        $bases[] = ltrim($canonicalBase, '/');
+
+        if ($merchantSlug !== '') {
+            $bases[] = 'img/products/' . $merchantSlug . '/' . $slug . '/main';
+            $bases[] = 'img/products/' . $merchantSlug . '/' . $slug;
+        }
+
+        $bases[] = 'img/products/' . $slug . '/main';
+        $bases[] = 'img/products/' . $slug;
+
+        return array_values(array_unique(array_filter(array_map(static function (string $base): string {
+            return trim($base, '/');
+        }, $bases))));
+    }
+}
+
+if (!function_exists('interessa_product_image_local_asset')) {
+    function interessa_product_image_local_asset(string $slug, string $merchantSlug = ''): ?string {
+        $variants = interessa_collect_asset_candidates(interessa_product_image_candidate_bases($slug, $merchantSlug));
+        if ($variants === []) {
+            return null;
+        }
+
+        $primary = end($variants);
+        if ($primary === false) {
+            return null;
+        }
+
+        return trim((string) ($primary['asset'] ?? '')) ?: null;
+    }
+}
+
+if (!function_exists('interessa_product_image_local_path')) {
+    function interessa_product_image_local_path(string $slug, string $merchantSlug = ''): ?string {
+        $asset = interessa_product_image_local_asset($slug, $merchantSlug);
+        if ($asset === null) {
+            return null;
+        }
+
+        return interessa_asset_file_path($asset);
+    }
+}
+
+if (!function_exists('interessa_product_has_local_image')) {
+    function interessa_product_has_local_image(string $slug, string $merchantSlug = ''): bool {
+        return interessa_product_image_local_path($slug, $merchantSlug) !== null;
+    }
+}
+
 if (!function_exists('interessa_image_size_from_asset')) {
     function interessa_image_size_from_asset(string $assetPath): array {
         $file = interessa_asset_file_path($assetPath);
@@ -358,11 +419,7 @@ if (!function_exists('interessa_product_image_meta')) {
         }
 
         if ($variants === []) {
-            $variants = interessa_collect_asset_candidates([
-                $targetAsset,
-                'img/products/' . $slug . '/main',
-                'img/products/' . $slug,
-            ]);
+            $variants = interessa_collect_asset_candidates(interessa_product_image_candidate_bases($slug, $merchantSlug));
         }
 
         if ($variants === []) {

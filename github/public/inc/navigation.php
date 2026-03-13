@@ -29,7 +29,7 @@ if (!function_exists('interessa_primary_navigation_items')) {
                         ['href' => '/clanky/clear-protein', 'label' => 'Clear protein'],
                     ]],
                     ['title' => 'Preskumaj temu', 'links' => [
-                        ['href' => '/kategorie/proteiny', 'label' => 'Hub proteinov'],
+                        ['href' => '/kategorie/proteiny', 'label' => 'Prehlad proteinov'],
                         ['href' => '/clanky/proteiny', 'label' => 'Zaklady proteinov'],
                         ['href' => '/clanky/', 'label' => 'Vsetky clanky'],
                     ]],
@@ -48,7 +48,7 @@ if (!function_exists('interessa_primary_navigation_items')) {
                     ['title' => 'Travenie a tolerancia', 'links' => [
                         ['href' => '/clanky/probiotika-a-travenie', 'label' => 'Probiotika a travenie'],
                         ['href' => '/clanky/probiotika-ako-vybrat', 'label' => 'Ako vybrat probiotika'],
-                        ['href' => '/kategorie/probiotika-travenie', 'label' => 'Hub travenia'],
+                        ['href' => '/kategorie/probiotika-travenie', 'label' => 'Prehlad travenia'],
                     ]],
                     ['title' => 'Ciele', 'links' => [
                         ['href' => '/kategorie/vyziva', 'label' => 'Zdrava vyziva'],
@@ -70,7 +70,7 @@ if (!function_exists('interessa_primary_navigation_items')) {
                     ['title' => 'Mineraly', 'links' => [
                         ['href' => '/clanky/zinek', 'label' => 'Zinok'],
                         ['href' => '/clanky/horcik', 'label' => 'Horcik'],
-                        ['href' => '/kategorie/mineraly', 'label' => 'Hub mineralov'],
+                        ['href' => '/kategorie/mineraly', 'label' => 'Prehlad mineralov'],
                     ]],
                     ['title' => 'Suvisiace temy', 'links' => [
                         ['href' => '/kategorie/imunita', 'label' => 'Imunita'],

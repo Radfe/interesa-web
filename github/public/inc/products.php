@@ -39,14 +39,14 @@ if (!function_exists('interessa_product_visual_score')) {
         $slug = trim((string) ($product['slug'] ?? ''));
         $merchantSlug = trim((string) ($product['merchant_slug'] ?? ''));
         $score = 0;
+        $hasLocalImage = $slug !== '' && interessa_product_has_local_image($slug, $merchantSlug);
 
         $asset = trim((string) ($imageConfig['asset'] ?? ''));
         if ($asset !== '' && interessa_asset_file_path($asset) !== null) {
             $score += 40;
         }
 
-        $mirrorPath = $slug !== '' ? interessa_product_image_target_path($slug, $merchantSlug) : '';
-        if ($mirrorPath !== '' && is_file($mirrorPath)) {
+        if ($hasLocalImage) {
             $score += 40;
         }
 
@@ -128,6 +128,8 @@ if (!function_exists('interessa_normalize_product')) {
         $imageConfig['merchant_slug'] = $merchantSlug !== '' ? $merchantSlug : (string) ($imageConfig['merchant_slug'] ?? '');
         $image = $slug !== '' ? interessa_product_image_meta($slug, $imageConfig, true) : null;
         $imageRemoteSrc = trim((string) ($imageConfig['remote_src'] ?? $imageConfig['src'] ?? ''));
+        $imageLocalAsset = $slug !== '' ? (interessa_product_image_local_asset($slug, $merchantSlug) ?? '') : '';
+        $imageLocalPath = $slug !== '' ? (interessa_product_image_local_path($slug, $merchantSlug) ?? '') : '';
         $imageTargetAsset = $slug !== ''
             ? trim((string) (($image['target_asset'] ?? '') ?: interessa_product_image_target_asset($slug, $merchantSlug)))
             : '';
@@ -148,6 +150,9 @@ if (!function_exists('interessa_normalize_product')) {
             'image_source' => trim((string) ($product['image_source'] ?? '')),
             'image_mode' => trim((string) ($image['source_type'] ?? 'placeholder')),
             'image_remote_src' => $imageRemoteSrc,
+            'image_local_asset' => $imageLocalAsset,
+            'image_local_path' => $imageLocalPath,
+            'has_local_image' => $imageLocalAsset !== '',
             'image_target_asset' => $imageTargetAsset,
             'image_target_path' => $imageTargetPath,
             'feed_source' => trim((string) ($product['feed_source'] ?? '')),
@@ -201,6 +206,8 @@ if (!function_exists('interessa_resolve_product_reference')) {
                     $row['img'] = $image['src'];
                     $row['_image'] = $image;
                     $row['image_mode'] = trim((string) ($image['source_type'] ?? 'placeholder'));
+                    $row['image_local_asset'] = trim((string) ($image['asset'] ?? ''));
+                    $row['has_local_image'] = ($row['image_mode'] ?? '') === 'local';
                     $row['image_target_asset'] = trim((string) ($image['target_asset'] ?? ''));
                 }
             }

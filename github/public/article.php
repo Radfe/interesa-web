@@ -176,33 +176,6 @@ include __DIR__ . '/inc/head.php';
         </div>
       <?php endif; ?>
 
-      <?php if ($categoryStats !== null || $shortlistStats !== null): ?>
-        <div class="article-context-strip" aria-label="Kontext clanku">
-          <?php if ($categoryStats !== null): ?>
-            <div class="article-context-card">
-              <strong><?= esc((string) ($categoryStats['count'] ?? 0)) ?></strong>
-              <span><?= esc(interessa_pluralize_slovak((int) ($categoryStats['count'] ?? 0), 'clanok v teme', 'clanky v teme', 'clankov v teme')) ?></span>
-            </div>
-            <div class="article-context-card">
-              <strong><?= esc((string) ($categoryStats['recent_count'] ?? 0)) ?></strong>
-              <span>aktualizovanych za 60 dni</span>
-            </div>
-          <?php endif; ?>
-          <?php if ($shortlistStats !== null): ?>
-            <div class="article-context-card">
-              <strong><?= esc((string) ($shortlistStats['count'] ?? 0)) ?></strong>
-              <span><?= esc(interessa_pluralize_slovak((int) ($shortlistStats['count'] ?? 0), 'odporucany produkt', 'odporucane produkty', 'odporucanych produktov')) ?></span>
-            </div>
-            <?php if ((int) ($shortlistStats['merchant_count'] ?? 0) > 1): ?>
-              <div class="article-context-card">
-                <strong><?= esc((string) ($shortlistStats['merchant_count'] ?? 0)) ?></strong>
-                <span><?= esc(interessa_pluralize_slovak((int) ($shortlistStats['merchant_count'] ?? 0), 'porovnany obchod', 'porovnane obchody', 'porovnanych obchodov')) ?></span>
-              </div>
-            <?php endif; ?>
-          <?php endif; ?>
-        </div>
-      <?php endif; ?>
-
       <?php if ($commerce !== null): ?>
         <?php interessa_render_commerce_verdict($commerce); ?>
       <?php endif; ?>

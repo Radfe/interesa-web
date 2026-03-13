@@ -504,14 +504,16 @@ function interessa_admin_product_image_queue(array $catalog, string $filter = 'm
         $normalized = interessa_normalize_product(is_array($product) ? $product : []);
         $mode = trim((string) ($normalized['image_mode'] ?? 'placeholder'));
         $targetAsset = trim((string) ($normalized['image_target_asset'] ?? ''));
-        $hasLocalPackshot = $targetAsset !== '' && (($assetPath = interessa_asset_file_path($targetAsset)) !== null) && is_file($assetPath);
+        $localAsset = trim((string) ($normalized['image_local_asset'] ?? ''));
+        $hasLocalPackshot = !empty($normalized['has_local_image']);
         $rows[] = [
             'slug' => (string) ($normalized['slug'] ?? $slug),
             'name' => interessa_admin_clean_label((string) ($normalized['name'] ?? $slug)),
             'merchant' => (string) ($normalized['merchant'] ?? ''),
             'affiliate_code' => (string) ($normalized['affiliate_code'] ?? ''),
             'image_mode' => $mode,
-            'target_asset' => $targetAsset,
+            'target_asset' => $hasLocalPackshot && $localAsset !== '' ? $localAsset : $targetAsset,
+            'upload_target_asset' => $targetAsset,
             'needs_local_packshot' => !$hasLocalPackshot,
             'remote_src' => (string) ($normalized['image_remote_src'] ?? ''),
         ];
@@ -2466,6 +2468,48 @@ require dirname(__DIR__) . '/inc/head.php';
                 <h2>Co kliknut a v akom poradi</h2>
               </div>
             </div>
+            <section class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Co chces urobit prave teraz</h3>
+                  <p class="admin-meta">Ak nechces studovat cely admin, zacni jednym z tychto 4 krokov.</p>
+                </div>
+              </div>
+              <div class="admin-help-grid">
+                <article class="admin-help-card">
+                  <h3>Upravit clanok</h3>
+                  <p class="admin-note">Nazov, intro, sekcie, SEO meta a odporucane produkty.</p>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit Clanky</a>
+                    <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Live clanok</a>
+                  </div>
+                </article>
+                <article class="admin-help-card">
+                  <h3>Doplnit hero obrazok</h3>
+                  <p class="admin-note">Prompt, filename a upload finalneho WebP obrazku clanku.</p>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit Images</a>
+                    <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Hero helper</a>
+                  </div>
+                </article>
+                <article class="admin-help-card">
+                  <h3>Doplnit obrazok produktu</h3>
+                  <p class="admin-note">Pouzi najprv Zrkadlit remote, az potom manualny upload.</p>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=missing">Otvorit Produkty</a>
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Workflow clanku</a>
+                  </div>
+                </article>
+                <article class="admin-help-card">
+                  <h3>Doplnit Dognet link</h3>
+                  <p class="admin-note">Finalny deeplink patri do centralnej affiliate sekcie.</p>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($selectedAffiliateCode) ?>">Affiliate odkazy</a>
+                    <?php if ($selectedAffiliateCode !== ''): ?><a class="btn btn-secondary btn-small" href="/go/<?= rawurlencode($selectedAffiliateCode) ?>" target="_blank" rel="noopener">Otvorit /go/</a><?php endif; ?>
+                  </div>
+                </article>
+              </div>
+            </section>
             <div class="admin-help-grid">
               <article class="admin-help-card">
                 <h3>1. Chcem upravit clanok</h3>

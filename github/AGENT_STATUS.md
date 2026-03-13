@@ -4,13 +4,13 @@ Current branch:
 codex/feature/admin-system
 
 Current task:
-Continuing from a cleaner public/admin baseline: discovery cards now use calmer compact commerce metadata, the admin uses simpler image wording, and the next passes focus on finishing the remaining real-image gaps plus plain-language handoff guidance
+Continuing from a calmer public/admin baseline: the public site now uses simpler wording and less technical UI, local mirrored merchant images count correctly, and the next pass focuses on the remaining real-image gaps that still need actual source imagery
 
 Next planned task:
-Keep reducing the remaining real-image gaps where approved merchant images exist, then finish the plain-language admin/image usage handoff so daily work can move from development into production content filling
+Generate a practical backlog of the remaining top money-page product images that still need real source artwork, then use that backlog to keep filling visible gaps without adding more public complexity
 
 Last completed task:
-Finished a full simplification milestone: the admin can mirror approved remote merchant images into canonical local assets, the core GymBeam products were mirrored into the live catalog, public wording was cleaned of most technical jargon, and discovery cards now use a calmer compact recommendation signal instead of stacked commerce chips
+Finished the frontend simplification and image-detection milestone: local mirrored merchant PNGs now count as real local product images, the public site no longer shows the most confusing technical coverage language, and category/article headers are calmer and easier to understand
 
 Files currently modified:
 - AGENT_STATUS.md
