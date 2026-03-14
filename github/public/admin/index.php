@@ -2700,10 +2700,31 @@ require dirname(__DIR__) . '/inc/head.php';
                   <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack">
                     <input type="hidden" name="action" value="upload_hero_only" />
                     <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
+                    <input type="hidden" name="hero_crop_mode" value="center" />
                     <label>
                       <span>2. Vyber hotovy obrazok z Canvy</span>
                       <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" required />
                     </label>
+                    <section class="admin-crop-picker" data-hero-crop-picker hidden>
+                      <div class="admin-crop-picker__head">
+                        <strong>Vyber najlepsi vyrez obrazka</strong>
+                        <small>Po vybrati obrazka klikni na ten nahlad, ktory vyzera najlepsie.</small>
+                      </div>
+                      <div class="admin-crop-picker__grid">
+                        <button class="admin-crop-option is-selected" type="button" data-crop-mode="center">
+                          <span class="admin-crop-option__preview" data-crop-preview="center"></span>
+                          <span class="admin-crop-option__label">Na stred</span>
+                        </button>
+                        <button class="admin-crop-option" type="button" data-crop-mode="top">
+                          <span class="admin-crop-option__preview" data-crop-preview="top"></span>
+                          <span class="admin-crop-option__label">Drzat vrch</span>
+                        </button>
+                        <button class="admin-crop-option" type="button" data-crop-mode="bottom">
+                          <span class="admin-crop-option__preview" data-crop-preview="bottom"></span>
+                          <span class="admin-crop-option__label">Drzat spodok</span>
+                        </button>
+                      </div>
+                    </section>
                     <button class="btn btn-cta" type="submit">3. Nahraj obrazok a otvor clanok</button>
                   </form>
                   <?php if ($selectedHeroQueuePosition > 0): ?>
@@ -3875,29 +3896,141 @@ require dirname(__DIR__) . '/inc/head.php';
       });
     }
 
+    function cropAnchorForMode(mode) {
+      const normalizedMode = String(mode || 'center').toLowerCase();
+      if (normalizedMode === 'top') {
+        return 0.1;
+      }
+      if (normalizedMode === 'bottom') {
+        return 0.9;
+      }
+      return 0.5;
+    }
+
+    function resolveHeroCropMode(form) {
+      if (!(form instanceof HTMLFormElement)) {
+        return 'center';
+      }
+
+      const input = form.querySelector('input[name="hero_crop_mode"]');
+      return input instanceof HTMLInputElement ? String(input.value || 'center').toLowerCase() : 'center';
+    }
+
+    function resolveHeroCropAnchor(form) {
+      return cropAnchorForMode(resolveHeroCropMode(form));
+    }
+
+    function createCropPreviewDataUrl(image, mode) {
+      const canvas = drawImageCoverToCanvas(image, 360, 240, {
+        cropAnchorY: cropAnchorForMode(mode)
+      });
+      return canvas.toDataURL('image/jpeg', 0.88);
+    }
+
+    async function refreshHeroCropPreviews(form, file) {
+      if (!(form instanceof HTMLFormElement) || !(file instanceof File)) {
+        return;
+      }
+
+      const picker = form.querySelector('[data-hero-crop-picker]');
+      if (!(picker instanceof HTMLElement)) {
+        return;
+      }
+
+      const image = await loadImageFromFile(file);
+      ['center', 'top', 'bottom'].forEach(function (mode) {
+        const preview = picker.querySelector('[data-crop-preview="' + mode + '"]');
+        if (preview instanceof HTMLElement) {
+          preview.style.backgroundImage = 'url(\"' + createCropPreviewDataUrl(image, mode) + '\")';
+        }
+      });
+
+      picker.hidden = false;
+      updateHeroCropSelection(form, resolveHeroCropMode(form));
+    }
+
+    function updateHeroCropSelection(form, mode) {
+      if (!(form instanceof HTMLFormElement)) {
+        return;
+      }
+
+      const normalizedMode = ['center', 'top', 'bottom'].includes(String(mode || '').toLowerCase())
+        ? String(mode).toLowerCase()
+        : 'center';
+      const input = form.querySelector('input[name="hero_crop_mode"]');
+      if (input instanceof HTMLInputElement) {
+        input.value = normalizedMode;
+      }
+
+      form.querySelectorAll('.admin-crop-option').forEach(function (button) {
+        if (!(button instanceof HTMLElement)) {
+          return;
+        }
+        button.classList.toggle('is-selected', button.getAttribute('data-crop-mode') === normalizedMode);
+      });
+    }
+
+    function bindHeroCropPicker(form) {
+      if (!(form instanceof HTMLFormElement)) {
+        return;
+      }
+
+      const fileInput = form.querySelector('input[type="file"][name="hero_image"]');
+      if (!(fileInput instanceof HTMLInputElement)) {
+        return;
+      }
+
+      updateHeroCropSelection(form, resolveHeroCropMode(form));
+
+      fileInput.addEventListener('change', function () {
+        const selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+        if (!(selectedFile instanceof File)) {
+          return;
+        }
+
+        refreshHeroCropPreviews(form, selectedFile).catch(function (error) {
+          console.error(error);
+          showToast('Nepodarilo sa pripravit nahlad vyrezu obrazka.', true);
+        });
+      });
+
+      form.querySelectorAll('.admin-crop-option').forEach(function (button) {
+        button.addEventListener('click', function () {
+          updateHeroCropSelection(form, button.getAttribute('data-crop-mode') || 'center');
+        });
+      });
+    }
+
     function resolveUploadTarget(fileInput) {
       const name = fileInput && typeof fileInput.name === 'string' ? fileInput.name : '';
       if (name === 'hero_image') {
+        const form = fileInput instanceof HTMLInputElement ? fileInput.closest('form') : null;
         return {
           width: 1200,
           height: 800,
-          label: 'hlavny obrazok clanku'
+          label: 'hlavny obrazok clanku',
+          cropAnchorY: resolveHeroCropAnchor(form)
         };
       }
 
       return {
         width: 1200,
         height: 1200,
-        label: 'obrazok produktu'
+        label: 'obrazok produktu',
+        cropAnchorY: 0.5
       };
     }
 
-    function drawImageCoverToCanvas(image, targetWidth, targetHeight) {
+    function drawImageCoverToCanvas(image, targetWidth, targetHeight, options) {
       const sourceWidth = image.naturalWidth || image.width || 0;
       const sourceHeight = image.naturalHeight || image.height || 0;
       if (sourceWidth <= 0 || sourceHeight <= 0) {
         throw new Error('image-size-missing');
       }
+
+      const cropAnchorY = options && Number.isFinite(Number(options.cropAnchorY))
+        ? Math.max(0, Math.min(1, Number(options.cropAnchorY)))
+        : 0.5;
 
       const canvas = document.createElement('canvas');
       canvas.width = targetWidth;
@@ -3919,7 +4052,7 @@ require dirname(__DIR__) . '/inc/head.php';
         cropX = Math.round((sourceWidth - cropWidth) / 2);
       } else if (sourceRatio < targetRatio) {
         cropHeight = Math.round(sourceWidth / targetRatio);
-        cropY = Math.round((sourceHeight - cropHeight) / 2);
+        cropY = Math.round((sourceHeight - cropHeight) * cropAnchorY);
       }
 
       context.clearRect(0, 0, targetWidth, targetHeight);
@@ -4012,13 +4145,15 @@ require dirname(__DIR__) . '/inc/head.php';
       const normalizedTarget = target && Number(target.width) > 0 && Number(target.height) > 0
         ? {
             width: Number(target.width),
-            height: Number(target.height)
+            height: Number(target.height),
+            cropAnchorY: Number.isFinite(Number(target.cropAnchorY)) ? Number(target.cropAnchorY) : 0.5
           }
         : {
             width: image.naturalWidth || image.width,
-            height: image.naturalHeight || image.height
+            height: image.naturalHeight || image.height,
+            cropAnchorY: 0.5
           };
-      const canvas = drawImageCoverToCanvas(image, normalizedTarget.width, normalizedTarget.height);
+      const canvas = drawImageCoverToCanvas(image, normalizedTarget.width, normalizedTarget.height, normalizedTarget);
       const blob = await canvasToVerifiedWebpBlob(canvas);
       return new File([blob], renameToWebp(file.name), {
         type: 'image/webp',
@@ -4156,6 +4291,10 @@ require dirname(__DIR__) . '/inc/head.php';
       const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="product_image"]');
       if (!(fileInput instanceof HTMLInputElement)) {
         return;
+      }
+
+      if (fileInput.name === 'hero_image') {
+        bindHeroCropPicker(form);
       }
 
       form.addEventListener('submit', function (event) {
