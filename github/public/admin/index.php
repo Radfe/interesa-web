@@ -1571,7 +1571,7 @@ $flashMessages = [
     'packshot-mirrored' => 'Remote obrazok bol zrkadleny do lokalneho assetu.',
     'product-enriched' => 'Produkt bol doplneny z referencnej produktovej stranky.',
     'product-autofill' => 'Produkt bol automaticky doplneny a obrazok sa pokusil zrkadlit.',
-    'product-remote-ready' => 'Produkt ma zisteny packshot z e-shopu. Teraz klikni Ulozit packshot z e-shopu a vznikne lokalny WebP.',
+    'product-remote-ready' => 'Produkt ma zisteny obrazok z e-shopu. Teraz klikni Ulozit obrazok produktu z e-shopu a vznikne lokalny WebP.',
 ];
 $flashMessage = $importSummary !== '' ? $importSummary : ($flashMessages[$flash] ?? '');
 
@@ -1681,7 +1681,7 @@ require dirname(__DIR__) . '/inc/head.php';
           <?php if ($section === 'products' && in_array($flash, ['packshot', 'packshot-mirrored', 'product-autofill'], true)): ?>
             <div class="admin-inline-actions">
               <?php if ($selectedProductLocalImageUrl !== ''): ?>
-                <a class="btn btn-secondary btn-small" href="<?= esc($selectedProductLocalImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny WebP</a>
+                <a class="btn btn-secondary btn-small" href="<?= esc($selectedProductLocalImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny obrazok</a>
               <?php endif; ?>
               <?php if ($returnSectionPrefill === 'images' && $returnSlugPrefill !== ''): ?>
                 <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($returnSlugPrefill) ?>&amp;focus_product=<?= esc($selectedProductSlug) ?>">Spat do workflowu clanku</a>
@@ -1710,7 +1710,7 @@ require dirname(__DIR__) . '/inc/head.php';
         <nav class="admin-nav">
           <a class="<?= $section === 'articles' ? 'is-active' : '' ?>" href="/admin?section=articles&slug=<?= esc($selectedArticleSlug) ?>">Clanky</a>
           <a class="<?= $section === 'products' ? 'is-active' : '' ?>" href="/admin?section=products&product=<?= esc($selectedProductSlug) ?>">Produkty</a>
-          <a class="<?= $section === 'images' ? 'is-active' : '' ?>" href="/admin?section=images&slug=<?= esc($selectedArticleSlug) ?>">Image briefy</a>
+          <a class="<?= $section === 'images' ? 'is-active' : '' ?>" href="/admin?section=images&slug=<?= esc($selectedArticleSlug) ?>">Obrazky</a>
           <a class="<?= $section === 'affiliates' ? 'is-active' : '' ?>" href="/admin?section=affiliates&code=<?= esc($selectedAffiliateCode) ?>">Affiliate odkazy</a>
           <a class="<?= $section === 'tools' ? 'is-active' : '' ?>" href="/admin?section=tools">Import / export</a>
           <a class="<?= $section === 'help' ? 'is-active' : '' ?>" href="/admin?section=help">Pomoc / quickstart</a>
@@ -1729,9 +1729,9 @@ require dirname(__DIR__) . '/inc/head.php';
             </ol>
           <?php elseif ($section === 'images'): ?>
             <ol class="admin-quickstart-list">
-              <li>Skopiruj prompt, filename a target path.</li>
-              <li>Vytvor hero v Canve alebo AI nastroji a exportuj WebP.</li>
-              <li>Nahraj hero alebo produktovy obrazok a vrat sa na clanok.</li>
+              <li>Skopiruj text pre Canvu.</li>
+              <li>Sprav obrazok v Canve a stiahni ho.</li>
+              <li>Nahraj obrazok sem a skontroluj clanok na webe.</li>
             </ol>
           <?php elseif ($section === 'products'): ?>
             <ol class="admin-quickstart-list">
@@ -1748,7 +1748,7 @@ require dirname(__DIR__) . '/inc/head.php';
           <?php elseif ($section === 'help'): ?>
             <ol class="admin-quickstart-list">
               <li>Ak ides upravit obsah, zacni v Clankoch.</li>
-              <li>Ak ides riesit obrazky, otvor Image briefy.</li>
+              <li>Ak ides riesit obrazky, otvor Obrazky.</li>
               <li>Ak ides riesit CTA a produkty, pouzi Produkty a Affiliate odkazy.</li>
             </ol>
           <?php else: ?>
@@ -1804,9 +1804,9 @@ require dirname(__DIR__) . '/inc/head.php';
                 <h2>Strukturovany obsah clanku</h2>
               </div>
               <div class="admin-inline-actions">
-                <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit image workflow</a>
-                <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Hero helper</a>
-                <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Live clanok</a>
+                <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit obrazky</a>
+                <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
+                <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="articles" />
@@ -1881,7 +1881,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   </select>
                 </label>
                 <label>
-                  <span>Hero asset</span>
+                  <span>Hlavny obrazok clanku</span>
                   <input type="text" name="hero_asset" value="<?= esc((string) ($selectedArticleOverride['hero_asset'] ?? '')) ?>" placeholder="img/articles/heroes/slug.webp" />
                 </label>
               </div>
@@ -2040,7 +2040,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <label>
                   <span>Nahrat hero obrazok</span>
                   <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" />
-                  <small class="admin-note">Target hero asset: <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></small>
+                  <small class="admin-note">Kam sa ulozi hlavny obrazok: <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></small>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Image workflow</a>
                     <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?>">Kopirovat hero path</button>
@@ -2062,7 +2062,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <small><code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></small>
                     <div class="admin-inline-actions admin-mini-product-card__actions">
                       <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Image workflow</a>
-                      <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Hero helper</a>
+                      <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
                     </div>
                   </div>
                 </div>
@@ -2130,7 +2130,7 @@ require dirname(__DIR__) . '/inc/head.php';
                             <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($actionRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Obrazok produktu</a>
                             <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Image workflow</a>
                             <?php if (trim((string) ($actionRow['image_target_asset'] ?? '')) !== ''): ?>
-                              <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($actionRow['image_target_asset'] ?? '')) ?>">Kopirovat path</button>
+                              <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($actionRow['image_target_asset'] ?? '')) ?>">Kopirovat cestu</button>
                             <?php endif; ?>
                           <?php else: ?>
                             <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;prefill_product_name=<?= esc((string) ($actionRow['name'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($actionRow['slug'] ?? '')) ?>&amp;prefill_product_category=<?= esc((string) ($selectedArticleOverride['category'] ?? $selectedArticleMeta['category'] ?? '')) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vytvorit produkt</a>
@@ -2219,7 +2219,7 @@ require dirname(__DIR__) . '/inc/head.php';
 
               <div class="admin-actions">
                 <button class="btn btn-cta" type="submit">Ulozit clanok</button>
-                <a class="btn btn-secondary" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok</a>
+                <a class="btn btn-secondary" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
                 <button class="btn btn-secondary" type="submit" name="action" value="delete_article_override" onclick="return confirm('Naozaj resetovat admin override pre tento clanok?');">Reset override</button>
               </div>
             </form>
@@ -2322,7 +2322,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
                             <input type="hidden" name="action" value="mirror_packshot_from_remote" />
                             <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
-                            <button class="btn btn-secondary btn-small" type="submit">Ulozit packshot z e-shopu</button>
+                            <button class="btn btn-secondary btn-small" type="submit">Ulozit obrazok produktu z e-shopu</button>
                           </form>
                         <?php endif; ?>
                       <?php endif; ?>
@@ -2429,45 +2429,41 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p><strong>Ulozeny lokalny asset:</strong> <code><?= esc($selectedProductLocalAsset !== '' ? $selectedProductLocalAsset : 'zatial chyba') ?></code></p>
                   <p><strong>Cielovy asset:</strong> <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></p>
                   <?php if ($selectedProductPackshotReady): ?>
-                    <p class="admin-note">Toto je lokalny ulozeny WebP, ktory web realne zobrazi pri produkte.</p>
+                    <p class="admin-note">Toto je hotovy obrazok produktu, ktory sa zobrazi na webe.</p>
                   <?php elseif (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
-                    <p class="admin-note">Produkt uz ma zdrojovy obrazok z e-shopu, ale este nie je ulozeny lokalny WebP. Klikni <strong>Ulozit packshot z e-shopu</strong>.</p>
+                    <p class="admin-note">Nasiel sa obrazok z e-shopu. Teraz klikni <strong>2. Ulozit obrazok produktu</strong>.</p>
                   <?php else: ?>
-                    <p class="admin-note">Produkt zatial nema ani lokalny WebP, ani zisteny remote packshot z e-shopu. Najprv pouzi <strong>Zistit data z e-shopu</strong>.</p>
+                    <p class="admin-note">Produkt este nema obrazok ulozeny u nas. Najprv klikni <strong>1. Najst obrazok z e-shopu</strong>.</p>
                   <?php endif; ?>
                   <div class="admin-inline-actions">
-                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?>">Kopirovat cielovu cestu</button>
                     <?php if ($selectedProductLocalImageUrl !== ''): ?>
-                      <a class="btn btn-secondary btn-small" href="<?= esc($selectedProductLocalImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny WebP</a>
-                    <?php endif; ?>
-                    <?php if (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
-                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>">Kopirovat remote URL</button>
+                      <a class="btn btn-secondary btn-small" href="<?= esc($selectedProductLocalImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny obrazok</a>
                     <?php endif; ?>
                   </div>
                   <?php if ($selectedPackshotQueuePosition > 0): ?>
-                    <p class="admin-note">Backlog obrazkov: <?= esc((string) $selectedPackshotQueuePosition) ?> / <?= esc((string) count($missingPackshotSlugs)) ?></p>
+                    <p class="admin-note">Kolko produktov este caka: <?= esc((string) $selectedPackshotQueuePosition) ?> / <?= esc((string) count($missingPackshotSlugs)) ?></p>
                   <?php endif; ?>
                   <?php if ($prevMissingPackshotSlug !== '' || $nextMissingPackshotSlug !== ''): ?>
                     <div class="admin-inline-actions">
                       <?php if ($prevMissingPackshotSlug !== ''): ?>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($prevMissingPackshotSlug) ?>&amp;product_image_filter=missing">Predchadzajuci chyba</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($prevMissingPackshotSlug) ?>&amp;product_image_filter=missing">Predchadzajuci produkt bez obrazka</a>
                       <?php endif; ?>
                       <?php if ($nextMissingPackshotSlug !== ''): ?>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($nextMissingPackshotSlug) ?>&amp;product_image_filter=missing">Dalsi chyba</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($nextMissingPackshotSlug) ?>&amp;product_image_filter=missing">Dalsi produkt bez obrazka</a>
                       <?php endif; ?>
                     </div>
                   <?php endif; ?>
-                  <p><strong>Remote source:</strong> <?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?></p>
+                  <p><strong>Najdeny obrazok z e-shopu:</strong> <?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?></p>
                   <?php if (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
                     <div class="admin-inline-actions">
-                      <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit zdroj z e-shopu</a>
+                      <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit obrazok z e-shopu</a>
                       <?php if (!$selectedProductPackshotReady): ?>
                         <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
                           <input type="hidden" name="action" value="mirror_packshot_from_remote" />
                           <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
                           <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
                           <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
-                          <button class="btn btn-secondary btn-small" type="submit">Ulozit packshot z e-shopu</button>
+                          <button class="btn btn-secondary btn-small" type="submit">2. Ulozit obrazok produktu</button>
                         </form>
                       <?php endif; ?>
                     </div>
@@ -2480,7 +2476,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
                         <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
                         <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
-                          <button class="btn btn-secondary btn-small" type="submit">Zistit data z e-shopu</button>
+                          <button class="btn btn-secondary btn-small" type="submit">1. Najst obrazok z e-shopu</button>
                         </form>
                       <?php if (!$selectedProductPackshotReady): ?>
                         <form method="post" class="admin-inline-form">
@@ -2488,7 +2484,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
                           <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
                           <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
-                          <button class="btn btn-secondary btn-small" type="submit">Automaticky doplnit</button>
+                          <button class="btn btn-secondary btn-small" type="submit">Skusit najst obrazok automaticky</button>
                         </form>
                       <?php endif; ?>
                     </div>
@@ -2522,28 +2518,27 @@ require dirname(__DIR__) . '/inc/head.php';
               <section class="admin-subsection">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>Manualny fallback packshot</h3>
-                    <p class="admin-meta">Pouzi iba vtedy, ked nemas dostupny realny packshot z e-shopu, feedu alebo remote obrazku. Pre produkty preferujeme povodny obrazok merchanta, nie AI packshot.</p>
+                <h3>Vlastny obrazok produktu</h3>
+                <p class="admin-meta">Pouzi iba vtedy, ked na e-shope alebo vo feede naozaj nie je normalny obrazok produktu. AI obrazok pri produktoch nepouzivaj, ak sa da zobrat povodny obrazok z obchodu.</p>
                   </div>
                 </div>
                 <div class="admin-brief-grid">
                   <div class="admin-brief-card">
-                    <h3>Brief</h3>
+                    <h3>Text pre Canvu</h3>
                     <p><?= esc((string) ($selectedProductImageBrief['prompt'] ?? '')) ?></p>
                     <div class="admin-inline-actions">
-                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProductImageBrief['prompt'] ?? '')) ?>">Kopirovat prompt</button>
-                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProductImageBrief['asset_path'] ?? '')) ?>">Kopirovat path</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProductImageBrief['prompt'] ?? '')) ?>">Kopirovat text pre Canvu</button>
                       <?php if (trim((string) ($selectedProductImageBrief['reference_url'] ?? '')) !== ''): ?>
                         <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProductImageBrief['reference_url'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit e-shop</a>
                       <?php endif; ?>
                     </div>
                   </div>
                   <div class="admin-brief-card">
-                    <h3>Export</h3>
-                    <p><strong>Filename:</strong><br><?= esc((string) ($selectedProductImageBrief['file_name'] ?? '')) ?></p>
+                    <h3>Udaje pre export</h3>
+                    <p><strong>Nazov suboru:</strong><br><?= esc((string) ($selectedProductImageBrief['file_name'] ?? '')) ?></p>
                     <p><strong>Alt text:</strong><br><?= esc((string) ($selectedProductImageBrief['alt_text'] ?? '')) ?></p>
-                    <p><strong>Dimensions:</strong><br><?= esc((string) ($selectedProductImageBrief['dimensions'] ?? '1200x1200')) ?></p>
-                    <p><strong>Target path:</strong><br><code><?= esc((string) ($selectedProductImageBrief['asset_path'] ?? '')) ?></code></p>
+                    <p><strong>Rozmer:</strong><br><?= esc((string) ($selectedProductImageBrief['dimensions'] ?? '1200x1200')) ?></p>
+                    <p><strong>Kam sa ulozi:</strong><br><code><?= esc((string) ($selectedProductImageBrief['asset_path'] ?? '')) ?></code></p>
                     <?php if (trim((string) ($selectedProductImageBrief['merchant_note'] ?? '')) !== ''): ?>
                       <p><strong>Poznamka:</strong><br><?= esc((string) ($selectedProductImageBrief['merchant_note'] ?? '')) ?></p>
                     <?php endif; ?>
@@ -2567,8 +2562,8 @@ require dirname(__DIR__) . '/inc/head.php';
                         <p><?= esc((string) ($usageRow['slug'] ?? '')) ?> / <?= esc((string) ($usageRow['source'] ?? '')) ?></p>
                       </div>
                       <div class="admin-queue-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc((string) ($usageRow['slug'] ?? '')) ?>">Otvorit v admine</a>
-                        <a class="btn btn-secondary btn-small" href="<?= esc((string) ($usageRow['url'] ?? '#')) ?>" target="_blank" rel="noopener">Clanok</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc((string) ($usageRow['slug'] ?? '')) ?>">Otvorit clanok v admine</a>
+                        <a class="btn btn-secondary btn-small" href="<?= esc((string) ($usageRow['url'] ?? '#')) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
                       </div>
                     </article>
                   <?php endforeach; ?>
@@ -2670,9 +2665,9 @@ require dirname(__DIR__) . '/inc/head.php';
           <section class="admin-card">
             <div class="admin-card-head">
               <div>
-                <p class="admin-kicker">Image brief generator</p>
-                <h2>Canva / AI workflow</h2>
-              <p class="admin-note">Pri produktoch najprv pouzi realny packshot z e-shopu alebo feedu cez "Ulozit packshot z e-shopu". Manualny upload je fallback. AI prompt pouzivaj iba pre hero obrazky clankov, nie pre produktove packshoty.</p>
+                <p class="admin-kicker">Obrazky</p>
+                <h2>Obrazky pre clanok</h2>
+              <p class="admin-note">Na tejto stranke robis len 2 veci: hore riesis hlavny obrazok clanku, nizsie riesis obrazky produktov. Pri produktoch najprv pouzi obrazok z e-shopu. Manualny upload je az zalozny krok.</p>
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="images" />
@@ -2686,30 +2681,31 @@ require dirname(__DIR__) . '/inc/head.php';
 
             <section class="admin-subsection admin-asset-preview">
               <div class="admin-subsection-head">
-                <h3>Aktualny hero asset</h3>
+                <h3>Hlavny obrazok clanku</h3>
               </div>
               <div class="admin-asset-preview__grid">
                 <div class="admin-asset-preview__media">
                   <?= interessa_render_image($selectedArticleHero, ['class' => 'admin-asset-preview__image']) ?>
                 </div>
                 <div class="admin-asset-preview__body">
-                  <p><strong>Zdroj:</strong> <?= esc($selectedArticleHeroSource) ?></p>
-                  <p><strong>Aktivny asset:</strong> <code><?= esc((string) ($selectedArticleHero['asset'] ?? '')) ?></code></p>
-                  <p><strong>Target path:</strong> <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></p>
+                  <p><strong>Odkial je obrazok:</strong> <?= esc($selectedArticleHeroSource) ?></p>
+                  <p><strong>Aktualny subor:</strong> <code><?= esc((string) ($selectedArticleHero['asset'] ?? '')) ?></code></p>
+                  <p><strong>Kam sa ulozi:</strong> <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></p>
+                  <p class="admin-note">Tu klikaj len v tomto poradi: 1. Skopiruj text pre Canvu. 2. V Canve sprav obrazok. 3. Nahraj obrazok sem. 4. Otvor clanok na webe a skontroluj ho.</p>
                   <div class="admin-inline-actions">
-                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?>">Kopirovat target path</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['file_name'] ?? '')) ?>">Kopirovat filename</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['prompt'] ?? '')) ?>">1. Kopirovat text pre Canvu</button>
+                    <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">4. Otvorit clanok na webe</a>
                   </div>
                   <?php if ($selectedHeroQueuePosition > 0): ?>
-                    <p class="admin-note">Hero backlog: <?= esc((string) $selectedHeroQueuePosition) ?> / <?= esc((string) count($missingHeroSlugs)) ?></p>
+                    <p class="admin-note">Zostava spravit: <?= esc((string) $selectedHeroQueuePosition) ?> / <?= esc((string) count($missingHeroSlugs)) ?></p>
                   <?php endif; ?>
                   <?php if ($prevMissingHeroSlug !== '' || $nextMissingHeroSlug !== ''): ?>
                     <div class="admin-inline-actions">
                       <?php if ($prevMissingHeroSlug !== ''): ?>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($prevMissingHeroSlug) ?>&amp;image_filter=missing">Predchadzajuci chyba</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($prevMissingHeroSlug) ?>&amp;image_filter=missing">Predchadzajuci clanok bez obrazka</a>
                       <?php endif; ?>
                       <?php if ($nextMissingHeroSlug !== ''): ?>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($nextMissingHeroSlug) ?>&amp;image_filter=missing">Dalsi chyba</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($nextMissingHeroSlug) ?>&amp;image_filter=missing">Dalsi clanok bez obrazka</a>
                       <?php endif; ?>
                     </div>
                   <?php endif; ?>
@@ -2721,8 +2717,8 @@ require dirname(__DIR__) . '/inc/head.php';
               <section class="admin-subsection is-compact">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>Chybajuce lokalne packshoty v tomto clanku</h3>
-                    <p class="admin-meta">Najprv pouzi realny packshot z e-shopu alebo feedu. Manualny upload je fallback, ked remote obrazok nie je dostupny.</p>
+                    <h3>Produkty bez obrazka v tomto clanku</h3>
+                    <p class="admin-meta">Ak vidis "Obrazok pripraveny", je hotovo. Ak vidis "Obrazok chyba", klikni najprv na najdenie obrazka z e-shopu. Vlastny upload pouzi az ako poslednu moznost.</p>
                   </div>
                   <span class="admin-note"><?= esc((string) $selectedArticlePackshotGapCount) ?> zaznamov</span>
                 </div>
@@ -2736,7 +2732,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <code><?= esc((string) ($queueRow['image_target_asset'] ?? '')) ?></code>
                         <?php endif; ?>
                         <?php if (is_array($queueRow['image_brief'] ?? null) && trim((string) (($queueRow['image_brief']['prompt'] ?? ''))) !== ''): ?>
-                          <small class="admin-note">Packshot brief: <?= esc((string) ($queueRow['image_brief']['file_name'] ?? 'main.webp')) ?> / <?= esc((string) ($queueRow['image_brief']['dimensions'] ?? '1200x1200')) ?></small>
+                          <small class="admin-note">Odporucany subor: <?= esc((string) ($queueRow['image_brief']['file_name'] ?? 'main.webp')) ?> / <?= esc((string) ($queueRow['image_brief']['dimensions'] ?? '1200x1200')) ?></small>
                         <?php endif; ?>
                         <div class="admin-status-pills">
                           <span class="admin-status-pill<?= !empty($queueRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($queueRow['affiliate_ready']) ? 'Affiliate hotovy' : 'Affiliate chyba' ?></span>
@@ -2744,18 +2740,15 @@ require dirname(__DIR__) . '/inc/head.php';
                         </div>
                       </div>
                       <div class="admin-queue-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Otvorit detail produktu</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Otvorit produkt</a>
                         <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
                           <form method="post" class="admin-inline-form">
                             <input type="hidden" name="action" value="autofill_product_from_source" />
                             <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
                             <input type="hidden" name="return_section" value="images" />
                             <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
-                            <button class="btn btn-secondary btn-small" type="submit">Zistit data z e-shopu</button>
+                            <button class="btn btn-secondary btn-small" type="submit">1. Najst obrazok z e-shopu</button>
                           </form>
-                        <?php endif; ?>
-                        <?php if (trim((string) ($queueRow['image_target_asset'] ?? '')) !== ''): ?>
-                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['image_target_asset'] ?? '')) ?>">Kopirovat cielovu cestu</button>
                         <?php endif; ?>
                         <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
                           <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit e-shop</a>
@@ -2766,7 +2759,7 @@ require dirname(__DIR__) . '/inc/head.php';
                             <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
                             <input type="hidden" name="return_section" value="images" />
                             <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
-                            <button class="btn btn-secondary btn-small" type="submit">Ulozit packshot z e-shopu</button>
+                            <button class="btn btn-secondary btn-small" type="submit">2. Ulozit obrazok produktu</button>
                           </form>
                         <?php endif; ?>
                         <form method="post" action="/admin" enctype="multipart/form-data" class="admin-inline-upload">
@@ -2775,10 +2768,10 @@ require dirname(__DIR__) . '/inc/head.php';
                           <input type="hidden" name="return_section" value="images" />
                           <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
                           <label class="admin-inline-upload__label">
-                            <span>Manualny fallback (len ak chyba e-shop packshot)</span>
+                            <span>Vlastny obrazok produktu</span>
                             <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
                           </label>
-                          <button class="btn btn-secondary btn-small" type="submit">Nahrat manualne</button>
+                          <button class="btn btn-secondary btn-small" type="submit">Nahraj vlastny obrazok</button>
                         </form>
                       </div>
                     </article>
@@ -2791,8 +2784,8 @@ require dirname(__DIR__) . '/inc/head.php';
               <section class="admin-subsection is-compact">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>Produkty v tomto clanku</h3>
-                    <p class="admin-meta">Prehlad odporucanych produktov aj so stavom obrazka a affiliate priamo v image workflowe.</p>
+                    <h3>Produkty v tomto clanku - stav</h3>
+                    <p class="admin-meta">Tu len kontrolujes stav. Ak je pri produkte "Obrazok pripraveny", nic uz nenahravas.</p>
                   </div>
                 </div>
                 <div class="admin-mini-product-grid">
@@ -2817,19 +2810,16 @@ require dirname(__DIR__) . '/inc/head.php';
                         <?php endif; ?>
                       </div>
                       <div class="admin-inline-actions admin-mini-product-card__actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Detail produktu</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Otvorit produkt</a>
                         <?php if ($previewImageUrl !== ''): ?>
-                          <a class="btn btn-secondary btn-small" href="<?= esc($previewImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny WebP</a>
+                          <a class="btn btn-secondary btn-small" href="<?= esc($previewImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny obrazok</a>
                         <?php else: ?>
-                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Doplnit obrazok</a>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Otvorit doplnenie obrazka</a>
                         <?php endif; ?>
                         <?php if (trim((string) ($previewStatus['affiliate_code'] ?? '')) !== ''): ?>
                           <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($previewStatus['affiliate_code'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Affiliate</a>
                         <?php else: ?>
                           <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc($previewSlug) ?>&amp;prefill_merchant=<?= esc((string) ($previewRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($previewRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc($previewSlug) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vytvorit affiliate</a>
-                        <?php endif; ?>
-                        <?php if (trim((string) ($previewStatus['image_target_asset'] ?? '')) !== ''): ?>
-                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($previewStatus['image_target_asset'] ?? '')) ?>">Kopirovat cielovu cestu</button>
                         <?php endif; ?>
                         <?php if (trim((string) ($previewStatus['image_remote_src'] ?? '')) !== '' && empty($previewStatus['packshot_ready'])): ?>
                           <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
@@ -2837,7 +2827,7 @@ require dirname(__DIR__) . '/inc/head.php';
                             <input type="hidden" name="product_slug" value="<?= esc((string) ($previewRow['slug'] ?? '')) ?>" />
                             <input type="hidden" name="return_section" value="images" />
                             <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
-                            <button class="btn btn-secondary btn-small" type="submit">Ulozit packshot z e-shopu</button>
+                            <button class="btn btn-secondary btn-small" type="submit">2. Ulozit obrazok produktu</button>
                           </form>
                         <?php endif; ?>
                       </div>
@@ -2848,10 +2838,10 @@ require dirname(__DIR__) . '/inc/head.php';
                             <input type="hidden" name="return_section" value="images" />
                             <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
                             <label class="admin-inline-upload__label">
-                              <span>Manualny fallback (len ak chyba e-shop packshot)</span>
-                              <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
-                            </label>
-                            <button class="btn btn-secondary btn-small" type="submit">Nahrat manualne</button>
+                            <span>Vlastny obrazok produktu</span>
+                            <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
+                          </label>
+                            <button class="btn btn-secondary btn-small" type="submit">Nahraj vlastny obrazok</button>
                           </form>
                         <?php endif; ?>
                     </article>
@@ -2862,41 +2852,37 @@ require dirname(__DIR__) . '/inc/head.php';
 
             <div class="admin-brief-grid">
               <div class="admin-brief-card">
-                <h3>Brief</h3>
-                <p><strong>Prompt:</strong><br><?= esc((string) ($articlePrompt['prompt'] ?? '')) ?></p>
-                <p><strong>Filename:</strong><br><?= esc((string) ($articlePrompt['file_name'] ?? '')) ?></p>
+                <h3>Text pre Canvu</h3>
+                <p><strong>Text pre obrazok:</strong><br><?= esc((string) ($articlePrompt['prompt'] ?? '')) ?></p>
                 <p><strong>Alt text:</strong><br><?= esc((string) ($articlePrompt['alt_text'] ?? '')) ?></p>
-                <p><strong>Dimensions:</strong><br><?= esc((string) ($articlePrompt['dimensions'] ?? '1200x800')) ?></p>
-                <p><strong>Target path:</strong><br><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></p>
-                <p><strong>Style brief:</strong><br><?= esc((string) ($articlePrompt['style_brief'] ?? '')) ?></p>
+                <p><strong>Rozmer:</strong><br><?= esc((string) ($articlePrompt['dimensions'] ?? '1200x800')) ?></p>
+                <p><strong>Styl:</strong><br><?= esc((string) ($articlePrompt['style_brief'] ?? '')) ?></p>
                 <div class="admin-inline-actions">
-                  <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['prompt'] ?? '')) ?>">Kopirovat prompt</button>
-                  <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['file_name'] ?? '')) ?>">Kopirovat filename</button>
-                  <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?>">Kopirovat path</button>
+                  <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['prompt'] ?? '')) ?>">Kopirovat text pre Canvu</button>
                 </div>
               </div>
               <div class="admin-brief-card">
-                <h3>Workflow</h3>
+                <h3>Ako to spravit</h3>
                 <ol class="admin-workflow-list">
-                  <li>Skopiruj prompt do Canvy alebo AI generatora.</li>
+                  <li>Skopiruj text do Canvy.</li>
                   <li>Exportuj PNG, JPG alebo WebP v rozmere 1200x800.</li>
-                  <li>Dodrz naming podla odporucaneho filename.</li>
+                  <li>Ak chces, pouzi odporucany nazov suboru.</li>
                   <li>Nahraj obrazok sem. Admin PNG/JPG automaticky prevedie na WebP este pred uploadom.</li>
-                  <li>Clanok automaticky pouzije novy hero asset.</li>
+                  <li>Clanok automaticky pouzije novy hlavny obrazok.</li>
                 </ol>
                   <div class="admin-inline-actions">
-                    <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Otvorit hero helper</a>
-                    <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok</a>
+                    <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
+                    <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
                   </div>
                   <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form">
                   <input type="hidden" name="action" value="upload_hero_only" />
                   <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
                   <label>
-                    <span>Nahrat finalny hero obrazok</span>
+                    <span>Nahraj hlavny obrazok clanku</span>
                     <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" required />
-                    <small class="admin-note">Cielovy hero asset: <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></small>
+                    <small class="admin-note">Kam sa ulozi: <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></small>
                   </label>
-                  <button class="btn btn-cta" type="submit">Nahrat hero obrazok</button>
+                  <button class="btn btn-cta" type="submit">3. Nahraj hotovy obrazok</button>
                 </form>
               </div>
             </div>
@@ -2905,11 +2891,12 @@ require dirname(__DIR__) . '/inc/head.php';
           <section class="admin-card">
             <div class="admin-card-head">
               <div>
-                <p class="admin-kicker">Hero image backlog</p>
-                <h2>Queue chybajucich hero obrazkov</h2>
+                <p class="admin-kicker">Hlavne obrazky clankov</p>
+                <h2>Clanky bez hlavneho obrazka</h2>
+                <p class="admin-note">Ak chces spravit obrazok pre jeden clanok, klikni <strong>Otvorit tento clanok</strong>. Potom hore na stranke klikni <strong>Kopirovat text pre Canvu</strong> a nakoniec <strong>Nahraj hlavny obrazok clanku</strong>.</p>
               </div>
               <div class="admin-filter-pills">
-                <a class="admin-filter-pill<?= $imageFilter === 'missing' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=missing">Chyba WebP (<?= esc((string) $imageQueueCounts['missing']) ?>)</a>
+                <a class="admin-filter-pill<?= $imageFilter === 'missing' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=missing">Chyba obrazok (<?= esc((string) $imageQueueCounts['missing']) ?>)</a>
                 <a class="admin-filter-pill<?= $imageFilter === 'ready' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=ready">Hotovo (<?= esc((string) $imageQueueCounts['ready']) ?>)</a>
                 <a class="admin-filter-pill<?= $imageFilter === 'all' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=all">Vsetko (<?= esc((string) $imageQueueCounts['all']) ?>)</a>
               </div>
@@ -2927,10 +2914,9 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php endif; ?>
                   </div>
                   <div class="admin-queue-actions">
-                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc((string) $queueRow['slug']) ?>&amp;image_filter=<?= esc($imageFilter) ?>">Otvorit</a>
-                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['prompt'] ?? '')) ?>">Kopirovat prompt</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['asset_path'] ?? '')) ?>">Kopirovat path</button>
-                    <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['article_url'] ?? article_url((string) $queueRow['slug']))) ?>" target="_blank" rel="noopener">Clanok</a>
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc((string) $queueRow['slug']) ?>&amp;image_filter=<?= esc($imageFilter) ?>">Otvorit tento clanok</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['prompt'] ?? '')) ?>">Skopirovat text pre Canvu</button>
+                    <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['article_url'] ?? article_url((string) $queueRow['slug']))) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
                   </div>
                 </article>
               <?php endforeach; ?>
@@ -3107,20 +3093,20 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p class="admin-note">Nazov, intro, sekcie, SEO meta a odporucane produkty.</p>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit Clanky</a>
-                    <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Live clanok</a>
+                    <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
                   </div>
                 </article>
                 <article class="admin-help-card">
                   <h3>Doplnit hero obrazok</h3>
-                  <p class="admin-note">Prompt, filename a upload finalneho WebP obrazku clanku.</p>
+                  <p class="admin-note">Skopiruj text pre Canvu, sprav obrazok a nahraj ho do clanku.</p>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit Images</a>
-                    <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Hero helper</a>
+                    <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
                   </div>
                 </article>
                 <article class="admin-help-card">
                   <h3>Doplnit obrazok produktu</h3>
-                  <p class="admin-note">Pouzi najprv Ulozit packshot z e-shopu, az potom manualny fallback upload.</p>
+                  <p class="admin-note">Pri produktoch najprv skus obrazok z e-shopu. Vlastny upload pouzi az ked nic ine nie je.</p>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=missing">Otvorit Produkty</a>
                     <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Workflow clanku</a>
@@ -3169,7 +3155,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 </article>
                 <article class="admin-help-card">
                   <h3>Skusit automaticke doplnenie</h3>
-                  <p class="admin-note">Ak ma produkt e-shop URL alebo remote obrazok, admin vie dotiahnut data a zrkadlit realny packshot bez AI generovania.</p>
+                  <p class="admin-note">Ak ma produkt URL z e-shopu alebo priamo obrazok z e-shopu, admin vie stiahnut realny obrazok produktu bez AI generovania.</p>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=missing">Vybrany produkt</a>
                     <a class="btn btn-secondary btn-small" href="/admin?section=tools">Money page gaps</a>
@@ -3191,10 +3177,10 @@ require dirname(__DIR__) . '/inc/head.php';
               <article class="admin-help-card">
                 <h3>2. Chcem doplnit hero obrazok</h3>
                 <ol class="admin-quickstart-list">
-                  <li>Otvor <a href="/admin?section=images&slug=<?= esc($selectedArticleSlug) ?>">Image briefy</a>.</li>
+                  <li>Otvor <a href="/admin?section=images&slug=<?= esc($selectedArticleSlug) ?>">Obrazky</a>.</li>
                   <li>Skopiruj <strong>prompt</strong>, <strong>filename</strong> a <strong>target path</strong>.</li>
                   <li>V Canve alebo AI nastroji vytvor obrazok bez textu a exportuj WebP.</li>
-                  <li>Nahraj hero cez admin a skontroluj live clanok.</li>
+                  <li>Nahraj obrazok cez admin a skontroluj clanok na webe.</li>
                 </ol>
               </article>
 
@@ -3202,7 +3188,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <h3>3. Chcem doplnit obrazok produktu</h3>
                 <ol class="admin-quickstart-list">
                   <li>Otvor <a href="/admin?section=products&product=<?= esc($selectedProductSlug) ?>">Produkty</a> alebo queue chybajucich obrazkov v image workflowe.</li>
-                  <li>Ak uz produkt ma remote obrazok od merchanta, klikni <strong>Ulozit packshot z e-shopu</strong>.</li>
+                  <li>Ak uz produkt ma najdeny obrazok z obchodu, klikni <strong>Ulozit obrazok produktu z e-shopu</strong>.</li>
                   <li>Manualny upload pouzi iba ako fallback, ked remote obrazok nie je k dispozicii.</li>
                   <li>Vrat sa na clanok a skontroluj, ci karta uz ukazuje finalny produktovy obrazok.</li>
                 </ol>
@@ -3260,7 +3246,7 @@ require dirname(__DIR__) . '/inc/head.php';
                               </div>
                               <div class="admin-queue-actions">
                                 <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc((string) ($heroRow['slug'] ?? '')) ?>">Image brief</a>
-                                <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Hero helper</a>
+                                <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
                               </div>
                             </article>
                           <?php endforeach; ?>
@@ -3273,7 +3259,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <div class="admin-check-card">
                       <div>
                         <strong>Produktove obrazky, ktore vies doplnit hned</strong>
-                    <small>Tieto produkty uz maju remote zdroj, takze ich vies zvycajne uzavriet jednym klikom cez <strong>Ulozit packshot z e-shopu</strong>.</small>
+                    <small>Tieto produkty uz maju najdeny obrazok z e-shopu, takze ich vies zvycajne dokoncit jednym klikom cez <strong>Ulozit obrazok produktu z e-shopu</strong>.</small>
                         <div class="admin-queue-list">
                           <?php foreach ($helpPriorityProductImages as $productRow): ?>
                             <article class="admin-queue-item is-done">
@@ -3324,7 +3310,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <label class="admin-check-card">
                   <input type="checkbox" />
                   <div>
-                    <strong>Live clanok vyzera dobre na fronte</strong>
+                    <strong>Clanok na webe vyzera dobre</strong>
                     <small>Skontroluj CTA, porovnanie, related bloky a obrazky.</small>
                   </div>
                 </label>
@@ -3570,10 +3556,10 @@ require dirname(__DIR__) . '/inc/head.php';
                                   <?php endif; ?>
                                   <div class="admin-inline-actions">
                                     <?php if ((string) ($row['target_asset'] ?? '') !== ''): ?>
-                                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($row['target_asset'] ?? '')) ?>">Kopirovat path</button>
+                                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($row['target_asset'] ?? '')) ?>">Kopirovat cestu</button>
                                     <?php endif; ?>
                                     <?php if (is_array($row['image_brief'] ?? null) && trim((string) (($row['image_brief']['prompt'] ?? ''))) !== ''): ?>
-                                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($row['image_brief']['prompt'] ?? '')) ?>">Kopirovat prompt</button>
+                                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($row['image_brief']['prompt'] ?? '')) ?>">Kopirovat text pre Canvu</button>
                                     <?php endif; ?>
                                     <?php if ((string) ($row['fallback_url'] ?? '') !== ''): ?>
                                       <a class="btn btn-secondary btn-small" href="<?= esc((string) ($row['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Referencny produkt</a>
@@ -3596,7 +3582,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <td>
                             <div class="admin-inline-actions">
                               <a class="btn btn-secondary btn-small" href="<?= esc((string) ($group['workflow_url'] ?? '')) ?>">Image workflow</a>
-                              <a class="btn btn-secondary btn-small" href="<?= esc((string) ($group['article_url'] ?? '')) ?>" target="_blank" rel="noreferrer">Live clanok</a>
+                              <a class="btn btn-secondary btn-small" href="<?= esc((string) ($group['article_url'] ?? '')) ?>" target="_blank" rel="noreferrer">Otvorit clanok na webe</a>
                             </div>
                           </td>
                         </tr>
