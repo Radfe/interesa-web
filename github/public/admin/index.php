@@ -2696,6 +2696,15 @@ require dirname(__DIR__) . '/inc/head.php';
                     <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['prompt'] ?? '')) ?>">1. Kopirovat text pre Canvu</button>
                     <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">4. Otvorit clanok na webe</a>
                   </div>
+                  <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack">
+                    <input type="hidden" name="action" value="upload_hero_only" />
+                    <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
+                    <label>
+                      <span>2. Vyber hotovy obrazok z Canvy</span>
+                      <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" required />
+                    </label>
+                    <button class="btn btn-cta" type="submit">3. Nahraj hlavny obrazok clanku</button>
+                  </form>
                   <?php if ($selectedHeroQueuePosition > 0): ?>
                     <p class="admin-note">Zostava spravit: <?= esc((string) $selectedHeroQueuePosition) ?> / <?= esc((string) count($missingHeroSlugs)) ?></p>
                   <?php endif; ?>
@@ -2874,16 +2883,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
                     <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
                   </div>
-                  <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form">
-                  <input type="hidden" name="action" value="upload_hero_only" />
-                  <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
-                  <label>
-                    <span>Nahraj hlavny obrazok clanku</span>
-                    <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" required />
-                    <small class="admin-note">Kam sa ulozi: <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></small>
-                  </label>
-                  <button class="btn btn-cta" type="submit">3. Nahraj hotovy obrazok</button>
-                </form>
+                  <p class="admin-note">Nahratie obrazku je teraz uz hore v prvom bloku pod tlacidlom <strong>1. Kopirovat text pre Canvu</strong>.</p>
               </div>
             </div>
           </section>
