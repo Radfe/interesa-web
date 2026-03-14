@@ -1248,7 +1248,8 @@ if ($isAuthed) {
                 $override = interessa_admin_article_override($slug);
                 $override['hero_asset'] = $asset;
                 interessa_admin_save_article_override($slug, $override);
-                interessa_admin_redirect('images', ['slug' => $slug, 'saved' => 'hero']);
+                header('Location: ' . article_url($slug), true, 303);
+                exit;
             }
             if ($action === 'upload_packshot_only') {
                 $slug = trim((string) ($_POST['product_slug'] ?? ''));
@@ -2691,7 +2692,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p><strong>Odkial je obrazok:</strong> <?= esc($selectedArticleHeroSource) ?></p>
                   <p><strong>Aktualny subor:</strong> <code><?= esc((string) ($selectedArticleHero['asset'] ?? '')) ?></code></p>
                   <p><strong>Kam sa ulozi:</strong> <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></p>
-                  <p class="admin-note">Tu klikaj len v tomto poradi: 1. Skopiruj text pre Canvu. 2. V Canve sprav obrazok. 3. Nahraj obrazok sem. 4. Otvor clanok na webe a skontroluj ho.</p>
+                  <p class="admin-note">Tu klikaj len v tomto poradi: 1. Skopiruj text pre Canvu. 2. V Canve sprav obrazok. 3. Nahraj obrazok sem. 4. Po nahrati sa clanok sam otvori na webe. Admin pri nahrati sam upravi rozmer na 1200 x 800.</p>
                   <div class="admin-inline-actions">
                     <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['prompt'] ?? '')) ?>">1. Kopirovat text pre Canvu</button>
                     <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">4. Otvorit clanok na webe</a>
@@ -2703,7 +2704,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <span>2. Vyber hotovy obrazok z Canvy</span>
                       <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" required />
                     </label>
-                    <button class="btn btn-cta" type="submit">3. Nahraj hlavny obrazok clanku</button>
+                    <button class="btn btn-cta" type="submit">3. Nahraj obrazok a otvor clanok</button>
                   </form>
                   <?php if ($selectedHeroQueuePosition > 0): ?>
                     <p class="admin-note">Zostava spravit: <?= esc((string) $selectedHeroQueuePosition) ?> / <?= esc((string) count($missingHeroSlugs)) ?></p>
@@ -2727,7 +2728,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Produkty bez obrazka v tomto clanku</h3>
-                    <p class="admin-meta">Ak vidis "Obrazok pripraveny", je hotovo. Ak vidis "Obrazok chyba", klikni najprv na najdenie obrazka z e-shopu. Vlastny upload pouzi az ako poslednu moznost.</p>
+                    <p class="admin-meta">Ak vidis "Obrazok pripraveny", je hotovo. Ak vidis "Obrazok chyba", klikni najprv na najdenie obrazka z e-shopu. Vlastny upload pouzi az ako poslednu moznost. Admin pri nahrati sam upravi rozmer na 1200 x 1200.</p>
                   </div>
                   <span class="admin-note"><?= esc((string) $selectedArticlePackshotGapCount) ?> zaznamov</span>
                 </div>
@@ -2874,9 +2875,9 @@ require dirname(__DIR__) . '/inc/head.php';
                 <h3>Ako to spravit</h3>
                 <ol class="admin-workflow-list">
                   <li>Skopiruj text do Canvy.</li>
-                  <li>Exportuj PNG, JPG alebo WebP v rozmere 1200x800.</li>
+                  <li>Exportuj PNG, JPG alebo WebP. Presny rozmer nemusis trafit.</li>
                   <li>Ak chces, pouzi odporucany nazov suboru.</li>
-                  <li>Nahraj obrazok sem. Admin PNG/JPG automaticky prevedie na WebP este pred uploadom.</li>
+                  <li>Nahraj obrazok sem. Admin ho automaticky prevedie na WebP a upravi na 1200 x 800.</li>
                   <li>Clanok automaticky pouzije novy hlavny obrazok.</li>
                 </ol>
                   <div class="admin-inline-actions">
@@ -3874,6 +3875,69 @@ require dirname(__DIR__) . '/inc/head.php';
       });
     }
 
+    function resolveUploadTarget(fileInput) {
+      const name = fileInput && typeof fileInput.name === 'string' ? fileInput.name : '';
+      if (name === 'hero_image') {
+        return {
+          width: 1200,
+          height: 800,
+          label: 'hlavny obrazok clanku'
+        };
+      }
+
+      return {
+        width: 1200,
+        height: 1200,
+        label: 'obrazok produktu'
+      };
+    }
+
+    function drawImageCoverToCanvas(image, targetWidth, targetHeight) {
+      const sourceWidth = image.naturalWidth || image.width || 0;
+      const sourceHeight = image.naturalHeight || image.height || 0;
+      if (sourceWidth <= 0 || sourceHeight <= 0) {
+        throw new Error('image-size-missing');
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const context = canvas.getContext('2d', { alpha: true });
+      if (!context) {
+        throw new Error('canvas-context-failed');
+      }
+
+      const sourceRatio = sourceWidth / sourceHeight;
+      const targetRatio = targetWidth / targetHeight;
+      let cropWidth = sourceWidth;
+      let cropHeight = sourceHeight;
+      let cropX = 0;
+      let cropY = 0;
+
+      if (sourceRatio > targetRatio) {
+        cropWidth = Math.round(sourceHeight * targetRatio);
+        cropX = Math.round((sourceWidth - cropWidth) / 2);
+      } else if (sourceRatio < targetRatio) {
+        cropHeight = Math.round(sourceWidth / targetRatio);
+        cropY = Math.round((sourceHeight - cropHeight) / 2);
+      }
+
+      context.clearRect(0, 0, targetWidth, targetHeight);
+      context.drawImage(
+        image,
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        targetWidth,
+        targetHeight
+      );
+
+      return canvas;
+    }
+
     async function blobHasWebpSignature(blob) {
       if (!(blob instanceof Blob)) {
         return false;
@@ -3939,26 +4003,22 @@ require dirname(__DIR__) . '/inc/head.php';
       throw new Error('verified-webp-conversion-failed');
     }
 
-    async function createWebpFileFromUpload(file) {
+    async function createWebpFileFromUpload(file, target) {
       if (!(file instanceof File)) {
         throw new Error('missing-upload-file');
       }
 
-      const detectedFormat = await detectUploadFormat(file);
-      if (detectedFormat === 'webp') {
-        return file;
-      }
-
       const image = await loadImageFromFile(file);
-      const canvas = document.createElement('canvas');
-      canvas.width = image.naturalWidth || image.width;
-      canvas.height = image.naturalHeight || image.height;
-      const context = canvas.getContext('2d', { alpha: true });
-      if (!context) {
-        throw new Error('canvas-context-failed');
-      }
-
-      context.drawImage(image, 0, 0);
+      const normalizedTarget = target && Number(target.width) > 0 && Number(target.height) > 0
+        ? {
+            width: Number(target.width),
+            height: Number(target.height)
+          }
+        : {
+            width: image.naturalWidth || image.width,
+            height: image.naturalHeight || image.height
+          };
+      const canvas = drawImageCoverToCanvas(image, normalizedTarget.width, normalizedTarget.height);
       const blob = await canvasToVerifiedWebpBlob(canvas);
       return new File([blob], renameToWebp(file.name), {
         type: 'image/webp',
@@ -4008,10 +4068,12 @@ require dirname(__DIR__) . '/inc/head.php';
         return;
       }
 
+      const uploadTarget = resolveUploadTarget(fileInput);
+
       setFormBusy(form, true);
 
       try {
-        const webpFile = await createWebpFileFromUpload(selectedFile);
+        const webpFile = await createWebpFileFromUpload(selectedFile, uploadTarget);
         const formData = new FormData(form);
         formData.set(fileInput.name, webpFile, webpFile.name);
 
@@ -4045,7 +4107,11 @@ require dirname(__DIR__) . '/inc/head.php';
 
       try {
         const remoteFile = await fetchRemotePackshotFile(form);
-        const webpFile = await createWebpFileFromUpload(remoteFile);
+        const webpFile = await createWebpFileFromUpload(remoteFile, {
+          width: 1200,
+          height: 1200,
+          label: 'obrazok produktu'
+        });
         const formData = new FormData();
         const productSlugInput = form.querySelector('input[name="product_slug"]');
         const returnSectionInput = form.querySelector('input[name="return_section"]');
