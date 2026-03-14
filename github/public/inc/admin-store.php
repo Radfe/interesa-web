@@ -750,6 +750,9 @@ if (!function_exists('interessa_admin_mirror_remote_product_image')) {
 
         $download = interessa_admin_fetch_remote_image_bytes($remoteUrl);
         $ext = interessa_admin_detect_remote_image_extension($remoteUrl, (string) ($download['content_type'] ?? ''));
+        if ($ext !== 'webp') {
+            throw new RuntimeException('Remote packshot z e-shopu nie je WebP. Pouzi admin tlacidlo Ulozit packshot z e-shopu, ktore ho prevedie do WebP.');
+        }
         $target = interessa_admin_product_image_target_path_for_ext($productSlug, $merchantSlug, $ext);
         interessa_admin_ensure_dir(dirname($target));
 
@@ -758,6 +761,55 @@ if (!function_exists('interessa_admin_mirror_remote_product_image')) {
         }
 
         return interessa_admin_product_image_target_asset_for_ext($productSlug, $merchantSlug, $ext);
+    }
+}
+
+if (!function_exists('interessa_admin_prepare_remote_product_image_download')) {
+    function interessa_admin_prepare_remote_product_image_download(string $slug): array {
+        $slug = interessa_admin_slugify($slug);
+        if ($slug === '') {
+            throw new RuntimeException('Chyba slug produktu.');
+        }
+
+        $product = interessa_product($slug);
+        if (!is_array($product)) {
+            throw new RuntimeException('Vybrany produkt sa nenasiel v katalogu.');
+        }
+
+        $normalized = interessa_normalize_product($product);
+        $remoteUrl = trim((string) ($normalized['image_remote_src'] ?? ''));
+        $enriched = false;
+
+        if ($remoteUrl === '' && trim((string) ($normalized['fallback_url'] ?? '')) !== '') {
+            $result = interessa_admin_enrich_product_record_from_source($slug);
+            $enriched = !empty($result['saved']);
+            $product = interessa_product($slug);
+            $normalized = is_array($product) ? interessa_normalize_product($product) : $normalized;
+            $remoteUrl = trim((string) ($normalized['image_remote_src'] ?? ''));
+        }
+
+        if ($remoteUrl === '') {
+            throw new RuntimeException('Produkt nema dostupny remote packshot z e-shopu.');
+        }
+
+        $download = interessa_admin_fetch_remote_image_bytes($remoteUrl);
+        $contentType = trim((string) ($download['content_type'] ?? 'application/octet-stream'));
+        $extension = interessa_admin_detect_remote_image_extension($remoteUrl, $contentType);
+        $path = (string) parse_url($remoteUrl, PHP_URL_PATH);
+        $baseName = basename($path);
+        if ($baseName === '' || $baseName === '/' || !preg_match('~\.[a-z0-9]+$~i', $baseName)) {
+            $baseName = $slug . '.' . $extension;
+        }
+
+        return [
+            'slug' => $slug,
+            'remote_url' => $remoteUrl,
+            'file_name' => $baseName,
+            'content_type' => $contentType,
+            'extension' => $extension,
+            'body' => (string) ($download['body'] ?? ''),
+            'enriched' => $enriched,
+        ];
     }
 }
 
@@ -1132,6 +1184,10 @@ if (!function_exists('interessa_admin_autofill_product_image_gaps')) {
 
                 $remoteSrc = trim((string) ($normalized['image_remote_src'] ?? ''));
                 if ($remoteSrc === '') {
+                    continue;
+                }
+
+                if (interessa_admin_detect_remote_image_extension($remoteSrc) !== 'webp') {
                     continue;
                 }
 

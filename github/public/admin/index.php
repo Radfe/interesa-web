@@ -22,6 +22,19 @@ function interessa_admin_redirect(string $section, array $query = []): never {
     exit;
 }
 
+function interessa_admin_product_image_redirect_query(string $slug, string $saved, string $returnSection = '', string $returnSlug = ''): array {
+    $query = [
+        'product' => $slug,
+        'saved' => $saved,
+        'focus' => 'product_image',
+    ];
+    if ($returnSection !== '' && $returnSlug !== '') {
+        $query['return_section'] = $returnSection;
+        $query['return_slug'] = $returnSlug;
+    }
+    return $query;
+}
+
 function interessa_admin_decode_json_textarea(string $value, string $label): array {
     $value = trim($value);
     if ($value === '') {
@@ -188,6 +201,8 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
                 'card_ready' => false,
                 'image_mode' => 'missing',
                 'image_target_asset' => '',
+                'image_local_asset' => '',
+                'image_remote_src' => '',
                 'href' => '',
                 'summary' => '',
                 'rating' => '',
@@ -202,7 +217,7 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
         $affiliateReady = is_array($resolved) && trim((string) ($resolved['href'] ?? '')) !== '';
         $hasClickTarget = trim((string) ($target['href'] ?? '')) !== '';
         $imageMode = trim((string) ($normalized['image_mode'] ?? 'placeholder'));
-        $packshotReady = $imageMode !== '' && $imageMode !== 'placeholder';
+        $packshotReady = !empty($normalized['has_local_image']);
         $moneyReady = $affiliateReady && $packshotReady;
         $pros = array_values(array_filter(array_map('trim', (array) ($normalized['pros'] ?? []))));
         $cons = array_values(array_filter(array_map('trim', (array) ($normalized['cons'] ?? []))));
@@ -267,6 +282,8 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
             'card_ready' => $cardReady,
             'image_mode' => $imageMode,
             'image_target_asset' => (string) ($normalized['image_target_asset'] ?? ''),
+            'image_local_asset' => (string) ($normalized['image_local_asset'] ?? ''),
+            'image_remote_src' => (string) ($normalized['image_remote_src'] ?? ''),
             'href' => trim((string) ($target['href'] ?? '')),
             'summary' => (string) ($normalized['summary'] ?? ''),
             'rating' => trim((string) ($normalized['rating'] ?? '')),
@@ -818,7 +835,7 @@ function interessa_admin_product_quality_queue(array $catalog, int $limit = 12):
         $affiliateCode = trim((string) ($normalized['affiliate_code'] ?? ''));
         $resolved = $affiliateCode !== '' ? aff_resolve($affiliateCode) : null;
         $affiliateReady = is_array($resolved) && trim((string) ($resolved['href'] ?? '')) !== '';
-        $packshotReady = trim((string) ($normalized['image_mode'] ?? 'placeholder')) !== 'placeholder';
+        $packshotReady = !empty($normalized['has_local_image']);
 
         $issues = [];
         if (trim((string) ($normalized['summary'] ?? '')) === '') {
@@ -979,6 +996,7 @@ $page_scripts = [$adminScript];
 $section = interessa_admin_selected_section();
 $flash = trim((string) ($_GET['saved'] ?? ''));
 $focusProductSlug = trim((string) ($_GET['focus_product'] ?? ''));
+$focusPanel = trim((string) ($_GET['focus'] ?? ''));
 $error = '';
 
 interessa_admin_session_boot();
@@ -1007,6 +1025,29 @@ $importSummary = '';
 $articleOptions = interessa_admin_article_options();
 
 if ($isAuthed) {
+    $proxyAction = trim((string) ($_GET['action'] ?? ''));
+    if ($proxyAction === 'product_remote_image_proxy') {
+        try {
+            $slug = trim((string) ($_GET['product'] ?? ''));
+            $download = interessa_admin_prepare_remote_product_image_download($slug);
+            $contentType = trim((string) ($download['content_type'] ?? 'application/octet-stream'));
+            $fileName = trim((string) ($download['file_name'] ?? 'remote-packshot'));
+            $safeFileName = preg_replace('~[^a-zA-Z0-9._-]+~', '-', $fileName) ?: 'remote-packshot';
+            $body = (string) ($download['body'] ?? '');
+
+            header('Content-Type: ' . $contentType);
+            header('Content-Length: ' . strlen($body));
+            header('Content-Disposition: inline; filename="' . $safeFileName . '"');
+            echo $body;
+            exit;
+        } catch (Throwable $e) {
+            http_response_code(422);
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo trim($e->getMessage()) !== '' ? trim($e->getMessage()) : 'Remote packshot sa nepodarilo pripravit.';
+            exit;
+        }
+    }
+
     try {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $action = trim((string) ($_POST['action'] ?? ''));
@@ -1113,6 +1154,7 @@ if ($isAuthed) {
             if ($action === 'save_product') {
                 $slug = trim((string) ($_POST['product_slug'] ?? ''));
                 $merchantSlug = trim((string) ($_POST['merchant_slug'] ?? ''));
+                $uploadedProductImage = !empty($_FILES['product_image']['tmp_name']);
                 $payload = [
                     'name' => (string) ($_POST['name'] ?? ''),
                     'brand' => (string) ($_POST['brand'] ?? ''),
@@ -1135,6 +1177,9 @@ if ($isAuthed) {
                 interessa_admin_save_product_record($slug, $payload);
                 $returnSection = trim((string) ($_POST['return_section'] ?? ''));
                 $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                if ($returnSection === 'images' && $returnSlug !== '' && $uploadedProductImage) {
+                    interessa_admin_redirect('products', interessa_admin_product_image_redirect_query($slug, 'packshot', 'images', $returnSlug));
+                }
                 if ($returnSection === 'images' && $returnSlug !== '') {
                     interessa_admin_redirect('images', ['slug' => $returnSlug, 'saved' => 'product']);
                 }
@@ -1222,10 +1267,10 @@ if ($isAuthed) {
                 interessa_admin_save_product_record($slug, $payload);
 
                 if ($returnSection === 'images' && $returnArticleSlug !== '') {
-                    interessa_admin_redirect('images', ['slug' => $returnArticleSlug, 'saved' => 'packshot', 'focus_product' => $slug]);
+                    interessa_admin_redirect('products', interessa_admin_product_image_redirect_query($slug, 'packshot', 'images', $returnArticleSlug));
                 }
 
-                interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'packshot']);
+                interessa_admin_redirect('products', interessa_admin_product_image_redirect_query($slug, 'packshot'));
             }
 
             if ($action === 'mirror_packshot_from_remote') {
@@ -1250,13 +1295,13 @@ if ($isAuthed) {
                 interessa_admin_save_product_record($slug, $payload);
 
                 if ($returnSection === 'images' && $returnArticleSlug !== '') {
-                    interessa_admin_redirect('images', ['slug' => $returnArticleSlug, 'saved' => 'packshot-mirrored']);
+                    interessa_admin_redirect('products', interessa_admin_product_image_redirect_query($slug, 'packshot-mirrored', 'images', $returnArticleSlug));
                 }
                 if ($returnSection === 'articles' && $returnArticleSlug !== '') {
                     interessa_admin_redirect('articles', ['slug' => $returnArticleSlug, 'saved' => 'packshot-mirrored']);
                 }
 
-                interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'packshot-mirrored']);
+                interessa_admin_redirect('products', interessa_admin_product_image_redirect_query($slug, 'packshot-mirrored'));
             }
 
             if ($action === 'enrich_product_from_source' || $action === 'autofill_product_from_source') {
@@ -1274,23 +1319,37 @@ if ($isAuthed) {
                         $remoteSrc = trim((string) ($normalizedProduct['image_remote_src'] ?? ''));
                         $hasLocalImage = !empty($normalizedProduct['has_local_image']);
                         if (!$hasLocalImage && $remoteSrc !== '') {
-                            $asset = interessa_admin_mirror_remote_product_image($slug, $merchantSlug, $remoteSrc);
-                            $payload = array_replace($normalizedProduct, interessa_admin_product_record($slug) ?? []);
-                            $payload['image_asset'] = $asset;
-                            interessa_admin_save_product_record($slug, $payload);
+                            $remoteExt = interessa_admin_detect_remote_image_extension($remoteSrc);
+                            if ($remoteExt === 'webp') {
+                                $asset = interessa_admin_mirror_remote_product_image($slug, $merchantSlug, $remoteSrc);
+                                $payload = array_replace($normalizedProduct, interessa_admin_product_record($slug) ?? []);
+                                $payload['image_asset'] = $asset;
+                                interessa_admin_save_product_record($slug, $payload);
+                            }
                         }
                     }
                 }
 
                 $savedKey = $action === 'autofill_product_from_source' ? 'product-autofill' : 'product-enriched';
+                if ($action === 'autofill_product_from_source') {
+                    $product = interessa_product($slug);
+                    if (is_array($product)) {
+                        $normalizedProduct = interessa_normalize_product($product);
+                        if (empty($normalizedProduct['has_local_image']) && trim((string) ($normalizedProduct['image_remote_src'] ?? '')) !== '') {
+                            $savedKey = interessa_admin_detect_remote_image_extension((string) $normalizedProduct['image_remote_src']) === 'webp'
+                                ? 'product-autofill'
+                                : 'product-remote-ready';
+                        }
+                    }
+                }
                 if ($returnSection === 'images' && $returnArticleSlug !== '') {
-                    interessa_admin_redirect('images', ['slug' => $returnArticleSlug, 'saved' => $savedKey]);
+                    interessa_admin_redirect('products', interessa_admin_product_image_redirect_query($slug, $savedKey, 'images', $returnArticleSlug));
                 }
                 if ($returnSection === 'articles' && $returnArticleSlug !== '') {
                     interessa_admin_redirect('articles', ['slug' => $returnArticleSlug, 'saved' => $savedKey]);
                 }
 
-                interessa_admin_redirect('products', ['product' => $slug, 'saved' => $savedKey]);
+                interessa_admin_redirect('products', interessa_admin_product_image_redirect_query($slug, $savedKey));
             }
 
             if ($action === 'autofill_gap_products_by_filter') {
@@ -1390,6 +1449,8 @@ $selectedProduct = $selectedProductSlug !== '' ? interessa_product($selectedProd
 $selectedProduct = is_array($selectedProduct) ? interessa_normalize_product($selectedProduct) : null;
 $selectedProductImage = is_array($selectedProduct) ? ($selectedProduct['image'] ?? null) : null;
 $selectedProductImageSource = is_array($selectedProduct) ? (string) ($selectedProduct['image_mode'] ?? 'placeholder') : 'missing';
+$selectedProductLocalAsset = is_array($selectedProduct) ? trim((string) ($selectedProduct['image_local_asset'] ?? '')) : '';
+$selectedProductLocalImageUrl = $selectedProductLocalAsset !== '' ? asset($selectedProductLocalAsset) : '';
 $selectedProductImageBrief = is_array($selectedProduct) ? interessa_admin_product_image_brief($selectedProduct) : [];
 $selectedProductAffiliate = is_array($selectedProduct) && trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== '' ? aff_record((string) $selectedProduct['affiliate_code']) : null;
 $selectedProductAffiliateUrl = is_array($selectedProduct) && trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== '' ? aff_resolve((string) $selectedProduct['affiliate_code']) : null;
@@ -1400,7 +1461,7 @@ $selectedProductCons = is_array($selectedProduct) && is_array($selectedProduct['
 $selectedProductSummaryReady = is_array($selectedProduct) && trim((string) ($selectedProduct['summary'] ?? '')) !== '';
 $selectedProductRatingReady = is_array($selectedProduct) && trim((string) ($selectedProduct['rating'] ?? '')) !== '';
 $selectedProductAffiliateReady = is_array($selectedProductAffiliateUrl) && trim((string) ($selectedProductAffiliateUrl['href'] ?? '')) !== '';
-$selectedProductPackshotReady = is_array($selectedProduct) && trim((string) ($selectedProduct['image_mode'] ?? 'placeholder')) !== 'placeholder';
+$selectedProductPackshotReady = is_array($selectedProduct) && !empty($selectedProduct['has_local_image']);
 $selectedProductChecklist = [
     'Popis' => $selectedProductSummaryReady,
     'Rating' => $selectedProductRatingReady,
@@ -1510,6 +1571,7 @@ $flashMessages = [
     'packshot-mirrored' => 'Remote obrazok bol zrkadleny do lokalneho assetu.',
     'product-enriched' => 'Produkt bol doplneny z referencnej produktovej stranky.',
     'product-autofill' => 'Produkt bol automaticky doplneny a obrazok sa pokusil zrkadlit.',
+    'product-remote-ready' => 'Produkt ma zisteny packshot z e-shopu. Teraz klikni Ulozit packshot z e-shopu a vznikne lokalny WebP.',
 ];
 $flashMessage = $importSummary !== '' ? $importSummary : ($flashMessages[$flash] ?? '');
 
@@ -1614,7 +1676,22 @@ require dirname(__DIR__) . '/inc/head.php';
   <?php else: ?>
     <div class="admin-shell">
       <?php if ($flashMessage !== ''): ?>
-        <div class="admin-flash is-success"><?= esc($flashMessage) ?></div>
+        <div class="admin-flash is-success">
+          <div><?= esc($flashMessage) ?></div>
+          <?php if ($section === 'products' && in_array($flash, ['packshot', 'packshot-mirrored', 'product-autofill'], true)): ?>
+            <div class="admin-inline-actions">
+              <?php if ($selectedProductLocalImageUrl !== ''): ?>
+                <a class="btn btn-secondary btn-small" href="<?= esc($selectedProductLocalImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny WebP</a>
+              <?php endif; ?>
+              <?php if ($returnSectionPrefill === 'images' && $returnSlugPrefill !== ''): ?>
+                <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($returnSlugPrefill) ?>&amp;focus_product=<?= esc($selectedProductSlug) ?>">Spat do workflowu clanku</a>
+              <?php endif; ?>
+              <?php if ($nextMissingPackshotSlug !== ''): ?>
+                <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($nextMissingPackshotSlug) ?>&amp;product_image_filter=missing">Dalsi chyba</a>
+              <?php endif; ?>
+            </div>
+          <?php endif; ?>
+        </div>
       <?php endif; ?>
       <?php if ($error !== ''): ?>
         <div class="admin-flash is-error"><?= esc($error) ?></div>
@@ -1931,11 +2008,11 @@ require dirname(__DIR__) . '/inc/head.php';
                   <div class="admin-check-grid">
                     <?php foreach ($catalog as $productSlug => $productRow): ?>
                       <?php $checked = in_array((string) $productSlug, is_array($selectedArticleOverride['recommended_products'] ?? null) ? $selectedArticleOverride['recommended_products'] : [], true); ?>
-                      <?php $productNormalized = interessa_product((string) $productSlug) ?? interessa_normalize_product(is_array($productRow) ? $productRow : []); ?>
+                      <?php $productNormalized = interessa_normalize_product(interessa_product((string) $productSlug) ?? (is_array($productRow) ? $productRow : [])); ?>
                       <?php $productTarget = interessa_affiliate_target($productNormalized); ?>
                       <?php $productAffiliateCode = trim((string) ($productNormalized['affiliate_code'] ?? '')); ?>
                       <?php $productImageMode = trim((string) ($productNormalized['image_mode'] ?? 'placeholder')); ?>
-                      <?php $productPackshotReady = $productImageMode !== '' && $productImageMode !== 'placeholder'; ?>
+                      <?php $productPackshotReady = !empty($productNormalized['has_local_image']); ?>
                       <?php $productAffiliateReady = $productAffiliateCode !== '' && aff_resolve($productAffiliateCode) !== null; ?>
                       <div class="admin-check-card-wrap">
                         <label class="admin-check-card">
@@ -2230,7 +2307,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     </div>
                     <div class="admin-queue-actions">
                       <span class="admin-note"><?= esc((string) $queueRow['image_mode']) ?></span>
-                      <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>">Otvorit v produkte</a>
+                      <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>">Otvorit detail produktu</a>
                       <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['target_asset'] ?? '')) ?>">Kopirovat asset</button>
                       <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
                         <form method="post" class="admin-inline-form">
@@ -2242,10 +2319,10 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php if (trim((string) ($queueRow['remote_src'] ?? '')) !== ''): ?>
                         <a class="btn btn-secondary btn-small" href="<?= esc((string) $queueRow['remote_src']) ?>" target="_blank" rel="noopener">Remote preview</a>
                         <?php if (!empty($queueRow['needs_local_packshot'])): ?>
-                          <form method="post" class="admin-inline-form">
+                          <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
                             <input type="hidden" name="action" value="mirror_packshot_from_remote" />
                             <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
-                            <button class="btn btn-secondary btn-small" type="submit">Zrkadlit remote</button>
+                            <button class="btn btn-secondary btn-small" type="submit">Ulozit packshot z e-shopu</button>
                           </form>
                         <?php endif; ?>
                       <?php endif; ?>
@@ -2339,7 +2416,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <?php endif; ?>
             </section>
 
-            <section class="admin-subsection admin-asset-preview">
+            <section id="product-image-preview" class="admin-subsection admin-asset-preview<?= $focusPanel === 'product_image' ? ' is-focused' : '' ?>">
               <div class="admin-subsection-head">
                 <h3>Aktualny obrazok produktu</h3>
               </div>
@@ -2349,9 +2426,20 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
                 <div class="admin-asset-preview__body">
                   <p><strong>Zdroj:</strong> <?= esc($selectedProductImageSource) ?></p>
-                  <p><strong>Target asset:</strong> <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></p>
+                  <p><strong>Ulozeny lokalny asset:</strong> <code><?= esc($selectedProductLocalAsset !== '' ? $selectedProductLocalAsset : 'zatial chyba') ?></code></p>
+                  <p><strong>Cielovy asset:</strong> <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></p>
+                  <?php if ($selectedProductPackshotReady): ?>
+                    <p class="admin-note">Toto je lokalny ulozeny WebP, ktory web realne zobrazi pri produkte.</p>
+                  <?php elseif (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
+                    <p class="admin-note">Produkt uz ma zdrojovy obrazok z e-shopu, ale este nie je ulozeny lokalny WebP. Klikni <strong>Ulozit packshot z e-shopu</strong>.</p>
+                  <?php else: ?>
+                    <p class="admin-note">Produkt zatial nema ani lokalny WebP, ani zisteny remote packshot z e-shopu. Najprv pouzi <strong>Zistit data z e-shopu</strong>.</p>
+                  <?php endif; ?>
                   <div class="admin-inline-actions">
-                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?>">Kopirovat target asset</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?>">Kopirovat cielovu cestu</button>
+                    <?php if ($selectedProductLocalImageUrl !== ''): ?>
+                      <a class="btn btn-secondary btn-small" href="<?= esc($selectedProductLocalImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny WebP</a>
+                    <?php endif; ?>
                     <?php if (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
                       <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>">Kopirovat remote URL</button>
                     <?php endif; ?>
@@ -2372,28 +2460,28 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p><strong>Remote source:</strong> <?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?></p>
                   <?php if (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
                     <div class="admin-inline-actions">
-                      <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>" target="_blank" rel="noopener">Remote preview</a>
+                      <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit zdroj z e-shopu</a>
                       <?php if (!$selectedProductPackshotReady): ?>
-                        <form method="post" class="admin-inline-form">
+                        <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
                           <input type="hidden" name="action" value="mirror_packshot_from_remote" />
                           <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
                           <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
                           <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
-                          <button class="btn btn-secondary btn-small" type="submit">Stiahnut remote obrazok</button>
+                          <button class="btn btn-secondary btn-small" type="submit">Ulozit packshot z e-shopu</button>
                         </form>
                       <?php endif; ?>
                     </div>
                   <?php endif; ?>
                   <?php if (trim((string) ($selectedProduct['fallback_url'] ?? '')) !== ''): ?>
                     <div class="admin-inline-actions">
-                      <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProduct['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Referencny produkt</a>
+                      <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProduct['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit e-shop</a>
                       <form method="post" class="admin-inline-form">
                         <input type="hidden" name="action" value="enrich_product_from_source" />
                         <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
                         <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
                         <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
-                        <button class="btn btn-secondary btn-small" type="submit">Zistit data z produktu</button>
-                      </form>
+                          <button class="btn btn-secondary btn-small" type="submit">Zistit data z e-shopu</button>
+                        </form>
                       <?php if (!$selectedProductPackshotReady): ?>
                         <form method="post" class="admin-inline-form">
                           <input type="hidden" name="action" value="autofill_product_from_source" />
@@ -2434,8 +2522,8 @@ require dirname(__DIR__) . '/inc/head.php';
               <section class="admin-subsection">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>Packshot brief</h3>
-                    <p class="admin-meta">Pouzi najprv realny merchant obrazok. Tento brief je pripraveny ako fallback workflow, ked este nemas oficialny packshot.</p>
+                    <h3>Manualny fallback packshot</h3>
+                    <p class="admin-meta">Pouzi iba vtedy, ked nemas dostupny realny packshot z e-shopu, feedu alebo remote obrazku. Pre produkty preferujeme povodny obrazok merchanta, nie AI packshot.</p>
                   </div>
                 </div>
                 <div class="admin-brief-grid">
@@ -2446,7 +2534,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProductImageBrief['prompt'] ?? '')) ?>">Kopirovat prompt</button>
                       <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProductImageBrief['asset_path'] ?? '')) ?>">Kopirovat path</button>
                       <?php if (trim((string) ($selectedProductImageBrief['reference_url'] ?? '')) !== ''): ?>
-                        <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProductImageBrief['reference_url'] ?? '')) ?>" target="_blank" rel="noopener">Referencny produkt</a>
+                        <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProductImageBrief['reference_url'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit e-shop</a>
                       <?php endif; ?>
                     </div>
                   </div>
@@ -2584,7 +2672,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div>
                 <p class="admin-kicker">Image brief generator</p>
                 <h2>Canva / AI workflow</h2>
-                <p class="admin-note">Najjednoduchsie: pri produktoch staci kliknut na "Kopirovat prompt", vytvorit obrazok v Canve a potom pouzit "Nahrat obrazok". Pri hero obrazku chod na blok "Brief" nizsie a potom "Nahrat hero obrazok". Tlacidla pre path a filename su volitelne.</p>
+              <p class="admin-note">Pri produktoch najprv pouzi realny packshot z e-shopu alebo feedu cez "Ulozit packshot z e-shopu". Manualny upload je fallback. AI prompt pouzivaj iba pre hero obrazky clankov, nie pre produktove packshoty.</p>
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="images" />
@@ -2633,8 +2721,8 @@ require dirname(__DIR__) . '/inc/head.php';
               <section class="admin-subsection is-compact">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>Chybajuce obrazky produktov v tomto clanku</h3>
-                    <p class="admin-meta">Odporucane produkty v tomto clanku, ktore este nemaju finalny obrazok produktu.</p>
+                    <h3>Chybajuce lokalne packshoty v tomto clanku</h3>
+                    <p class="admin-meta">Najprv pouzi realny packshot z e-shopu alebo feedu. Manualny upload je fallback, ked remote obrazok nie je dostupny.</p>
                   </div>
                   <span class="admin-note"><?= esc((string) $selectedArticlePackshotGapCount) ?> zaznamov</span>
                 </div>
@@ -2656,33 +2744,29 @@ require dirname(__DIR__) . '/inc/head.php';
                         </div>
                       </div>
                       <div class="admin-queue-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Otvorit v produktoch</a>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Otvorit detail produktu</a>
                         <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
                           <form method="post" class="admin-inline-form">
                             <input type="hidden" name="action" value="autofill_product_from_source" />
                             <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
                             <input type="hidden" name="return_section" value="images" />
                             <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
-                            <button class="btn btn-secondary btn-small" type="submit">Auto doplnit</button>
+                            <button class="btn btn-secondary btn-small" type="submit">Zistit data z e-shopu</button>
                           </form>
                         <?php endif; ?>
                         <?php if (trim((string) ($queueRow['image_target_asset'] ?? '')) !== ''): ?>
-                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['image_target_asset'] ?? '')) ?>">Kopirovat path</button>
-                        <?php endif; ?>
-                        <?php if (is_array($queueRow['image_brief'] ?? null) && trim((string) (($queueRow['image_brief']['prompt'] ?? ''))) !== ''): ?>
-                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['image_brief']['prompt'] ?? '')) ?>">Kopirovat prompt</button>
+                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['image_target_asset'] ?? '')) ?>">Kopirovat cielovu cestu</button>
                         <?php endif; ?>
                         <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
-                          <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Referencny produkt</a>
+                          <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit e-shop</a>
                         <?php endif; ?>
                         <?php if (trim((string) ($queueRow['remote_src'] ?? '')) !== ''): ?>
-                          <form method="post" class="admin-inline-form">
+                          <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
                             <input type="hidden" name="action" value="mirror_packshot_from_remote" />
                             <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
                             <input type="hidden" name="return_section" value="images" />
                             <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
-                            <button class="btn btn-secondary btn-small" type="submit">Zrkadlit remote</button>
+                            <button class="btn btn-secondary btn-small" type="submit">Ulozit packshot z e-shopu</button>
                           </form>
                         <?php endif; ?>
                         <form method="post" action="/admin" enctype="multipart/form-data" class="admin-inline-upload">
@@ -2691,10 +2775,10 @@ require dirname(__DIR__) . '/inc/head.php';
                           <input type="hidden" name="return_section" value="images" />
                           <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
                           <label class="admin-inline-upload__label">
-                            <span>Obrazok</span>
+                            <span>Manualny fallback (len ak chyba e-shop packshot)</span>
                             <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
                           </label>
-                          <button class="btn btn-secondary btn-small" type="submit">Nahrat obrazok</button>
+                          <button class="btn btn-secondary btn-small" type="submit">Nahrat manualne</button>
                         </form>
                       </div>
                     </article>
@@ -2715,7 +2799,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php foreach ($recommendedProductPreview as $previewRow): ?>
                     <?php $previewSlug = trim((string) ($previewRow['slug'] ?? '')); ?>
                     <?php $previewStatus = $recommendedDiagnosticsBySlug[$previewSlug] ?? []; ?>
-                    <?php $previewImageAsset = trim((string) ($previewStatus['image_target_asset'] ?? '')); ?>
+                    <?php $previewImageAsset = trim((string) ($previewStatus['image_local_asset'] ?? '')); ?>
                     <?php $previewImageUrl = (!empty($previewStatus['packshot_ready']) && $previewImageAsset !== '') ? asset($previewImageAsset) : ''; ?>
                     <article id="image-product-<?= esc($previewSlug) ?>" class="admin-mini-product-card<?= $focusProductSlug === $previewSlug ? ' is-focused' : '' ?>" data-focus-product="<?= $focusProductSlug === $previewSlug ? 'true' : 'false' ?>">
                       <div class="admin-mini-product-card__media">
@@ -2733,11 +2817,11 @@ require dirname(__DIR__) . '/inc/head.php';
                         <?php endif; ?>
                       </div>
                       <div class="admin-inline-actions admin-mini-product-card__actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Detail produktu</a>
                         <?php if ($previewImageUrl !== ''): ?>
-                          <a class="btn btn-secondary btn-small" href="<?= esc($previewImageUrl) ?>" target="_blank" rel="noopener">Otvorit obrazok</a>
+                          <a class="btn btn-secondary btn-small" href="<?= esc($previewImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny WebP</a>
                         <?php else: ?>
-                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Doplnit obrazok</a>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Doplnit obrazok</a>
                         <?php endif; ?>
                         <?php if (trim((string) ($previewStatus['affiliate_code'] ?? '')) !== ''): ?>
                           <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($previewStatus['affiliate_code'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Affiliate</a>
@@ -2745,15 +2829,15 @@ require dirname(__DIR__) . '/inc/head.php';
                           <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc($previewSlug) ?>&amp;prefill_merchant=<?= esc((string) ($previewRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($previewRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc($previewSlug) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vytvorit affiliate</a>
                         <?php endif; ?>
                         <?php if (trim((string) ($previewStatus['image_target_asset'] ?? '')) !== ''): ?>
-                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($previewStatus['image_target_asset'] ?? '')) ?>">Kopirovat path</button>
+                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($previewStatus['image_target_asset'] ?? '')) ?>">Kopirovat cielovu cestu</button>
                         <?php endif; ?>
                         <?php if (trim((string) ($previewStatus['image_remote_src'] ?? '')) !== '' && empty($previewStatus['packshot_ready'])): ?>
-                          <form method="post" class="admin-inline-form">
+                          <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
                             <input type="hidden" name="action" value="mirror_packshot_from_remote" />
                             <input type="hidden" name="product_slug" value="<?= esc((string) ($previewRow['slug'] ?? '')) ?>" />
                             <input type="hidden" name="return_section" value="images" />
                             <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
-                            <button class="btn btn-secondary btn-small" type="submit">Zrkadlit remote</button>
+                            <button class="btn btn-secondary btn-small" type="submit">Ulozit packshot z e-shopu</button>
                           </form>
                         <?php endif; ?>
                       </div>
@@ -2764,10 +2848,10 @@ require dirname(__DIR__) . '/inc/head.php';
                             <input type="hidden" name="return_section" value="images" />
                             <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
                             <label class="admin-inline-upload__label">
-                              <span>Obrazok</span>
+                              <span>Manualny fallback (len ak chyba e-shop packshot)</span>
                               <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
                             </label>
-                            <button class="btn btn-secondary btn-small" type="submit">Nahrat obrazok</button>
+                            <button class="btn btn-secondary btn-small" type="submit">Nahrat manualne</button>
                           </form>
                         <?php endif; ?>
                     </article>
@@ -3036,7 +3120,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 </article>
                 <article class="admin-help-card">
                   <h3>Doplnit obrazok produktu</h3>
-                  <p class="admin-note">Pouzi najprv Zrkadlit remote, az potom manualny upload.</p>
+                  <p class="admin-note">Pouzi najprv Ulozit packshot z e-shopu, az potom manualny fallback upload.</p>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=missing">Otvorit Produkty</a>
                     <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Workflow clanku</a>
@@ -3085,7 +3169,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 </article>
                 <article class="admin-help-card">
                   <h3>Skusit automaticke doplnenie</h3>
-                  <p class="admin-note">Ak ma produkt referencnu URL, admin uz vie skusit sam dotiahnut popis aj produktovy obrazok z partner stranky.</p>
+                  <p class="admin-note">Ak ma produkt e-shop URL alebo remote obrazok, admin vie dotiahnut data a zrkadlit realny packshot bez AI generovania.</p>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=missing">Vybrany produkt</a>
                     <a class="btn btn-secondary btn-small" href="/admin?section=tools">Money page gaps</a>
@@ -3118,8 +3202,8 @@ require dirname(__DIR__) . '/inc/head.php';
                 <h3>3. Chcem doplnit obrazok produktu</h3>
                 <ol class="admin-quickstart-list">
                   <li>Otvor <a href="/admin?section=products&product=<?= esc($selectedProductSlug) ?>">Produkty</a> alebo queue chybajucich obrazkov v image workflowe.</li>
-                  <li>Ak uz produkt ma remote obrazok od merchanta, klikni <strong>Zrkadlit remote</strong>.</li>
-                  <li>Ak remote obrazok nie je k dispozicii, skopiruj cielovu asset cestu a nahraj obrazok cez rychly upload.</li>
+                  <li>Ak uz produkt ma remote obrazok od merchanta, klikni <strong>Ulozit packshot z e-shopu</strong>.</li>
+                  <li>Manualny upload pouzi iba ako fallback, ked remote obrazok nie je k dispozicii.</li>
                   <li>Vrat sa na clanok a skontroluj, ci karta uz ukazuje finalny produktovy obrazok.</li>
                 </ol>
               </article>
@@ -3189,7 +3273,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <div class="admin-check-card">
                       <div>
                         <strong>Produktove obrazky, ktore vies doplnit hned</strong>
-                        <small>Tieto produkty uz maju remote zdroj, takze ich vies zvycajne uzavriet jednym klikom cez <strong>Zrkadlit remote</strong>.</small>
+                    <small>Tieto produkty uz maju remote zdroj, takze ich vies zvycajne uzavriet jednym klikom cez <strong>Ulozit packshot z e-shopu</strong>.</small>
                         <div class="admin-queue-list">
                           <?php foreach ($helpPriorityProductImages as $productRow): ?>
                             <article class="admin-queue-item is-done">
@@ -3567,6 +3651,12 @@ require dirname(__DIR__) . '/inc/head.php';
     outline: 3px solid #34d399;
     box-shadow: 0 20px 40px rgba(52, 211, 153, 0.18);
   }
+
+  .admin-asset-preview.is-focused {
+    outline: 3px solid #34d399;
+    box-shadow: 0 20px 40px rgba(52, 211, 153, 0.18);
+    border-radius: 20px;
+  }
 </style>
 <script>
   (function () {
@@ -3758,6 +3848,30 @@ require dirname(__DIR__) . '/inc/head.php';
       return base + '.webp';
     }
 
+    function guessRemoteFileName(productSlug, contentType, disposition) {
+      const dispositionMatch = typeof disposition === 'string'
+        ? disposition.match(/filename\*?=(?:UTF-8''|\"?)([^\";]+)/i)
+        : null;
+      if (dispositionMatch && dispositionMatch[1]) {
+        const decoded = dispositionMatch[1].replace(/\"/g, '').trim();
+        if (decoded) {
+          return decodeURIComponent(decoded);
+        }
+      }
+
+      const normalizedType = String(contentType || '').toLowerCase();
+      if (normalizedType.includes('png')) {
+        return (productSlug || 'remote-packshot') + '.png';
+      }
+      if (normalizedType.includes('jpeg') || normalizedType.includes('jpg')) {
+        return (productSlug || 'remote-packshot') + '.jpg';
+      }
+      if (normalizedType.includes('webp')) {
+        return (productSlug || 'remote-packshot') + '.webp';
+      }
+      return (productSlug || 'remote-packshot') + '.img';
+    }
+
     function loadImageFromFile(file) {
       return new Promise(function (resolve, reject) {
         const objectUrl = URL.createObjectURL(file);
@@ -3866,6 +3980,40 @@ require dirname(__DIR__) . '/inc/head.php';
       });
     }
 
+    async function fetchRemotePackshotFile(form) {
+      const productSlugInput = form.querySelector('input[name="product_slug"]');
+      const productSlug = productSlugInput instanceof HTMLInputElement ? (productSlugInput.value || '').trim() : '';
+      if (!productSlug) {
+        throw new Error('missing-product-slug');
+      }
+
+      const params = new URLSearchParams({
+        section: 'products',
+        action: 'product_remote_image_proxy',
+        product: productSlug
+      });
+      const response = await fetch('/admin?' + params.toString(), {
+        credentials: 'same-origin'
+      });
+      if (!response.ok) {
+        const message = (await response.text()).trim();
+        throw new Error(message || 'remote-packshot-fetch-failed');
+      }
+
+      const blob = await response.blob();
+      if (!(blob instanceof Blob) || blob.size === 0) {
+        throw new Error('empty-remote-packshot');
+      }
+
+      const contentType = response.headers.get('content-type') || blob.type || 'application/octet-stream';
+      const disposition = response.headers.get('content-disposition') || '';
+      const fileName = guessRemoteFileName(productSlug, contentType, disposition);
+      return new File([blob], fileName, {
+        type: contentType,
+        lastModified: Date.now()
+      });
+    }
+
     async function submitInlineUploadForm(form) {
       const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="product_image"]');
       const selectedFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
@@ -3906,6 +4054,52 @@ require dirname(__DIR__) . '/inc/head.php';
       }
     }
 
+    async function submitRemotePackshotForm(form) {
+      setFormBusy(form, true);
+
+      try {
+        const remoteFile = await fetchRemotePackshotFile(form);
+        const webpFile = await createWebpFileFromUpload(remoteFile);
+        const formData = new FormData();
+        const productSlugInput = form.querySelector('input[name="product_slug"]');
+        const returnSectionInput = form.querySelector('input[name="return_section"]');
+        const returnSlugInput = form.querySelector('input[name="return_slug"]');
+
+        formData.set('action', 'upload_packshot_only');
+        formData.set('product_slug', productSlugInput instanceof HTMLInputElement ? productSlugInput.value : '');
+        if (returnSectionInput instanceof HTMLInputElement && returnSectionInput.value) {
+          formData.set('return_section', returnSectionInput.value);
+        }
+        if (returnSlugInput instanceof HTMLInputElement && returnSlugInput.value) {
+          formData.set('return_slug', returnSlugInput.value);
+        }
+        formData.set('product_image', webpFile, webpFile.name);
+
+        const response = await fetch('/admin', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+
+        if (response.redirected && response.url) {
+          window.location.assign(response.url);
+          return;
+        }
+
+        const html = await response.text();
+        if (typeof html === 'string' && html.trim() !== '') {
+          document.open();
+          document.write(html);
+          document.close();
+          return;
+        }
+
+        window.location.reload();
+      } finally {
+        setFormBusy(form, false);
+      }
+    }
+
     document.querySelectorAll('form.admin-inline-upload, form.admin-form').forEach(function (form) {
       const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="product_image"]');
       if (!(fileInput instanceof HTMLInputElement)) {
@@ -3920,6 +4114,19 @@ require dirname(__DIR__) . '/inc/head.php';
           console.error(error);
           showToast('Konverzia do WebP zlyhala. Nahraj iny obrazok.', true);
         });
+        }, true);
+    });
+
+    document.querySelectorAll('form[data-remote-packshot-form="true"]').forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        submitRemotePackshotForm(form).catch(function (error) {
+          console.error(error);
+          const message = error && error.message ? String(error.message) : '';
+          showToast(message !== '' ? message : 'Packshot z e-shopu sa nepodarilo ulozit.', true);
+        });
       }, true);
     });
 
@@ -3927,6 +4134,13 @@ require dirname(__DIR__) . '/inc/head.php';
     if (focusedProductCard instanceof HTMLElement) {
       window.setTimeout(function () {
         focusedProductCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 80);
+    }
+
+    const focusedPanel = document.getElementById('product-image-preview');
+    if (focusedPanel instanceof HTMLElement && focusedPanel.classList.contains('is-focused')) {
+      window.setTimeout(function () {
+        focusedPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 80);
     }
 
