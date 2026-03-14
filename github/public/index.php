@@ -138,6 +138,29 @@ $homeThemeIntentGroups = [
     ],
 ];
 
+$homeSupportThemeSlugs = ['chudnutie', 'kreatin', 'pre-workout', 'probiotika-travenie', 'aminokyseliny', 'doplnkove-prislusenstvo'];
+$homeSupportThemes = [];
+foreach ($homeSupportThemeSlugs as $slug) {
+    $meta = category_meta($slug);
+    $hub = interessa_category_hub($slug);
+    if ($meta === null || $hub === null) {
+        continue;
+    }
+
+    $articles = array_values(category_articles($slug));
+    $commercialCount = count(array_filter($articles, static function (array $item): bool {
+        return interessa_article_has_commerce((string) ($item['slug'] ?? ''));
+    }));
+
+    $homeSupportThemes[] = [
+        'slug' => $slug,
+        'title' => $meta['title'],
+        'description' => trim((string) ($hub['intro'] ?? $meta['description'] ?? '')),
+        'count' => count($articles),
+        'commercial_count' => $commercialCount,
+    ];
+}
+
 $featuredGuides = [];
 foreach ($featuredGuideSlugs as $slug) {
     $meta = article_meta($slug);
@@ -332,6 +355,36 @@ include __DIR__ . '/inc/head.php';
             </a>
           <?php endforeach; ?>
         </div>
+      </article>
+    <?php endforeach; ?>
+  </div>
+</section>
+<?php endif; ?>
+
+<?php if ($homeSupportThemes !== []): ?>
+<section class="container home-section">
+  <div class="section-head">
+    <h2>Doplnkove temy a specializovane cesty</h2>
+    <p class="meta">Tieto temy doriesuju uzsie otazky. Su vhodne vtedy, ked uz nechces prechadzat siroku temu, ale riesis konkretny detail.</p>
+  </div>
+
+  <div class="support-theme-grid">
+    <?php foreach ($homeSupportThemes as $theme): ?>
+      <article class="support-theme-card">
+        <div class="support-theme-head">
+          <span class="intent-link-icon" aria-hidden="true"><?= interessa_category_icon((string) $theme['slug']) ?></span>
+          <div class="support-theme-copy">
+            <h3><a href="<?= esc(category_url((string) $theme['slug'])) ?>"><?= esc((string) $theme['title']) ?></a></h3>
+            <p><?= esc(interessa_trim_words((string) ($theme['description'] ?? ''), 12)) ?></p>
+          </div>
+        </div>
+        <div class="article-card-submeta">
+          <span class="article-card-subchip"><?= esc((string) ($theme['count'] ?? 0)) ?> <?= esc(interessa_pluralize_slovak((int) ($theme['count'] ?? 0), 'clanok', 'clanky', 'clankov')) ?></span>
+          <?php if ((int) ($theme['commercial_count'] ?? 0) > 0): ?>
+            <span class="article-card-subchip is-coverage is-partial">Odporucania v <?= esc((string) ($theme['commercial_count'] ?? 0)) ?> <?= esc(interessa_pluralize_slovak((int) ($theme['commercial_count'] ?? 0), 'clanku', 'clankoch', 'clankoch')) ?></span>
+          <?php endif; ?>
+        </div>
+        <a class="card-link" href="<?= esc(category_url((string) $theme['slug'])) ?>">Otvorit temu</a>
       </article>
     <?php endforeach; ?>
   </div>

@@ -1692,6 +1692,35 @@ $allImageQueue = interessa_admin_image_queue($articleOptions, 'all', max(count($
 $allProductImageQueue = interessa_admin_product_image_queue($catalog, 'all', max(count($catalog), 1));
 $allThemeImageQueue = interessa_admin_category_image_queue($categoryOptions);
 $themeAssetManifest = interessa_admin_category_asset_manifest($categoryOptions);
+$themeManifestTotal = count($themeAssetManifest);
+$themeHeroReadyCount = 0;
+$themeThumbReadyCount = 0;
+$themeFullyReadyCount = 0;
+foreach ($themeAssetManifest as $themeManifestRow) {
+    $heroReady = false;
+    $thumbReady = false;
+    foreach ((array) ($themeManifestRow['items'] ?? []) as $assetItem) {
+        $variant = (string) ($assetItem['variant'] ?? '');
+        $ready = !empty($assetItem['ready']);
+        if ($variant === 'hero') {
+            $heroReady = $ready;
+        }
+        if ($variant === 'thumb') {
+            $thumbReady = $ready;
+        }
+    }
+    if ($heroReady) {
+        $themeHeroReadyCount++;
+    }
+    if ($thumbReady) {
+        $themeThumbReadyCount++;
+    }
+    if ($heroReady && $thumbReady) {
+        $themeFullyReadyCount++;
+    }
+}
+$themeHeroMissingCount = max(0, $themeManifestTotal - $themeHeroReadyCount);
+$themeThumbMissingCount = max(0, $themeManifestTotal - $themeThumbReadyCount);
 $imageQueue = interessa_admin_image_queue($articleOptions, $imageFilter, $imageFilter === 'all' ? max(count($articleOptions), 1) : 16);
 $productImageQueue = interessa_admin_product_image_queue($catalog, $productImageFilter, $productImageFilter === 'all' ? max(count($catalog), 1) : 16);
 $imageQueueCounts = [
@@ -2862,6 +2891,32 @@ require dirname(__DIR__) . '/inc/head.php';
                 </select>
               </form>
             </div>
+
+            <section class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Stav tem pred launchom</h3>
+                  <p class="admin-meta">Toto je rychly prehlad, kolko z 12 tem uz ma hotove vlastne obrazky.</p>
+                </div>
+              </div>
+              <div class="admin-status-grid">
+                <article class="admin-status-card">
+                  <strong><?= esc((string) $themeFullyReadyCount) ?> / <?= esc((string) $themeManifestTotal) ?></strong>
+                  <span>Temy komplet hotove</span>
+                  <small>Hlavny aj mensi obrazok</small>
+                </article>
+                <article class="admin-status-card">
+                  <strong><?= esc((string) $themeHeroReadyCount) ?> / <?= esc((string) $themeManifestTotal) ?></strong>
+                  <span>Hlavny obrazok temy hotovy</span>
+                  <small><?= esc((string) $themeHeroMissingCount) ?> este chyba</small>
+                </article>
+                <article class="admin-status-card">
+                  <strong><?= esc((string) $themeThumbReadyCount) ?> / <?= esc((string) $themeManifestTotal) ?></strong>
+                  <span>Mensi obrazok temy hotovy</span>
+                  <small><?= esc((string) $themeThumbMissingCount) ?> este chyba</small>
+                </article>
+              </div>
+            </section>
 
             <section class="admin-subsection admin-asset-preview">
               <div class="admin-subsection-head">

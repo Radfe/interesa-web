@@ -83,10 +83,31 @@
 
   megaItems.forEach((item)=>{
     const trigger = item.querySelector('.main-nav__link[data-mega]');
+    const panel = item.querySelector('.mega');
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
 
-    item.addEventListener('mouseenter', ()=>openMega(item));
-    item.addEventListener('mouseleave', ()=>scheduleMegaClose(item));
+    const onPointerEnter = ()=>openMega(item);
+    const onPointerLeave = (event)=>{
+      const nextTarget = event.relatedTarget;
+      if (nextTarget instanceof Node && item.contains(nextTarget)) {
+        return;
+      }
+      scheduleMegaClose(item);
+    };
+
+    item.addEventListener('mouseenter', onPointerEnter);
+    item.addEventListener('mouseleave', onPointerLeave);
+
+    if (trigger) {
+      trigger.addEventListener('mouseenter', onPointerEnter);
+      trigger.addEventListener('mouseleave', onPointerLeave);
+    }
+
+    if (panel) {
+      panel.addEventListener('mouseenter', onPointerEnter);
+      panel.addEventListener('mouseleave', onPointerLeave);
+    }
+
     item.addEventListener('focusin', ()=>openMega(item));
     item.addEventListener('focusout', ()=>{
       window.setTimeout(()=>{
