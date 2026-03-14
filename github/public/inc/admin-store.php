@@ -447,6 +447,52 @@ if (!function_exists('interessa_admin_article_hero_path')) {
     }
 }
 
+if (!function_exists('interessa_admin_uploaded_image_extension')) {
+    function interessa_admin_uploaded_image_extension(array $file, string $default = 'webp'): string {
+        $default = strtolower(trim($default)) ?: 'webp';
+        $tmp = (string) ($file['tmp_name'] ?? '');
+        $name = strtolower((string) ($file['name'] ?? ''));
+        $allowed = [
+            'image/webp' => 'webp',
+            'image/png' => 'png',
+            'image/jpeg' => 'jpg',
+            'image/jpg' => 'jpg',
+        ];
+
+        $mime = '';
+        if ($tmp !== '' && is_file($tmp)) {
+            if (function_exists('finfo_open')) {
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                if ($finfo !== false) {
+                    $detected = finfo_file($finfo, $tmp);
+                    if (is_string($detected)) {
+                        $mime = strtolower(trim($detected));
+                    }
+                    finfo_close($finfo);
+                }
+            }
+
+            if ($mime === '' && function_exists('getimagesize')) {
+                $size = @getimagesize($tmp);
+                if (is_array($size) && is_string($size['mime'] ?? null)) {
+                    $mime = strtolower(trim((string) $size['mime']));
+                }
+            }
+        }
+
+        if ($mime !== '' && isset($allowed[$mime])) {
+            return $allowed[$mime];
+        }
+
+        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        if (in_array($ext, ['webp', 'png', 'jpg', 'jpeg'], true)) {
+            return $ext === 'jpeg' ? 'jpg' : $ext;
+        }
+
+        return $default;
+    }
+}
+
 if (!function_exists('interessa_admin_store_uploaded_article_hero')) {
     function interessa_admin_store_uploaded_article_hero(string $slug, array $file): string {
         $slug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : trim($slug);
@@ -459,13 +505,17 @@ if (!function_exists('interessa_admin_store_uploaded_article_hero')) {
             throw new RuntimeException('Hero obrazok nebol korektne nahraty.');
         }
 
-        $target = interessa_admin_article_hero_path($slug, 'webp');
+        $ext = interessa_admin_uploaded_image_extension($file, 'webp');
+        if ($ext !== 'webp') {
+            throw new RuntimeException('Admin ocakava finalny WebP. PNG/JPG sa ma automaticky previest na WebP este pred uploadom. Obnov stranku a skus to znova.');
+        }
+        $target = interessa_admin_article_hero_path($slug, $ext);
         interessa_admin_ensure_dir(dirname($target));
         if (!move_uploaded_file($tmp, $target)) {
             throw new RuntimeException('Nepodarilo sa ulozit hero obrazok.');
         }
 
-        return interessa_admin_article_hero_asset($slug, 'webp');
+        return interessa_admin_article_hero_asset($slug, $ext);
     }
 }
 
@@ -482,17 +532,21 @@ if (!function_exists('interessa_admin_store_uploaded_product_image')) {
             throw new RuntimeException('Produktovy obrazok nebol korektne nahraty.');
         }
 
-        $target = function_exists('interessa_product_image_target_path')
-            ? interessa_product_image_target_path($productSlug, $merchantSlug)
-            : dirname(__DIR__) . '/assets/img/products/' . ($merchantSlug !== '' ? $merchantSlug . '/' : '') . $productSlug . '/main.webp';
+        $ext = interessa_admin_uploaded_image_extension($file, 'webp');
+        if ($ext !== 'webp') {
+            throw new RuntimeException('Admin ocakava finalny WebP. PNG/JPG sa ma automaticky previest na WebP este pred uploadom. Obnov stranku a skus to znova.');
+        }
+        $target = function_exists('interessa_admin_product_image_target_path_for_ext')
+            ? interessa_admin_product_image_target_path_for_ext($productSlug, $merchantSlug, $ext)
+            : dirname(__DIR__) . '/assets/img/products/' . ($merchantSlug !== '' ? $merchantSlug . '/' : '') . $productSlug . '/main.' . $ext;
         interessa_admin_ensure_dir(dirname($target));
         if (!move_uploaded_file($tmp, $target)) {
             throw new RuntimeException('Nepodarilo sa ulozit produktovy obrazok.');
         }
 
-        return function_exists('interessa_product_image_target_asset')
-            ? interessa_product_image_target_asset($productSlug, $merchantSlug)
-            : 'img/products/' . ($merchantSlug !== '' ? $merchantSlug . '/' : '') . $productSlug . '/main.webp';
+        return function_exists('interessa_admin_product_image_target_asset_for_ext')
+            ? interessa_admin_product_image_target_asset_for_ext($productSlug, $merchantSlug, $ext)
+            : 'img/products/' . ($merchantSlug !== '' ? $merchantSlug . '/' : '') . $productSlug . '/main.' . $ext;
     }
 }
 

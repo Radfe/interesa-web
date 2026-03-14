@@ -973,7 +973,7 @@ $page_canonical = '/admin';
 $page_robots = 'noindex,nofollow';
 $page_styles = [asset('css/admin.css')];
 $adminScript = asset('js/admin.js');
-$adminScript .= (str_contains($adminScript, '?') ? '&' : '?') . 'copyfix=20260314a';
+$adminScript .= (str_contains($adminScript, '?') ? '&' : '?') . 'copyfix=20260314b';
 $page_scripts = [$adminScript];
 
 $section = interessa_admin_selected_section();
@@ -2786,9 +2786,9 @@ require dirname(__DIR__) . '/inc/head.php';
                 <h3>Workflow</h3>
                 <ol class="admin-workflow-list">
                   <li>Skopiruj prompt do Canvy alebo AI generatora.</li>
-                  <li>Exportuj WebP v rozmere 1200x800.</li>
+                  <li>Exportuj PNG, JPG alebo WebP v rozmere 1200x800.</li>
                   <li>Dodrz naming podla odporucaneho filename.</li>
-                  <li>Nahraj obrazok sem alebo do cielovej cesty v assets.</li>
+                  <li>Nahraj obrazok sem. Admin PNG/JPG automaticky prevedie na WebP este pred uploadom.</li>
                   <li>Clanok automaticky pouzije novy hero asset.</li>
                 </ol>
                   <div class="admin-inline-actions">

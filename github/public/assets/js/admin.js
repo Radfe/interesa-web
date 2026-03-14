@@ -882,6 +882,117 @@ document.addEventListener('DOMContentLoaded', () => {
     return fallbackCopyValue(value);
   };
 
+  const imageUploadInputs = Array.from(document.querySelectorAll(
+    'input[type="file"][name="hero_image"], input[type="file"][name="product_image"]'
+  ));
+
+  const isConvertibleUpload = (file) => {
+    if (!(file instanceof File)) {
+      return false;
+    }
+
+    return ['image/png', 'image/jpeg', 'image/jpg'].includes((file.type || '').toLowerCase());
+  };
+
+  const isWebpUpload = (file) => file instanceof File && (file.type || '').toLowerCase() === 'image/webp';
+
+  const renameToWebp = (name) => {
+    const base = (name || 'image').replace(/\.[^.]+$/u, '') || 'image';
+    return base + '.webp';
+  };
+
+  const setUploadFormBusy = (form, isBusy) => {
+    if (!(form instanceof HTMLFormElement)) {
+      return;
+    }
+
+    form.dataset.imageConverting = isBusy ? 'true' : 'false';
+    form.querySelectorAll('button[type="submit"]').forEach((button) => {
+      if (button instanceof HTMLButtonElement) {
+        button.disabled = isBusy;
+      }
+    });
+  };
+
+  const loadImageFromFile = (file) => new Promise((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error('image-load-failed'));
+    };
+    image.src = objectUrl;
+  });
+
+  const canvasToWebpBlob = (canvas, quality = 0.92) => new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) {
+        resolve(blob);
+        return;
+      }
+      reject(new Error('webp-conversion-failed'));
+    }, 'image/webp', quality);
+  });
+
+  const convertUploadToWebp = async (input) => {
+    if (!(input instanceof HTMLInputElement) || !input.files || input.files.length === 0) {
+      return false;
+    }
+
+    const originalFile = input.files[0];
+    if (isWebpUpload(originalFile)) {
+      return false;
+    }
+
+    if (!isConvertibleUpload(originalFile)) {
+      throw new Error('unsupported-upload-format');
+    }
+
+    const form = input.form;
+    setUploadFormBusy(form, true);
+
+    try {
+      const image = await loadImageFromFile(originalFile);
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth || image.width;
+      canvas.height = image.naturalHeight || image.height;
+      const context = canvas.getContext('2d', { alpha: true });
+      if (!context) {
+        throw new Error('canvas-context-failed');
+      }
+
+      context.drawImage(image, 0, 0);
+      const blob = await canvasToWebpBlob(canvas);
+      const webpFile = new File([blob], renameToWebp(originalFile.name), {
+        type: 'image/webp',
+        lastModified: Date.now()
+      });
+      const transfer = new DataTransfer();
+      transfer.items.add(webpFile);
+      input.files = transfer.files;
+      showCopyToast('Obrazok bol automaticky prevedeny na WebP.', false);
+      return true;
+    } finally {
+      setUploadFormBusy(form, false);
+    }
+  };
+
+  imageUploadInputs.forEach((input) => {
+    input.addEventListener('change', async () => {
+      try {
+        await convertUploadToWebp(input);
+      } catch (error) {
+        console.error(error);
+        input.value = '';
+        showCopyToast('PNG/JPG sa nepodarilo previest na WebP. Skus iny obrazok.', true);
+      }
+    });
+  });
+
   document.addEventListener('click', async (event) => {
     const trigger = event.target.closest('[data-copy-value]');
     if (!(trigger instanceof HTMLButtonElement)) {
@@ -907,6 +1018,40 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error(error);
       showCopyToast('Kopirovanie zlyhalo. Skus znova.', true);
+    }
+  });
+
+  document.addEventListener('submit', async (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) {
+      return;
+    }
+
+    const uploadInputs = imageUploadInputs.filter((input) => input.form === form && input.files && input.files.length > 0);
+    if (uploadInputs.length === 0) {
+      return;
+    }
+
+    const needsConversion = uploadInputs.some((input) => isConvertibleUpload(input.files[0]));
+    if (!needsConversion) {
+      return;
+    }
+
+    event.preventDefault();
+
+    try {
+      for (const input of uploadInputs) {
+        await convertUploadToWebp(input);
+      }
+
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        form.submit();
+      }
+    } catch (error) {
+      console.error(error);
+      showCopyToast('Konverzia do WebP zlyhala. Nahraj iny obrazok.', true);
     }
   });
 });
