@@ -101,6 +101,7 @@ usort($readyArticles, static function (array $a, array $b): int {
     return ((int) @filemtime($bFile)) <=> ((int) @filemtime($aFile));
 });
 $readyArticles = array_slice($readyArticles, 0, 3);
+$crossThemePaths = interessa_cross_theme_paths($slug);
 
 $page_schema = [
     breadcrumb_schema([
@@ -337,6 +338,27 @@ include dirname(__DIR__) . '/inc/head.php';
                 <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
                 <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
                 <a class="card-link" href="<?= esc(article_url($itemSlug)) ?>"><?= esc(interessa_article_cta_label($itemSlug, $itemTitle)) ?></a>
+              </div>
+            </article>
+          <?php endforeach; ?>
+        </div>
+      </section>
+    <?php endif; ?>
+
+    <?php if ($crossThemePaths !== []): ?>
+      <section class="card">
+        <div class="section-head">
+          <h2>Suvisiace temy, ktore davaju zmysel ako dalsi krok</h2>
+          <p class="meta">Ak uz mas tuto temu zorientovanu, tieto pribuzne cesty ta posunu k dalsiemu logickemu vyberu.</p>
+        </div>
+        <div class="hub-grid article-related-grid">
+          <?php foreach ($crossThemePaths as $path): ?>
+            <article class="hub-card article-teaser-card">
+              <div class="hub-card-body article-teaser-body">
+                <span class="hub-card-label"><?= esc($hub['title']) ?></span>
+                <h3><a href="<?= esc((string) ($path['href'] ?? '/')) ?>"><?= esc((string) ($path['title'] ?? 'Dalsia tema')) ?></a></h3>
+                <?php if (trim((string) ($path['description'] ?? '')) !== ''): ?><p><?= esc((string) ($path['description'] ?? '')) ?></p><?php endif; ?>
+                <a class="card-link" href="<?= esc((string) ($path['href'] ?? '/')) ?>"><?= esc((string) ($path['cta'] ?? 'Otvorit temu')) ?></a>
               </div>
             </article>
           <?php endforeach; ?>

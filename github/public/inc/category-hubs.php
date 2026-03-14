@@ -198,3 +198,98 @@ if (!function_exists('interessa_category_hub')) {
         return $hubs[$slug] ?? null;
     }
 }
+
+if (!function_exists('interessa_cross_theme_map')) {
+    function interessa_cross_theme_map(): array {
+        return [
+            'proteiny' => [
+                ['type' => 'category', 'slug' => 'chudnutie', 'label' => 'Chudnutie', 'description' => 'Ak protein riesis hlavne do diety a redukcie tuku.'],
+                ['type' => 'article', 'slug' => 'veganske-proteiny-top-vyber-2026', 'label' => 'Veganske', 'description' => 'Ak hladas rastlinnu alternativu bez mliecnej zlozky.'],
+                ['type' => 'category', 'slug' => 'sila', 'label' => 'Sila a vykon', 'description' => 'Ak ta po proteine zaujimaju aj kreatin, regeneracia a treningovy progres.'],
+            ],
+            'chudnutie' => [
+                ['type' => 'category', 'slug' => 'proteiny', 'label' => 'Proteiny', 'description' => 'Ak si chces najprv upratat typy proteinov a ich pouzitie.'],
+                ['type' => 'category', 'slug' => 'vyziva', 'label' => 'Zdrava vyziva', 'description' => 'Ak okrem proteinu riesis aj kazdodennu rutinu a zakladne doplnky.'],
+                ['type' => 'article', 'slug' => 'spalovace-tukov-realita', 'label' => 'Spalovace tukov', 'description' => 'Ak chces oddelit realitu od marketingu pri redukcnych doplnkoch.'],
+            ],
+            'sila' => [
+                ['type' => 'category', 'slug' => 'kreatin', 'label' => 'Kreatin', 'description' => 'Najkratsia cesta ku kreatinu, davkovaniu a porovnaniu foriem.'],
+                ['type' => 'category', 'slug' => 'pre-workout', 'label' => 'Pre-workout', 'description' => 'Ak po kreatine riesis aj predtreningovku, stim a pumpu.'],
+                ['type' => 'category', 'slug' => 'proteiny', 'label' => 'Proteiny', 'description' => 'Ak chces doriesit aj regeneraciu a doplnanie bielkovin po treningu.'],
+            ],
+            'kreatin' => [
+                ['type' => 'category', 'slug' => 'sila', 'label' => 'Sila a vykon', 'description' => 'Sirsi kontext doplnkov na vykon, nie len samotny kreatin.'],
+                ['type' => 'category', 'slug' => 'pre-workout', 'label' => 'Pre-workout', 'description' => 'Ak popri kreatine riesis aj akutny treningovy boost.'],
+                ['type' => 'category', 'slug' => 'proteiny', 'label' => 'Proteiny', 'description' => 'Ak si po vykone chces upratat aj regeneraciu a prijem bielkovin.'],
+            ],
+            'pre-workout' => [
+                ['type' => 'category', 'slug' => 'sila', 'label' => 'Sila a vykon', 'description' => 'Sirsi prehlad doplnkov, ktore davaju zmysel pri treningu.'],
+                ['type' => 'category', 'slug' => 'kreatin', 'label' => 'Kreatin', 'description' => 'Ak chces zacat doplnkom s najsilnejsou dokazovou zakladnou.'],
+                ['type' => 'category', 'slug' => 'proteiny', 'label' => 'Proteiny', 'description' => 'Ak po pre-workoute riesis aj regeneraciu a bielkoviny.'],
+            ],
+            'mineraly' => [
+                ['type' => 'category', 'slug' => 'imunita', 'label' => 'Imunita', 'description' => 'Ak ta pri vitaminach a mineraloch zaujima hlavne obranyschopnost.'],
+                ['type' => 'category', 'slug' => 'vyziva', 'label' => 'Zdrava vyziva', 'description' => 'Ak chces mikro ziviny zasadit do sirsej kazdodennej rutiny.'],
+                ['type' => 'article', 'slug' => 'horcik-ktory-je-najlepsi-a-preco', 'label' => 'Horcik', 'description' => 'Jedna z najpraktickejsich vstupnych tem v tejto oblasti.'],
+            ],
+            'imunita' => [
+                ['type' => 'category', 'slug' => 'mineraly', 'label' => 'Vitaminy a mineraly', 'description' => 'Ak si chces rozobrat D3, zinok a dalsie latky detailnejsie.'],
+                ['type' => 'category', 'slug' => 'probiotika-travenie', 'label' => 'Probiotika a travenie', 'description' => 'Ak ta zaujima vztah travenia, mikrobiomu a imunity.'],
+                ['type' => 'category', 'slug' => 'vyziva', 'label' => 'Zdrava vyziva', 'description' => 'Ak chces podporu imunity zasadit do sirsej rutiny a stravy.'],
+            ],
+            'klby-koza' => [
+                ['type' => 'article', 'slug' => 'kolagen-recenzia', 'label' => 'Kolagen', 'description' => 'Najrychlejsia cesta ku konkretnemu vyberu kolagenu podla pouzitia.'],
+                ['type' => 'category', 'slug' => 'vyziva', 'label' => 'Zdrava vyziva', 'description' => 'Ak chces klby a kozu riesit aj cez sirsi kazdodenny zaklad.'],
+                ['type' => 'category', 'slug' => 'mineraly', 'label' => 'Vitaminy a mineraly', 'description' => 'Ak ta popri kolagene zaujima aj vitamin C a dalsie podporne latky.'],
+            ],
+            'vyziva' => [
+                ['type' => 'category', 'slug' => 'mineraly', 'label' => 'Vitaminy a mineraly', 'description' => 'Ak si chces z kazdodennej rutiny odskocit ku konkretnym mikro zivinam.'],
+                ['type' => 'category', 'slug' => 'probiotika-travenie', 'label' => 'Probiotika a travenie', 'description' => 'Ak ta v ramci vyzivy zaujima hlavne travenie a mikrobiom.'],
+                ['type' => 'category', 'slug' => 'klby-koza', 'label' => 'Klby a koza', 'description' => 'Ak hladas temy, kde vyziva prechadza do cielenej suplementacie.'],
+            ],
+        ];
+    }
+}
+
+if (!function_exists('interessa_cross_theme_paths')) {
+    function interessa_cross_theme_paths(string $slug): array {
+        $slug = normalize_category_slug($slug);
+        $map = interessa_cross_theme_map();
+        $items = $map[$slug] ?? [];
+        $resolved = [];
+
+        foreach ($items as $item) {
+            $type = trim((string) ($item['type'] ?? 'category'));
+            $targetSlug = trim((string) ($item['slug'] ?? ''));
+            if ($targetSlug === '') {
+                continue;
+            }
+
+            if ($type === 'article') {
+                $meta = article_meta($targetSlug);
+                $title = trim((string) ($meta['title'] ?? humanize_slug($targetSlug)));
+                $resolved[] = [
+                    'href' => article_url($targetSlug),
+                    'title' => trim((string) ($item['label'] ?? $title)),
+                    'description' => trim((string) ($item['description'] ?? '')),
+                    'cta' => interessa_article_cta_label($targetSlug, $title),
+                ];
+                continue;
+            }
+
+            $meta = category_meta($targetSlug);
+            if ($meta === null) {
+                continue;
+            }
+
+            $resolved[] = [
+                'href' => category_url($targetSlug),
+                'title' => trim((string) ($item['label'] ?? $meta['title'])),
+                'description' => trim((string) ($item['description'] ?? $meta['description'] ?? '')),
+                'cta' => 'Otvorit temu',
+            ];
+        }
+
+        return $resolved;
+    }
+}

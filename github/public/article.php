@@ -10,6 +10,7 @@ require_once __DIR__ . '/inc/article-related.php';
 require_once __DIR__ . '/inc/article-enhancements.php';
 require_once __DIR__ . '/inc/article-outline.php';
 require_once __DIR__ . '/inc/admin-content.php';
+require_once __DIR__ . '/inc/category-hubs.php';
 
 $requestedSlug = preg_replace('~[^a-z0-9\-_]+~i', '', (string) ($_GET['slug'] ?? ''));
 $preferredSlug = interessa_article_preferred_slug($requestedSlug);
@@ -41,6 +42,7 @@ $shortlistStats = interessa_commerce_shortlist_stats($commerce);
 $shortlistCoveragePercent = interessa_shortlist_coverage_percent($shortlistStats);
 $shortlistCoverageLabel = interessa_shortlist_coverage_label($shortlistStats);
 $hasDecisionLayer = $comparisonTable !== null || $commerce !== null;
+$crossThemePaths = $categoryMeta !== null ? interessa_cross_theme_paths((string) ($categoryMeta['slug'] ?? '')) : [];
 
 if ($usesAdminContent) {
     $adminPayload = interessa_admin_article_content_payload($slug);
@@ -241,6 +243,27 @@ include __DIR__ . '/inc/head.php';
 
       <?php interessa_render_article_audience_box($slug); ?>
       <?php interessa_render_article_outline($articleHeadings, $readingTime); ?>
+
+      <?php if ($crossThemePaths !== []): ?>
+        <section class="card">
+          <div class="section-head">
+            <h2>Kam dalej, ak riesis pribuzny ciel</h2>
+            <p class="meta">Ak ta tato tema zaujima sirsie, tieto suvisiace smery ti pomozu prejst k dalsiemu logickemu kroku.</p>
+          </div>
+          <div class="hub-grid article-related-grid">
+            <?php foreach ($crossThemePaths as $path): ?>
+              <article class="hub-card article-teaser-card">
+                <div class="hub-card-body article-teaser-body">
+                  <span class="hub-card-label"><?= esc((string) ($categoryMeta['title'] ?? 'Tema')) ?></span>
+                  <h3><a href="<?= esc((string) ($path['href'] ?? '/')) ?>"><?= esc((string) ($path['title'] ?? 'Dalsia tema')) ?></a></h3>
+                  <?php if (trim((string) ($path['description'] ?? '')) !== ''): ?><p><?= esc((string) ($path['description'] ?? '')) ?></p><?php endif; ?>
+                  <a class="card-link" href="<?= esc((string) ($path['href'] ?? '/')) ?>"><?= esc((string) ($path['cta'] ?? 'Otvorit temu')) ?></a>
+                </div>
+              </article>
+            <?php endforeach; ?>
+          </div>
+        </section>
+      <?php endif; ?>
 
       <div class="article-body">
         <?php echo $articleBodyHtml; ?>
