@@ -1104,6 +1104,72 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  const imageUploadForms = Array.from(new Set(
+    imageUploadInputs
+      .map((input) => input.form)
+      .filter((form) => form instanceof HTMLFormElement)
+  ));
+
+  const submitImageUploadForm = async (form) => {
+    const uploadInputs = imageUploadInputs.filter((input) => input.form === form && input.files && input.files.length > 0);
+    if (uploadInputs.length === 0) {
+      return false;
+    }
+
+    setUploadFormBusy(form, true);
+
+    try {
+      const formData = new FormData(form);
+
+      for (const input of uploadInputs) {
+        const originalFile = input.files[0];
+        if (!(originalFile instanceof File)) {
+          continue;
+        }
+
+        const webpFile = await createWebpFileFromUpload(originalFile);
+        formData.set(input.name, webpFile, webpFile.name);
+      }
+
+      const response = await fetch(form.action || window.location.href, {
+        method: (form.method || 'POST').toUpperCase(),
+        body: formData,
+        credentials: 'same-origin'
+      });
+
+      if (response.redirected && response.url) {
+        window.location.assign(response.url);
+        return true;
+      }
+
+      const html = await response.text();
+      if (typeof html === 'string' && html.trim() !== '') {
+        document.open();
+        document.write(html);
+        document.close();
+        return true;
+      }
+
+      window.location.reload();
+      return true;
+    } finally {
+      setUploadFormBusy(form, false);
+    }
+  };
+
+  imageUploadForms.forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      try {
+        await submitImageUploadForm(form);
+      } catch (error) {
+        console.error(error);
+        showCopyToast('Konverzia do WebP zlyhala. Nahraj iny obrazok.', true);
+      }
+    });
+  });
+
   document.addEventListener('click', async (event) => {
     const trigger = event.target.closest('[data-copy-value]');
     if (!(trigger instanceof HTMLButtonElement)) {
@@ -1132,57 +1198,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  document.addEventListener('submit', async (event) => {
-    const form = event.target;
-    if (!(form instanceof HTMLFormElement)) {
-      return;
-    }
-
-    const uploadInputs = imageUploadInputs.filter((input) => input.form === form && input.files && input.files.length > 0);
-    if (uploadInputs.length === 0) {
-      return;
-    }
-
-    event.preventDefault();
-
-    try {
-      setUploadFormBusy(form, true);
-      const formData = new FormData(form);
-
-      for (const input of uploadInputs) {
-        const originalFile = input.files[0];
-        if (!(originalFile instanceof File)) {
-          continue;
-        }
-
-        const webpFile = await createWebpFileFromUpload(originalFile);
-        formData.set(input.name, webpFile, webpFile.name);
-      }
-
-      const response = await fetch(form.action || window.location.href, {
-        method: (form.method || 'POST').toUpperCase(),
-        body: formData,
-        credentials: 'same-origin'
-      });
-
-      if (response.redirected && response.url) {
-        window.location.assign(response.url);
-        return;
-      }
-
-      const html = await response.text();
-      if (typeof html === 'string' && html.trim() !== '') {
-        document.open();
-        document.write(html);
-        document.close();
-      } else {
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error(error);
-      showCopyToast('Konverzia do WebP zlyhala. Nahraj iny obrazok.', true);
-    } finally {
-      setUploadFormBusy(form, false);
-    }
-  });
 });
