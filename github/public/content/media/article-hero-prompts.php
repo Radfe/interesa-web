@@ -47,9 +47,6 @@ return [
     'doplnky-vyzivy' => [
         'prompt' => 'Realistic professional hero photo, overview of nutrition supplements arranged on a clean table, bright minimal background, soft pastel palette, modern health look, natural light, no text, no collage, 3:2 aspect ratio.',
     ],
-    'doplnky-vyzivy-top-vyber-2025' => [
-        'prompt' => 'Realistic professional hero photo, selected nutrition supplements in a curated product layout, bright minimal background, soft pastel palette, modern health look, natural light, no text, no collage, 3:2 aspect ratio.',
-    ],
     'horcik' => [
         'prompt' => 'Realistic professional hero photo, magnesium capsules or mineral supplement on a clean stone surface, bright minimal background, soft pastel palette, modern health look, natural light, no text, no collage, 3:2 aspect ratio.',
     ],

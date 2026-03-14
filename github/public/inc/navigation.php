@@ -19,9 +19,9 @@ if (!function_exists('interessa_primary_navigation_items')) {
                 'mega_key' => 'proteiny',
                 'sections' => [
                     ['title' => 'Najdolezitejsie', 'links' => [
-                        ['href' => '/clanky/najlepsie-proteiny-2025', 'label' => 'Najlepsie proteiny 2025'],
+                        ['href' => '/clanky/najlepsie-proteiny-2026', 'label' => 'Najlepsie proteiny 2026'],
                         ['href' => '/clanky/protein-na-chudnutie', 'label' => 'Protein na chudnutie'],
-                        ['href' => '/clanky/veganske-proteiny-top-vyber-2025', 'label' => 'Veganske proteiny'],
+                        ['href' => '/clanky/veganske-proteiny-top-vyber-2026', 'label' => 'Veganske proteiny'],
                     ]],
                     ['title' => 'Porovnania', 'links' => [
                         ['href' => '/clanky/srvatkovy-protein-vs-izolat-vs-hydro', 'label' => 'WPC vs WPI vs hydro'],

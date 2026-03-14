@@ -9,7 +9,9 @@ if (!function_exists('canonical_article_slug')) {
         }
 
         $aliases = [
+            'najlepsie-proteiny-2026' => 'najlepsie-proteiny-2025',
             'proteiny-na-chudnutie' => 'protein-na-chudnutie',
+            'veganske-proteiny-top-vyber-2026' => 'veganske-proteiny-top-vyber-2025',
             'veganske-proteiny-top' => 'veganske-proteiny-top-vyber-2025',
         ];
 

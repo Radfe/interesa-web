@@ -46,10 +46,10 @@ $homeHeroImage = interessa_build_image_meta(
 
 $featuredCategorySlugs = ['proteiny', 'vyziva', 'mineraly', 'sila', 'klby-koza', 'imunita'];
 $featuredGuideSlugs = [
-    'najlepsie-proteiny-2025',
+    'najlepsie-proteiny-2026',
     'kreatin-porovnanie',
     'kolagen-recenzia',
-    'veganske-proteiny-top-vyber-2025',
+    'veganske-proteiny-top-vyber-2026',
 ];
 
 $featuredCategories = [];
@@ -151,7 +151,7 @@ include __DIR__ . '/inc/head.php';
       <h1>Vyber si doplnky a vyzivu bez chaosu a marketingoveho balastu</h1>
       <p>Interesa spaja tematicke huby, nakupne navody, recenzie a porovnania tak, aby si sa vedel rychlo dostat k rozumnemu vyberu podla ciela.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary" href="/clanky/najlepsie-proteiny-2025">Pozriet porovnania</a>
+        <a class="btn btn-primary" href="/clanky/najlepsie-proteiny-2026">Pozriet porovnania</a>
         <a class="btn btn-ghost" href="/kategorie">Prejst kategorie</a>
       </div>
     </div>

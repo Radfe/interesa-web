@@ -14,10 +14,10 @@ if (!function_exists('interessa_category_hubs')) {
                     'Pri diete sleduj cukry, tuky a typ proteinu na porciu.',
                 ],
                 'featured_guides' => [
-                    ['slug' => 'najlepsie-proteiny-2025', 'label' => 'Top vyber', 'description' => 'Rychly shortlist najlepsich proteinov podla typu pouzitia.'],
+                    ['slug' => 'najlepsie-proteiny-2026', 'label' => 'Top vyber', 'description' => 'Rychly shortlist najlepsich proteinov podla typu pouzitia.'],
                     ['slug' => 'protein-na-chudnutie', 'label' => 'Chudnutie', 'description' => 'Ako vybrat protein do diety bez zbytocnych kalorii navyse.'],
                     ['slug' => 'srvatkovy-protein-vs-izolat-vs-hydro', 'label' => 'Porovnanie', 'description' => 'Jasny rozdiel medzi WPC, WPI a hydrolyzatom.'],
-                    ['slug' => 'veganske-proteiny-top-vyber-2025', 'label' => 'Veganske', 'description' => 'Najlepsie rastlinne proteiny a co sledovat pri vybere.'],
+                    ['slug' => 'veganske-proteiny-top-vyber-2026', 'label' => 'Veganske', 'description' => 'Najlepsie rastlinne proteiny a co sledovat pri vybere.'],
                 ],
             ],
             'vyziva' => [

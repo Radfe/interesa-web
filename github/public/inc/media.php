@@ -329,6 +329,15 @@ if (!function_exists('interessa_article_image_meta')) {
             $alt = $meta['title'] !== '' ? $meta['title'] : humanize_slug($canonicalSlug);
         }
 
+        $preferredSlug = function_exists('interessa_article_preferred_slug')
+            ? interessa_article_preferred_slug($slug)
+            : $slug;
+        $preferredMeta = article_meta($preferredSlug);
+        $preferredTitle = interessa_media_clean_text((string) ($preferredMeta['title'] ?? ''));
+        if ($preferredTitle !== '' && ($preferredSlug !== $canonicalSlug || str_contains($preferredTitle, '2026'))) {
+            $alt = $preferredTitle;
+        }
+
         $variants = [];
         $overrideAsset = trim((string) ($override['hero_asset'] ?? ''));
         if ($variant === 'hero' && $overrideAsset !== '') {

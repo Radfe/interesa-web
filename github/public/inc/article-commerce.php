@@ -391,7 +391,9 @@ if (!function_exists('interessa_article_commerce_canonical_slug')) {
     function interessa_article_commerce_canonical_slug(string $slug): ?string {
         $sections = interessa_article_commerce_sections();
         $aliases = [
+            'najlepsie-proteiny-2026' => 'najlepsie-proteiny-2025',
             'proteiny-na-chudnutie' => 'protein-na-chudnutie',
+            'veganske-proteiny-top-vyber-2026' => 'veganske-proteiny-top-vyber-2025',
             'veganske-proteiny-top' => 'veganske-proteiny-top-vyber-2025',
         ];
 

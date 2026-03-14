@@ -146,7 +146,7 @@ if (!function_exists('interessa_render_article_trust_box')) {
                 echo '<p class="article-meta-inline">' . esc('Pri niektorych produktoch este doplname finalne obrazky baleni.') . '</p>';
             }
         }
-        echo '<p class="article-meta-inline"><strong>' . esc('Slug:') . '</strong> ' . esc(canonical_article_slug($slug)) . '</p>';
+        echo '<p class="article-meta-inline"><strong>' . esc('Slug:') . '</strong> ' . esc(interessa_article_preferred_slug($slug)) . '</p>';
         echo '</article>';
 
         echo '</div>';

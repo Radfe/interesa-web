@@ -15,9 +15,9 @@
   <section class="widget">
     <h3>Top nakupne navody</h3>
     <ul class="list">
-      <li><a href="/clanky/najlepsie-proteiny-2025">Najlepsie proteiny 2025</a></li>
+      <li><a href="/clanky/najlepsie-proteiny-2026">Najlepsie proteiny 2026</a></li>
       <li><a href="/clanky/kreatin-porovnanie">Kreatin: porovnanie a vyber</a></li>
-      <li><a href="/clanky/veganske-proteiny-top-vyber-2025">Veganske proteiny</a></li>
+      <li><a href="/clanky/veganske-proteiny-top-vyber-2026">Veganske proteiny</a></li>
       <li><a href="/clanky/kolagen-recenzia">Kolagen: recenzia a vyber</a></li>
     </ul>
   </section>

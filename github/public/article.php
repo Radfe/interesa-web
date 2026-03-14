@@ -11,7 +11,13 @@ require_once __DIR__ . '/inc/article-enhancements.php';
 require_once __DIR__ . '/inc/article-outline.php';
 require_once __DIR__ . '/inc/admin-content.php';
 
-$slug = preg_replace('~[^a-z0-9\-_]+~i', '', (string) ($_GET['slug'] ?? ''));
+$requestedSlug = preg_replace('~[^a-z0-9\-_]+~i', '', (string) ($_GET['slug'] ?? ''));
+$preferredSlug = interessa_article_preferred_slug($requestedSlug);
+if ($requestedSlug !== '' && $preferredSlug !== '' && $preferredSlug !== $requestedSlug) {
+    header('Location: ' . article_url($preferredSlug), true, 301);
+    exit;
+}
+$slug = interessa_article_source_slug($requestedSlug);
 $file = __DIR__ . '/content/articles/' . $slug . '.html';
 $usesAdminContent = interessa_admin_article_has_structured_content($slug);
 if ($slug === '' || (!is_file($file) && !$usesAdminContent)) {

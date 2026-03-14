@@ -1,27 +1,23 @@
 <?php
 return [
-  'doplnky-vyzivy-top-vyber-2025' => [
-    'Doplnky výživy – top výber 2025',
-    'Najpoužívanejšie doplnky: kreatín, D3+K2, magnézium, kolagén a omega-3. Výber podľa cieľa.'
-  ],
   'veganske-proteiny-top-vyber-2025' => [
-    'Vegánske proteíny – top výber 2025',
-    'Najlepšie rastlinné proteíny podľa chuti, zloženia a ceny.'
+    'VegĂˇnske proteĂ­ny â€“ top vĂ˝ber 2025',
+    'NajlepĹˇie rastlinnĂ© proteĂ­ny podÄľa chuti, zloĹľenia a ceny.'
   ],
   'kolagen-recenzia' => [
-    'Kolagén – recenzia a výber (typ I/II/III)',
-    'Čo očakávať pri kolagéne, formy, gramáž a prečo pridať vitamín C.'
+    'KolagĂ©n â€“ recenzia a vĂ˝ber (typ I/II/III)',
+    'ÄŚo oÄŤakĂˇvaĹĄ pri kolagĂ©ne, formy, gramĂˇĹľ a preÄŤo pridaĹĄ vitamĂ­n C.'
   ],
   'horcik-ktory-je-najlepsi-a-preco' => [
-    'Horčík – ktorý je najlepší a prečo?',
-    'Formy Mg a ich vstrebateľnosť: bisglycinát, citrát, malát, oxid.'
+    'HorÄŤĂ­k â€“ ktorĂ˝ je najlepĹˇĂ­ a preÄŤo?',
+    'Formy Mg a ich vstrebateÄľnosĹĄ: bisglycinĂˇt, citrĂˇt, malĂˇt, oxid.'
   ],
   'proteiny-na-chudnutie' => [
-    'Proteíny na chudnutie – čo funguje?',
-    'Kedy voliť WPI/Hydro a ako dávkovať.'
+    'ProteĂ­ny na chudnutie â€“ ÄŤo funguje?',
+    'Kedy voliĹĄ WPI/Hydro a ako dĂˇvkovaĹĄ.'
   ],
   'srvatkovy-protein-vs-izolat-vs-hydro' => [
-    'Srvátkový proteín vs. izolát vs. hydro – čo sa oplatí?',
-    'Rozdiely v rýchlosti, cene, chuti a laktóze.'
+    'SrvĂˇtkovĂ˝ proteĂ­n vs. izolĂˇt vs. hydro â€“ ÄŤo sa oplatĂ­?',
+    'Rozdiely v rĂ˝chlosti, cene, chuti a laktĂłze.'
   ],
 ];

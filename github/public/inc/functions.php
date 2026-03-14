@@ -373,7 +373,6 @@ if (!function_exists('guess_article_category')) {
             'chudnutie-tip' => 'chudnutie',
             'clear-protein' => 'proteiny',
             'doplnky-vyzivy' => 'vyziva',
-            'doplnky-vyzivy-top-vyber-2025' => 'vyziva',
             'horcik' => 'mineraly',
             'horcik-ktory-je-najlepsi-a-preco' => 'mineraly',
             'imunita-prirodne-latky-ktore-funguju' => 'imunita',
@@ -386,6 +385,7 @@ if (!function_exists('guess_article_category')) {
             'kreatin-porovnanie' => 'kreatin',
             'kreatin-vedlajsie-ucinky-a-fakty' => 'kreatin',
             'najlepsi-protein-na-chudnutie-wpc-vs-wpi' => 'proteiny',
+            'najlepsie-proteiny-2026' => 'proteiny',
             'najlepsie-proteiny-2025' => 'proteiny',
             'pre-workout' => 'pre-workout',
             'pre-workout-ako-vybrat' => 'pre-workout',
@@ -397,6 +397,7 @@ if (!function_exists('guess_article_category')) {
             'spalovace-tukov-realita' => 'chudnutie',
             'srvatkovy-protein-vs-izolat-vs-hydro' => 'proteiny',
             'veganske-proteiny-top' => 'proteiny',
+            'veganske-proteiny-top-vyber-2026' => 'proteiny',
             'veganske-proteiny-top-vyber-2025' => 'proteiny',
             'vitamin-c' => 'mineraly',
             'vitamin-d3' => 'mineraly',
@@ -680,8 +681,45 @@ if (!function_exists('category_articles')) {
 }
 
 if (!function_exists('article_url')) {
+    function interessa_article_preferred_slug(string $slug): string {
+        $slug = trim($slug);
+        if ($slug === '') {
+            return '';
+        }
+
+        $preferred = [
+            'doplnky-vyzivy-top-vyber-2025' => 'doplnky-vyzivy',
+            'najlepsie-proteiny-2025' => 'najlepsie-proteiny-2026',
+            'najlepsie-proteiny-2026' => 'najlepsie-proteiny-2026',
+            'veganske-proteiny-top' => 'veganske-proteiny-top-vyber-2026',
+            'veganske-proteiny-top-vyber-2025' => 'veganske-proteiny-top-vyber-2026',
+            'veganske-proteiny-top-vyber-2026' => 'veganske-proteiny-top-vyber-2026',
+        ];
+
+        return $preferred[$slug] ?? $slug;
+    }
+}
+
+if (!function_exists('interessa_article_source_slug')) {
+    function interessa_article_source_slug(string $slug): string {
+        $slug = trim($slug);
+        if ($slug === '') {
+            return '';
+        }
+
+        $source = [
+            'doplnky-vyzivy-top-vyber-2025' => 'doplnky-vyzivy',
+            'najlepsie-proteiny-2026' => 'najlepsie-proteiny-2025',
+            'veganske-proteiny-top-vyber-2026' => 'veganske-proteiny-top-vyber-2025',
+        ];
+
+        return $source[$slug] ?? canonical_article_slug($slug);
+    }
+}
+
+if (!function_exists('article_url')) {
     function article_url(string $slug): string {
-        return '/clanky/' . rawurlencode($slug);
+        return '/clanky/' . rawurlencode(interessa_article_preferred_slug($slug));
     }
 }
 
