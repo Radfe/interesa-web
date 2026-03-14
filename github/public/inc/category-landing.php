@@ -157,8 +157,8 @@ include dirname(__DIR__) . '/inc/head.php';
   <div class="content">
     <article class="card hub-hero-card">
       <?php if ($categoryHero !== null): ?>
-        <figure class="hub-hero-media">
-          <?= interessa_render_image($categoryHero, ['class' => 'hub-card-image', 'loading' => 'eager', 'fetchpriority' => 'high']) ?>
+        <figure class="hub-hero-media category-asset-frame category-asset-frame--hero">
+          <?= interessa_render_image($categoryHero, ['class' => 'hub-card-image category-asset-image category-hero-image', 'loading' => 'eager', 'fetchpriority' => 'high']) ?>
         </figure>
       <?php endif; ?>
       <div class="hub-heading-row">

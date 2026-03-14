@@ -140,7 +140,9 @@ include __DIR__ . '/../inc/head.php';
       <?php $fullCoverageCount = (int) ($hubFullCoverageCount[$slug] ?? 0); ?>
       <?php $primaryGuide = $hubPrimaryGuide[$slug] ?? null; ?>
       <article class="hub-card">
-        <?= interessa_render_image(interessa_category_image_meta($slug, 'hero', true), ['class' => 'hub-card-image', 'alt' => $hub['title']]) ?>
+        <div class="category-asset-frame category-asset-frame--theme">
+          <?= interessa_render_image(interessa_category_image_meta($slug, 'hero', true), ['class' => 'hub-card-image category-asset-image', 'alt' => $hub['title']]) ?>
+        </div>
         <div class="hub-card-body">
           <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon((string) $slug) ?></span>
           <div class="article-card-meta">
@@ -192,7 +194,9 @@ include __DIR__ . '/../inc/head.php';
       <?php $fullCoverageCount = (int) ($hubFullCoverageCount[$slug] ?? 0); ?>
       <?php $primaryGuide = $hubPrimaryGuide[$slug] ?? null; ?>
       <article class="hub-card">
-        <?= interessa_render_image(interessa_category_image_meta($slug, 'hero', true), ['class' => 'hub-card-image', 'alt' => $hub['title']]) ?>
+        <div class="category-asset-frame category-asset-frame--theme">
+          <?= interessa_render_image(interessa_category_image_meta($slug, 'hero', true), ['class' => 'hub-card-image category-asset-image', 'alt' => $hub['title']]) ?>
+        </div>
         <div class="hub-card-body">
           <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon((string) $slug) ?></span>
           <div class="article-card-meta">

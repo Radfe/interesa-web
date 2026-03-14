@@ -284,6 +284,10 @@ if (!function_exists('interessa_build_image_meta')) {
             'loading' => trim((string) ($options['loading'] ?? 'lazy')) ?: 'lazy',
             'decoding' => trim((string) ($options['decoding'] ?? 'async')) ?: 'async',
             'fetchpriority' => trim((string) ($options['fetchpriority'] ?? '')) ?: null,
+            'kind' => trim((string) ($options['kind'] ?? $kind)) ?: $kind,
+            'entity' => trim((string) ($options['entity'] ?? '')) ?: null,
+            'variant_name' => trim((string) ($options['variant_name'] ?? '')) ?: null,
+            'crop_mode' => trim((string) ($options['crop_mode'] ?? 'cover')) ?: 'cover',
         ];
     }
 }
@@ -310,6 +314,10 @@ if (!function_exists('interessa_remote_image_meta')) {
             'loading' => trim((string) ($config['loading'] ?? $loading)) ?: $loading,
             'decoding' => trim((string) ($config['decoding'] ?? 'async')) ?: 'async',
             'fetchpriority' => trim((string) ($config['fetchpriority'] ?? '')) ?: null,
+            'kind' => trim((string) ($config['kind'] ?? 'article')) ?: 'article',
+            'entity' => trim((string) ($config['entity'] ?? '')) ?: null,
+            'variant_name' => trim((string) ($config['variant_name'] ?? '')) ?: null,
+            'crop_mode' => trim((string) ($config['crop_mode'] ?? 'cover')) ?: 'cover',
         ];
     }
 }
@@ -372,6 +380,10 @@ if (!function_exists('interessa_article_image_meta')) {
             'sizes' => $entry['sizes'] ?? null,
             'loading' => $variant === 'hero' ? 'eager' : 'lazy',
             'fetchpriority' => $variant === 'hero' ? 'high' : null,
+            'kind' => 'article',
+            'entity' => $canonicalSlug,
+            'variant_name' => $variant,
+            'crop_mode' => $variant === 'hero' ? 'cover' : 'cover',
         ], 'article', $allowFallback);
     }
 }
@@ -407,6 +419,10 @@ if (!function_exists('interessa_category_image_meta')) {
         return interessa_build_image_meta($variants, [
             'alt' => $alt,
             'sizes' => $entry['sizes'] ?? null,
+            'kind' => 'category',
+            'entity' => $slug,
+            'variant_name' => $variant,
+            'crop_mode' => 'cover',
         ], 'category', $allowFallback);
     }
 }
@@ -443,6 +459,10 @@ if (!function_exists('interessa_product_image_meta')) {
             'alt' => $alt,
             'sizes' => $sizes,
             'loading' => (string) ($config['loading'] ?? 'lazy'),
+            'kind' => 'product',
+            'entity' => $slug,
+            'variant_name' => trim((string) ($config['variant_name'] ?? 'main')) ?: 'main',
+            'crop_mode' => 'contain',
         ], 'product', $allowFallback);
 
         if ($image !== null) {
@@ -469,6 +489,10 @@ if (!function_exists('interessa_brand_image_meta')) {
             'loading' => 'eager',
             'fetchpriority' => 'high',
             'source_type' => 'local',
+            'kind' => 'brand',
+            'entity' => $name,
+            'variant_name' => $name,
+            'crop_mode' => 'contain',
         ], 'brand', $allowFallback);
     }
 }
@@ -490,6 +514,39 @@ if (!function_exists('interessa_render_image')) {
             if (!isset($attrs[$key]) && !empty($image[$key])) {
                 $attrs[$key] = $image[$key];
             }
+        }
+
+        $existingClass = trim((string) ($attrs['class'] ?? ''));
+        $autoClasses = [];
+        $kind = trim((string) ($image['kind'] ?? ''));
+        $variantName = trim((string) ($image['variant_name'] ?? ''));
+        $sourceType = trim((string) ($image['source_type'] ?? ''));
+        $cropMode = trim((string) ($image['crop_mode'] ?? ''));
+        if ($kind !== '') {
+            $autoClasses[] = 'media-image';
+            $autoClasses[] = 'media-image--' . preg_replace('~[^a-z0-9\-]+~i', '-', strtolower($kind));
+        }
+        if ($variantName !== '') {
+            $autoClasses[] = 'media-image--' . preg_replace('~[^a-z0-9\-]+~i', '-', strtolower($variantName));
+        }
+        if ($sourceType !== '') {
+            $autoClasses[] = 'is-source-' . preg_replace('~[^a-z0-9\-]+~i', '-', strtolower($sourceType));
+        }
+        if ($cropMode !== '') {
+            $autoClasses[] = 'is-crop-' . preg_replace('~[^a-z0-9\-]+~i', '-', strtolower($cropMode));
+        }
+        $attrs['class'] = trim($existingClass . ' ' . implode(' ', array_filter($autoClasses)));
+        if (!isset($attrs['data-image-kind']) && $kind !== '') {
+            $attrs['data-image-kind'] = $kind;
+        }
+        if (!isset($attrs['data-image-variant']) && $variantName !== '') {
+            $attrs['data-image-variant'] = $variantName;
+        }
+        if (!isset($attrs['data-image-source']) && $sourceType !== '') {
+            $attrs['data-image-source'] = $sourceType;
+        }
+        if (!isset($attrs['data-image-entity']) && !empty($image['entity'])) {
+            $attrs['data-image-entity'] = (string) $image['entity'];
         }
 
         $htmlAttrs = [];

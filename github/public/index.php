@@ -64,6 +64,16 @@ foreach ($featuredCategorySlugs as $slug) {
         'slug' => $slug,
         'title' => $meta['title'],
         'description' => $hub['description'] ?? $meta['description'],
+        'focus_point' => trim((string) (($hub['focus_points'][0] ?? '') ?: ($hub['intro'] ?? ''))),
+        'theme_label' => match ($slug) {
+            'proteiny' => 'Start pre vyber proteinu',
+            'vyziva' => 'Kazdodenny zaklad a rutina',
+            'mineraly' => 'Mikroziviny a forma latok',
+            'sila' => 'Vykon, kreatin a trening',
+            'klby-koza' => 'Kolagen, klby a regeneracia',
+            'imunita' => 'Imunita a obranyschopnost',
+            default => 'Tematicky hub',
+        },
         'image' => interessa_category_image_meta($slug, 'hero', true),
         'count' => count(category_articles($slug)),
         'featured_count' => count((array) ($hub['featured_guides'] ?? [])),
@@ -256,7 +266,9 @@ include __DIR__ . '/inc/head.php';
   <div class="hub-grid home-goals-grid">
     <?php foreach ($homeGoalCards as $goal): ?>
       <article class="hub-card home-goal-card">
-        <?= interessa_render_image($goal['image'], ['class' => 'hub-card-image', 'alt' => $goal['title']]) ?>
+        <div class="category-asset-frame category-asset-frame--goal">
+          <?= interessa_render_image($goal['image'], ['class' => 'hub-card-image category-asset-image', 'alt' => $goal['title']]) ?>
+        </div>
         <div class="hub-card-body">
           <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon((string) $goal['slug']) ?></span>
           <span class="hub-card-label"><?= esc((string) $goal['title']) ?></span>
@@ -279,15 +291,27 @@ include __DIR__ . '/inc/head.php';
 <section class="container home-section">
   <div class="section-head">
     <h2>Vyber si temu, v ktorej zacat</h2>
-    <p class="meta">Najsilnejsie obsahove huby webu. Kazda tema ta ma dostat od orientacie k najdolezitejsim clankom a potom ku konkretnemu vyberu.</p>
+    <p class="meta">Kazda tema ma mat jasnu ulohu: pomoct ti zorientovat sa, ukazat spravny prvy clanok a potom ta posunut k vhodnemu vyberu.</p>
   </div>
 
-  <div class="hub-grid">
+  <div class="hub-grid home-theme-grid">
     <?php foreach ($featuredCategories as $category): ?>
-      <article class="hub-card">
-        <?= interessa_render_image($category['image'], ['class' => 'hub-card-image', 'alt' => $category['title']]) ?>
+      <article class="hub-card theme-card theme-card--<?= esc((string) $category['slug']) ?>">
+        <div class="theme-card-media category-asset-frame category-asset-frame--theme">
+          <?= interessa_render_image($category['image'], ['class' => 'hub-card-image theme-card-image category-asset-image', 'alt' => $category['title']]) ?>
+          <div class="theme-card-badge-row">
+            <span class="theme-card-kicker">Hlavna tema</span>
+            <span class="theme-card-kicker is-soft"><?= esc((string) ($category['theme_label'] ?? 'Tematicky hub')) ?></span>
+          </div>
+        </div>
         <div class="hub-card-body">
-          <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon((string) $category['slug']) ?></span>
+          <div class="theme-card-head">
+            <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon((string) $category['slug']) ?></span>
+            <div class="theme-card-head-copy">
+              <span class="hub-card-label">Tema pre rychly start</span>
+              <h3><a href="<?= esc(category_url((string) $category['slug'])) ?>"><?= esc((string) $category['title']) ?></a></h3>
+            </div>
+          </div>
           <div class="article-card-meta">
             <span class="hub-card-label"><?= esc((string) $category['count']) ?> <?= esc(interessa_pluralize_slovak((int) $category['count'], 'clanok', 'clanky', 'clankov')) ?> v teme</span>
             <span class="article-card-date"><?= esc((string) $category['featured_count']) ?> <?= esc(interessa_pluralize_slovak((int) $category['featured_count'], 'klucovy clanok', 'klucove clanky', 'klucovych clankov')) ?></span>
@@ -300,7 +324,9 @@ include __DIR__ . '/inc/head.php';
               <?php endif; ?>
             </div>
           <?php endif; ?>
-          <h3><a href="<?= esc(category_url((string) $category['slug'])) ?>"><?= esc((string) $category['title']) ?></a></h3>
+          <?php if (trim((string) ($category['focus_point'] ?? '')) !== ''): ?>
+            <p class="theme-card-focus"><?= esc((string) $category['focus_point']) ?></p>
+          <?php endif; ?>
           <p><?= esc((string) $category['description']) ?></p>
           <a class="btn" href="<?= esc(category_url((string) $category['slug'])) ?>">Otvorit kategoriu</a>
         </div>
