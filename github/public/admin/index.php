@@ -549,6 +549,90 @@ function interessa_admin_category_image_brief(string $slug, string $variant = 'h
     ];
 }
 
+function interessa_admin_category_visual_direction(string $slug): array {
+    $map = [
+        'proteiny' => [
+            'style' => 'Produktovy a sportovy',
+            'accent' => 'Modra, biela, ciste svetlo',
+            'motif' => 'Shaker, protein, fit postava, cisty treningovy moment',
+            'message' => 'Sila, regeneracia a dovera v produkt',
+        ],
+        'vyziva' => [
+            'style' => 'Editorial a clean',
+            'accent' => 'Zelena, bezova, jemne prirodzene farby',
+            'motif' => 'Jedlo, doplnky, stolovy detail, prirodzene svetlo',
+            'message' => 'Kazdodenne zdrave rozhodnutia a prakticka vyziva',
+        ],
+        'mineraly' => [
+            'style' => 'Ingredient a detail',
+            'accent' => 'Modra, tyrkysova, svetla seda',
+            'motif' => 'Kapsuly, tablety, voda, cisty povrch',
+            'message' => 'Doplnenie, presnost a zakladna starostlivost o telo',
+        ],
+        'imunita' => [
+            'style' => 'Editorial a ochrana',
+            'accent' => 'Zlta, oranzova, svetla kremova',
+            'motif' => 'Vitaminy, citrusy, domaci wellness moment',
+            'message' => 'Istota, podpora imunity a kazdodenne zdravie',
+        ],
+        'sila' => [
+            'style' => 'Lifestyle a vykon',
+            'accent' => 'Tmava modra, cierna, cervena',
+            'motif' => 'Trening, shaker, svalovy detail, pohyb',
+            'message' => 'Energia, vykon a sportovy ciel',
+        ],
+        'klby-koza' => [
+            'style' => 'Clean a premium',
+            'accent' => 'Bezova, broskynova, svetla modra',
+            'motif' => 'Plet, kolagen, wellness detail, kapsuly',
+            'message' => 'Starostlivost o telo, krasu a komfort',
+        ],
+        'aminokyseliny' => [
+            'style' => 'Sportovy detail',
+            'accent' => 'Ruzova, modra, biela',
+            'motif' => 'Shaker, aminokyseliny, atleticka postava',
+            'message' => 'Regeneracia, vykon a svalova podpora',
+        ],
+        'chudnutie' => [
+            'style' => 'Lifestyle a clean',
+            'accent' => 'Svetla zelena, biela, jemna ruzova',
+            'motif' => 'Pohyb, lahkost, wellness, zdrava zmena',
+            'message' => 'Lahkost, disciplina a zdrava premena',
+        ],
+        'doplnkove-prislusenstvo' => [
+            'style' => 'Produktovy detail',
+            'accent' => 'Seda, cierna, biela',
+            'motif' => 'Shakery, flasky, doplnky, cisty studiovy stol',
+            'message' => 'Praktickost, poriadok a jednoduche pouzitie',
+        ],
+        'kreatin' => [
+            'style' => 'Produktovy a silovy',
+            'accent' => 'Modra, fialova, biela',
+            'motif' => 'Kreatin, shaker, treningovy detail',
+            'message' => 'Sila, vykon a overeny zaklad doplnkov',
+        ],
+        'pre-workout' => [
+            'style' => 'Energicky lifestyle',
+            'accent' => 'Ruzova, modra, cierna',
+            'motif' => 'Predtreningovka, shaker, priprava na trening',
+            'message' => 'Energia, fokus a start vykonu',
+        ],
+        'probiotika-travenie' => [
+            'style' => 'Editorial a jemny health look',
+            'accent' => 'Mentolova, svetla zelena, kremova',
+            'motif' => 'Kapsuly, travenie, lahke jedlo, kludna scena',
+            'message' => 'Rovnovaha, travenie a klud v tele',
+        ],
+    ];
+
+    return $map[$slug] ?? [
+        'style' => 'Clean editorial',
+        'accent' => 'Jemne prirodzene farby',
+        'motif' => 'Produkt alebo lifestyle scena k teme',
+        'message' => 'Dovera, jasno a profesionalny zdravotny web',
+    ];
+}
+
 function interessa_admin_category_image_queue(array $categoryOptions): array {
     $rows = [];
     foreach ($categoryOptions as $slug => $item) {
@@ -1601,6 +1685,7 @@ if ($selectedThemeSlug === '' || !isset($categoryOptions[$selectedThemeSlug])) {
 $selectedThemeMeta = $selectedThemeSlug !== '' ? (category_meta($selectedThemeSlug) ?? ['title' => '', 'description' => '']) : ['title' => '', 'description' => ''];
 $selectedThemePrompt = $selectedThemeSlug !== '' ? interessa_admin_category_image_brief($selectedThemeSlug, 'hero') : [];
 $selectedThemeThumbPrompt = $selectedThemeSlug !== '' ? interessa_admin_category_image_brief($selectedThemeSlug, 'thumb') : [];
+$selectedThemeDirection = $selectedThemeSlug !== '' ? interessa_admin_category_visual_direction($selectedThemeSlug) : [];
 $selectedThemeImage = $selectedThemeSlug !== '' ? interessa_category_image_meta($selectedThemeSlug, 'hero', true) : null;
 $selectedThemeThumbImage = $selectedThemeSlug !== '' ? interessa_category_image_meta($selectedThemeSlug, 'thumb', true) : null;
 $selectedThemeLocalAsset = $selectedThemeSlug !== '' && function_exists('interessa_category_local_asset')
@@ -2987,11 +3072,31 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php endif; ?>
                     </div>
                   <?php endif; ?>
+                  </div>
                 </div>
-              </div>
-            </section>
+                <div class="admin-grid two-up">
+                  <article class="admin-brief-card">
+                    <h3>Co ma tento obrazok komunikovat</h3>
+                    <ul class="admin-quickstart-list">
+                      <li><strong>Styl:</strong> <?= esc((string) ($selectedThemeDirection['style'] ?? '')) ?></li>
+                      <li><strong>Farba:</strong> <?= esc((string) ($selectedThemeDirection['accent'] ?? '')) ?></li>
+                      <li><strong>Motiv:</strong> <?= esc((string) ($selectedThemeDirection['motif'] ?? '')) ?></li>
+                      <li><strong>Co ma clovek citit:</strong> <?= esc((string) ($selectedThemeDirection['message'] ?? '')) ?></li>
+                    </ul>
+                  </article>
+                  <article class="admin-brief-card">
+                    <h3>Jednoduche pravidlo pre Canvu</h3>
+                    <ul class="admin-quickstart-list">
+                      <li>Hlavny motiv nech je velky a jasny.</li>
+                      <li>Nedavaj text priamo do obrazka.</li>
+                      <li>Nenechavaj tvar ani produkt prilis pri hornom okraji.</li>
+                      <li>Ak si nie si isty, drz hlavny motiv v strede obrazu.</li>
+                    </ul>
+                  </article>
+                </div>
+              </section>
 
-            <section class="admin-subsection admin-asset-preview">
+              <section class="admin-subsection admin-asset-preview">
               <div class="admin-subsection-head">
                 <div>
                   <h3>Obrazok temy</h3>
@@ -4680,7 +4785,7 @@ require dirname(__DIR__) . '/inc/head.php';
     }
 
     async function submitInlineUploadForm(form) {
-      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="product_image"]');
+      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="category_image"], input[type="file"][name="category_thumb_image"], input[type="file"][name="product_image"]');
       const selectedFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
       if (!(selectedFile instanceof File)) {
         showToast('Najprv vyber obrazok.', true);
