@@ -1744,6 +1744,7 @@ $prevMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIn
 $nextMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex < count($missingHeroSlugs) - 1 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex + 1] : '';
 $selectedHeroQueuePosition = $selectedHeroQueueIndex !== false ? ($selectedHeroQueueIndex + 1) : 0;
 $missingThemeSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allThemeImageQueue, static fn(array $row): bool => empty($row['has_local_theme_image'])))));
+$firstMissingThemeSlug = $missingThemeSlugs[0] ?? '';
 $selectedThemeQueueIndex = array_search($selectedThemeSlug, $missingThemeSlugs, true);
 $prevMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex > 0 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex - 1] : '';
 $nextMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex < count($missingThemeSlugs) - 1 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex + 1] : '';
@@ -2899,11 +2900,11 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p class="admin-meta">Toto je rychly prehlad, kolko z 12 tem uz ma hotove vlastne obrazky.</p>
                 </div>
               </div>
-              <div class="admin-status-grid">
-                <article class="admin-status-card">
-                  <strong><?= esc((string) $themeFullyReadyCount) ?> / <?= esc((string) $themeManifestTotal) ?></strong>
-                  <span>Temy komplet hotove</span>
-                  <small>Hlavny aj mensi obrazok</small>
+                <div class="admin-status-grid">
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $themeFullyReadyCount) ?> / <?= esc((string) $themeManifestTotal) ?></strong>
+                    <span>Temy komplet hotove</span>
+                    <small>Hlavny aj mensi obrazok</small>
                 </article>
                 <article class="admin-status-card">
                   <strong><?= esc((string) $themeHeroReadyCount) ?> / <?= esc((string) $themeManifestTotal) ?></strong>
@@ -2912,11 +2913,19 @@ require dirname(__DIR__) . '/inc/head.php';
                 </article>
                 <article class="admin-status-card">
                   <strong><?= esc((string) $themeThumbReadyCount) ?> / <?= esc((string) $themeManifestTotal) ?></strong>
-                  <span>Mensi obrazok temy hotovy</span>
-                  <small><?= esc((string) $themeThumbMissingCount) ?> este chyba</small>
-                </article>
-              </div>
-            </section>
+                    <span>Mensi obrazok temy hotovy</span>
+                    <small><?= esc((string) $themeThumbMissingCount) ?> este chyba</small>
+                  </article>
+                </div>
+                <?php if ($firstMissingThemeSlug !== ''): ?>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;topic=<?= esc($firstMissingThemeSlug) ?>&amp;image_filter=<?= esc($imageFilter) ?>">Otvorit prvu temu bez obrazka</a>
+                    <?php if ($nextMissingThemeSlug !== ''): ?>
+                      <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;topic=<?= esc($nextMissingThemeSlug) ?>&amp;image_filter=<?= esc($imageFilter) ?>">Dalsia tema bez obrazka</a>
+                    <?php endif; ?>
+                  </div>
+                <?php endif; ?>
+              </section>
 
             <section class="admin-subsection admin-asset-preview">
               <div class="admin-subsection-head">

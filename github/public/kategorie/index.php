@@ -217,12 +217,15 @@ include __DIR__ . '/../inc/head.php';
       <?php $commercialCount = (int) ($hubCommercialCount[$slug] ?? 0); ?>
       <?php $fullCoverageCount = (int) ($hubFullCoverageCount[$slug] ?? 0); ?>
       <?php $primaryGuide = $hubPrimaryGuide[$slug] ?? null; ?>
-      <article class="hub-card">
+      <article class="hub-card hub-card--primary">
         <div class="category-asset-frame category-asset-frame--theme">
           <?= interessa_render_image(interessa_category_image_meta($slug, 'hero', true), ['class' => 'hub-card-image category-asset-image', 'alt' => $hub['title']]) ?>
         </div>
         <div class="hub-card-body">
           <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon((string) $slug) ?></span>
+          <div class="article-card-submeta">
+            <span class="article-card-subchip is-coverage is-full">Hlavna vstupna tema</span>
+          </div>
           <div class="article-card-meta">
             <span class="hub-card-label"><?= esc((string) $guideCount) ?> klucove clanky</span>
             <span class="article-card-chip"><?= esc((string) $articleCount) ?> <?= esc(interessa_pluralize_slovak($articleCount, 'clanok', 'clanky', 'clankov')) ?></span>
@@ -258,7 +261,7 @@ include __DIR__ . '/../inc/head.php';
   </div>
 </section>
 
-<section class="container home-section">
+<section class="container home-section home-section--secondary-hubs">
   <div class="section-head">
     <h2>Detailnejsie temy a doplnkove cesty</h2>
     <p class="meta">Podporne huby pre konkretne typy doplnkov, uzsie problemy a hlbsie interlinkovanie napriec webom.</p>
@@ -271,12 +274,15 @@ include __DIR__ . '/../inc/head.php';
       <?php $commercialCount = (int) ($hubCommercialCount[$slug] ?? 0); ?>
       <?php $fullCoverageCount = (int) ($hubFullCoverageCount[$slug] ?? 0); ?>
       <?php $primaryGuide = $hubPrimaryGuide[$slug] ?? null; ?>
-      <article class="hub-card">
+      <article class="hub-card hub-card--support">
         <div class="category-asset-frame category-asset-frame--theme">
           <?= interessa_render_image(interessa_category_image_meta($slug, 'hero', true), ['class' => 'hub-card-image category-asset-image', 'alt' => $hub['title']]) ?>
         </div>
         <div class="hub-card-body">
           <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon((string) $slug) ?></span>
+          <div class="article-card-submeta">
+            <span class="article-card-subchip">Doplnkova tema</span>
+          </div>
           <div class="article-card-meta">
             <span class="hub-card-label"><?= esc((string) $guideCount) ?> klucove clanky</span>
             <span class="article-card-chip"><?= esc((string) $articleCount) ?> <?= esc(interessa_pluralize_slovak($articleCount, 'clanok', 'clanky', 'clankov')) ?></span>

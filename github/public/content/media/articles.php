@@ -66,13 +66,13 @@ return array (
   array (
     'hero' => 
     array (
-      'alt' => 'Doplnky výživy – top výber 2025',
+      'alt' => 'Doplnky výživy – top výber 2026',
       'sizes' => '(min-width: 1100px) 860px, 100vw',
       'asset' => 'img/articles/heroes/doplnky-vyzivy.webp',
     ),
     'thumb' => 
     array (
-      'alt' => 'Doplnky výživy – top výber 2025',
+      'alt' => 'Doplnky výživy – top výber 2026',
       'sizes' => '(min-width: 900px) 420px, 100vw',
       'asset' => 'img/articles/heroes/doplnky-vyzivy.webp',
     ),
@@ -81,13 +81,13 @@ return array (
   array (
     'hero' => 
     array (
-      'alt' => 'Doplnky výživy – top výber 2025',
+      'alt' => 'Doplnky výživy – top výber 2026',
       'sizes' => '(min-width: 1100px) 860px, 100vw',
       'asset' => 'img/articles/heroes/doplnky-vyzivy-top-vyber-2025.webp',
     ),
     'thumb' => 
     array (
-      'alt' => 'Doplnky výživy – top výber 2025',
+      'alt' => 'Doplnky výživy – top výber 2026',
       'sizes' => '(min-width: 900px) 420px, 100vw',
       'asset' => 'img/articles/heroes/doplnky-vyzivy-top-vyber-2025.webp',
     ),
@@ -276,13 +276,13 @@ return array (
   array (
     'hero' => 
     array (
-      'alt' => 'Najlepšie proteíny 2025 – prehľad a výber podľa cieľa',
+      'alt' => 'Najlepšie proteíny 2026 – prehľad a výber podľa cieľa',
       'sizes' => '(min-width: 1100px) 860px, 100vw',
       'asset' => 'img/articles/heroes/najlepsie-proteiny-2025.webp',
     ),
     'thumb' => 
     array (
-      'alt' => 'Najlepšie proteíny 2025 – prehľad a výber podľa cieľa',
+      'alt' => 'Najlepšie proteíny 2026 – prehľad a výber podľa cieľa',
       'sizes' => '(min-width: 900px) 420px, 100vw',
       'asset' => 'img/articles/heroes/najlepsie-proteiny-2025.webp',
     ),
@@ -426,13 +426,13 @@ return array (
   array (
     'hero' => 
     array (
-      'alt' => 'Vegánske proteíny – top výber 2025',
+      'alt' => 'Vegánske proteíny – top výber 2026',
       'sizes' => '(min-width: 1100px) 860px, 100vw',
       'asset' => 'img/articles/heroes/veganske-proteiny-top.webp',
     ),
     'thumb' => 
     array (
-      'alt' => 'Vegánske proteíny – top výber 2025',
+      'alt' => 'Vegánske proteíny – top výber 2026',
       'sizes' => '(min-width: 900px) 420px, 100vw',
       'asset' => 'img/articles/heroes/veganske-proteiny-top.webp',
     ),
@@ -441,13 +441,13 @@ return array (
   array (
     'hero' => 
     array (
-      'alt' => 'Vegánske proteíny – top výber 2025',
+      'alt' => 'Vegánske proteíny – top výber 2026',
       'sizes' => '(min-width: 1100px) 860px, 100vw',
       'asset' => 'img/articles/heroes/veganske-proteiny-top-vyber-2025.webp',
     ),
     'thumb' => 
     array (
-      'alt' => 'Vegánske proteíny – top výber 2025',
+      'alt' => 'Vegánske proteíny – top výber 2026',
       'sizes' => '(min-width: 900px) 420px, 100vw',
       'asset' => 'img/articles/heroes/veganske-proteiny-top-vyber-2025.webp',
     ),

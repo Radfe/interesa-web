@@ -330,8 +330,9 @@ include __DIR__ . '/inc/head.php';
 <?php endif; ?>
 
 <?php if ($homeThemeIntentGroups !== []): ?>
-<section class="container home-section">
+<section class="container home-section home-section--theme-system">
   <div class="section-head">
+    <p class="hub-eyebrow">System tem</p>
     <h2>Ako je rozdelenych vsetkych 12 tem</h2>
     <p class="meta">Na webe nie su vsetky temy rovnako siroke. Tento prehlad ti pomoze pochopit, kde sa oplati zacat a co je skor doplnkova cesta.</p>
   </div>
@@ -362,8 +363,9 @@ include __DIR__ . '/inc/head.php';
 <?php endif; ?>
 
 <?php if ($homeSupportThemes !== []): ?>
-<section class="container home-section">
+<section class="container home-section home-section--support-themes">
   <div class="section-head">
+    <p class="hub-eyebrow">Druhy krok</p>
     <h2>Doplnkove temy a specializovane cesty</h2>
     <p class="meta">Tieto temy doriesuju uzsie otazky. Su vhodne vtedy, ked uz nechces prechadzat siroku temu, ale riesis konkretny detail.</p>
   </div>
