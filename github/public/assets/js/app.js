@@ -47,6 +47,13 @@
   const desktopMegaMq = window.matchMedia('(min-width: 861px)');
   const megaItems = Array.from(document.querySelectorAll('.menu-item.has-mega'));
   const megaCloseTimers = new WeakMap();
+  const megaTray = document.getElementById('megaTray');
+  const headerContainer = document.querySelector('.site-header .container');
+  let activeMegaItem = null;
+
+  if (megaTray && megaItems.length > 0) {
+    document.body.classList.add('mega-tray-ready');
+  }
 
   function clearMegaTimer(item){
     const timer = megaCloseTimers.get(item);
@@ -56,11 +63,39 @@
     }
   }
 
+  function hideMegaTray(){
+    if (!megaTray) return;
+    megaTray.classList.remove('is-active');
+    megaTray.setAttribute('aria-hidden', 'true');
+    megaTray.innerHTML = '';
+  }
+
+  function renderMegaTray(item){
+    if (!megaTray || !desktopMegaMq.matches) return;
+    const trigger = item.querySelector('.main-nav__link[data-mega]');
+    const panel = item.querySelector('.mega');
+    if (!trigger || !panel) return;
+
+    const containerRect = headerContainer ? headerContainer.getBoundingClientRect() : null;
+    const triggerRect = trigger.getBoundingClientRect();
+    const arrowLeft = containerRect
+      ? Math.max(24, Math.min(containerRect.width - 24, (triggerRect.left - containerRect.left) + (triggerRect.width / 2)))
+      : 56;
+
+    megaTray.innerHTML = '<div class="mega-tray-shell"><div class="mega mega--tray" style="--mega-arrow-left:' + arrowLeft + 'px">' + panel.innerHTML + '</div></div>';
+    megaTray.classList.add('is-active');
+    megaTray.setAttribute('aria-hidden', 'false');
+  }
+
   function closeMega(item){
     clearMegaTimer(item);
     item.classList.remove('is-open');
     const trigger = item.querySelector('.main-nav__link[data-mega]');
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
+    if (activeMegaItem === item) {
+      activeMegaItem = null;
+      hideMegaTray();
+    }
   }
 
   function openMega(item){
@@ -72,6 +107,8 @@
     item.classList.add('is-open');
     const trigger = item.querySelector('.main-nav__link[data-mega]');
     if (trigger) trigger.setAttribute('aria-expanded', 'true');
+    activeMegaItem = item;
+    renderMegaTray(item);
   }
 
   function scheduleMegaClose(item){
@@ -83,7 +120,6 @@
 
   megaItems.forEach((item)=>{
     const trigger = item.querySelector('.main-nav__link[data-mega]');
-    const panel = item.querySelector('.mega');
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
 
     const onPointerEnter = ()=>openMega(item);
@@ -103,11 +139,6 @@
       trigger.addEventListener('mouseleave', onPointerLeave);
     }
 
-    if (panel) {
-      panel.addEventListener('mouseenter', onPointerEnter);
-      panel.addEventListener('mouseleave', onPointerLeave);
-    }
-
     item.addEventListener('focusin', ()=>openMega(item));
     item.addEventListener('focusout', ()=>{
       window.setTimeout(()=>{
@@ -118,9 +149,23 @@
     });
   });
 
+  if (megaTray) {
+    megaTray.addEventListener('mouseenter', ()=>{
+      if (activeMegaItem) {
+        openMega(activeMegaItem);
+      }
+    });
+    megaTray.addEventListener('mouseleave', ()=>{
+      if (activeMegaItem) {
+        scheduleMegaClose(activeMegaItem);
+      }
+    });
+  }
+
   function resetMegaMode(){
     if (!desktopMegaMq.matches) {
       megaItems.forEach((item)=>closeMega(item));
+      hideMegaTray();
     }
   }
 

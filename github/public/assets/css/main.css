@@ -95,6 +95,36 @@ a:hover{color:#0954aa}
 .mega-col ul{list-style:none;margin:0;padding:0;display:grid;gap:.35rem}
 .mega-link{display:block;padding:.45rem .55rem;border-radius:12px;color:#254255;line-height:1.4}
 .mega-link:hover{background:#f4faf7;color:#0f6ad6}
+.mega-tray{
+  position:fixed;
+  left:0;
+  right:0;
+  top:68px;
+  z-index:55;
+  display:none;
+  padding-top:8px;
+}
+.mega-tray.is-active{
+  display:block;
+}
+.mega-tray-shell{
+  width:min(var(--maxw),92vw);
+  margin:0 auto;
+}
+.mega-tray .mega{
+  display:grid;
+  position:relative;
+  top:auto;
+  left:auto;
+  min-width:0;
+  width:min(760px,78vw);
+}
+.mega-tray .mega::before{
+  left:calc(var(--mega-arrow-left, 56px) - 7px);
+}
+body.mega-tray-ready .has-mega.is-open>.mega{
+  display:none;
+}
 
 /* Hero */
 .hero{padding:clamp(1.6rem,3.5vw + 1rem,4.5rem) 0}
@@ -191,6 +221,7 @@ a:hover{color:#0954aa}
   .sidebar{order:-1}
 }
 @media (max-width:860px){
+  .mega-tray{display:none!important}
   .nav-toggle-btn{display:grid}
   .main-nav{
     position:fixed;inset:66px 0 auto 0;background:#fff;border-bottom:1px solid var(--line);
