@@ -2580,6 +2580,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div>
                 <p class="admin-kicker">Image brief generator</p>
                 <h2>Canva / AI workflow</h2>
+                <p class="admin-note">Najjednoduchsie: pri produktoch staci kliknut na "Kopirovat prompt", vytvorit obrazok v Canve a potom pouzit "Nahrat obrazok". Pri hero obrazku chod na blok "Brief" nizsie a potom "Nahrat hero obrazok". Tlacidla pre path a filename su volitelne.</p>
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="images" />
@@ -3516,6 +3517,151 @@ require dirname(__DIR__) . '/inc/head.php';
     </div>
   <?php endif; ?>
 </section>
+<style>
+  .admin-copy-toast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 9999;
+    max-width: min(360px, calc(100vw - 32px));
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #133b2c;
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.22);
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+  }
+
+  .admin-copy-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .admin-copy-toast.is-error {
+    background: #8a1c1c;
+  }
+
+  .btn.is-copied {
+    background: #15803d;
+    border-color: #15803d;
+    color: #fff;
+  }
+</style>
+<script>
+  (function () {
+    if (window.__interessaAdminCopyInit) {
+      return;
+    }
+    window.__interessaAdminCopyInit = true;
+
+    let toastTimer = null;
+
+    function ensureToast() {
+      let toast = document.querySelector('[data-admin-copy-toast]');
+      if (toast) {
+        return toast;
+      }
+
+      toast = document.createElement('div');
+      toast.className = 'admin-copy-toast';
+      toast.setAttribute('data-admin-copy-toast', 'true');
+      toast.setAttribute('aria-live', 'polite');
+      toast.setAttribute('aria-atomic', 'true');
+      document.body.appendChild(toast);
+      return toast;
+    }
+
+    function showToast(message, isError) {
+      const toast = ensureToast();
+      toast.textContent = message;
+      toast.classList.toggle('is-error', !!isError);
+      toast.classList.add('is-visible');
+
+      if (toastTimer) {
+        window.clearTimeout(toastTimer);
+      }
+
+      toastTimer = window.setTimeout(function () {
+        toast.classList.remove('is-visible');
+      }, 2200);
+    }
+
+    function fallbackCopy(value) {
+      const textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.setAttribute('readonly', 'readonly');
+      textarea.style.position = 'fixed';
+      textarea.style.top = '-9999px';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      let ok = false;
+      try {
+        ok = document.execCommand('copy');
+      } catch (error) {
+        ok = false;
+      }
+
+      document.body.removeChild(textarea);
+      return ok;
+    }
+
+    function markButton(button) {
+      const originalText = button.getAttribute('data-copy-original-text') || button.textContent;
+      button.setAttribute('data-copy-original-text', originalText);
+      button.textContent = 'Skopirovane';
+      button.classList.add('is-copied');
+
+      window.setTimeout(function () {
+        button.textContent = button.getAttribute('data-copy-original-text') || originalText;
+        button.classList.remove('is-copied');
+      }, 1400);
+    }
+
+    async function copyValue(value) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+        return true;
+      }
+
+      return fallbackCopy(value);
+    }
+
+    document.addEventListener('click', async function (event) {
+      const button = event.target.closest('[data-copy-value]');
+      if (!button) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const value = button.getAttribute('data-copy-value') || '';
+      const label = (button.getAttribute('data-copy-label') || button.textContent || 'Text').trim();
+      if (!value) {
+        showToast(label + ': nic na kopirovanie.', true);
+        return;
+      }
+
+      try {
+        const ok = await copyValue(value);
+        if (!ok) {
+          throw new Error('copy-failed');
+        }
+
+        markButton(button);
+        showToast(label + ': skopirovane.', false);
+      } catch (error) {
+        showToast('Kopirovanie zlyhalo. Skus znova.', true);
+      }
+    });
+  })();
+</script>
 <?php require dirname(__DIR__) . '/inc/footer.php'; ?>
 
 

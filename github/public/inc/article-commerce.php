@@ -387,16 +387,32 @@ if (!function_exists('interessa_article_commerce_sections')) {
     }
 }
 
-if (!function_exists('interessa_article_commerce')) {
-    function interessa_article_commerce(string $slug): ?array {
+if (!function_exists('interessa_article_commerce_canonical_slug')) {
+    function interessa_article_commerce_canonical_slug(string $slug): ?string {
         $sections = interessa_article_commerce_sections();
         $aliases = [
             'proteiny-na-chudnutie' => 'protein-na-chudnutie',
             'veganske-proteiny-top' => 'veganske-proteiny-top-vyber-2025',
         ];
 
-        $canonicalSlug = isset($sections[$slug]) ? $slug : ($aliases[$slug] ?? null);
+        if (isset($sections[$slug])) {
+            return $slug;
+        }
+
+        $canonicalSlug = $aliases[$slug] ?? null;
         if ($canonicalSlug === null || !isset($sections[$canonicalSlug])) {
+            return null;
+        }
+
+        return $canonicalSlug;
+    }
+}
+
+if (!function_exists('interessa_article_commerce')) {
+    function interessa_article_commerce(string $slug): ?array {
+        $sections = interessa_article_commerce_sections();
+        $canonicalSlug = interessa_article_commerce_canonical_slug($slug);
+        if ($canonicalSlug === null) {
             return null;
         }
 
@@ -418,6 +434,66 @@ if (!function_exists('interessa_article_commerce')) {
         }
 
         return interessa_article_commerce_clean($section);
+    }
+}
+
+if (!function_exists('interessa_article_comparison_table_whitelist')) {
+    function interessa_article_comparison_table_whitelist(): array {
+        return [
+            'doplnky-vyzivy',
+            'kreatin-porovnanie',
+            'kolagen-na-klby-porovnanie',
+            'najlepsie-proteiny-2025',
+            'najlepsi-protein-na-chudnutie-wpc-vs-wpi',
+            'protein-na-chudnutie',
+            'veganske-proteiny-top-vyber-2025',
+        ];
+    }
+}
+
+if (!function_exists('interessa_article_comparison_table_payload')) {
+    function interessa_article_comparison_table_payload(string $slug, ?array $commerce = null): ?array {
+        $canonicalSlug = interessa_article_commerce_canonical_slug($slug);
+        if ($canonicalSlug === null || !in_array($canonicalSlug, interessa_article_comparison_table_whitelist(), true)) {
+            return null;
+        }
+
+        $commerce = $commerce ?? interessa_article_commerce($slug);
+        $products = is_array($commerce['products'] ?? null) ? $commerce['products'] : [];
+        if ($products === []) {
+            return null;
+        }
+
+        $rows = [];
+        foreach ($products as $product) {
+            $resolved = interessa_resolve_product_reference(is_array($product) ? $product : []);
+            $name = trim((string) ($resolved['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $benefit = trim((string) (($resolved['best_for'] ?? '') ?: ($resolved['subtitle'] ?? $resolved['summary'] ?? '')));
+            $rating = (float) ($resolved['rating'] ?? 0);
+            $resolved['main_benefit'] = $benefit !== '' ? $benefit : 'Vyber na zaklade ciela a zlozenia';
+            $resolved['rating_label'] = $rating > 0 ? number_format($rating, 1) . '/5' : 'Bez hodnotenia';
+            $rows[] = $resolved;
+        }
+
+        if ($rows === []) {
+            return null;
+        }
+
+        return [
+            'title' => 'Porovnanie produktov',
+            'intro' => 'Rovnaky vyber ako v shortliste nizsie, len v rychlej tabulkovej verzii.',
+            'columns' => [
+                ['label' => 'Produkt', 'key' => 'name', 'type' => 'product'],
+                ['label' => 'Hlavny benefit', 'key' => 'main_benefit', 'type' => 'text'],
+                ['label' => 'Hodnotenie', 'key' => 'rating_label', 'type' => 'text'],
+                ['label' => 'Akcia', 'key' => 'code', 'type' => 'cta'],
+            ],
+            'rows' => $rows,
+        ];
     }
 }
 

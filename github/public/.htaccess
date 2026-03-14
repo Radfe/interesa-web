@@ -7,9 +7,6 @@ RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Admin mimo routera
-RewriteRule ^_admin/ - [L]
-
 # /go/<kod> -> go.php?code=<kod>
 RewriteRule ^go/([A-Za-z0-9_-]+)/?$ go.php?code=$1 [QSA,L]
 

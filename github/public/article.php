@@ -51,6 +51,8 @@ if ($usesAdminContent) {
     $readingTime = (int) ($articlePrepared['reading_time'] ?? 1);
 }
 
+$comparisonTable = interessa_article_comparison_table_payload($slug, $commerce);
+
 $pageTitleBase = trim((string) ($meta['meta_title'] ?? '')) !== '' ? trim((string) $meta['meta_title']) : $meta['title'];
 $pageDescriptionBase = trim((string) ($meta['meta_description'] ?? '')) !== ''
     ? trim((string) $meta['meta_description'])
@@ -186,6 +188,23 @@ include __DIR__ . '/inc/head.php';
       <div class="article-body">
         <?php echo $articleBodyHtml; ?>
       </div>
+
+      <?php if ($comparisonTable !== null): ?>
+        <section class="topbox" id="porovnanie-produktov">
+          <div class="topbox-head">
+            <h2><?= esc((string) ($comparisonTable['title'] ?? 'Porovnanie produktov')) ?></h2>
+            <?php if (!empty($comparisonTable['intro'])): ?>
+              <p class="topbox-intro"><?= esc((string) $comparisonTable['intro']) ?></p>
+            <?php endif; ?>
+          </div>
+          <?php
+          echo interessa_render_comparison_table(
+              is_array($comparisonTable['rows'] ?? null) ? $comparisonTable['rows'] : [],
+              is_array($comparisonTable['columns'] ?? null) ? $comparisonTable['columns'] : []
+          );
+          ?>
+        </section>
+      <?php endif; ?>
 
       <?php
       if ($commerce !== null) {
