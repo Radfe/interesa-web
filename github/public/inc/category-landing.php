@@ -14,8 +14,9 @@ if ($slug === '' || $hub === null) {
 }
 
 $categoryHero = interessa_category_image_meta($slug, 'hero', true);
-$page_title = $hub['title'] . ' | Interesa';
-$page_description = $hub['description'];
+$categorySeo = interessa_category_seo_meta($slug);
+$page_title = trim((string) ($categorySeo['meta_title'] ?? '')) !== '' ? (string) $categorySeo['meta_title'] : ($hub['title'] . ' | Interesa');
+$page_description = trim((string) ($categorySeo['meta_description'] ?? '')) !== '' ? (string) $categorySeo['meta_description'] : (string) $hub['description'];
 $page_canonical = category_url($slug);
 $page_image = $categoryHero['src'] ?? asset('img/brand/og-default.svg');
 $page_og_type = 'website';
@@ -23,10 +24,19 @@ $page_og_type = 'website';
 $featuredGuides = is_array($hub['featured_guides'] ?? null) ? $hub['featured_guides'] : [];
 $featuredSlugs = [];
 $itemList = [];
+$primaryGuideSlug = '';
+$primaryCommercialGuideSlug = '';
 foreach ($featuredGuides as $guide) {
     $guideSlug = trim((string) ($guide['slug'] ?? ''));
     if ($guideSlug === '') {
         continue;
+    }
+
+    if ($primaryGuideSlug === '') {
+        $primaryGuideSlug = $guideSlug;
+    }
+    if ($primaryCommercialGuideSlug === '' && interessa_article_has_commerce($guideSlug)) {
+        $primaryCommercialGuideSlug = $guideSlug;
     }
 
     $featuredSlugs[] = $guideSlug;
@@ -102,7 +112,7 @@ $page_schema = [
         '@context' => 'https://schema.org',
         '@type' => 'CollectionPage',
         'name' => $hub['title'],
-        'description' => $hub['description'],
+        'description' => $page_description,
         'url' => absolute_url($page_canonical),
     ],
 ];
@@ -136,7 +146,14 @@ include dirname(__DIR__) . '/inc/head.php';
         <a class="card-link" href="/clanky/?category=<?= esc($slug) ?>">Vsetky clanky v teme</a>
       </div>
       <div class="hero-cta">
-        <a class="btn btn-ghost" href="/clanky/?category=<?= esc($slug) ?>&amp;commercial=1">Clanky s odporucaniami</a>
+        <?php if ($primaryGuideSlug !== ''): ?>
+          <a class="btn btn-primary" href="<?= esc(article_url($primaryGuideSlug)) ?>">Zacat hlavnym clankom</a>
+        <?php endif; ?>
+        <?php if ($primaryCommercialGuideSlug !== ''): ?>
+          <a class="btn btn-ghost" href="<?= esc(article_url($primaryCommercialGuideSlug)) ?>">Prejst na odporucania</a>
+        <?php else: ?>
+          <a class="btn btn-ghost" href="/clanky/?category=<?= esc($slug) ?>&amp;commercial=1">Clanky s odporucaniami</a>
+        <?php endif; ?>
         <a class="btn btn-ghost" href="/clanky/?category=<?= esc($slug) ?>">Vsetky clanky v teme</a>
       </div>
       <div class="hub-stats-inline" aria-label="Prehlad obsahu v kategorii">
@@ -172,13 +189,13 @@ include dirname(__DIR__) . '/inc/head.php';
       <?php endif; ?>
     </article>
 
-    <section class="card">
-      <div class="section-head">
-        <h2>Klucove clanky</h2>
-        <p class="meta">Najlepsia cesta je zacat jednym z tychto clankov a az potom riesit konkretny produkt.</p>
-      </div>
-      <?php if ($featuredGuides !== []): ?>
-        <div class="hub-grid">
+    <?php if ($featuredGuides !== []): ?>
+      <section class="card">
+        <div class="section-head">
+          <h2>Zacat podla toho, co riesis</h2>
+          <p class="meta">Kratsia cesta k spravnemu clanku podla intentu: rychly vyber, porovnanie alebo tematiky sprievodca.</p>
+        </div>
+        <div class="hub-grid article-related-grid">
           <?php foreach ($featuredGuides as $guide): ?>
             <?php
             $guideSlug = trim((string) ($guide['slug'] ?? ''));
@@ -187,53 +204,39 @@ include dirname(__DIR__) . '/inc/head.php';
             }
             $meta = article_meta($guideSlug);
             $title = trim((string) ($guide['title'] ?? $meta['title']));
-            $description = trim((string) ($guide['description'] ?? $meta['description']));
-            if ($description === '') {
-                $description = interessa_article_teaser_description($guideSlug);
-            }
-            $label = trim((string) ($guide['label'] ?? 'Sprievodca'));
-            $guideImage = interessa_article_image_meta($guideSlug, 'thumb', true);
-            $guideFile = dirname(__DIR__) . '/content/articles/' . $guideSlug . '.html';
-            $guideDate = is_file($guideFile) ? date('d.m.Y', (int) @filemtime($guideFile)) : '';
+            $description = interessa_article_card_description($guideSlug, trim((string) ($guide['description'] ?? $meta['description'])), 20);
+            $label = trim((string) ($guide['label'] ?? 'Start'));
             $formatLabel = interessa_article_format_label($guideSlug, $title);
             ?>
-            <article class="hub-card">
-              <?= interessa_render_image($guideImage, ['class' => 'hub-card-image', 'alt' => $title]) ?>
-              <div class="hub-card-body">
+            <article class="hub-card article-teaser-card">
+              <div class="hub-card-body article-teaser-body">
                 <div class="article-card-meta">
                   <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
                   <span class="hub-card-label"><?= esc($label) ?></span>
-                  <?php if ($guideDate !== ''): ?><span class="article-card-date"><?= esc($guideDate) ?></span><?php endif; ?>
                 </div>
+                <?= interessa_render_article_commerce_submeta($guideSlug, 'compact') ?>
                 <h3><a href="<?= esc(article_url($guideSlug)) ?>"><?= esc($title) ?></a></h3>
                 <?php if ($description !== ''): ?><p><?= esc($description) ?></p><?php endif; ?>
-                <a class="btn" href="<?= esc(article_url($guideSlug)) ?>"><?= esc(interessa_article_cta_label($guideSlug, $title)) ?></a>
+                <a class="card-link" href="<?= esc(article_url($guideSlug)) ?>"><?= esc(interessa_article_cta_label($guideSlug, $title)) ?></a>
               </div>
             </article>
           <?php endforeach; ?>
         </div>
-      <?php else: ?>
-        <p class="note"><?= esc((string) ($hub['empty_message'] ?? 'Tato kategoria sa este doplna. Zatial tu coskoro pribudnu odporucane clanky.')) ?></p>
-      <?php endif; ?>
-    </section>
+      </section>
+    <?php endif; ?>
 
     <?php if ($readyArticles !== []): ?>
       <section class="card">
         <div class="section-head">
-          <h2>Odporucane vybery v teme</h2>
-          <p class="meta">Vybrane clanky, kde sa da rychlo zorientovat v produktoch a dalsich krokoch.</p>
+          <h2>Najrychlejsie sa dostanes k vyberu tu</h2>
+          <p class="meta">Ak uz nechces len studovat temu, ale prejst ku konkretnym produktom, zacni jednym z tychto clankov.</p>
         </div>
         <div class="hub-grid article-related-grid">
           <?php foreach ($readyArticles as $item): ?>
             <?php
             $itemSlug = (string) ($item['slug'] ?? '');
             $itemTitle = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake((string) ($item['title'] ?? '')) : (string) ($item['title'] ?? '');
-            $itemDescription = trim((string) ($item['description'] ?? ''));
-            if ($itemDescription === '') {
-                $itemDescription = interessa_article_teaser_description($itemSlug);
-            } else {
-                $itemDescription = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake($itemDescription) : $itemDescription;
-            }
+            $itemDescription = interessa_article_card_description($itemSlug, trim((string) ($item['description'] ?? '')), 20);
             $itemImage = interessa_article_image_meta($itemSlug, 'thumb', true);
             $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
             $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
@@ -249,6 +252,7 @@ include dirname(__DIR__) . '/inc/head.php';
                   <span class="hub-card-label"><?= esc($hub['title']) ?></span>
                   <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
                 </div>
+                <?= interessa_render_article_commerce_submeta($itemSlug, 'compact') ?>
                 <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
                 <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
                 <a class="card-link" href="<?= esc(article_url($itemSlug)) ?>"><?= esc(interessa_article_cta_label($itemSlug, $itemTitle)) ?></a>
@@ -258,6 +262,49 @@ include dirname(__DIR__) . '/inc/head.php';
         </div>
       </section>
     <?php endif; ?>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>Klucove clanky</h2>
+        <p class="meta">Najlepsia cesta je zacat jednym z tychto clankov a az potom riesit konkretny produkt.</p>
+      </div>
+      <?php if ($featuredGuides !== []): ?>
+        <div class="hub-grid">
+          <?php foreach ($featuredGuides as $guide): ?>
+            <?php
+            $guideSlug = trim((string) ($guide['slug'] ?? ''));
+            if ($guideSlug === '') {
+                continue;
+            }
+            $meta = article_meta($guideSlug);
+            $title = trim((string) ($guide['title'] ?? $meta['title']));
+            $description = interessa_article_card_description($guideSlug, trim((string) ($guide['description'] ?? $meta['description'])), 20);
+            $label = trim((string) ($guide['label'] ?? 'Sprievodca'));
+            $guideImage = interessa_article_image_meta($guideSlug, 'thumb', true);
+            $guideFile = dirname(__DIR__) . '/content/articles/' . $guideSlug . '.html';
+            $guideDate = is_file($guideFile) ? date('d.m.Y', (int) @filemtime($guideFile)) : '';
+            $formatLabel = interessa_article_format_label($guideSlug, $title);
+            ?>
+            <article class="hub-card">
+              <?= interessa_render_image($guideImage, ['class' => 'hub-card-image', 'alt' => $title]) ?>
+              <div class="hub-card-body">
+                <div class="article-card-meta">
+                  <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
+                  <span class="hub-card-label"><?= esc($label) ?></span>
+                  <?php if ($guideDate !== ''): ?><span class="article-card-date"><?= esc($guideDate) ?></span><?php endif; ?>
+                </div>
+                <?= interessa_render_article_commerce_submeta($guideSlug, 'compact') ?>
+                <h3><a href="<?= esc(article_url($guideSlug)) ?>"><?= esc($title) ?></a></h3>
+                <?php if ($description !== ''): ?><p><?= esc($description) ?></p><?php endif; ?>
+                <a class="btn" href="<?= esc(article_url($guideSlug)) ?>"><?= esc(interessa_article_cta_label($guideSlug, $title)) ?></a>
+              </div>
+            </article>
+          <?php endforeach; ?>
+        </div>
+      <?php else: ?>
+        <p class="note"><?= esc((string) ($hub['empty_message'] ?? 'Tato kategoria sa este doplna. Zatial tu coskoro pribudnu odporucane clanky.')) ?></p>
+      <?php endif; ?>
+    </section>
 
     <?php if ($extraArticles !== []): ?>
       <section class="card">
@@ -270,12 +317,7 @@ include dirname(__DIR__) . '/inc/head.php';
             <?php
             $itemSlug = (string) ($item['slug'] ?? '');
             $itemTitle = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake((string) ($item['title'] ?? '')) : (string) ($item['title'] ?? '');
-            $itemDescription = trim((string) ($item['description'] ?? ''));
-            if ($itemDescription === '') {
-                $itemDescription = interessa_article_teaser_description($itemSlug);
-            } else {
-                $itemDescription = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake($itemDescription) : $itemDescription;
-            }
+            $itemDescription = interessa_article_card_description($itemSlug, trim((string) ($item['description'] ?? '')), 20);
             $itemImage = interessa_article_image_meta($itemSlug, 'thumb', true);
             $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
             $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
@@ -303,6 +345,7 @@ include dirname(__DIR__) . '/inc/head.php';
     <?php endif; ?>
   </div>
 
+  <?php $sidebarContextCategorySlug = $slug; ?>
   <?php include dirname(__DIR__) . '/inc/sidebar.php'; ?>
 </section>
 <?php include dirname(__DIR__) . '/inc/footer.php'; ?>

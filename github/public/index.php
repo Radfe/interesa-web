@@ -5,8 +5,8 @@ require_once __DIR__ . '/inc/functions.php';
 require_once __DIR__ . '/inc/category-hubs.php';
 require_once __DIR__ . '/inc/article-commerce.php';
 
-$page_title = 'Interesa.sk - vyziva, proteiny, vitaminy a mineraly';
-$page_description = 'Nezavisle porovnania, nakupne navody a prakticke clanky o proteinoch, vyzive, vitaminoch, mineraloch a regeneracii.';
+$page_title = 'Interesa.sk - porovnania doplnkov vyzivy, proteinov a vitaminov';
+$page_description = 'Prakticke porovnania, nakupne navody a odporucania pre proteiny, vitaminy, mineraly a dalsie doplnky vyzivy.';
 $page_canonical = '/';
 $page_image = asset('img/brand/og-default.svg');
 $page_og_type = 'website';
@@ -76,6 +76,40 @@ foreach ($featuredCategorySlugs as $slug) {
     ];
 }
 
+$homeGoalSlugs = ['chudnutie', 'sila', 'imunita', 'klby-koza'];
+$homeGoalCards = [];
+foreach ($homeGoalSlugs as $slug) {
+    $meta = category_meta($slug);
+    $hub = interessa_category_hub($slug);
+    if ($meta === null || $hub === null) {
+        continue;
+    }
+
+    $primaryGuide = null;
+    foreach ((array) ($hub['featured_guides'] ?? []) as $guide) {
+        $guideSlug = trim((string) ($guide['slug'] ?? ''));
+        if ($guideSlug === '') {
+            continue;
+        }
+
+        $guideMeta = article_meta($guideSlug);
+        $primaryGuide = [
+            'slug' => $guideSlug,
+            'label' => trim((string) ($guide['label'] ?? 'Start')),
+            'title' => trim((string) ($guideMeta['title'] ?? humanize_slug($guideSlug))),
+        ];
+        break;
+    }
+
+    $homeGoalCards[] = [
+        'slug' => $slug,
+        'title' => $meta['title'],
+        'description' => trim((string) ($hub['intro'] ?? $meta['description'] ?? '')),
+        'image' => interessa_category_image_meta($slug, 'hero', true),
+        'primary_guide' => $primaryGuide,
+    ];
+}
+
 $featuredGuides = [];
 foreach ($featuredGuideSlugs as $slug) {
     $meta = article_meta($slug);
@@ -84,7 +118,7 @@ foreach ($featuredGuideSlugs as $slug) {
     $featuredGuides[] = [
         'slug' => $slug,
         'title' => $meta['title'],
-        'description' => trim((string) ($meta['description'] ?? '')) !== '' ? $meta['description'] : interessa_article_teaser_description($slug),
+        'description' => interessa_article_card_description($slug, trim((string) ($meta['description'] ?? '')), 20),
         'image' => interessa_article_image_meta($slug, 'hero', true),
         'format_label' => interessa_article_format_label($slug, (string) ($meta['title'] ?? '')),
         'commerce_summary' => interessa_article_commerce_summary($slug),
@@ -121,7 +155,7 @@ foreach ($allIndexedArticles as $item) {
     $readyShortlistGuides[] = [
         'slug' => $slug,
         'title' => $meta['title'],
-        'description' => trim((string) ($meta['description'] ?? '')) !== '' ? $meta['description'] : interessa_article_teaser_description($slug),
+        'description' => interessa_article_card_description($slug, trim((string) ($meta['description'] ?? '')), 20),
         'image' => interessa_article_image_meta($slug, 'thumb', true),
         'format_label' => interessa_article_format_label($slug, (string) ($meta['title'] ?? '')),
         'category_meta' => $categorySlug !== '' ? category_meta($categorySlug) : null,
@@ -151,8 +185,8 @@ include __DIR__ . '/inc/head.php';
       <h1>Vyber si doplnky a vyzivu bez chaosu a marketingoveho balastu</h1>
       <p>Interesa spaja tematicke huby, nakupne navody, recenzie a porovnania tak, aby si sa vedel rychlo dostat k rozumnemu vyberu podla ciela.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary" href="/clanky/najlepsie-proteiny-2026">Pozriet porovnania</a>
-        <a class="btn btn-ghost" href="/kategorie">Prejst kategorie</a>
+        <a class="btn btn-primary" href="/clanky/najlepsie-proteiny-2026">Zacat porovnanim</a>
+        <a class="btn btn-ghost" href="/kategorie">Otvorit temy</a>
       </div>
     </div>
 
@@ -184,18 +218,40 @@ include __DIR__ . '/inc/head.php';
   </article>
 </section>
 
-<section class="container home-section home-discovery-links">
-  <div class="hero-cta">
-    <a class="btn btn-ghost" href="/clanky?commercial=1">Clanky s odporucaniami</a>
-    <a class="btn btn-ghost" href="/clanky?coverage=full">Najviac pripravene porovnania</a>
-    <a class="btn btn-ghost" href="/kategorie/chudnutie">Zacat podla ciela</a>
+<?php if ($homeGoalCards !== []): ?>
+<section class="container home-section">
+  <div class="section-head">
+    <h2>Zacni podla toho, co riesis</h2>
+    <p class="meta">Najrychlejsia cesta cez web: vyber si ciel a otvor prvy clanok, ktory ta dovedie k porovnaniu alebo shortlistu.</p>
+  </div>
+
+  <div class="hub-grid home-goals-grid">
+    <?php foreach ($homeGoalCards as $goal): ?>
+      <article class="hub-card home-goal-card">
+        <?= interessa_render_image($goal['image'], ['class' => 'hub-card-image', 'alt' => $goal['title']]) ?>
+        <div class="hub-card-body">
+          <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon((string) $goal['slug']) ?></span>
+          <span class="hub-card-label"><?= esc((string) $goal['title']) ?></span>
+          <p><?= esc((string) $goal['description']) ?></p>
+          <div class="home-goal-actions">
+            <?php if (is_array($goal['primary_guide'] ?? null)): ?>
+              <a class="btn btn-primary" href="<?= esc(article_url((string) $goal['primary_guide']['slug'])) ?>">
+                <?= esc('Zacat: ' . (string) ($goal['primary_guide']['label'] ?? 'Start')) ?>
+              </a>
+            <?php endif; ?>
+            <a class="btn btn-ghost" href="<?= esc(category_url((string) $goal['slug'])) ?>">Otvorit temu</a>
+          </div>
+        </div>
+      </article>
+    <?php endforeach; ?>
   </div>
 </section>
+<?php endif; ?>
 
 <section class="container home-section">
   <div class="section-head">
-    <h2>Zacni podla temy</h2>
-    <p class="meta">Najvacsie obsahove huby webu. Kazda kategoria zhromazduje hlavne clanky, ktore davaju zmysel otvorit ako prve.</p>
+    <h2>Vyber si temu, v ktorej zacat</h2>
+    <p class="meta">Najsilnejsie obsahove huby webu. Kazda tema ta ma dostat od orientacie k najdolezitejsim clankom a potom ku konkretnemu vyberu.</p>
   </div>
 
   <div class="hub-grid">
@@ -227,8 +283,8 @@ include __DIR__ . '/inc/head.php';
 
 <section class="container home-section">
   <div class="section-head">
-    <h2>Najdolezitejsie nakupne navody</h2>
-    <p class="meta">Najpraktickejsie clanky, od ktorych sa oplati zacat, ak uz riesis konkretny vyber produktu.</p>
+    <h2>Najlepsie clanky na prvy klik</h2>
+    <p class="meta">Sem chod, ked uz riesis konkretny vyber a nechces sa prehrabavat celou temou od zaciatku.</p>
   </div>
 
   <div class="hub-grid">
@@ -253,8 +309,8 @@ include __DIR__ . '/inc/head.php';
 <?php if ($readyShortlistGuides !== []): ?>
 <section class="container home-section">
   <div class="section-head">
-    <h2>Odporucane vybery</h2>
-    <p class="meta">Nakupne clanky, kde uz mas odporucania prehladne usporiadane a vies sa rychlo zorientovat v produktoch.</p>
+    <h2>Clanky, kde sa vies rozhodnut najrychlejsie</h2>
+    <p class="meta">Vybery, v ktorych uz mas shortlist, porovnanie alebo jasne odporucania pripravene na rychle rozhodnutie.</p>
   </div>
 
   <div class="hub-grid article-teaser-grid">

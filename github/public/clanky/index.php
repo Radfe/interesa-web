@@ -9,10 +9,12 @@ $formatFilter = trim((string) ($_GET['format'] ?? ''));
 $commercialOnly = (string) ($_GET['commercial'] ?? '') === '1';
 $coverageFilter = trim((string) ($_GET['coverage'] ?? ''));
 $categoryMeta = $categoryFilter !== '' ? category_meta($categoryFilter) : null;
-$page_title = ($categoryMeta !== null ? $categoryMeta['title'] . ' | ' . interessa_text('Clanky') : interessa_text('Clanky')) . ' | Interesa';
+$page_title = $categoryMeta !== null
+    ? ($categoryMeta['title'] . ' - clanky, porovnania a vybery | Interesa')
+    : 'Clanky o doplnkoch vyzivy a porovnania | Interesa';
 $page_description = $categoryMeta !== null
-    ? interessa_text('Prehlad clankov v teme ') . $categoryMeta['title'] . '.'
-    : interessa_text('Prehlad clankov o proteinoch, vyzive, vitaminoch a dalsich doplnkoch.');
+    ? ('Prehlad clankov v teme ' . $categoryMeta['title'] . ', vratane porovnani, buying guides a odporucanych vyberov.')
+    : 'Prehlad clankov o proteinoch, vyzive, vitaminoch, mineraloch a dalsich doplnkoch s porovnaniami a odporucaniami.';
 $page_canonical = '/clanky' . ($categoryMeta !== null ? '?category=' . rawurlencode($categoryMeta['slug']) : '');
 $page_og_type = 'website';
 include __DIR__ . '/../inc/head.php';
@@ -71,7 +73,21 @@ $fullCoverageCountInScope = count(array_filter($items, static function (array $i
     return (string) ($item['coverage_state'] ?? '') === 'full';
 }));
 
-usort($items, static fn(array $a, array $b): int => ((int) ($b['mtime'] ?? 0)) <=> ((int) ($a['mtime'] ?? 0)));
+usort($items, static function (array $a, array $b): int {
+    $coverageRank = ['full' => 3, 'partial' => 2, 'none' => 1, '' => 0];
+    $leftCoverage = $coverageRank[(string) ($a['coverage_state'] ?? '')] ?? 0;
+    $rightCoverage = $coverageRank[(string) ($b['coverage_state'] ?? '')] ?? 0;
+    if ($rightCoverage !== $leftCoverage) {
+        return $rightCoverage <=> $leftCoverage;
+    }
+
+    $commerceCompare = ((int) (!empty($b['has_commerce']))) <=> ((int) (!empty($a['has_commerce'])));
+    if ($commerceCompare !== 0) {
+        return $commerceCompare;
+    }
+
+    return ((int) ($b['mtime'] ?? 0)) <=> ((int) ($a['mtime'] ?? 0));
+});
 $categories = [];
 foreach (category_registry() as $slug => $row) {
     $meta = category_meta($slug);
@@ -134,7 +150,7 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
         <a class="filter-chip<?= $commercialOnly ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $commercialOnly ? (($categoryMeta !== null || $formatFilter !== '' || $coverageFilter !== '') ? '/?' . esc(http_build_query(array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]))) : '/') : '/?' . esc(http_build_query($commercialQuery)) ?>">S odporucaniami (<?= esc((string) $commercialCountInScope) ?>)</a>
         <?php $coverageQuery = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => 'full']); ?>
         <?php $coverageResetQuery = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null]); ?>
-          <a class="filter-chip<?= $coverageFilter === 'full' ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $coverageFilter === 'full' ? ($coverageResetQuery !== [] ? '/?' . esc(http_build_query($coverageResetQuery)) : '/') : '/?' . esc(http_build_query($coverageQuery)) ?>">Kompletne vybery (<?= esc((string) $fullCoverageCountInScope) ?>)</a>
+          <a class="filter-chip<?= $coverageFilter === 'full' ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $coverageFilter === 'full' ? ($coverageResetQuery !== [] ? '/?' . esc(http_build_query($coverageResetQuery)) : '/') : '/?' . esc(http_build_query($coverageQuery)) ?>">Porovnania s packshotmi (<?= esc((string) $fullCoverageCountInScope) ?>)</a>
       </div>
 
       <?php if ($topFormats !== []): ?>
@@ -156,7 +172,7 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
       <?php if (!$items): ?>
         <p class="note">
           <?php if ($coverageFilter === 'full'): ?>
-            Pre tento filter zatial nie su ziadne clanky s hotovymi produktovymi obrazkami.
+            Pre tento filter zatial nie su ziadne clanky s pripravenym porovnanim a packshotmi produktov.
           <?php elseif ($commercialOnly): ?>
             Pre tento filter zatial nie su ziadne clanky s odporucaniami produktov.
           <?php else: ?>
@@ -164,7 +180,7 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
           <?php endif; ?>
         </p>
         <?php if ($commercialOnly || $coverageFilter === 'full'): ?>
-            <p class="muted">Skus vypnut filter <strong><?= $coverageFilter === 'full' ? 'Kompletne vybery' : 'S odporucaniami' ?></strong> alebo otvor inu temu, kde je uz hotovy komercny obsah.</p>
+            <p class="muted">Skus vypnut filter <strong><?= $coverageFilter === 'full' ? 'Porovnania s packshotmi' : 'S odporucaniami' ?></strong> alebo otvor inu temu, kde je uz pripraveny komercny obsah.</p>
         <?php endif; ?>
       <?php else: ?>
         <p class="search-summary muted">
@@ -173,7 +189,7 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
             <span class="search-summary-chip">iba s odporucaniami produktov</span>
           <?php endif; ?>
           <?php if ($coverageFilter === 'full'): ?>
-            <span class="search-summary-chip">iba s hotovymi obrazkami</span>
+            <span class="search-summary-chip">iba s packshotmi a porovnanim</span>
           <?php endif; ?>
           <?php if ($categoryMeta !== null): ?>
             <span class="search-summary-chip">tema: <?= esc((string) $categoryMeta['title']) ?></span>
@@ -188,14 +204,10 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
             $slug = (string) ($item['slug'] ?? '');
             $url = article_url($slug);
             $title = (string) ($item['title'] ?? '');
-            $description = trim((string) ($item['description'] ?? ''));
-            if ($description === '') {
-                $description = interessa_article_teaser_description($slug);
-            }
+            $description = interessa_article_card_description($slug, trim((string) ($item['description'] ?? '')), 20);
             $itemCategoryMeta = is_array($item['category_meta'] ?? null) ? $item['category_meta'] : null;
             $updatedDate = !empty($item['mtime']) ? date('d.m.Y', (int) $item['mtime']) : '';
             $formatLabel = (string) ($item['format_label'] ?? interessa_article_format_label($slug, $title));
-            $commerceSummary = interessa_article_commerce_summary($slug);
             ?>
             <article class="hub-card article-teaser-card">
               <a href="<?= esc($url) ?>">

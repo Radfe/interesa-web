@@ -145,7 +145,7 @@ if (!function_exists('interessa_render_commerce_verdict')) {
             echo '</div>';
         }
         if ($editorialCount > 0) {
-            echo '<p class="commerce-verdict-coverage-note">' . esc('Obrazky niektorych produktov este doplname. Samotne odporucania a odkazy to neovplyvnuje.') . '</p>';
+            echo '<p class="commerce-verdict-coverage-note">' . esc('Pri casti vyberu zatial pouzivame redakcny vizual, aby bolo porovnanie citatelne. Odporucania aj odkazy smeruju na konkretne produkty v obchodoch.') . '</p>';
         } else {
             echo '<p class="commerce-verdict-coverage-note is-complete">' . esc('Vyber je pripraveny na rychle porovnanie aj prechod do obchodu.') . '</p>';
         }
@@ -197,7 +197,7 @@ if (!function_exists('interessa_render_top_products')) {
         echo '<span class="topbox-metric"><strong>' . esc((string) $catalogResolvedCount) . '/' . esc((string) count($resolvedProducts)) . '</strong><span>konkretne produkty v katalogu</span></span>';
         echo '</div>';
         if ($editorialCount > 0) {
-            echo '<p class="topbox-coverage-note">' . esc('Pri niektorych produktoch este doplname finalne obrazky baleni. Vyber aj odkazy uz mozes bez obav pouzit.') . '</p>';
+            echo '<p class="topbox-coverage-note">' . esc('Cast vyberu zatial pouziva redakcny vizual namiesto packshotu z obchodu. Poradie, odporucania aj affiliate odkazy tym nie su ovplyvnene.') . '</p>';
         }
         echo '</div>';
         echo '<div class="top-products-grid">';
@@ -215,6 +215,7 @@ if (!function_exists('interessa_render_top_products')) {
             $cons = is_array($row['cons'] ?? null) ? array_values($row['cons']) : [];
             $imageMode = trim((string) ($row['image_mode'] ?? (($row['_image']['source_type'] ?? 'placeholder'))));
             $imageStatus = interessa_product_image_status_label($imageMode);
+            $imageStatusClass = interessa_product_image_status_class($imageMode);
             $showEditorialNote = !$catalogResolved && $imageMode === 'placeholder' && $merchant !== '';
 
             echo '<article class="top-product-card">';
@@ -244,13 +245,18 @@ if (!function_exists('interessa_render_top_products')) {
             if ($bestFor !== '') {
                 echo '<div class="top-product-bestfor"><span>' . esc(interessa_text('Najlepsie pre:')) . '</span> ' . esc($bestFor) . '</div>';
             }
-            if ($rating > 0) {
+            if ($rating > 0 || $imageStatus !== '') {
                 echo '<div class="top-product-meta-row">';
-                echo '<div class="top-product-rating">' . interessa_render_stars($rating) . '</div>';
+                if ($rating > 0) {
+                    echo '<div class="top-product-rating">' . interessa_render_stars($rating) . '</div>';
+                }
+                if ($imageStatus !== '') {
+                    echo '<span class="top-product-image-status ' . esc($imageStatusClass) . '">' . esc($imageStatus) . '</span>';
+                }
                 echo '</div>';
             }
             if ($showEditorialNote) {
-                echo '<p class="top-product-editorial-note">' . esc(interessa_text('K tomuto produktu este doplnime finalny obrazok balenia.')) . '</p>';
+                echo '<p class="top-product-editorial-note">' . esc(interessa_product_editorial_note_text($merchant)) . '</p>';
             }
             if ($pros !== [] || $cons !== []) {
                 echo '<div class="top-product-highlights">';

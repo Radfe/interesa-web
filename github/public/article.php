@@ -40,6 +40,7 @@ $categoryStats = interessa_article_category_stats($slug, (string) ($meta['catego
 $shortlistStats = interessa_commerce_shortlist_stats($commerce);
 $shortlistCoveragePercent = interessa_shortlist_coverage_percent($shortlistStats);
 $shortlistCoverageLabel = interessa_shortlist_coverage_label($shortlistStats);
+$hasDecisionLayer = $comparisonTable !== null || $commerce !== null;
 
 if ($usesAdminContent) {
     $adminPayload = interessa_admin_article_content_payload($slug);
@@ -126,6 +127,16 @@ if ($faqSchema !== null) {
     $page_schema[] = $faqSchema;
 }
 
+$seoMeta = interessa_article_seo_meta($slug);
+$pageTitleBase = trim((string) ($seoMeta['meta_title'] ?? $pageTitleBase)) !== '' ? trim((string) ($seoMeta['meta_title'] ?? $pageTitleBase)) : $pageTitleBase;
+$pageDescriptionBase = trim((string) ($seoMeta['meta_description'] ?? $pageDescriptionBase)) !== '' ? trim((string) ($seoMeta['meta_description'] ?? $pageDescriptionBase)) : $pageDescriptionBase;
+
+$page_title = $pageTitleBase . ' | Interesa';
+$page_description = $pageDescriptionBase;
+
+$page_schema[1]['headline'] = $meta['title'];
+$page_schema[1]['description'] = $pageDescriptionBase;
+
 include __DIR__ . '/inc/head.php';
 ?>
 <section class="container two-col">
@@ -175,6 +186,9 @@ include __DIR__ . '/inc/head.php';
           <?php if ($categoryMeta !== null): ?>
             <a class="btn btn-ghost" href="<?= esc(category_url((string) $categoryMeta['slug'])) ?>">Pozriet temu</a>
           <?php endif; ?>
+          <?php if ($comparisonTable !== null): ?>
+            <a class="btn btn-ghost" href="#porovnanie-produktov">Porovnanie produktov</a>
+          <?php endif; ?>
           <?php if ($commerce !== null): ?>
             <a class="btn btn-ghost" href="#odporucane-produkty">Odporucane produkty</a>
           <?php endif; ?>
@@ -185,15 +199,17 @@ include __DIR__ . '/inc/head.php';
       <?php endif; ?>
 
       <?php if ($commerce !== null): ?>
-        <?php interessa_render_commerce_verdict($commerce); ?>
+        <div id="rychly-vyber">
+          <?php interessa_render_commerce_verdict($commerce); ?>
+        </div>
       <?php endif; ?>
 
-      <?php interessa_render_article_audience_box($slug); ?>
-      <?php interessa_render_article_outline($articleHeadings, $readingTime); ?>
-
-      <div class="article-body">
-        <?php echo $articleBodyHtml; ?>
-      </div>
+      <?php if ($hasDecisionLayer): ?>
+        <section class="section-head">
+          <h2>Rychle rozhodnutie</h2>
+          <p class="meta">Najprv mas po ruke rychle porovnanie a shortlist odporucanych produktov, az potom hlbsi rozbor temy.</p>
+        </section>
+      <?php endif; ?>
 
       <?php if ($comparisonTable !== null): ?>
         <section class="topbox" id="porovnanie-produktov">
@@ -221,6 +237,15 @@ include __DIR__ . '/inc/head.php';
               'odporucane-produkty'
           );
       }
+      ?>
+
+      <?php interessa_render_article_audience_box($slug); ?>
+      <?php interessa_render_article_outline($articleHeadings, $readingTime); ?>
+
+      <div class="article-body">
+        <?php echo $articleBodyHtml; ?>
+      </div>
+      <?php
       interessa_render_article_trust_box($slug, $meta, $commerce, is_file($file) ? $file : null);
       interessa_render_article_faq_box($slug, 'caste-otazky');
       interessa_render_related_articles($slug, 3);
@@ -228,6 +253,7 @@ include __DIR__ . '/inc/head.php';
     </article>
   </div>
 
+  <?php $sidebarContextCategorySlug = $categoryMeta['slug'] ?? ''; ?>
   <?php include __DIR__ . '/inc/sidebar.php'; ?>
 </section>
 <?php include __DIR__ . '/inc/footer.php'; ?>

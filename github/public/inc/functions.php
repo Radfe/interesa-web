@@ -277,8 +277,8 @@ if (!function_exists('interessa_article_cta_label')) {
             'porovnanie' => 'Pozriet porovnanie',
             'recenzia' => 'Otvorit recenziu',
             'top-vyber' => 'Pozriet vyber',
-            'nakupny-navod' => 'Otvorit navod',
-            default => 'Citat clanok',
+            'nakupny-navod' => 'Pozriet navod',
+            default => 'Otvorit clanok',
         };
     }
 }
@@ -467,6 +467,116 @@ if (!function_exists('article_meta')) {
     }
 }
 
+if (!function_exists('interessa_article_seo_overrides')) {
+    function interessa_article_seo_overrides(): array {
+        return [
+            'doplnky-vyzivy' => [
+                'meta_title' => 'Doplnky vyzivy 2026 - co ma zmysel kupit a preco',
+                'meta_description' => 'Prakticky vyber doplnkov vyzivy: kreatin, vitamin D3, magnezium, kolagen a dalsie zaklady podla ciela a rozpoctu.',
+            ],
+            'horcik-ktory-je-najlepsi-a-preco' => [
+                'meta_title' => 'Horcik - ktory typ je najlepsi? Porovnanie foriem',
+                'meta_description' => 'Porovnanie foriem horcika: bisglycinat, citrat, malat a oxid. Kedy sa ktory typ oplati a na co si dat pozor pri vybere.',
+            ],
+            'kolagen-recenzia' => [
+                'meta_title' => 'Kolagen - recenzia a vyber podla typu a pouzitia',
+                'meta_description' => 'Ako vybrat kolagen podla typu I, II a III, davky, gramaze a realneho pouzitia na klby, kozu a dlhodobu suplementaciu.',
+            ],
+            'kreatin-porovnanie' => [
+                'meta_title' => 'Kreatin - porovnanie a vyber najlepsich foriem',
+                'meta_description' => 'Prakticke porovnanie kreatinu: monohydrat, Creapure a HCl. Zisti, co dava najvacsi zmysel pre silu, vykon a cenu.',
+            ],
+            'najlepsi-protein-na-chudnutie-wpc-vs-wpi' => [
+                'meta_title' => 'Najlepsi protein na chudnutie - WPC vs WPI a vyber',
+                'meta_description' => 'WPC vs WPI pri chudnuti: kedy staci koncentrat, kedy sa oplati izolat a ktore proteiny davaju najlepsi zmysel v diete.',
+            ],
+            'najlepsie-proteiny-2025' => [
+                'meta_title' => 'Najlepsie proteiny 2026 - vyber podla ciela a typu',
+                'meta_description' => 'Vyber najlepsich proteinov 2026 podla ciela: objem, chudnutie, intolerancia laktozy, veganska alternativa a kazdodenne pouzitie.',
+            ],
+            'najlepsie-proteiny-2026' => [
+                'meta_title' => 'Najlepsie proteiny 2026 - vyber podla ciela a typu',
+                'meta_description' => 'Vyber najlepsich proteinov 2026 podla ciela: objem, chudnutie, intolerancia laktozy, veganska alternativa a kazdodenne pouzitie.',
+            ],
+            'protein-na-chudnutie' => [
+                'meta_title' => 'Protein na chudnutie - ako vybrat a co funguje',
+                'meta_description' => 'Ako vybrat protein na chudnutie: WPI, WPC alebo clear protein, davkovanie, kaloricky profil a prakticke odporucania.',
+            ],
+            'srvatkovy-protein-vs-izolat-vs-hydro' => [
+                'meta_title' => 'Srvatkovy protein vs izolat vs hydro - co sa oplati',
+                'meta_description' => 'WPC vs WPI vs hydrolyzat: rozdiely v laktoze, rychlosti vstrebavania, cene a tom, pre koho sa ktory typ proteinu oplati.',
+            ],
+            'veganske-proteiny-top-vyber-2025' => [
+                'meta_title' => 'Veganske proteiny 2026 - top vyber a porovnanie',
+                'meta_description' => 'Top vyber veganskych proteinov 2026: hrach, ryza, soja a blendy. Porovnanie chuti, zlozenia, ceny a pouzitia.',
+            ],
+            'veganske-proteiny-top-vyber-2026' => [
+                'meta_title' => 'Veganske proteiny 2026 - top vyber a porovnanie',
+                'meta_description' => 'Top vyber veganskych proteinov 2026: hrach, ryza, soja a blendy. Porovnanie chuti, zlozenia, ceny a pouzitia.',
+            ],
+        ];
+    }
+}
+
+if (!function_exists('interessa_article_seo_meta')) {
+    function interessa_article_seo_meta(string $slug): array {
+        $meta = article_meta($slug);
+        $overrides = interessa_article_seo_overrides();
+        $override = $overrides[$slug] ?? $overrides[canonical_article_slug($slug)] ?? [];
+
+        $metaTitle = trim((string) ($override['meta_title'] ?? $meta['title'] ?? ''));
+        $metaDescription = trim((string) ($override['meta_description'] ?? $meta['description'] ?? ''));
+
+        if ($metaDescription === '') {
+            $metaDescription = interessa_article_card_description($slug, '', 28);
+        }
+
+        return [
+            'meta_title' => $metaTitle,
+            'meta_description' => $metaDescription,
+        ];
+    }
+}
+
+if (!function_exists('interessa_category_seo_meta')) {
+    function interessa_category_seo_meta(string $slug): array {
+        $slug = normalize_category_slug($slug);
+        $meta = category_meta($slug) ?? ['title' => humanize_slug($slug), 'description' => ''];
+
+        $overrides = [
+            'proteiny' => [
+                'meta_title' => 'Proteiny - porovnania, vyber a clanky | Interesa',
+                'meta_description' => 'Tematicky hub pre proteiny: najlepsie proteiny, protein na chudnutie, WPC vs WPI a veganske alternativy.',
+            ],
+            'vyziva' => [
+                'meta_title' => 'Zdrava vyziva - doplnky, probiotika a vyber | Interesa',
+                'meta_description' => 'Prakticke clanky o zdravej vyzive, doplnkoch vyzivy, probiotikach a kazdodennych zakladoch bez marketingoveho balastu.',
+            ],
+            'mineraly' => [
+                'meta_title' => 'Vitaminy a mineraly - vyber a porovnania | Interesa',
+                'meta_description' => 'Hub pre vitaminy a mineraly: horcik, vitamin D3, vitamin C a zinok s fokusom na vyber, davku a realne pouzitie.',
+            ],
+            'imunita' => [
+                'meta_title' => 'Imunita - vitaminy, doplnky a clanky | Interesa',
+                'meta_description' => 'Prakticke clanky pre podporu imunity: vitamin D3, vitamin C, zinok, probiotika a dalsie doplnky s realnym zmyslom.',
+            ],
+            'sila' => [
+                'meta_title' => 'Sila a vykon - kreatin, pre-workout a vyber | Interesa',
+                'meta_description' => 'Tematicky hub pre silu a vykon: kreatin, pre-workout, regeneracia a clanky pre prakticky vyber doplnkov na trening.',
+            ],
+            'klby-koza' => [
+                'meta_title' => 'Klby a koza - kolagen a doplnky | Interesa',
+                'meta_description' => 'Clanky o kolagene, klbovej vyzive a doplnkoch pre pokozku a spojivove tkaniva s dorazom na realne pouzitie.',
+            ],
+        ];
+
+        return $overrides[$slug] ?? [
+            'meta_title' => trim((string) ($meta['title'] ?? humanize_slug($slug))) . ' | Interesa',
+            'meta_description' => trim((string) ($meta['description'] ?? '')),
+        ];
+    }
+}
+
 if (!function_exists('interessa_commerce_shortlist_stats')) {
     function interessa_commerce_shortlist_stats(?array $commerce): ?array {
         $products = is_array($commerce['products'] ?? null) ? $commerce['products'] : [];
@@ -631,6 +741,18 @@ if (!function_exists('interessa_article_teaser_description')) {
 
         $text = interessa_trim_words(html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         return $text;
+    }
+}
+
+if (!function_exists('interessa_article_card_description')) {
+    function interessa_article_card_description(string $slug, string $fallback = '', int $limit = 22): string {
+        $text = trim($fallback);
+        if ($text === '') {
+            $text = interessa_article_teaser_description($slug);
+        }
+
+        $text = interessa_fix_mojibake($text);
+        return interessa_trim_words($text, $limit);
     }
 }
 

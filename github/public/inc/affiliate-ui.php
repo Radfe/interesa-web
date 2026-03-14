@@ -37,7 +37,38 @@ if (!function_exists('interessa_affiliate_cta_html')) {
 
 if (!function_exists('interessa_product_image_status_label')) {
     function interessa_product_image_status_label(string $sourceType): string {
-        return '';
+        $sourceType = strtolower(trim($sourceType));
+
+        return match ($sourceType) {
+            'local' => interessa_text('Packshot z e-shopu'),
+            'remote' => interessa_text('Packshot z obchodu'),
+            'placeholder' => interessa_text('Redakcny vizual'),
+            default => '',
+        };
+    }
+}
+
+if (!function_exists('interessa_product_image_status_class')) {
+    function interessa_product_image_status_class(string $sourceType): string {
+        $sourceType = strtolower(trim($sourceType));
+
+        return match ($sourceType) {
+            'local', 'remote' => 'is-packshot',
+            'placeholder' => 'is-editorial',
+            default => 'is-unknown',
+        };
+    }
+}
+
+if (!function_exists('interessa_product_editorial_note_text')) {
+    function interessa_product_editorial_note_text(string $merchant = ''): string {
+        $merchant = trim($merchant);
+
+        if ($merchant !== '') {
+            return interessa_text('Zatial pouzivame redakcny vizual. Odkaz aj odporucanie smeruju na konkretny produkt v obchode ') . $merchant . '.';
+        }
+
+        return interessa_text('Zatial pouzivame redakcny vizual. Odkaz aj odporucanie smeruju na konkretny produkt v obchode.');
     }
 }
 
@@ -100,6 +131,8 @@ if (!function_exists('interessa_render_product_media')) {
         $productName = $meta['product_name'];
         $summary = $meta['summary'];
         $categoryLabel = $meta['category_label'];
+        $imageStatus = interessa_product_image_status_label($sourceType);
+        $imageStatusClass = interessa_product_image_status_class($sourceType);
 
         $wrapperClass = trim((string) ($options['wrapper_class'] ?? 'affiliate-product-media')) ?: 'affiliate-product-media';
         $frameClass = trim((string) ($options['frame_class'] ?? ($wrapperClass . '-frame'))) ?: ($wrapperClass . '-frame');
@@ -127,6 +160,9 @@ if (!function_exists('interessa_render_product_media')) {
         }
         $html .= '<div class="' . esc($frameClass . ' is-fallback-frame') . '">';
         $html .= '<div class="product-fallback-copy">';
+        if ($imageStatus !== '') {
+            $html .= '<span class="product-fallback-badge ' . esc($imageStatusClass) . '">' . esc($imageStatus) . '</span>';
+        }
         $html .= '<span class="product-fallback-emblem" aria-hidden="true">' . esc(interessa_product_merchant_initials($merchant)) . '</span>';
         if ($productName !== '') {
             $html .= '<strong class="' . esc($titleClass) . '">' . esc($productName) . '</strong>';
@@ -164,6 +200,7 @@ if (!function_exists('interessa_render_product_box')) {
         $showDisclosure = (bool) ($options['show_disclosure'] ?? false);
         $imageMode = trim((string) ($row['image_mode'] ?? (($row['_image']['source_type'] ?? 'placeholder'))));
         $imageStatus = interessa_product_image_status_label($imageMode);
+        $imageStatusClass = interessa_product_image_status_class($imageMode);
         $rating = (float) ($row['rating'] ?? 0);
         $showEditorialNote = !$catalogResolved && $imageMode === 'placeholder' && $merchant !== '';
 
@@ -190,7 +227,7 @@ if (!function_exists('interessa_render_product_box')) {
                 $html .= '<div class="affiliate-product-rating">' . interessa_render_stars($rating) . '</div>';
             }
             if ($imageStatus !== '') {
-                $html .= '<span class="affiliate-product-image-status">' . esc($imageStatus) . '</span>';
+                $html .= '<span class="affiliate-product-image-status ' . esc($imageStatusClass) . '">' . esc($imageStatus) . '</span>';
             }
             $html .= '</div>';
         }
@@ -198,7 +235,7 @@ if (!function_exists('interessa_render_product_box')) {
             $html .= '<p class="affiliate-product-merchant">' . esc(interessa_text('Obchod:')) . ' ' . esc($merchant) . '</p>';
         }
         if ($showEditorialNote) {
-            $html .= '<p class="affiliate-product-editorial-note">' . esc(interessa_text('Produktovy obrazok este priebezne doplname.')) . '</p>';
+            $html .= '<p class="affiliate-product-editorial-note">' . esc(interessa_product_editorial_note_text($merchant)) . '</p>';
         }
         if ($pros !== [] || $cons !== []) {
             $html .= '<div class="affiliate-product-columns">';
@@ -264,6 +301,7 @@ if (!function_exists('interessa_render_comparison_table')) {
                     $merchant = trim((string) ($resolved['merchant'] ?? ''));
                     $imageMode = trim((string) ($resolved['image_mode'] ?? (($resolved['_image']['source_type'] ?? 'placeholder'))));
                     $imageStatus = interessa_product_image_status_label($imageMode);
+                    $imageStatusClass = interessa_product_image_status_class($imageMode);
                     $catalogResolved = interessa_product_catalog_resolved($resolved);
                     $html .= '<td>';
                     $html .= '<div class="comparison-product-cell">';
@@ -283,7 +321,7 @@ if (!function_exists('interessa_render_comparison_table')) {
                             $html .= '<span class="comparison-product-merchant">' . esc($merchant) . '</span>';
                         }
                         if ($imageStatus !== '') {
-                            $html .= '<span class="comparison-product-image-status">' . esc($imageStatus) . '</span>';
+                            $html .= '<span class="comparison-product-image-status ' . esc($imageStatusClass) . '">' . esc($imageStatus) . '</span>';
                         }
                         $html .= '</div>';
                     }

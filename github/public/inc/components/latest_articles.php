@@ -6,6 +6,10 @@ require_once dirname(__DIR__) . '/article-commerce.php';
 
 $dir = dirname(__DIR__, 2) . '/content/articles';
 $items = [];
+$latestArticlesCategorySlug = '';
+if (isset($latestArticlesContextCategorySlug) && is_string($latestArticlesContextCategorySlug) && trim($latestArticlesContextCategorySlug) !== '') {
+    $latestArticlesCategorySlug = normalize_category_slug($latestArticlesContextCategorySlug);
+}
 
 if (is_dir($dir)) {
     foreach (glob($dir . '/*.html') ?: [] as $file) {
@@ -24,22 +28,57 @@ if (is_dir($dir)) {
         }
 
         $categorySlug = normalize_category_slug((string) ($meta['category'] ?? ''));
+        $commerceSummary = interessa_article_commerce_summary($canonicalSlug);
         $items[$canonicalSlug] = [
             'slug' => $canonicalSlug,
             'title' => function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake($title) : $title,
             'mtime' => $mtime,
+            'category_slug' => $categorySlug,
             'category_meta' => $categorySlug !== '' ? category_meta($categorySlug) : null,
             'image' => interessa_article_image_meta($canonicalSlug, 'thumb', true),
+            'commerce_summary' => $commerceSummary,
+            'has_commerce' => is_array($commerceSummary) && (int) ($commerceSummary['count'] ?? 0) > 0,
+            'has_full_coverage' => interessa_article_has_full_packshot_coverage($canonicalSlug),
         ];
     }
 }
 
 $items = array_values($items);
-usort($items, static fn(array $a, array $b): int => $b['mtime'] <=> $a['mtime']);
+usort($items, static function (array $a, array $b): int {
+    global $latestArticlesCategorySlug;
+
+    if ($latestArticlesCategorySlug !== '') {
+        $sameCategoryCompare = ((int) (((string) ($b['category_slug'] ?? '')) === $latestArticlesCategorySlug))
+            <=> ((int) (((string) ($a['category_slug'] ?? '')) === $latestArticlesCategorySlug));
+        if ($sameCategoryCompare !== 0) {
+            return $sameCategoryCompare;
+        }
+    }
+
+    $coverageCompare = ((int) (!empty($b['has_full_coverage']))) <=> ((int) (!empty($a['has_full_coverage'])));
+    if ($coverageCompare !== 0) {
+        return $coverageCompare;
+    }
+
+    $commerceCompare = ((int) (!empty($b['has_commerce']))) <=> ((int) (!empty($a['has_commerce'])));
+    if ($commerceCompare !== 0) {
+        return $commerceCompare;
+    }
+
+    return ((int) ($b['mtime'] ?? 0)) <=> ((int) ($a['mtime'] ?? 0));
+});
 $items = array_slice($items, 0, 4);
 
 echo '<article class="ad-card latest-articles">';
-echo '<h3>' . esc(interessa_text('Najnovsie clanky')) . '</h3>';
+if ($latestArticlesCategorySlug !== '') {
+    $latestCategoryMeta = category_meta($latestArticlesCategorySlug);
+    $latestCategoryTitle = trim((string) ($latestCategoryMeta['title'] ?? ''));
+    echo '<h3>' . esc(interessa_text('Nove v tejto teme')) . '</h3>';
+    echo '<p class="muted">' . esc($latestCategoryTitle !== '' ? ('Aktualne clanky a vybery v teme ' . $latestCategoryTitle . '.') : interessa_text('Aktualne clanky a vybery v tejto teme.')) . '</p>';
+} else {
+    echo '<h3>' . esc(interessa_text('Nove a aktualizovane clanky')) . '</h3>';
+    echo '<p class="muted">' . esc(interessa_text('Clanky, ktore sa oplati otvorit, ak chces nove informacie alebo uz pripraveny vyber produktov.')) . '</p>';
+}
 
 if ($items === []) {
     echo '<p class="muted">' . esc(interessa_text('Zatial tu nie su ziadne clanky.')) . '</p>';
@@ -53,6 +92,9 @@ foreach ($items as $item) {
     $date = date('d.m.Y', (int) $item['mtime']);
     $categoryMeta = is_array($item['category_meta'] ?? null) ? $item['category_meta'] : null;
     $formatLabel = interessa_article_format_label((string) $item['slug'], (string) $item['title']);
+    $summary = is_array($item['commerce_summary'] ?? null) ? $item['commerce_summary'] : null;
+    $showComparisonReady = !empty($item['has_full_coverage']);
+    $showRecommendations = !$showComparisonReady && !empty($item['has_commerce']);
     echo '<li class="latest-card">';
     echo '<a class="latest-card-thumb" href="' . esc($url) . '">';
     echo interessa_render_image((array) $item['image'], ['class' => 'latest-card-image', 'alt' => (string) $item['title']]);
@@ -65,6 +107,15 @@ foreach ($items as $item) {
     }
     echo '<span class="date">' . esc($date) . '</span>';
     echo '</div>';
+    if ($showComparisonReady || $showRecommendations) {
+        echo '<div class="article-card-submeta">';
+        if ($showComparisonReady) {
+            echo '<span class="article-card-subchip is-coverage is-full">Porovnanie aj shortlist pripraveny</span>';
+        } elseif ($showRecommendations && $summary !== null) {
+            echo '<span class="article-card-subchip">Odporucania v ' . esc((string) ((int) ($summary['count'] ?? 0))) . ' produktoch</span>';
+        }
+        echo '</div>';
+    }
     echo '<a class="latest-card-title" href="' . esc($url) . '">' . esc((string) $item['title']) . '</a>';
     echo '</div>';
     echo '</li>';

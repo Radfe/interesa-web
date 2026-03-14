@@ -540,23 +540,23 @@ if (!function_exists('interessa_render_article_commerce_submeta')) {
         $html = '<div class="article-card-submeta">';
         if ($variant === 'compact') {
             if ($coverageState === 'full') {
-                $html .= '<span class="article-card-subchip is-coverage is-full">Vyber produktov</span>';
+                $html .= '<span class="article-card-subchip is-coverage is-full">Porovnanie + vyber</span>';
             } else {
-                $html .= '<span class="article-card-subchip">Odporucania</span>';
+                $html .= '<span class="article-card-subchip">Odporucane produkty</span>';
             }
             $html .= '</div>';
 
             return $html;
         }
 
-        $html .= '<span class="article-card-subchip">Vyber ' . esc((string) $count) . '</span>';
+        $html .= '<span class="article-card-subchip">Vyber ' . esc((string) $count) . ' produktov</span>';
         if ($merchantCount > 0) {
             $html .= '<span class="article-card-subchip">' . esc((string) $merchantCount) . ' ' . esc(interessa_pluralize_slovak($merchantCount, 'obchod', 'obchody', 'obchodov')) . '</span>';
         }
         if ($coverageState === 'full') {
-            $html .= '<span class="article-card-subchip is-coverage is-full">Kompletny vyber</span>';
+            $html .= '<span class="article-card-subchip is-coverage is-full">Porovnanie pripravene</span>';
         } elseif ($coverageState === 'partial') {
-            $html .= '<span class="article-card-subchip is-coverage is-partial">Vyber produktov</span>';
+            $html .= '<span class="article-card-subchip is-coverage is-partial">Shortlist pripraveny</span>';
         }
         $html .= '</div>';
 
