@@ -148,6 +148,7 @@ $commercialArticleCount = count(array_filter($allIndexedArticles, static functio
     return interessa_article_has_commerce((string) ($item['slug'] ?? ''));
 }));
 $readyShortlistGuides = [];
+$comparisonReadyGuides = [];
 foreach ($allIndexedArticles as $item) {
     $slug = (string) ($item['slug'] ?? '');
     $summary = interessa_article_commerce_summary($slug);
@@ -169,6 +170,20 @@ foreach ($allIndexedArticles as $item) {
         'updated_ts' => is_file($articleFile) ? (int) @filemtime($articleFile) : 0,
         'updated_date' => is_file($articleFile) ? date('d.m.Y', (int) @filemtime($articleFile)) : '',
     ];
+
+    if (interessa_article_has_comparison_table($slug)) {
+        $comparisonReadyGuides[] = [
+            'slug' => $slug,
+            'title' => $meta['title'],
+            'description' => interessa_article_card_description($slug, trim((string) ($meta['description'] ?? '')), 18),
+            'image' => interessa_article_image_meta($slug, 'thumb', true),
+            'format_label' => interessa_article_format_label($slug, (string) ($meta['title'] ?? '')),
+            'category_meta' => $categorySlug !== '' ? category_meta($categorySlug) : null,
+            'coverage_percent' => interessa_shortlist_coverage_percent($summary),
+            'updated_ts' => is_file($articleFile) ? (int) @filemtime($articleFile) : 0,
+            'updated_date' => is_file($articleFile) ? date('d.m.Y', (int) @filemtime($articleFile)) : '',
+        ];
+    }
 }
 usort($readyShortlistGuides, static function (array $a, array $b): int {
     $coverageCompare = ((int) ($b['coverage_percent'] ?? 0)) <=> ((int) ($a['coverage_percent'] ?? 0));
@@ -178,6 +193,14 @@ usort($readyShortlistGuides, static function (array $a, array $b): int {
     return ((int) ($b['updated_ts'] ?? 0)) <=> ((int) ($a['updated_ts'] ?? 0));
 });
 $readyShortlistGuides = array_slice($readyShortlistGuides, 0, 3);
+usort($comparisonReadyGuides, static function (array $a, array $b): int {
+    $coverageCompare = ((int) ($b['coverage_percent'] ?? 0)) <=> ((int) ($a['coverage_percent'] ?? 0));
+    if ($coverageCompare !== 0) {
+        return $coverageCompare;
+    }
+    return ((int) ($b['updated_ts'] ?? 0)) <=> ((int) ($a['updated_ts'] ?? 0));
+});
+$comparisonReadyGuides = array_slice($comparisonReadyGuides, 0, 3);
 $categoryCount = count(category_registry());
 $guideCount = count($allIndexedArticles);
 
@@ -343,6 +366,39 @@ include __DIR__ . '/inc/head.php';
           <h3><a href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc((string) $guide['title']) ?></a></h3>
           <?php if (($guide['description'] ?? '') !== ''): ?><p><?= esc((string) $guide['description']) ?></p><?php endif; ?>
           <a class="btn" href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc(interessa_article_cta_label((string) $guide['slug'], (string) $guide['title'])) ?></a>
+        </div>
+      </article>
+    <?php endforeach; ?>
+  </div>
+</section>
+<?php endif; ?>
+
+<?php if ($comparisonReadyGuides !== []): ?>
+<section class="container home-section">
+  <div class="section-head">
+    <h2>Rychle porovnania v tabulke</h2>
+    <p class="meta">Ak chces ist rovno na porovnanie produktov, tu najdes clanky, kde uz je pripravena comparison table aj shortlist.</p>
+  </div>
+
+  <div class="hub-grid article-teaser-grid">
+    <?php foreach ($comparisonReadyGuides as $guide): ?>
+      <article class="hub-card article-teaser-card">
+        <a href="<?= esc(article_url((string) $guide['slug'])) ?>">
+          <?= interessa_render_image((array) $guide['image'], ['class' => 'hub-card-image', 'alt' => (string) $guide['title']]) ?>
+        </a>
+        <div class="hub-card-body article-teaser-body">
+          <div class="article-card-meta">
+            <span class="article-card-chip is-format"><?= esc((string) ($guide['format_label'] ?? 'Clanok')) ?></span>
+            <?php if (is_array($guide['category_meta'] ?? null)): ?><span class="article-card-chip"><?= esc((string) ($guide['category_meta']['title'] ?? '')) ?></span><?php endif; ?>
+            <?php if (($guide['updated_date'] ?? '') !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc((string) $guide['updated_date']) ?></span><?php endif; ?>
+          </div>
+          <div class="article-card-submeta">
+            <span class="article-card-subchip is-coverage is-full">Comparison table pripravena</span>
+            <span class="article-card-subchip">Packshoty: <?= esc((string) ($guide['coverage_percent'] ?? 0)) ?>%</span>
+          </div>
+          <h3><a href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc((string) $guide['title']) ?></a></h3>
+          <?php if (($guide['description'] ?? '') !== ''): ?><p><?= esc((string) $guide['description']) ?></p><?php endif; ?>
+          <a class="btn" href="<?= esc(article_url((string) $guide['slug'])) ?>">Otvorit porovnanie</a>
         </div>
       </article>
     <?php endforeach; ?>

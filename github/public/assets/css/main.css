@@ -48,6 +48,7 @@ a:hover{color:#0954aa}
 .main-nav{margin-left:auto}
 .menu-root{list-style:none;display:flex;align-items:center;gap:.35rem;margin:0;padding:0}
 .menu-item{position:relative}
+.has-mega{padding-bottom:12px;margin-bottom:-12px}
 .main-nav__link{
   position:relative;display:flex;align-items:center;padding:.72rem .95rem;border-radius:14px;
   color:#10202d;font-weight:700;letter-spacing:-.01em;transition:background .18s ease,color .18s ease
@@ -190,6 +191,7 @@ a:hover{color:#0954aa}
   .main-nav__link{padding:.95rem 1rem;border-radius:12px}
   .main-nav__link::after{display:none}
   .has-mega>.main-nav__link{padding-right:2.8rem}
+  .has-mega{padding-bottom:0;margin-bottom:0}
   .mega-caret{
     display:flex;align-items:center;justify-content:center;position:absolute;right:.75rem;top:.92rem;translate:none;
     width:22px;height:22px;border-radius:999px;background:#f3f7f5

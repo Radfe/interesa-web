@@ -499,6 +499,12 @@ if (!function_exists('interessa_article_comparison_table_payload')) {
     }
 }
 
+if (!function_exists('interessa_article_has_comparison_table')) {
+    function interessa_article_has_comparison_table(string $slug): bool {
+        return interessa_article_comparison_table_payload($slug) !== null;
+    }
+}
+
 if (!function_exists('interessa_article_commerce_summary')) {
     function interessa_article_commerce_summary(string $slug): ?array {
         $commerce = interessa_article_commerce($slug);

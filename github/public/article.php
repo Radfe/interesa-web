@@ -248,6 +248,7 @@ include __DIR__ . '/inc/head.php';
             <?php if (!empty($comparisonTable['intro'])): ?>
               <p class="topbox-intro"><?= esc((string) $comparisonTable['intro']) ?></p>
             <?php endif; ?>
+            <p class="meta">Tabulkova verzia ti ukaze rovnaky shortlist ako nizsie, len v rychlejsom prehlade na jeden pohlad.</p>
           </div>
           <?php
           echo interessa_render_comparison_table(

@@ -105,6 +105,27 @@ $crossThemePaths = interessa_cross_theme_paths($slug);
 $primaryCommercialGuideCoverage = $primaryCommercialGuideSlug !== ''
     ? interessa_article_commerce_coverage_state($primaryCommercialGuideSlug)
     : null;
+$comparisonReadyArticles = [];
+foreach ($categoryArticles as $item) {
+    $itemSlug = (string) ($item['slug'] ?? '');
+    if ($itemSlug === '' || !interessa_article_has_comparison_table($itemSlug)) {
+        continue;
+    }
+
+    $summary = interessa_article_commerce_summary($itemSlug);
+    $item['_coverage_percent'] = interessa_shortlist_coverage_percent($summary);
+    $comparisonReadyArticles[] = $item;
+}
+usort($comparisonReadyArticles, static function (array $a, array $b): int {
+    $coverageCompare = ((int) ($b['_coverage_percent'] ?? 0)) <=> ((int) ($a['_coverage_percent'] ?? 0));
+    if ($coverageCompare !== 0) {
+        return $coverageCompare;
+    }
+    $aFile = dirname(__DIR__) . '/content/articles/' . (string) ($a['slug'] ?? '') . '.html';
+    $bFile = dirname(__DIR__) . '/content/articles/' . (string) ($b['slug'] ?? '') . '.html';
+    return ((int) @filemtime($bFile)) <=> ((int) @filemtime($aFile));
+});
+$comparisonReadyArticles = array_slice($comparisonReadyArticles, 0, 2);
 
 $page_schema = [
     breadcrumb_schema([
@@ -234,6 +255,47 @@ include dirname(__DIR__) . '/inc/head.php';
                 <h3><a href="<?= esc(article_url($guideSlug)) ?>"><?= esc($title) ?></a></h3>
                 <?php if ($description !== ''): ?><p><?= esc($description) ?></p><?php endif; ?>
                 <a class="card-link" href="<?= esc(article_url($guideSlug)) ?>"><?= esc(interessa_article_cta_label($guideSlug, $title)) ?></a>
+              </div>
+            </article>
+          <?php endforeach; ?>
+        </div>
+      </section>
+    <?php endif; ?>
+
+    <?php if ($comparisonReadyArticles !== []): ?>
+      <section class="card">
+        <div class="section-head">
+          <h2>Rychle porovnania v tabulke</h2>
+          <p class="meta">Tieto clanky maju comparison table aj shortlist, takze sa cez ne vies dostat k vyberu najrychlejsie.</p>
+        </div>
+        <div class="hub-grid article-related-grid">
+          <?php foreach ($comparisonReadyArticles as $item): ?>
+            <?php
+            $itemSlug = (string) ($item['slug'] ?? '');
+            $itemTitle = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake((string) ($item['title'] ?? '')) : (string) ($item['title'] ?? '');
+            $itemDescription = interessa_article_card_description($itemSlug, trim((string) ($item['description'] ?? '')), 18);
+            $itemImage = interessa_article_image_meta($itemSlug, 'thumb', true);
+            $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
+            $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
+            $formatLabel = interessa_article_format_label($itemSlug, $itemTitle);
+            ?>
+            <article class="hub-card article-teaser-card">
+              <a href="<?= esc(article_url($itemSlug)) ?>">
+                <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
+              </a>
+              <div class="hub-card-body article-teaser-body">
+                <div class="article-card-meta">
+                  <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
+                  <span class="hub-card-label"><?= esc($hub['title']) ?></span>
+                  <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
+                </div>
+                <div class="article-card-submeta">
+                  <span class="article-card-subchip is-coverage is-full">Comparison table pripravena</span>
+                  <span class="article-card-subchip">Packshoty: <?= esc((string) ($item['_coverage_percent'] ?? 0)) ?>%</span>
+                </div>
+                <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
+                <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
+                <a class="card-link" href="<?= esc(article_url($itemSlug)) ?>">Otvorit porovnanie</a>
               </div>
             </article>
           <?php endforeach; ?>
