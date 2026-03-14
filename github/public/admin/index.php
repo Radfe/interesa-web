@@ -484,6 +484,98 @@ function interessa_admin_product_image_brief(array $product): array {
     return $brief;
 }
 
+function interessa_admin_category_image_brief(string $slug): array {
+    $slug = normalize_category_slug($slug);
+    $meta = category_meta($slug) ?? ['title' => humanize_slug($slug), 'description' => ''];
+    $title = interessa_admin_clean_label((string) ($meta['title'] ?? humanize_slug($slug)));
+    $description = interessa_admin_clean_label((string) ($meta['description'] ?? ''));
+    $assetPath = function_exists('interessa_admin_category_image_asset')
+        ? interessa_admin_category_image_asset($slug, 'hero', 'webp')
+        : 'img/categories/' . $slug . '/hero.webp';
+
+    $colorAccents = [
+        'proteiny' => 'jemna modra a krémova',
+        'vyziva' => 'tepla zelena a béžova',
+        'mineraly' => 'svetla modra a pieskova',
+        'imunita' => 'svieza zelena a zlta',
+        'sila' => 'tmavsia modra a tehlova',
+        'klby-koza' => 'svetla kremova a broskynova',
+        'aminokyseliny' => 'svetla ruzova a modra',
+        'chudnutie' => 'svieza ruzova a kremova',
+        'doplnkove-prislusenstvo' => 'cista sediva a svetla modra',
+        'kreatin' => 'jemna modra a tmavsia sediva',
+        'pre-workout' => 'energicka ruzova a tyrkysova',
+        'probiotika-travenie' => 'cista zelena a svetla modra',
+    ];
+    $motifs = [
+        'proteiny' => 'shaker, protein alebo funkcny food detail',
+        'vyziva' => 'potraviny, snacky alebo funkcny food editorial',
+        'mineraly' => 'doplnky, tablety, kapsuly alebo cisty wellness detail',
+        'imunita' => 'wellness doplnky a sviezi editorial lifestyle',
+        'sila' => 'vykon, treningovy doplnok alebo silovy editorial',
+        'klby-koza' => 'kolagen, kozmeticky doplnok alebo clean wellness produkt',
+        'aminokyseliny' => 'sportovy shaker, aminokyseliny alebo sportovy editorial',
+        'chudnutie' => 'lahky fitness editorial a clean produktovy doplnok',
+        'doplnkove-prislusenstvo' => 'saker, krabicka, doplnkove prislusenstvo alebo clean desk setup',
+        'kreatin' => 'kreatinovy produkt, shaker a silovy editorial',
+        'pre-workout' => 'predtrenigovka, shaker alebo energicky workout editorial',
+        'probiotika-travenie' => 'probiotika, travenie, wellness editorial alebo clean supplement detail',
+    ];
+
+    $promptParts = [
+        'Editorialny hlavny obrazok pre temu "' . $title . '" na redakcny web o doplnkoch vyzivy.',
+        $description !== '' ? 'Tema: ' . $description . '.' : '',
+        'Vizualny smer: clean premium health and fitness look, bez textu, bez loga, bez kolaze.',
+        'Farebny akcent: ' . ($colorAccents[$slug] ?? 'jemne prirodzene farby') . '.',
+        'Motiv: ' . ($motifs[$slug] ?? 'clean editorial wellness motiv') . '.',
+        'Kompozicia: sirsi obrazok s hlavnym motivom pekne v strede, nech sa hodi na web aj do karticiek.',
+    ];
+
+    return [
+        'slug' => $slug,
+        'title' => $title,
+        'prompt' => implode(' ', array_values(array_filter($promptParts))),
+        'alt_text' => $title,
+        'dimensions' => '1600x900',
+        'asset_path' => $assetPath,
+        'file_name' => $slug . '-hero.webp',
+    ];
+}
+
+function interessa_admin_category_image_queue(array $categoryOptions): array {
+    $rows = [];
+    foreach ($categoryOptions as $slug => $item) {
+        $localAsset = function_exists('interessa_category_local_asset')
+            ? interessa_category_local_asset((string) $slug, 'hero')
+            : null;
+        $imageMeta = interessa_category_image_meta((string) $slug, 'hero', true);
+        $brief = interessa_admin_category_image_brief((string) $slug);
+        $rows[] = [
+            'slug' => (string) $slug,
+            'title' => interessa_admin_clean_label((string) ($item['title'] ?? $brief['title'] ?? $slug)),
+            'asset_path' => (string) ($brief['asset_path'] ?? ''),
+            'file_name' => (string) ($brief['file_name'] ?? ''),
+            'dimensions' => (string) ($brief['dimensions'] ?? '1600x900'),
+            'prompt' => (string) ($brief['prompt'] ?? ''),
+            'has_local_theme_image' => $localAsset !== null,
+            'local_asset' => $localAsset ?? '',
+            'source_type' => is_array($imageMeta) ? (string) ($imageMeta['source_type'] ?? 'placeholder') : 'placeholder',
+            'theme_url' => category_url((string) $slug),
+        ];
+    }
+
+    usort($rows, static function (array $left, array $right): int {
+        $statusSort = ((int) $left['has_local_theme_image']) <=> ((int) $right['has_local_theme_image']);
+        if ($statusSort !== 0) {
+            return $statusSort;
+        }
+
+        return strcasecmp((string) ($left['title'] ?? ''), (string) ($right['title'] ?? ''));
+    });
+
+    return $rows;
+}
+
 function interessa_admin_image_queue(array $articleOptions, string $filter = 'missing', int $limit = 12): array {
     $rows = [];
     foreach ($articleOptions as $slug => $item) {
@@ -1251,6 +1343,14 @@ if ($isAuthed) {
                 header('Location: ' . article_url($slug), true, 303);
                 exit;
             }
+
+            if ($action === 'upload_category_image_only') {
+                $slug = normalize_category_slug(trim((string) ($_POST['category_slug'] ?? '')));
+                interessa_admin_store_uploaded_category_image($slug, 'hero', $_FILES['category_image']);
+                header('Location: ' . category_url($slug), true, 303);
+                exit;
+            }
+
             if ($action === 'upload_packshot_only') {
                 $slug = trim((string) ($_POST['product_slug'] ?? ''));
                 $returnSection = trim((string) ($_POST['return_section'] ?? 'products'));
@@ -1436,6 +1536,17 @@ $articleOptions = interessa_admin_article_options();
 $selectedArticleSlug = canonical_article_slug(trim((string) ($_GET['slug'] ?? array_key_first($articleOptions) ?? '')));
 $selectedArticleMeta = $selectedArticleSlug !== '' ? article_meta($selectedArticleSlug) : ['title' => '', 'description' => '', 'category' => ''];
 $categoryOptions = category_registry();
+$selectedThemeSlug = normalize_category_slug(trim((string) ($_GET['topic'] ?? (string) ($selectedArticleMeta['category'] ?? ''))));
+if ($selectedThemeSlug === '' || !isset($categoryOptions[$selectedThemeSlug])) {
+    $selectedThemeSlug = (string) (array_key_first($categoryOptions) ?? '');
+}
+$selectedThemeMeta = $selectedThemeSlug !== '' ? (category_meta($selectedThemeSlug) ?? ['title' => '', 'description' => '']) : ['title' => '', 'description' => ''];
+$selectedThemePrompt = $selectedThemeSlug !== '' ? interessa_admin_category_image_brief($selectedThemeSlug) : [];
+$selectedThemeImage = $selectedThemeSlug !== '' ? interessa_category_image_meta($selectedThemeSlug, 'hero', true) : null;
+$selectedThemeLocalAsset = $selectedThemeSlug !== '' && function_exists('interessa_category_local_asset')
+    ? (interessa_category_local_asset($selectedThemeSlug, 'hero') ?? '')
+    : '';
+$selectedThemeImageSource = $selectedThemeLocalAsset !== '' ? 'vlastny obrazok temy' : 'docasny fallback';
 $selectedArticleOverride = $selectedArticleSlug !== '' ? interessa_admin_article_content($selectedArticleSlug) : interessa_admin_normalize_article_override('', []);
 $articlePrompt = $selectedArticleSlug !== '' ? interessa_hero_prompt_meta($selectedArticleSlug) : [];
 $selectedArticleHero = $selectedArticleSlug !== '' ? interessa_article_image_meta($selectedArticleSlug, 'hero', true) : null;
@@ -1515,6 +1626,7 @@ if (!in_array($productImageFilter, ['missing', 'all', 'ready', 'remote', 'placeh
 
 $allImageQueue = interessa_admin_image_queue($articleOptions, 'all', max(count($articleOptions), 1));
 $allProductImageQueue = interessa_admin_product_image_queue($catalog, 'all', max(count($catalog), 1));
+$allThemeImageQueue = interessa_admin_category_image_queue($categoryOptions);
 $imageQueue = interessa_admin_image_queue($articleOptions, $imageFilter, $imageFilter === 'all' ? max(count($articleOptions), 1) : 16);
 $productImageQueue = interessa_admin_product_image_queue($catalog, $productImageFilter, $productImageFilter === 'all' ? max(count($catalog), 1) : 16);
 $imageQueueCounts = [
@@ -1537,6 +1649,11 @@ $selectedHeroQueueIndex = array_search($selectedArticleSlug, $missingHeroSlugs, 
 $prevMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex > 0 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex - 1] : '';
 $nextMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex < count($missingHeroSlugs) - 1 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex + 1] : '';
 $selectedHeroQueuePosition = $selectedHeroQueueIndex !== false ? ($selectedHeroQueueIndex + 1) : 0;
+$missingThemeSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allThemeImageQueue, static fn(array $row): bool => empty($row['has_local_theme_image'])))));
+$selectedThemeQueueIndex = array_search($selectedThemeSlug, $missingThemeSlugs, true);
+$prevMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex > 0 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex - 1] : '';
+$nextMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex < count($missingThemeSlugs) - 1 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex + 1] : '';
+$selectedThemeQueuePosition = $selectedThemeQueueIndex !== false ? ($selectedThemeQueueIndex + 1) : 0;
 $missingPackshotSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot'])))));
 $selectedPackshotQueueIndex = array_search($selectedProductSlug, $missingPackshotSlugs, true);
 $prevMissingPackshotSlug = $selectedPackshotQueueIndex !== false && $selectedPackshotQueueIndex > 0 ? (string) $missingPackshotSlugs[$selectedPackshotQueueIndex - 1] : '';
@@ -1568,6 +1685,7 @@ $flashMessages = [
     'affiliate-created' => 'Novy affiliate zaznam bol vytvoreny.',
     'affiliate-reset' => 'Affiliate override bol zmazany.',
     'hero' => 'Hero obrazok bol nahraty.',
+    'theme-image' => 'Obrazok temy bol nahraty.',
     'packshot' => 'Produktovy obrazok bol nahraty.',
     'packshot-mirrored' => 'Remote obrazok bol zrkadleny do lokalneho assetu.',
     'product-enriched' => 'Produkt bol doplneny z referencnej produktovej stranky.',
@@ -1730,9 +1848,9 @@ require dirname(__DIR__) . '/inc/head.php';
             </ol>
           <?php elseif ($section === 'images'): ?>
             <ol class="admin-quickstart-list">
-              <li>Skopiruj text pre Canvu.</li>
-              <li>Sprav obrazok v Canve a stiahni ho.</li>
-              <li>Nahraj obrazok sem a skontroluj clanok na webe.</li>
+              <li>Vyber, ci riesis clanok, temu alebo produkt.</li>
+              <li>Skopiruj text pre Canvu a sprav obrazok.</li>
+              <li>Nahraj obrazok sem a skontroluj vysledok na webe.</li>
             </ol>
           <?php elseif ($section === 'products'): ?>
             <ol class="admin-quickstart-list">
@@ -2668,7 +2786,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div>
                 <p class="admin-kicker">Obrazky</p>
                 <h2>Obrazky pre clanok</h2>
-              <p class="admin-note">Na tejto stranke robis len 2 veci: hore riesis hlavny obrazok clanku, nizsie riesis obrazky produktov. Pri produktoch najprv pouzi obrazok z e-shopu. Manualny upload je az zalozny krok.</p>
+              <p class="admin-note">Na tejto stranke riesis 3 veci: hlavny obrazok clanku, obrazok temy a obrazky produktov. Pri produktoch najprv pouzi obrazok z e-shopu. Manualny upload je az zalozny krok.</p>
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="images" />
@@ -2737,6 +2855,86 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php endif; ?>
                       <?php if ($nextMissingHeroSlug !== ''): ?>
                         <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($nextMissingHeroSlug) ?>&amp;image_filter=missing">Dalsi clanok bez obrazka</a>
+                      <?php endif; ?>
+                    </div>
+                  <?php endif; ?>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-subsection admin-asset-preview">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Obrazok temy</h3>
+                  <p class="admin-meta">Toto je hlavny obrazok pre temu na homepage a na stranke temy. Postup je rovnaky ako pri clanku: skopiruj text, vyber obrazok, nahraj ho a otvor temu na webe.</p>
+                </div>
+                <form method="get" action="/admin" class="admin-inline-form">
+                  <input type="hidden" name="section" value="images" />
+                  <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
+                  <select name="topic" onchange="this.form.submit()">
+                    <?php foreach ($categoryOptions as $themeSlug => $themeItem): ?>
+                      <option value="<?= esc((string) $themeSlug) ?>" <?= (string) $themeSlug === $selectedThemeSlug ? 'selected' : '' ?>><?= esc((string) ($themeItem['title'] ?? $themeSlug)) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </form>
+              </div>
+              <div class="admin-asset-preview__grid">
+                <div class="admin-asset-preview__media">
+                  <?= interessa_render_image($selectedThemeImage, ['class' => 'admin-asset-preview__image']) ?>
+                </div>
+                <div class="admin-asset-preview__body">
+                  <p><strong>Tema:</strong> <?= esc((string) ($selectedThemeMeta['title'] ?? '')) ?></p>
+                  <?php if (trim((string) ($selectedThemeMeta['description'] ?? '')) !== ''): ?>
+                    <p><?= esc((string) ($selectedThemeMeta['description'] ?? '')) ?></p>
+                  <?php endif; ?>
+                  <p><strong>Odkial je obrazok:</strong> <?= esc($selectedThemeImageSource) ?></p>
+                  <p><strong>Aktualny subor:</strong> <code><?= esc($selectedThemeLocalAsset !== '' ? $selectedThemeLocalAsset : (string) ($selectedThemeImage['asset'] ?? '')) ?></code></p>
+                  <p><strong>Kam sa ulozi:</strong> <code><?= esc((string) ($selectedThemePrompt['asset_path'] ?? '')) ?></code></p>
+                  <p class="admin-note">Tu klikaj len v tomto poradi: 1. Skopiruj text pre Canvu. 2. V Canve sprav obrazok. 3. Nahraj obrazok sem. 4. Po nahrati sa tema sama otvori na webe. Admin pri nahrati sam upravi rozmer na 1600 x 900.</p>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedThemePrompt['prompt'] ?? '')) ?>">1. Kopirovat text pre Canvu</button>
+                    <a class="btn btn-secondary btn-small" href="<?= esc(category_url($selectedThemeSlug)) ?>" target="_blank" rel="noopener">4. Otvorit temu na webe</a>
+                  </div>
+                  <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack">
+                    <input type="hidden" name="action" value="upload_category_image_only" />
+                    <input type="hidden" name="category_slug" value="<?= esc($selectedThemeSlug) ?>" />
+                    <input type="hidden" name="category_crop_mode" value="center" />
+                    <label>
+                      <span>2. Vyber hotovy obrazok z Canvy</span>
+                      <input type="file" name="category_image" accept="image/webp,image/png,image/jpeg" required />
+                    </label>
+                    <section class="admin-crop-picker" data-hero-crop-picker hidden>
+                      <div class="admin-crop-picker__head">
+                        <strong>Vyber najlepsi vyrez obrazka</strong>
+                        <small>Po vybrati obrazka klikni na ten nahlad, ktory vyzera najlepsie.</small>
+                      </div>
+                      <div class="admin-crop-picker__grid">
+                        <button class="admin-crop-option is-selected" type="button" data-crop-mode="center">
+                          <span class="admin-crop-option__preview" data-crop-preview="center"></span>
+                          <span class="admin-crop-option__label">Na stred</span>
+                        </button>
+                        <button class="admin-crop-option" type="button" data-crop-mode="top">
+                          <span class="admin-crop-option__preview" data-crop-preview="top"></span>
+                          <span class="admin-crop-option__label">Drzat vrch</span>
+                        </button>
+                        <button class="admin-crop-option" type="button" data-crop-mode="bottom">
+                          <span class="admin-crop-option__preview" data-crop-preview="bottom"></span>
+                          <span class="admin-crop-option__label">Drzat spodok</span>
+                        </button>
+                      </div>
+                    </section>
+                    <button class="btn btn-cta" type="submit">3. Nahraj obrazok a otvor temu</button>
+                  </form>
+                  <?php if ($selectedThemeQueuePosition > 0): ?>
+                    <p class="admin-note">Zostava spravit: <?= esc((string) $selectedThemeQueuePosition) ?> / <?= esc((string) count($missingThemeSlugs)) ?></p>
+                  <?php endif; ?>
+                  <?php if ($prevMissingThemeSlug !== '' || $nextMissingThemeSlug !== ''): ?>
+                    <div class="admin-inline-actions">
+                      <?php if ($prevMissingThemeSlug !== ''): ?>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;topic=<?= esc($prevMissingThemeSlug) ?>&amp;image_filter=<?= esc($imageFilter) ?>">Predchadzajuca tema bez obrazka</a>
+                      <?php endif; ?>
+                      <?php if ($nextMissingThemeSlug !== ''): ?>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;topic=<?= esc($nextMissingThemeSlug) ?>&amp;image_filter=<?= esc($imageFilter) ?>">Dalsia tema bez obrazka</a>
                       <?php endif; ?>
                     </div>
                   <?php endif; ?>
@@ -2939,6 +3137,35 @@ require dirname(__DIR__) . '/inc/head.php';
                     <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc((string) $queueRow['slug']) ?>&amp;image_filter=<?= esc($imageFilter) ?>">Otvorit tento clanok</a>
                     <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['prompt'] ?? '')) ?>">Skopirovat text pre Canvu</button>
                     <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['article_url'] ?? article_url((string) $queueRow['slug']))) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
+                  </div>
+                </article>
+              <?php endforeach; ?>
+            </div>
+          </section>
+        <?php endif; ?>
+
+        <?php if ($section === 'images'): ?>
+          <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Temy webu</p>
+                <h2>Temy bez vlastneho obrazka</h2>
+                <p class="admin-note">Tu vidis 12 hlavnych tem webu. Pri kazdej teme je ciel mat vlastny finalny obrazok, nie len docasny fallback.</p>
+              </div>
+            </div>
+            <div class="admin-queue-list">
+              <?php foreach ($allThemeImageQueue as $themeRow): ?>
+                <article class="admin-queue-item<?= !empty($themeRow['has_local_theme_image']) ? ' is-done' : '' ?>">
+                  <div>
+                    <strong><?= esc((string) ($themeRow['title'] ?? '')) ?></strong>
+                    <p><?= esc((string) ($themeRow['slug'] ?? '')) ?> / <?= !empty($themeRow['has_local_theme_image']) ? 'vlastny obrazok' : 'docasny fallback' ?></p>
+                    <code><?= esc((string) ($themeRow['asset_path'] ?? '')) ?></code>
+                    <small class="admin-note"><?= esc((string) ($themeRow['file_name'] ?? '')) ?> / <?= esc((string) ($themeRow['dimensions'] ?? '1600x900')) ?></small>
+                  </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;topic=<?= esc((string) ($themeRow['slug'] ?? '')) ?>&amp;image_filter=<?= esc($imageFilter) ?>">Otvorit tuto temu</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($themeRow['prompt'] ?? '')) ?>">Skopirovat text pre Canvu</button>
+                    <a class="btn btn-secondary btn-small" href="<?= esc((string) ($themeRow['theme_url'] ?? '#')) ?>" target="_blank" rel="noopener">Otvorit temu na webe</a>
                   </div>
                 </article>
               <?php endforeach; ?>
@@ -3912,7 +4139,7 @@ require dirname(__DIR__) . '/inc/head.php';
         return 'center';
       }
 
-      const input = form.querySelector('input[name="hero_crop_mode"]');
+      const input = form.querySelector('input[name="hero_crop_mode"], input[name="category_crop_mode"]');
       return input instanceof HTMLInputElement ? String(input.value || 'center').toLowerCase() : 'center';
     }
 
@@ -3975,7 +4202,7 @@ require dirname(__DIR__) . '/inc/head.php';
         return;
       }
 
-      const fileInput = form.querySelector('input[type="file"][name="hero_image"]');
+      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="category_image"]');
       if (!(fileInput instanceof HTMLInputElement)) {
         return;
       }
@@ -4009,6 +4236,15 @@ require dirname(__DIR__) . '/inc/head.php';
           width: 1200,
           height: 800,
           label: 'hlavny obrazok clanku',
+          cropAnchorY: resolveHeroCropAnchor(form)
+        };
+      }
+      if (name === 'category_image') {
+        const form = fileInput instanceof HTMLInputElement ? fileInput.closest('form') : null;
+        return {
+          width: 1600,
+          height: 900,
+          label: 'obrazok temy',
           cropAnchorY: resolveHeroCropAnchor(form)
         };
       }
@@ -4288,12 +4524,12 @@ require dirname(__DIR__) . '/inc/head.php';
     }
 
     document.querySelectorAll('form.admin-inline-upload, form.admin-form').forEach(function (form) {
-      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="product_image"]');
+      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="category_image"], input[type="file"][name="product_image"]');
       if (!(fileInput instanceof HTMLInputElement)) {
         return;
       }
 
-      if (fileInput.name === 'hero_image') {
+      if (fileInput.name === 'hero_image' || fileInput.name === 'category_image') {
         bindHeroCropPicker(form);
       }
 

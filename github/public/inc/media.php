@@ -401,7 +401,13 @@ if (!function_exists('interessa_category_image_meta')) {
         }
 
         $variants = [];
-        if (isset($entry['asset'])) {
+        $canonicalVariants = interessa_collect_asset_candidates([
+            'img/categories/' . $slug . '/' . $variant,
+            'img/categories/' . $slug,
+        ]);
+        if ($canonicalVariants !== []) {
+            $variants = $canonicalVariants;
+        } elseif (isset($entry['asset'])) {
             $asset = trim((string) $entry['asset']);
             if ($asset !== '') {
                 $variants = interessa_collect_asset_candidates([ltrim($asset, '/')]);
@@ -410,8 +416,6 @@ if (!function_exists('interessa_category_image_meta')) {
 
         if ($variants === []) {
             $variants = interessa_collect_asset_candidates([
-                'img/categories/' . $slug . '/' . $variant,
-                'img/categories/' . $slug,
                 'img/icons/' . $slug,
             ]);
         }
@@ -424,6 +428,34 @@ if (!function_exists('interessa_category_image_meta')) {
             'variant_name' => $variant,
             'crop_mode' => 'cover',
         ], 'category', $allowFallback);
+    }
+}
+
+if (!function_exists('interessa_category_local_asset')) {
+    function interessa_category_local_asset(string $slug, string $variant = 'hero'): ?string {
+        $slug = normalize_category_slug($slug);
+        $variant = trim($variant);
+        if ($slug === '') {
+            return null;
+        }
+        if ($variant === '') {
+            $variant = 'hero';
+        }
+
+        $variants = interessa_collect_asset_candidates([
+            'img/categories/' . $slug . '/' . $variant,
+            'img/categories/' . $slug,
+        ]);
+        if ($variants === []) {
+            return null;
+        }
+
+        $primary = end($variants);
+        if ($primary === false) {
+            return null;
+        }
+
+        return trim((string) ($primary['asset'] ?? '')) ?: null;
     }
 }
 

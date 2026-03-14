@@ -95,6 +95,12 @@ button:focus-visible,
   font-size:.92rem;
   line-height:1.55;
 }
+.home-intent-grid .intent-lane-card{
+  background:linear-gradient(180deg,#ffffff 0%,#fbfdfc 100%);
+}
+.home-intent-grid .intent-link-chip{
+  background:#ffffff;
+}
 
 .site-footer nav a{ padding:.25rem .35rem; border-radius:8px; }
 .site-footer nav a:focus-visible{ box-shadow: var(--ring); }

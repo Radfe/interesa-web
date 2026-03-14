@@ -560,6 +560,60 @@ if (!function_exists('interessa_admin_store_uploaded_article_hero')) {
     }
 }
 
+if (!function_exists('interessa_admin_category_image_asset')) {
+    function interessa_admin_category_image_asset(string $slug, string $variant = 'hero', string $ext = 'webp'): string {
+        $slug = normalize_category_slug($slug);
+        $variant = interessa_admin_slugify($variant);
+        $ext = strtolower(trim($ext)) ?: 'webp';
+
+        if ($slug === '') {
+            throw new RuntimeException('Chyba slug temy.');
+        }
+        if ($variant === '') {
+            $variant = 'hero';
+        }
+
+        return 'img/categories/' . $slug . '/' . $variant . '.' . $ext;
+    }
+}
+
+if (!function_exists('interessa_admin_category_image_path')) {
+    function interessa_admin_category_image_path(string $slug, string $variant = 'hero', string $ext = 'webp'): string {
+        return dirname(__DIR__) . '/assets/' . interessa_admin_category_image_asset($slug, $variant, $ext);
+    }
+}
+
+if (!function_exists('interessa_admin_store_uploaded_category_image')) {
+    function interessa_admin_store_uploaded_category_image(string $slug, string $variant, array $file): string {
+        $slug = normalize_category_slug($slug);
+        $variant = interessa_admin_slugify($variant);
+        if ($slug === '') {
+            throw new RuntimeException('Chyba slug temy.');
+        }
+        if ($variant === '') {
+            $variant = 'hero';
+        }
+
+        $tmp = (string) ($file['tmp_name'] ?? '');
+        if ($tmp === '' || !is_uploaded_file($tmp)) {
+            throw new RuntimeException('Obrazok temy nebol korektne nahraty.');
+        }
+
+        $ext = interessa_admin_uploaded_image_extension($file, 'webp');
+        if ($ext !== 'webp') {
+            throw new RuntimeException('Admin ocakava finalny WebP. PNG/JPG sa ma automaticky previest na WebP este pred uploadom. Obnov stranku a skus to znova.');
+        }
+
+        $target = interessa_admin_category_image_path($slug, $variant, $ext);
+        interessa_admin_ensure_dir(dirname($target));
+        if (!move_uploaded_file($tmp, $target)) {
+            throw new RuntimeException('Nepodarilo sa ulozit obrazok temy.');
+        }
+
+        return interessa_admin_category_image_asset($slug, $variant, $ext);
+    }
+}
+
 if (!function_exists('interessa_admin_store_uploaded_product_image')) {
     function interessa_admin_store_uploaded_product_image(string $productSlug, string $merchantSlug, array $file): string {
         $productSlug = trim($productSlug);

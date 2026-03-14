@@ -29,6 +29,24 @@ foreach ($secondarySlugs as $slug) {
     }
 }
 
+$intentGroups = [
+    [
+        'title' => 'Chcem sa rychlo zorientovat',
+        'description' => 'Najprv otvor siroku temu, v ktorej pochopis rozdiely a vyberies spravny typ produktu.',
+        'links' => ['proteiny', 'vyziva', 'mineraly'],
+    ],
+    [
+        'title' => 'Riesim konkretny ciel',
+        'description' => 'Ak uz vies, co ta trapi alebo co chces zlepsit, chod rovno do cielovej temy.',
+        'links' => ['chudnutie', 'imunita', 'klby-koza', 'sila'],
+    ],
+    [
+        'title' => 'Hladam detail alebo specialitu',
+        'description' => 'Tieto temy su vhodne vtedy, ked uz mas zaklad a potrebujes riesit uzsi vyber alebo doplnok.',
+        'links' => ['kreatin', 'pre-workout', 'probiotika-travenie', 'aminokyseliny', 'doplnkove-prislusenstvo'],
+    ],
+];
+
 $hubPrimaryGuide = [];
 foreach ($hubs as $slug => $hub) {
     $primaryGuide = null;
@@ -125,6 +143,66 @@ include __DIR__ . '/../inc/head.php';
     </div>
   </article>
 </section>
+
+<section class="container home-section">
+  <div class="section-head">
+    <h2>Ako sa v 12 temach nestratit</h2>
+    <p class="meta">Nie kazda tema ma na webe rovnaku ulohu. Tento prehlad ti pomoze pochopit, kde sa oplati zacat a co je skor doplnkova cesta.</p>
+  </div>
+
+  <div class="card-grid home-trust-grid categories-system-grid">
+    <article class="card">
+      <div class="card-body">
+        <h3>Hlavne vstupne temy</h3>
+        <p>Toto su siroke huby, kde dava najvacsi zmysel zacat: proteiny, vyziva, mineraly, imunita, sila a klby.</p>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card-body">
+        <h3>Cielove temy</h3>
+        <p>Sem chod vtedy, ked uz neriesis cely trh, ale konkretny problem alebo vysledok, napr. chudnutie alebo vykon.</p>
+      </div>
+    </article>
+    <article class="card">
+      <div class="card-body">
+        <h3>Detailne a podporne temy</h3>
+        <p>Tieto temy doplnaju hlavne huby. Pomozu ti, ked uz vies, co hladas a potrebujes jemnejsi vyber.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<?php if ($intentGroups !== []): ?>
+<section class="container home-section">
+  <div class="section-head">
+    <h2>Vyber si temu podla toho, co prave riesis</h2>
+    <p class="meta">Namiesto prezerania celeho zoznamu si vyber intent a chod rovno na temu, ktora dava najvacsi zmysel.</p>
+  </div>
+
+  <div class="intent-lane-grid">
+    <?php foreach ($intentGroups as $group): ?>
+      <article class="intent-lane-card">
+        <h3><?= esc((string) ($group['title'] ?? 'Intent')) ?></h3>
+        <?php if (trim((string) ($group['description'] ?? '')) !== ''): ?><p><?= esc((string) ($group['description'] ?? '')) ?></p><?php endif; ?>
+        <div class="intent-lane-links">
+          <?php foreach ((array) ($group['links'] ?? []) as $intentSlug): ?>
+            <?php
+            $intentMeta = category_meta((string) $intentSlug);
+            if ($intentMeta === null) {
+                continue;
+            }
+            ?>
+            <a class="intent-link-chip" href="<?= esc(category_url((string) $intentSlug)) ?>">
+              <span class="intent-link-icon" aria-hidden="true"><?= interessa_category_icon((string) $intentSlug) ?></span>
+              <?= esc((string) ($intentMeta['title'] ?? humanize_slug((string) $intentSlug))) ?>
+            </a>
+          <?php endforeach; ?>
+        </div>
+      </article>
+    <?php endforeach; ?>
+  </div>
+</section>
+<?php endif; ?>
 
 <section class="container home-section">
   <div class="section-head">

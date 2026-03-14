@@ -120,6 +120,24 @@ foreach ($homeGoalSlugs as $slug) {
     ];
 }
 
+$homeThemeIntentGroups = [
+    [
+        'title' => 'Zacni hlavnou temou',
+        'description' => 'Najprv si otvor siroku oblast, v ktorej pochopis typy produktov a hlavne rozdiely.',
+        'links' => ['proteiny', 'vyziva', 'mineraly'],
+    ],
+    [
+        'title' => 'Ries konkretny ciel',
+        'description' => 'Ak uz vies, co chces vyriesit, chod rovno do cielovej temy a skrat si cestu k vyberu.',
+        'links' => ['chudnutie', 'imunita', 'sila', 'klby-koza'],
+    ],
+    [
+        'title' => 'Dories detail alebo specialitu',
+        'description' => 'Doplnkove temy pomozu, ked uz nechces studovat zaklad, ale hladat uzsi vyber.',
+        'links' => ['kreatin', 'pre-workout', 'probiotika-travenie', 'aminokyseliny', 'doplnkove-prislusenstvo'],
+    ],
+];
+
 $featuredGuides = [];
 foreach ($featuredGuideSlugs as $slug) {
     $meta = article_meta($slug);
@@ -281,6 +299,38 @@ include __DIR__ . '/inc/head.php';
             <?php endif; ?>
             <a class="btn btn-ghost" href="<?= esc(category_url((string) $goal['slug'])) ?>">Otvorit temu</a>
           </div>
+        </div>
+      </article>
+    <?php endforeach; ?>
+  </div>
+</section>
+<?php endif; ?>
+
+<?php if ($homeThemeIntentGroups !== []): ?>
+<section class="container home-section">
+  <div class="section-head">
+    <h2>Ako je rozdelenych vsetkych 12 tem</h2>
+    <p class="meta">Na webe nie su vsetky temy rovnako siroke. Tento prehlad ti pomoze pochopit, kde sa oplati zacat a co je skor doplnkova cesta.</p>
+  </div>
+
+  <div class="intent-lane-grid home-intent-grid">
+    <?php foreach ($homeThemeIntentGroups as $group): ?>
+      <article class="intent-lane-card">
+        <h3><?= esc((string) ($group['title'] ?? 'Temy')) ?></h3>
+        <?php if (trim((string) ($group['description'] ?? '')) !== ''): ?><p><?= esc((string) ($group['description'] ?? '')) ?></p><?php endif; ?>
+        <div class="intent-lane-links">
+          <?php foreach ((array) ($group['links'] ?? []) as $intentSlug): ?>
+            <?php
+            $intentMeta = category_meta((string) $intentSlug);
+            if ($intentMeta === null) {
+                continue;
+            }
+            ?>
+            <a class="intent-link-chip" href="<?= esc(category_url((string) $intentSlug)) ?>">
+              <span class="intent-link-icon" aria-hidden="true"><?= interessa_category_icon((string) $intentSlug) ?></span>
+              <?= esc((string) ($intentMeta['title'] ?? humanize_slug((string) $intentSlug))) ?>
+            </a>
+          <?php endforeach; ?>
         </div>
       </article>
     <?php endforeach; ?>
