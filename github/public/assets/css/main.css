@@ -86,7 +86,8 @@ a:hover{color:#0954aa}
   border-left:1px solid #dce9e2;border-top:1px solid #dce9e2;transform:rotate(45deg)
 }
 .has-mega:hover>.mega,
-.has-mega:focus-within>.mega{display:grid}
+.has-mega:focus-within>.mega,
+.has-mega.is-open>.mega{display:grid}
 .mega-col{display:grid;gap:.65rem;align-content:start}
 .mega-col h3{margin:0;font-size:.94rem;letter-spacing:-.01em;color:#10202d}
 .mega-col ul{list-style:none;margin:0;padding:0;display:grid;gap:.35rem}

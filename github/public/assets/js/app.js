@@ -43,6 +43,73 @@
     });
   });
 
+  // Keep desktop mega menus open while the pointer moves between trigger and panel.
+  const desktopMegaMq = window.matchMedia('(min-width: 861px)');
+  const megaItems = Array.from(document.querySelectorAll('.menu-item.has-mega'));
+  const megaCloseTimers = new WeakMap();
+
+  function clearMegaTimer(item){
+    const timer = megaCloseTimers.get(item);
+    if (timer) {
+      window.clearTimeout(timer);
+      megaCloseTimers.delete(item);
+    }
+  }
+
+  function closeMega(item){
+    clearMegaTimer(item);
+    item.classList.remove('is-open');
+    const trigger = item.querySelector('.main-nav__link[data-mega]');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  function openMega(item){
+    if (!desktopMegaMq.matches) return;
+    megaItems.forEach((other)=>{
+      if (other !== item) closeMega(other);
+    });
+    clearMegaTimer(item);
+    item.classList.add('is-open');
+    const trigger = item.querySelector('.main-nav__link[data-mega]');
+    if (trigger) trigger.setAttribute('aria-expanded', 'true');
+  }
+
+  function scheduleMegaClose(item){
+    if (!desktopMegaMq.matches) return;
+    clearMegaTimer(item);
+    const timer = window.setTimeout(()=>closeMega(item), 180);
+    megaCloseTimers.set(item, timer);
+  }
+
+  megaItems.forEach((item)=>{
+    const trigger = item.querySelector('.main-nav__link[data-mega]');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+
+    item.addEventListener('mouseenter', ()=>openMega(item));
+    item.addEventListener('mouseleave', ()=>scheduleMegaClose(item));
+    item.addEventListener('focusin', ()=>openMega(item));
+    item.addEventListener('focusout', ()=>{
+      window.setTimeout(()=>{
+        if (!item.contains(document.activeElement)) {
+          closeMega(item);
+        }
+      }, 0);
+    });
+  });
+
+  function resetMegaMode(){
+    if (!desktopMegaMq.matches) {
+      megaItems.forEach((item)=>closeMega(item));
+    }
+  }
+
+  if (desktopMegaMq && typeof desktopMegaMq.addEventListener === 'function') {
+    desktopMegaMq.addEventListener('change', resetMegaMode);
+  } else if (desktopMegaMq && typeof desktopMegaMq.addListener === 'function') {
+    desktopMegaMq.addListener(resetMegaMode);
+  }
+  resetMegaMode();
+
   // Copy helpers used across the admin workflow.
   let copyToastTimer = null;
 

@@ -484,14 +484,18 @@ function interessa_admin_product_image_brief(array $product): array {
     return $brief;
 }
 
-function interessa_admin_category_image_brief(string $slug): array {
+function interessa_admin_category_image_brief(string $slug, string $variant = 'hero'): array {
     $slug = normalize_category_slug($slug);
+    $variant = interessa_admin_slugify($variant);
+    if ($variant === '') {
+        $variant = 'hero';
+    }
     $meta = category_meta($slug) ?? ['title' => humanize_slug($slug), 'description' => ''];
     $title = interessa_admin_clean_label((string) ($meta['title'] ?? humanize_slug($slug)));
     $description = interessa_admin_clean_label((string) ($meta['description'] ?? ''));
     $assetPath = function_exists('interessa_admin_category_image_asset')
-        ? interessa_admin_category_image_asset($slug, 'hero', 'webp')
-        : 'img/categories/' . $slug . '/hero.webp';
+        ? interessa_admin_category_image_asset($slug, $variant, 'webp')
+        : 'img/categories/' . $slug . '/' . $variant . '.webp';
 
     $colorAccents = [
         'proteiny' => 'jemna modra a krémova',
@@ -528,7 +532,9 @@ function interessa_admin_category_image_brief(string $slug): array {
         'Vizualny smer: clean premium health and fitness look, bez textu, bez loga, bez kolaze.',
         'Farebny akcent: ' . ($colorAccents[$slug] ?? 'jemne prirodzene farby') . '.',
         'Motiv: ' . ($motifs[$slug] ?? 'clean editorial wellness motiv') . '.',
-        'Kompozicia: sirsi obrazok s hlavnym motivom pekne v strede, nech sa hodi na web aj do karticiek.',
+        $variant === 'thumb'
+            ? 'Kompozicia: jednoduchy cisty motiv, dobre citatelny aj v mensom stvorcovom vyreze.'
+            : 'Kompozicia: sirsi obrazok s hlavnym motivom pekne v strede, nech sa hodi na web aj do karticiek.',
     ];
 
     return [
@@ -536,9 +542,10 @@ function interessa_admin_category_image_brief(string $slug): array {
         'title' => $title,
         'prompt' => implode(' ', array_values(array_filter($promptParts))),
         'alt_text' => $title,
-        'dimensions' => '1600x900',
+        'dimensions' => $variant === 'thumb' ? '1200x1200' : '1600x900',
         'asset_path' => $assetPath,
-        'file_name' => $slug . '-hero.webp',
+        'file_name' => $slug . '-' . $variant . '.webp',
+        'variant' => $variant,
     ];
 }
 
@@ -1346,7 +1353,12 @@ if ($isAuthed) {
 
             if ($action === 'upload_category_image_only') {
                 $slug = normalize_category_slug(trim((string) ($_POST['category_slug'] ?? '')));
-                interessa_admin_store_uploaded_category_image($slug, 'hero', $_FILES['category_image']);
+                $variant = interessa_admin_slugify((string) ($_POST['category_variant'] ?? 'hero'));
+                if (!in_array($variant, ['hero', 'thumb'], true)) {
+                    $variant = 'hero';
+                }
+                $uploadField = $variant === 'thumb' ? 'category_thumb_image' : 'category_image';
+                interessa_admin_store_uploaded_category_image($slug, $variant, $_FILES[$uploadField] ?? []);
                 header('Location: ' . category_url($slug), true, 303);
                 exit;
             }
@@ -1541,12 +1553,18 @@ if ($selectedThemeSlug === '' || !isset($categoryOptions[$selectedThemeSlug])) {
     $selectedThemeSlug = (string) (array_key_first($categoryOptions) ?? '');
 }
 $selectedThemeMeta = $selectedThemeSlug !== '' ? (category_meta($selectedThemeSlug) ?? ['title' => '', 'description' => '']) : ['title' => '', 'description' => ''];
-$selectedThemePrompt = $selectedThemeSlug !== '' ? interessa_admin_category_image_brief($selectedThemeSlug) : [];
+$selectedThemePrompt = $selectedThemeSlug !== '' ? interessa_admin_category_image_brief($selectedThemeSlug, 'hero') : [];
+$selectedThemeThumbPrompt = $selectedThemeSlug !== '' ? interessa_admin_category_image_brief($selectedThemeSlug, 'thumb') : [];
 $selectedThemeImage = $selectedThemeSlug !== '' ? interessa_category_image_meta($selectedThemeSlug, 'hero', true) : null;
+$selectedThemeThumbImage = $selectedThemeSlug !== '' ? interessa_category_image_meta($selectedThemeSlug, 'thumb', true) : null;
 $selectedThemeLocalAsset = $selectedThemeSlug !== '' && function_exists('interessa_category_local_asset')
     ? (interessa_category_local_asset($selectedThemeSlug, 'hero') ?? '')
     : '';
+$selectedThemeThumbLocalAsset = $selectedThemeSlug !== '' && function_exists('interessa_category_local_asset')
+    ? (interessa_category_local_asset($selectedThemeSlug, 'thumb') ?? '')
+    : '';
 $selectedThemeImageSource = $selectedThemeLocalAsset !== '' ? 'vlastny obrazok temy' : 'docasny fallback';
+$selectedThemeThumbImageSource = $selectedThemeThumbLocalAsset !== '' ? 'vlastny mensi obrazok temy' : 'docasny fallback';
 $selectedArticleOverride = $selectedArticleSlug !== '' ? interessa_admin_article_content($selectedArticleSlug) : interessa_admin_normalize_article_override('', []);
 $articlePrompt = $selectedArticleSlug !== '' ? interessa_hero_prompt_meta($selectedArticleSlug) : [];
 $selectedArticleHero = $selectedArticleSlug !== '' ? interessa_article_image_meta($selectedArticleSlug, 'hero', true) : null;
@@ -2898,6 +2916,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack">
                     <input type="hidden" name="action" value="upload_category_image_only" />
                     <input type="hidden" name="category_slug" value="<?= esc($selectedThemeSlug) ?>" />
+                    <input type="hidden" name="category_variant" value="hero" />
                     <input type="hidden" name="category_crop_mode" value="center" />
                     <label>
                       <span>2. Vyber hotovy obrazok z Canvy</span>
@@ -2938,6 +2957,42 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php endif; ?>
                     </div>
                   <?php endif; ?>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-subsection admin-asset-preview">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Mensi obrazok temy</h3>
+                  <p class="admin-meta">Toto je druhy variant pre karty, mensie nahlady a neskorsie pouzitie na webe. Zatial ho pripravujeme v admine, aby bol launch-ready bez chaosu.</p>
+                </div>
+              </div>
+              <div class="admin-asset-preview__grid">
+                <div class="admin-asset-preview__media">
+                  <?= interessa_render_image($selectedThemeThumbImage, ['class' => 'admin-asset-preview__image']) ?>
+                </div>
+                <div class="admin-asset-preview__body">
+                  <p><strong>Tema:</strong> <?= esc((string) ($selectedThemeMeta['title'] ?? '')) ?></p>
+                  <p><strong>Odkial je obrazok:</strong> <?= esc($selectedThemeThumbImageSource) ?></p>
+                  <p><strong>Aktualny subor:</strong> <code><?= esc($selectedThemeThumbLocalAsset !== '' ? $selectedThemeThumbLocalAsset : (string) ($selectedThemeThumbImage['asset'] ?? '')) ?></code></p>
+                  <p><strong>Kam sa ulozi:</strong> <code><?= esc((string) ($selectedThemeThumbPrompt['asset_path'] ?? '')) ?></code></p>
+                  <p class="admin-note">Toto je mensi stvorcovy variant. Pouzi ho vtedy, ked chces mat pre temu aj cistejsi obrazok do karticiek a mensich blokov. Admin pri nahrati sam upravi rozmer na 1200 x 1200.</p>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedThemeThumbPrompt['prompt'] ?? '')) ?>">1. Kopirovat text pre Canvu</button>
+                    <a class="btn btn-secondary btn-small" href="<?= esc(category_url($selectedThemeSlug)) ?>" target="_blank" rel="noopener">Otvorit temu na webe</a>
+                  </div>
+                  <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack">
+                    <input type="hidden" name="action" value="upload_category_image_only" />
+                    <input type="hidden" name="category_slug" value="<?= esc($selectedThemeSlug) ?>" />
+                    <input type="hidden" name="category_variant" value="thumb" />
+                    <label>
+                      <span>2. Vyber hotovy obrazok z Canvy</span>
+                      <input type="file" name="category_thumb_image" accept="image/webp,image/png,image/jpeg" required />
+                    </label>
+                    <button class="btn btn-cta" type="submit">3. Nahraj mensi obrazok temy</button>
+                  </form>
+                  <p class="admin-note">Poznamka: ak chceme tento mensi variant aj realne zobrazovat na webe, bude to uz mala nasledna uloha pre web vlakno.</p>
                 </div>
               </div>
             </section>
@@ -4239,6 +4294,14 @@ require dirname(__DIR__) . '/inc/head.php';
           cropAnchorY: resolveHeroCropAnchor(form)
         };
       }
+      if (name === 'category_thumb_image') {
+        return {
+          width: 1200,
+          height: 1200,
+          label: 'mensi obrazok temy',
+          cropAnchorY: 0.5
+        };
+      }
       if (name === 'category_image') {
         const form = fileInput instanceof HTMLInputElement ? fileInput.closest('form') : null;
         return {
@@ -4524,7 +4587,7 @@ require dirname(__DIR__) . '/inc/head.php';
     }
 
     document.querySelectorAll('form.admin-inline-upload, form.admin-form').forEach(function (form) {
-      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="category_image"], input[type="file"][name="product_image"]');
+      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="category_image"], input[type="file"][name="category_thumb_image"], input[type="file"][name="product_image"]');
       if (!(fileInput instanceof HTMLInputElement)) {
         return;
       }
