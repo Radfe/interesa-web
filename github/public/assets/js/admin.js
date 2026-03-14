@@ -1188,7 +1188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.set(input.name, webpFile, webpFile.name);
       }
 
-      const response = await fetch(form.action || window.location.href, {
+      const response = await fetch('/admin', {
         method: (form.method || 'POST').toUpperCase(),
         body: formData,
         credentials: 'same-origin'

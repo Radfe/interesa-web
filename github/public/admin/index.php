@@ -978,6 +978,7 @@ $page_scripts = [$adminScript];
 
 $section = interessa_admin_selected_section();
 $flash = trim((string) ($_GET['saved'] ?? ''));
+$focusProductSlug = trim((string) ($_GET['focus_product'] ?? ''));
 $error = '';
 
 interessa_admin_session_boot();
@@ -1221,7 +1222,7 @@ if ($isAuthed) {
                 interessa_admin_save_product_record($slug, $payload);
 
                 if ($returnSection === 'images' && $returnArticleSlug !== '') {
-                    interessa_admin_redirect('images', ['slug' => $returnArticleSlug, 'saved' => 'packshot']);
+                    interessa_admin_redirect('images', ['slug' => $returnArticleSlug, 'saved' => 'packshot', 'focus_product' => $slug]);
                 }
 
                 interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'packshot']);
@@ -2267,7 +2268,8 @@ require dirname(__DIR__) . '/inc/head.php';
               <?php else: ?>
                 <div class="admin-queue-list">
                   <?php foreach ($productAffiliateQueue as $queueRow): ?>
-                    <article class="admin-queue-item">
+                    <?php $queueSlug = trim((string) ($queueRow['slug'] ?? '')); ?>
+                    <article id="image-product-<?= esc($queueSlug) ?>" class="admin-queue-item<?= $focusProductSlug === $queueSlug ? ' is-focused' : '' ?>" data-focus-product="<?= $focusProductSlug === $queueSlug ? 'true' : 'false' ?>">
                       <div>
                         <strong><?= esc((string) ($queueRow['name'] ?? '')) ?></strong>
                         <p><?= esc((string) ($queueRow['slug'] ?? '')) ?><?php if (trim((string) ($queueRow['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($queueRow['merchant'] ?? '')) ?><?php endif; ?></p>
@@ -2654,7 +2656,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         </div>
                       </div>
                       <div class="admin-queue-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Obrazok produktu</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Otvorit v produktoch</a>
                         <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
                         <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
                           <form method="post" class="admin-inline-form">
@@ -2683,7 +2685,7 @@ require dirname(__DIR__) . '/inc/head.php';
                             <button class="btn btn-secondary btn-small" type="submit">Zrkadlit remote</button>
                           </form>
                         <?php endif; ?>
-                        <form method="post" enctype="multipart/form-data" class="admin-inline-upload">
+                        <form method="post" action="/admin" enctype="multipart/form-data" class="admin-inline-upload">
                           <input type="hidden" name="action" value="upload_packshot_only" />
                           <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
                           <input type="hidden" name="return_section" value="images" />
@@ -2711,8 +2713,11 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
                 <div class="admin-mini-product-grid">
                   <?php foreach ($recommendedProductPreview as $previewRow): ?>
-                    <?php $previewStatus = $recommendedDiagnosticsBySlug[(string) ($previewRow['slug'] ?? '')] ?? []; ?>
-                    <article class="admin-mini-product-card">
+                    <?php $previewSlug = trim((string) ($previewRow['slug'] ?? '')); ?>
+                    <?php $previewStatus = $recommendedDiagnosticsBySlug[$previewSlug] ?? []; ?>
+                    <?php $previewImageAsset = trim((string) ($previewStatus['image_target_asset'] ?? '')); ?>
+                    <?php $previewImageUrl = (!empty($previewStatus['packshot_ready']) && $previewImageAsset !== '') ? asset($previewImageAsset) : ''; ?>
+                    <article id="image-product-<?= esc($previewSlug) ?>" class="admin-mini-product-card<?= $focusProductSlug === $previewSlug ? ' is-focused' : '' ?>" data-focus-product="<?= $focusProductSlug === $previewSlug ? 'true' : 'false' ?>">
                       <div class="admin-mini-product-card__media">
                         <?= interessa_render_image($previewRow['image'] ?? null, ['class' => 'admin-mini-product-card__image']) ?>
                       </div>
@@ -2728,12 +2733,16 @@ require dirname(__DIR__) . '/inc/head.php';
                         <?php endif; ?>
                       </div>
                       <div class="admin-inline-actions admin-mini-product-card__actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Obrazok produktu</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
+                        <?php if ($previewImageUrl !== ''): ?>
+                          <a class="btn btn-secondary btn-small" href="<?= esc($previewImageUrl) ?>" target="_blank" rel="noopener">Otvorit obrazok</a>
+                        <?php else: ?>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Doplnit obrazok</a>
+                        <?php endif; ?>
                         <?php if (trim((string) ($previewStatus['affiliate_code'] ?? '')) !== ''): ?>
                           <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($previewStatus['affiliate_code'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Affiliate</a>
                         <?php else: ?>
-                          <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($previewRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($previewRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc((string) ($previewRow['slug'] ?? '')) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vytvorit affiliate</a>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc($previewSlug) ?>&amp;prefill_merchant=<?= esc((string) ($previewRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($previewRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc($previewSlug) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vytvorit affiliate</a>
                         <?php endif; ?>
                         <?php if (trim((string) ($previewStatus['image_target_asset'] ?? '')) !== ''): ?>
                           <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($previewStatus['image_target_asset'] ?? '')) ?>">Kopirovat path</button>
@@ -2749,7 +2758,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <?php endif; ?>
                       </div>
                         <?php if (empty($previewStatus['packshot_ready'])): ?>
-                          <form method="post" enctype="multipart/form-data" class="admin-inline-upload">
+                          <form method="post" action="/admin" enctype="multipart/form-data" class="admin-inline-upload">
                             <input type="hidden" name="action" value="upload_packshot_only" />
                             <input type="hidden" name="product_slug" value="<?= esc((string) ($previewRow['slug'] ?? '')) ?>" />
                             <input type="hidden" name="return_section" value="images" />
@@ -2795,7 +2804,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Otvorit hero helper</a>
                     <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok</a>
                   </div>
-                <form method="post" enctype="multipart/form-data" class="admin-form">
+                  <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form">
                   <input type="hidden" name="action" value="upload_hero_only" />
                   <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
                   <label>
@@ -3552,6 +3561,12 @@ require dirname(__DIR__) . '/inc/head.php';
     border-color: #15803d;
     color: #fff;
   }
+
+  .admin-queue-item.is-focused,
+  .admin-mini-product-card.is-focused {
+    outline: 3px solid #34d399;
+    box-shadow: 0 20px 40px rgba(52, 211, 153, 0.18);
+  }
 </style>
 <script>
   (function () {
@@ -3866,7 +3881,7 @@ require dirname(__DIR__) . '/inc/head.php';
         const formData = new FormData(form);
         formData.set(fileInput.name, webpFile, webpFile.name);
 
-        const response = await fetch(form.action || window.location.href, {
+        const response = await fetch('/admin', {
           method: (form.method || 'POST').toUpperCase(),
           body: formData,
           credentials: 'same-origin'
@@ -3907,6 +3922,13 @@ require dirname(__DIR__) . '/inc/head.php';
         });
       }, true);
     });
+
+    const focusedProductCard = document.querySelector('[data-focus-product="true"]');
+    if (focusedProductCard instanceof HTMLElement) {
+      window.setTimeout(function () {
+        focusedProductCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 80);
+    }
 
     document.addEventListener('click', async function (event) {
       const button = event.target.closest('[data-copy-value]');
