@@ -886,15 +886,45 @@ document.addEventListener('DOMContentLoaded', () => {
     'input[type="file"][name="hero_image"], input[type="file"][name="product_image"]'
   ));
 
+  const normalizedUploadExtension = (file) => {
+    if (!(file instanceof File)) {
+      return '';
+    }
+
+    const parts = String(file.name || '').toLowerCase().split('.');
+    if (parts.length < 2) {
+      return '';
+    }
+
+    const ext = parts.pop() || '';
+    return ext === 'jpeg' ? 'jpg' : ext;
+  };
+
   const isConvertibleUpload = (file) => {
     if (!(file instanceof File)) {
       return false;
     }
 
-    return ['image/png', 'image/jpeg', 'image/jpg'].includes((file.type || '').toLowerCase());
+    const type = (file.type || '').toLowerCase();
+    if (['image/png', 'image/jpeg', 'image/jpg'].includes(type)) {
+      return true;
+    }
+
+    return ['png', 'jpg'].includes(normalizedUploadExtension(file));
   };
 
-  const isWebpUpload = (file) => file instanceof File && (file.type || '').toLowerCase() === 'image/webp';
+  const isWebpUpload = (file) => {
+    if (!(file instanceof File)) {
+      return false;
+    }
+
+    const type = (file.type || '').toLowerCase();
+    if (type === 'image/webp') {
+      return true;
+    }
+
+    return normalizedUploadExtension(file) === 'webp';
+  };
 
   const renameToWebp = (name) => {
     const base = (name || 'image').replace(/\.[^.]+$/u, '') || 'image';
