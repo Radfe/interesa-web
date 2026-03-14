@@ -583,6 +583,52 @@ function interessa_admin_category_image_queue(array $categoryOptions): array {
     return $rows;
 }
 
+function interessa_admin_category_asset_manifest(array $categoryOptions): array {
+    $rows = [];
+    foreach ($categoryOptions as $slug => $item) {
+        $themeSlug = (string) $slug;
+        $title = interessa_admin_clean_label((string) ($item['title'] ?? $themeSlug));
+        $heroAsset = function_exists('interessa_category_local_asset') ? (interessa_category_local_asset($themeSlug, 'hero') ?? '') : '';
+        $thumbAsset = function_exists('interessa_category_local_asset') ? (interessa_category_local_asset($themeSlug, 'thumb') ?? '') : '';
+
+        $rows[] = [
+            'slug' => $themeSlug,
+            'title' => $title,
+            'theme_url' => category_url($themeSlug),
+            'items' => [
+                [
+                    'label' => 'Hlavny obrazok temy',
+                    'variant' => 'hero',
+                    'required' => true,
+                    'dimensions' => '1600x900',
+                    'asset_path' => function_exists('interessa_admin_category_image_asset')
+                        ? interessa_admin_category_image_asset($themeSlug, 'hero', 'webp')
+                        : 'img/categories/' . $themeSlug . '/hero.webp',
+                    'asset' => $heroAsset,
+                    'ready' => $heroAsset !== '',
+                ],
+                [
+                    'label' => 'Mensi obrazok temy',
+                    'variant' => 'thumb',
+                    'required' => false,
+                    'dimensions' => '1200x1200',
+                    'asset_path' => function_exists('interessa_admin_category_image_asset')
+                        ? interessa_admin_category_image_asset($themeSlug, 'thumb', 'webp')
+                        : 'img/categories/' . $themeSlug . '/thumb.webp',
+                    'asset' => $thumbAsset,
+                    'ready' => $thumbAsset !== '',
+                ],
+            ],
+        ];
+    }
+
+    usort($rows, static function (array $left, array $right): int {
+        return strcasecmp((string) ($left['title'] ?? ''), (string) ($right['title'] ?? ''));
+    });
+
+    return $rows;
+}
+
 function interessa_admin_image_queue(array $articleOptions, string $filter = 'missing', int $limit = 12): array {
     $rows = [];
     foreach ($articleOptions as $slug => $item) {
@@ -1645,6 +1691,7 @@ if (!in_array($productImageFilter, ['missing', 'all', 'ready', 'remote', 'placeh
 $allImageQueue = interessa_admin_image_queue($articleOptions, 'all', max(count($articleOptions), 1));
 $allProductImageQueue = interessa_admin_product_image_queue($catalog, 'all', max(count($catalog), 1));
 $allThemeImageQueue = interessa_admin_category_image_queue($categoryOptions);
+$themeAssetManifest = interessa_admin_category_asset_manifest($categoryOptions);
 $imageQueue = interessa_admin_image_queue($articleOptions, $imageFilter, $imageFilter === 'all' ? max(count($articleOptions), 1) : 16);
 $productImageQueue = interessa_admin_product_image_queue($catalog, $productImageFilter, $productImageFilter === 'all' ? max(count($catalog), 1) : 16);
 $imageQueueCounts = [
@@ -2997,6 +3044,34 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
             </section>
 
+            <section class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Checklist assetov pre tuto temu</h3>
+                  <p class="admin-meta">Minimalny launch-ready standard pre jednu temu su 2 subory: hlavny obrazok a mensi obrazok. Hlavny obrazok je povinny, mensi obrazok je odporucany.</p>
+                </div>
+              </div>
+              <div class="admin-brief-grid">
+                <article class="admin-brief-card">
+                  <h3><?= esc((string) ($selectedThemeMeta['title'] ?? 'Tema')) ?></h3>
+                  <ul class="admin-quickstart-list">
+                    <li><strong>Hlavny obrazok temy</strong>: 1600x900, <code><?= esc((string) ($selectedThemePrompt['asset_path'] ?? '')) ?></code></li>
+                    <li><strong>Mensi obrazok temy</strong>: 1200x1200, <code><?= esc((string) ($selectedThemeThumbPrompt['asset_path'] ?? '')) ?></code></li>
+                    <li><strong>Canva naming</strong>: pouzivaj nazvy <code><?= esc((string) ($selectedThemePrompt['file_name'] ?? '')) ?></code> a <code><?= esc((string) ($selectedThemeThumbPrompt['file_name'] ?? '')) ?></code></li>
+                    <li><strong>Jednoduche pravidlo</strong>: hlavny obrazok robi temu, mensi obrazok robi kartu.</li>
+                  </ul>
+                </article>
+                <article class="admin-brief-card">
+                  <h3>Stav tejto temy</h3>
+                  <div class="admin-status-pills">
+                    <span class="admin-status-pill<?= $selectedThemeLocalAsset !== '' ? ' is-good' : ' is-warning' ?>"><?= $selectedThemeLocalAsset !== '' ? 'Hlavny obrazok hotovy' : 'Hlavny obrazok chyba' ?></span>
+                    <span class="admin-status-pill<?= $selectedThemeThumbLocalAsset !== '' ? ' is-good' : ' is-warning' ?>"><?= $selectedThemeThumbLocalAsset !== '' ? 'Mensi obrazok hotovy' : 'Mensi obrazok chyba' ?></span>
+                  </div>
+                  <p class="admin-note">Ak chces spravit temu uplne hotovu, dorob oba varianty. Ak chces ist najrychlejsie na launch, priorita je hlavny obrazok temy.</p>
+                </article>
+              </div>
+            </section>
+
             <?php if ($selectedArticlePackshotGaps !== []): ?>
               <section class="admin-subsection is-compact">
                 <div class="admin-subsection-head">
@@ -3224,6 +3299,52 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
                 </article>
               <?php endforeach; ?>
+            </div>
+          </section>
+
+          <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Launch checklist</p>
+                <h2>Minimalny balik suborov pre vsetky temy</h2>
+                <p class="admin-note">Tu mas uplne jednoduchy prehlad: co ma mat kazda tema pripravene a ako sa to ma volat. Nemusis si to pamatat, admin ti to ukazuje priamo.</p>
+              </div>
+            </div>
+            <div class="admin-brief-table-wrap">
+              <table class="admin-brief-table">
+                <thead>
+                  <tr>
+                    <th>Tema</th>
+                    <th>Subor</th>
+                    <th>Rozmer</th>
+                    <th>Stav</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ($themeAssetManifest as $themeManifestRow): ?>
+                    <?php foreach ((array) ($themeManifestRow['items'] ?? []) as $index => $assetItem): ?>
+                      <tr>
+                        <td>
+                          <?php if ($index === 0): ?>
+                            <strong><?= esc((string) ($themeManifestRow['title'] ?? '')) ?></strong><br>
+                            <small><?= esc((string) ($themeManifestRow['slug'] ?? '')) ?></small>
+                          <?php endif; ?>
+                        </td>
+                        <td>
+                          <strong><?= esc((string) ($assetItem['label'] ?? '')) ?></strong><br>
+                          <code><?= esc((string) ($assetItem['asset_path'] ?? '')) ?></code>
+                        </td>
+                        <td><?= esc((string) ($assetItem['dimensions'] ?? '')) ?></td>
+                        <td>
+                          <span class="admin-status-pill<?= !empty($assetItem['ready']) ? ' is-good' : ' is-warning' ?>">
+                            <?= !empty($assetItem['ready']) ? 'Hotovo' : (!empty($assetItem['required']) ? 'Chyba - dolezite' : 'Chyba - odporucane') ?>
+                          </span>
+                        </td>
+                      </tr>
+                    <?php endforeach; ?>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
             </div>
           </section>
         <?php endif; ?>
