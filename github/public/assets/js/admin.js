@@ -886,6 +886,10 @@ document.addEventListener('DOMContentLoaded', () => {
     'input[type="file"][name="hero_image"], input[type="file"][name="product_image"]'
   ));
 
+  if (window.__interessaAdminInlineUploadEnabled) {
+    return;
+  }
+
   const normalizedUploadExtension = (file) => {
     if (!(file instanceof File)) {
       return '';
@@ -1029,15 +1033,68 @@ document.addEventListener('DOMContentLoaded', () => {
     image.src = objectUrl;
   });
 
-  const canvasToWebpBlob = (canvas, quality = 0.92) => new Promise((resolve, reject) => {
+  const blobHasWebpSignature = async (blob) => {
+    if (!(blob instanceof Blob)) {
+      return false;
+    }
+
+    const header = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
+    return (
+      header.length >= 12 &&
+      header[0] === 0x52 &&
+      header[1] === 0x49 &&
+      header[2] === 0x46 &&
+      header[3] === 0x46 &&
+      header[8] === 0x57 &&
+      header[9] === 0x45 &&
+      header[10] === 0x42 &&
+      header[11] === 0x50
+    );
+  };
+
+  const canvasToBlob = (canvas, type, quality = 0.92) => new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) {
         resolve(blob);
         return;
       }
-      reject(new Error('webp-conversion-failed'));
-    }, 'image/webp', quality);
+      reject(new Error('canvas-blob-failed'));
+    }, type, quality);
   });
+
+  const canvasToVerifiedWebpBlob = async (canvas, quality = 0.92) => {
+    if (typeof OffscreenCanvas !== 'undefined') {
+      try {
+        const offscreenCanvas = new OffscreenCanvas(canvas.width, canvas.height);
+        const offscreenContext = offscreenCanvas.getContext('2d', { alpha: true });
+        if (offscreenContext) {
+          offscreenContext.drawImage(canvas, 0, 0);
+          const offscreenBlob = await offscreenCanvas.convertToBlob({ type: 'image/webp', quality });
+          if (await blobHasWebpSignature(offscreenBlob)) {
+            return offscreenBlob;
+          }
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    const blob = await canvasToBlob(canvas, 'image/webp', quality);
+    if (await blobHasWebpSignature(blob)) {
+      return blob;
+    }
+
+    const dataUrl = canvas.toDataURL('image/webp', quality);
+    if (typeof dataUrl === 'string' && dataUrl.startsWith('data:image/webp;base64,')) {
+      const response = await fetch(dataUrl);
+      const dataUrlBlob = await response.blob();
+      if (await blobHasWebpSignature(dataUrlBlob)) {
+        return dataUrlBlob;
+      }
+    }
+
+    throw new Error('verified-webp-conversion-failed');
+  };
 
   const createWebpFileFromUpload = async (file) => {
     if (!(file instanceof File)) {
@@ -1059,7 +1116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     context.drawImage(image, 0, 0);
-    const blob = await canvasToWebpBlob(canvas);
+    const blob = await canvasToVerifiedWebpBlob(canvas);
     return new File([blob], renameToWebp(file.name), {
       type: 'image/webp',
       lastModified: Date.now()

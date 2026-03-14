@@ -3559,6 +3559,7 @@ require dirname(__DIR__) . '/inc/head.php';
       return;
     }
     window.__interessaAdminCopyInit = true;
+    window.__interessaAdminInlineUploadEnabled = true;
 
     let toastTimer = null;
 
@@ -3634,6 +3635,278 @@ require dirname(__DIR__) . '/inc/head.php';
 
       return fallbackCopy(value);
     }
+
+    function setFormBusy(form, busy) {
+      if (!(form instanceof HTMLFormElement)) {
+        return;
+      }
+
+      form.dataset.inlineUploadBusy = busy ? 'true' : 'false';
+      form.querySelectorAll('button[type="submit"]').forEach(function (button) {
+        if (button instanceof HTMLButtonElement) {
+          if (!button.hasAttribute('data-original-label')) {
+            button.setAttribute('data-original-label', button.textContent || 'Nahrat');
+          }
+          button.disabled = !!busy;
+          button.textContent = busy ? 'Nahravam...' : (button.getAttribute('data-original-label') || 'Nahrat');
+        }
+      });
+    }
+
+    function normalizedUploadExtension(file) {
+      if (!(file instanceof File)) {
+        return '';
+      }
+
+      const parts = String(file.name || '').toLowerCase().split('.');
+      if (parts.length < 2) {
+        return '';
+      }
+
+      const ext = parts.pop() || '';
+      return ext === 'jpeg' ? 'jpg' : ext;
+    }
+
+    async function readUploadHeader(file, length) {
+      if (!(file instanceof File) || typeof file.slice !== 'function') {
+        return new Uint8Array();
+      }
+
+      const buffer = await file.slice(0, length || 16).arrayBuffer();
+      return new Uint8Array(buffer);
+    }
+
+    async function detectUploadFormat(file) {
+      if (!(file instanceof File)) {
+        return 'unknown';
+      }
+
+      const type = (file.type || '').toLowerCase();
+      if (type === 'image/webp') {
+        return 'webp';
+      }
+      if (type === 'image/png') {
+        return 'png';
+      }
+      if (type === 'image/jpeg' || type === 'image/jpg') {
+        return 'jpg';
+      }
+
+      const ext = normalizedUploadExtension(file);
+      if (ext === 'webp' || ext === 'png' || ext === 'jpg') {
+        return ext;
+      }
+
+      const header = await readUploadHeader(file, 16);
+      if (
+        header.length >= 8 &&
+        header[0] === 0x89 &&
+        header[1] === 0x50 &&
+        header[2] === 0x4e &&
+        header[3] === 0x47 &&
+        header[4] === 0x0d &&
+        header[5] === 0x0a &&
+        header[6] === 0x1a &&
+        header[7] === 0x0a
+      ) {
+        return 'png';
+      }
+
+      if (
+        header.length >= 3 &&
+        header[0] === 0xff &&
+        header[1] === 0xd8 &&
+        header[2] === 0xff
+      ) {
+        return 'jpg';
+      }
+
+      if (
+        header.length >= 12 &&
+        header[0] === 0x52 &&
+        header[1] === 0x49 &&
+        header[2] === 0x46 &&
+        header[3] === 0x46 &&
+        header[8] === 0x57 &&
+        header[9] === 0x45 &&
+        header[10] === 0x42 &&
+        header[11] === 0x50
+      ) {
+        return 'webp';
+      }
+
+      return 'unknown';
+    }
+
+    function renameToWebp(name) {
+      const base = (name || 'image').replace(/\.[^.]+$/u, '') || 'image';
+      return base + '.webp';
+    }
+
+    function loadImageFromFile(file) {
+      return new Promise(function (resolve, reject) {
+        const objectUrl = URL.createObjectURL(file);
+        const image = new Image();
+        image.onload = function () {
+          URL.revokeObjectURL(objectUrl);
+          resolve(image);
+        };
+        image.onerror = function () {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error('image-load-failed'));
+        };
+        image.src = objectUrl;
+      });
+    }
+
+    async function blobHasWebpSignature(blob) {
+      if (!(blob instanceof Blob)) {
+        return false;
+      }
+
+      const header = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
+      return (
+        header.length >= 12 &&
+        header[0] === 0x52 &&
+        header[1] === 0x49 &&
+        header[2] === 0x46 &&
+        header[3] === 0x46 &&
+        header[8] === 0x57 &&
+        header[9] === 0x45 &&
+        header[10] === 0x42 &&
+        header[11] === 0x50
+      );
+    }
+
+    function canvasToBlob(canvas, type, quality) {
+      return new Promise(function (resolve, reject) {
+        canvas.toBlob(function (blob) {
+          if (blob) {
+            resolve(blob);
+            return;
+          }
+          reject(new Error('canvas-blob-failed'));
+        }, type, quality || 0.92);
+      });
+    }
+
+    async function canvasToVerifiedWebpBlob(canvas) {
+      if (typeof OffscreenCanvas !== 'undefined') {
+        try {
+          const offscreenCanvas = new OffscreenCanvas(canvas.width, canvas.height);
+          const offscreenContext = offscreenCanvas.getContext('2d', { alpha: true });
+          if (offscreenContext) {
+            offscreenContext.drawImage(canvas, 0, 0);
+            const offscreenBlob = await offscreenCanvas.convertToBlob({ type: 'image/webp', quality: 0.92 });
+            if (await blobHasWebpSignature(offscreenBlob)) {
+              return offscreenBlob;
+            }
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      const blob = await canvasToBlob(canvas, 'image/webp', 0.92);
+      if (await blobHasWebpSignature(blob)) {
+        return blob;
+      }
+
+      const dataUrl = canvas.toDataURL('image/webp', 0.92);
+      if (typeof dataUrl === 'string' && dataUrl.startsWith('data:image/webp;base64,')) {
+        const response = await fetch(dataUrl);
+        const dataUrlBlob = await response.blob();
+        if (await blobHasWebpSignature(dataUrlBlob)) {
+          return dataUrlBlob;
+        }
+      }
+
+      throw new Error('verified-webp-conversion-failed');
+    }
+
+    async function createWebpFileFromUpload(file) {
+      if (!(file instanceof File)) {
+        throw new Error('missing-upload-file');
+      }
+
+      const detectedFormat = await detectUploadFormat(file);
+      if (detectedFormat === 'webp') {
+        return file;
+      }
+
+      const image = await loadImageFromFile(file);
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth || image.width;
+      canvas.height = image.naturalHeight || image.height;
+      const context = canvas.getContext('2d', { alpha: true });
+      if (!context) {
+        throw new Error('canvas-context-failed');
+      }
+
+      context.drawImage(image, 0, 0);
+      const blob = await canvasToVerifiedWebpBlob(canvas);
+      return new File([blob], renameToWebp(file.name), {
+        type: 'image/webp',
+        lastModified: Date.now()
+      });
+    }
+
+    async function submitInlineUploadForm(form) {
+      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="product_image"]');
+      const selectedFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+      if (!(selectedFile instanceof File)) {
+        showToast('Najprv vyber obrazok.', true);
+        return;
+      }
+
+      setFormBusy(form, true);
+
+      try {
+        const webpFile = await createWebpFileFromUpload(selectedFile);
+        const formData = new FormData(form);
+        formData.set(fileInput.name, webpFile, webpFile.name);
+
+        const response = await fetch(form.action || window.location.href, {
+          method: (form.method || 'POST').toUpperCase(),
+          body: formData,
+          credentials: 'same-origin'
+        });
+
+        if (response.redirected && response.url) {
+          window.location.assign(response.url);
+          return;
+        }
+
+        const html = await response.text();
+        if (typeof html === 'string' && html.trim() !== '') {
+          document.open();
+          document.write(html);
+          document.close();
+          return;
+        }
+
+        window.location.reload();
+      } finally {
+        setFormBusy(form, false);
+      }
+    }
+
+    document.querySelectorAll('form.admin-inline-upload, form.admin-form').forEach(function (form) {
+      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="product_image"]');
+      if (!(fileInput instanceof HTMLInputElement)) {
+        return;
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        submitInlineUploadForm(form).catch(function (error) {
+          console.error(error);
+          showToast('Konverzia do WebP zlyhala. Nahraj iny obrazok.', true);
+        });
+      }, true);
+    });
 
     document.addEventListener('click', async function (event) {
       const button = event.target.closest('[data-copy-value]');
