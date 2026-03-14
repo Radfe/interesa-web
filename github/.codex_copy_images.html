@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin | Interesa</title>
+  <meta name="description" content="Interny admin panel pre clanky, produkty, obrazky a affiliate odkazy." />
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="canonical" href="http://127.0.0.1:5000/admin" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Interesa" />
+  <meta property="og:url" content="http://127.0.0.1:5000/admin" />
+  <meta property="og:title" content="Admin | Interesa" />
+  <meta property="og:description" content="Interny admin panel pre clanky, produkty, obrazky a affiliate odkazy." />
+  <meta property="og:image" content="http://127.0.0.1:5000/assets/img/og-default.jpg?v=1773158388" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Admin | Interesa" />
+  <meta name="twitter:description" content="Interny admin panel pre clanky, produkty, obrazky a affiliate odkazy." />
+  <meta name="twitter:image" content="http://127.0.0.1:5000/assets/img/og-default.jpg?v=1773158388" />
+
+  <link rel="icon" href="/assets/img/brand/logo-icon.svg?v=1773158388" type="image/svg+xml" />
+  <link rel="stylesheet" href="/assets/css/main.css?v=1773413784" />
+  <link rel="stylesheet" href="/assets/css/compat.css?v=1773158388" />
+  <link rel="stylesheet" href="/assets/css/sidebar.css?v=1773158388" />
+  <link rel="stylesheet" href="/assets/css/patch.css?v=1773158388" />
+  <link rel="stylesheet" href="/assets/css/admin.css?v=1773410054" />  </head>
+<body>
+  <a class="skip-link" href="#obsah">Preskocit na obsah</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="Domov">
+        <img src="/assets/img/brand/logo-full.svg?v=1773158388" alt="Interesa.sk logo" loading="eager" decoding="async" width="148" height="32" srcset="/assets/img/brand/logo-full.svg?v=1773158388 1200w" fetchpriority="high">      </a>
+
+      <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
+      <label for="nav-toggle" class="nav-toggle-btn" aria-label="Zobrazit menu" aria-controls="hlavne-menu" aria-expanded="false">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </label>
+
+      <nav id="hlavne-menu" class="main-nav" aria-label="Hlavna navigacia"><ul class="menu-root"><li class="menu-item has-mega"><a class="main-nav__link" href="/kategorie/proteiny" data-mega="proteiny" aria-haspopup="true">Zdravé proteíny</a><input type="checkbox" id="mm-proteiny" class="mega-toggle" aria-hidden="true" /><label class="mega-caret" for="mm-proteiny" aria-label="Rozbalit menu Zdravé proteíny"></label><div class="mega" role="region" aria-label="Zdravé proteíny podmenu"><div class="mega-col"><h3>Odporucane</h3><ul><li><a class="mega-link" href="/clanky/najlepsie-proteiny-2025">Najlepsie proteiny 2025</a></li><li><a class="mega-link" href="/clanky/protein-na-chudnutie">Protein na chudnutie</a></li><li><a class="mega-link" href="/clanky/veganske-proteiny-top-vyber-2025">Veganske proteiny</a></li></ul></div><div class="mega-col"><h3>Porovnania</h3><ul><li><a class="mega-link" href="/clanky/srvatkovy-protein-vs-izolat-vs-hydro">WPC vs WPI vs hydro</a></li><li><a class="mega-link" href="/clanky/najlepsi-protein-na-chudnutie-wpc-vs-wpi">WPC vs WPI na chudnutie</a></li><li><a class="mega-link" href="/clanky/clear-protein">Clear protein</a></li></ul></div><div class="mega-col"><h3>Viac v teme</h3><ul><li><a class="mega-link" href="/kategorie/proteiny">Prehlad proteinov</a></li><li><a class="mega-link" href="/clanky/proteiny">Zaklady proteinov</a></li><li><a class="mega-link" href="/clanky/">Vsetky clanky</a></li></ul></div></div></li><li class="menu-item has-mega"><a class="main-nav__link" href="/kategorie/vyziva" data-mega="vyziva" aria-haspopup="true">Zdravá výživa</a><input type="checkbox" id="mm-vyziva" class="mega-toggle" aria-hidden="true" /><label class="mega-caret" for="mm-vyziva" aria-label="Rozbalit menu Zdravá výživa"></label><div class="mega" role="region" aria-label="Zdravá výživa podmenu"><div class="mega-col"><h3>Strava a rutina</h3><ul><li><a class="mega-link" href="/clanky/doplnky-vyzivy">Doplnky vyzivy</a></li><li><a class="mega-link" href="/clanky/chudnutie-tip">Tipy na chudnutie</a></li><li><a class="mega-link" href="/clanky/spalovace-tukov-realita">Spalovace tukov: realita</a></li></ul></div><div class="mega-col"><h3>Travenie a tolerancia</h3><ul><li><a class="mega-link" href="/clanky/probiotika-a-travenie">Probiotika a travenie</a></li><li><a class="mega-link" href="/clanky/probiotika-ako-vybrat">Ako vybrat probiotika</a></li><li><a class="mega-link" href="/kategorie/probiotika-travenie">Prehlad travenia</a></li></ul></div><div class="mega-col"><h3>Ciele</h3><ul><li><a class="mega-link" href="/kategorie/vyziva">Zdrava vyziva</a></li><li><a class="mega-link" href="/kategorie/chudnutie">Chudnutie</a></li><li><a class="mega-link" href="/kategorie/probiotika">Probiotika</a></li></ul></div></div></li><li class="menu-item has-mega"><a class="main-nav__link" href="/kategorie/mineraly" data-mega="mineraly" aria-haspopup="true">Vitamíny a minerály</a><input type="checkbox" id="mm-mineraly" class="mega-toggle" aria-hidden="true" /><label class="mega-caret" for="mm-mineraly" aria-label="Rozbalit menu Vitamíny a minerály"></label><div class="mega" role="region" aria-label="Vitamíny a minerály podmenu"><div class="mega-col"><h3>Odporucane</h3><ul><li><a class="mega-link" href="/clanky/horcik-ktory-je-najlepsi-a-preco">Aky horcik vybrat</a></li><li><a class="mega-link" href="/clanky/vitamin-d3-a-imunita">Vitamin D3 a imunita</a></li><li><a class="mega-link" href="/clanky/vitamin-c">Vitamin C</a></li></ul></div><div class="mega-col"><h3>Mineraly</h3><ul><li><a class="mega-link" href="/clanky/zinek">Zinok</a></li><li><a class="mega-link" href="/clanky/horcik">Horcik</a></li><li><a class="mega-link" href="/kategorie/mineraly">Prehlad mineralov</a></li></ul></div><div class="mega-col"><h3>Suvisiace temy</h3><ul><li><a class="mega-link" href="/kategorie/imunita">Imunita</a></li><li><a class="mega-link" href="/kategorie/vitaminy-mineraly">Vitaminy a mineraly</a></li><li><a class="mega-link" href="/clanky/imunita-prirodne-latky-ktore-funguju">Latky pre imunitu</a></li></ul></div></div></li><li class="menu-item"><a class="main-nav__link" href="/kategorie/imunita">Imunita</a></li><li class="menu-item"><a class="main-nav__link" href="/kategorie/sila">Sila a výkon</a></li><li class="menu-item"><a class="main-nav__link" href="/kategorie/klby-koza">Kĺby a koža</a></li><li class="menu-item"><a class="main-nav__link" href="/clanky/">Clanky</a></li></ul></nav>    </div>
+  </header>
+
+  <div id="megaTray" class="mega-tray" aria-hidden="true"></div>
+  <main id="obsah">
+<section class="container admin-page">
+      <div class="admin-shell">
+                  <aside class="admin-sidebar">
+        <div class="admin-sidebar-head">
+          <div>
+            <h1>Admin</h1>
+            <p class="admin-meta">Lahky flat-file panel pre obsah a obrazky.</p>
+          </div>
+          <form method="post">
+            <input type="hidden" name="action" value="logout" />
+            <button class="btn btn-secondary btn-small" type="submit">Odhlasit</button>
+          </form>
+        </div>
+        <nav class="admin-nav">
+          <a class="" href="/admin?section=articles&slug=pre-workout-ako-vybrat">Clanky</a>
+          <a class="" href="/admin?section=products&product=aktin-balanced-preworkout">Produkty</a>
+          <a class="is-active" href="/admin?section=images&slug=pre-workout-ako-vybrat">Image briefy</a>
+          <a class="" href="/admin?section=affiliates&code=doplnky-vyzivy-aktin">Affiliate odkazy</a>
+          <a class="" href="/admin?section=tools">Import / export</a>
+          <a class="" href="/admin?section=help">Pomoc / quickstart</a>
+          <a href="/admin/ai-status">AI status</a>
+        </nav>
+        <div class="admin-note">
+          Frontend ostava flat-file. Admin uklada len override data a obrazky.
+        </div>
+        <section class="admin-quickstart">
+          <h2>Rychly start</h2>
+                      <ol class="admin-quickstart-list">
+              <li>Skopiruj prompt, filename a target path.</li>
+              <li>Vytvor hero v Canve alebo AI nastroji a exportuj WebP.</li>
+              <li>Nahraj hero alebo produktovy obrazok a vrat sa na clanok.</li>
+            </ol>
+                  </section>
+      </aside>
+
+      <div class="admin-main">
+                        
+        
+        <section class="admin-dashboard-grid">
+          <article class="admin-stat-card">
+            <span class="admin-stat-label">Article overrides</span>
+            <strong>0</strong>
+          </article>
+          <article class="admin-stat-card">
+            <span class="admin-stat-label">Produkty</span>
+            <strong>23</strong>
+          </article>
+          <article class="admin-stat-card">
+            <span class="admin-stat-label">Affiliate kody</span>
+            <strong>36</strong>
+          </article>
+          <article class="admin-stat-card">
+            <span class="admin-stat-label">Hero WebP hotovo</span>
+            <strong>0</strong>
+          </article>
+        </section>
+
+        
+        
+                  <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Image brief generator</p>
+                <h2>Canva / AI workflow</h2>
+              </div>
+              <form method="get" action="/admin" class="admin-inline-form">
+                <input type="hidden" name="section" value="images" />
+                <select name="slug" onchange="this.form.submit()">
+                                      <option value="pre-workout-ako-vybrat" selected>Ako vybrať pre-workout – stimulanty aj pumpa</option>
+                                      <option value="aminokyseliny-bcaa-eaa" >Aminokyseliny: BCAA a EAA – rozdiely a použitie</option>
+                                      <option value="bcaa-vs-eaa" >BCAA vs. EAA – ktoré a kedy</option>
+                                      <option value="chudnutie-tip" >Chudnutie – rýchle tipy, ktoré fungujú</option>
+                                      <option value="clear-protein" >Clear proteín – čo to je a kedy dáva zmysel</option>
+                                      <option value="doplnky-vyzivy" >Doplnky výživy – top výber 2025</option>
+                                      <option value="doplnky-vyzivy-top-vyber-2025" >Doplnky výživy – top výber 2025</option>
+                                      <option value="horcik-ktory-je-najlepsi-a-preco" >Horčík – ktorý je najlepší a prečo?</option>
+                                      <option value="horcik" >Horčík – typy, vstrebávanie a koľko ho treba</option>
+                                      <option value="imunita-prirodne-latky-ktore-funguju" >Imunita – 5 prírodných látok, ktoré fungujú</option>
+                                      <option value="kedy-brat-kreatin-a-kolko" >Kedy brať kreatín a koľko – načasovanie, dávky a pauzy</option>
+                                      <option value="kolagen-na-klby-porovnanie" >Kolagén na kĺby – porovnanie a odporúčania</option>
+                                      <option value="kolagen-recenzia" >Kolagén – recenzie a výber (typ I/II/III)</option>
+                                      <option value="kolagen" >Kolagén – základné informácie a užívanie</option>
+                                      <option value="kreatin-monohydrat-vs-hcl" >Kreatín monohydrát vs. HCL – rozdiely a čo kúpiť</option>
+                                      <option value="kreatin-porovnanie" >Kreatín – porovnanie a výber (Creapure, monohydrát, HCl)</option>
+                                      <option value="kreatin-vedlajsie-ucinky-a-fakty" >Kreatín: vedľajšie účinky a fakty z výskumov</option>
+                                      <option value="klby-a-kolagen" >Kĺby a kolagén – kedy pomáha</option>
+                                      <option value="najlepsie-proteiny-2025" >Najlepšie proteíny 2025 – prehľad a výber podľa cieľa</option>
+                                      <option value="najlepsi-protein-na-chudnutie-wpc-vs-wpi" >Najlepší proteín na chudnutie: WPC vs. WPI, dávkovanie a načasovanie</option>
+                                      <option value="pre-workout" >Pre-workout – základný sprievodca</option>
+                                      <option value="probiotika-a-travenie" >Probiotiká a trávenie – čo naozaj funguje</option>
+                                      <option value="probiotika-ako-vybrat" >Probiotiká – ako vybrať a na čo si dať pozor</option>
+                                      <option value="protein-na-chudnutie" >Proteín na chudnutie – ako vyberať a dávkovať</option>
+                                      <option value="proteiny" >Proteíny: prehľad typov a rýchlych odporúčaní</option>
+                                      <option value="spalovace-tukov-realita" >Spaľovače tukov – čo je realita a čo marketing</option>
+                                      <option value="srvatkovy-protein-vs-izolat-vs-hydro" >Srvátkový proteín vs. izolát vs. hydro – čo sa oplatí?</option>
+                                      <option value="veganske-proteiny-top-vyber-2025" >Vegánske proteíny – top výber 2025</option>
+                                      <option value="vitamin-c" >Vitamín C – dávky, zdroje a kedy dopĺňať</option>
+                                      <option value="vitamin-d3-a-imunita" >Vitamín D3 a imunita – čo hovoria štúdie</option>
+                                      <option value="vitamin-d3" >Vitamín D3 – dávky a formy</option>
+                                      <option value="zinek" >Zinok – formy a kedy dopĺňať</option>
+                                  </select>
+              </form>
+            </div>
+
+            <section class="admin-subsection admin-asset-preview">
+              <div class="admin-subsection-head">
+                <h3>Aktualny hero asset</h3>
+              </div>
+              <div class="admin-asset-preview__grid">
+                <div class="admin-asset-preview__media">
+                  <img src="/assets/img/articles/heroes/pre-workout-ako-vybrat.svg?v=1773265091" alt="Ako vybrať pre-workout – stimulanty aj pumpa" loading="eager" decoding="async" class="admin-asset-preview__image" width="1200" height="800" srcset="/assets/img/articles/heroes/pre-workout-ako-vybrat.svg?v=1773265091 1200w" sizes="(min-width: 1100px) 860px, 100vw" fetchpriority="high">                </div>
+                <div class="admin-asset-preview__body">
+                  <p><strong>Zdroj:</strong> local</p>
+                  <p><strong>Aktivny asset:</strong> <code>img/articles/heroes/pre-workout-ako-vybrat.svg</code></p>
+                  <p><strong>Target path:</strong> <code>public/assets/img/articles/heroes/pre-workout-ako-vybrat.webp</code></p>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/pre-workout-ako-vybrat.webp">Kopirovat target path</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="pre-workout-ako-vybrat.webp">Kopirovat filename</button>
+                  </div>
+                                      <p class="admin-note">Hero backlog: 1 / 32</p>
+                                                        <div class="admin-inline-actions">
+                                                                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=aminokyseliny-bcaa-eaa&amp;image_filter=missing">Dalsi chyba</a>
+                                          </div>
+                                  </div>
+              </div>
+            </section>
+
+                          <section class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Chybajuce obrazky produktov v tomto clanku</h3>
+                    <p class="admin-meta">Odporucane produkty v tomto clanku, ktore este nemaju finalny obrazok produktu.</p>
+                  </div>
+                  <span class="admin-note">3 zaznamov</span>
+                </div>
+                <div class="admin-queue-list">
+                                      <article class="admin-queue-item">
+                      <div>
+                        <strong>Balanced stim pre-workout</strong>
+                        <p>aktin-balanced-preworkout / Aktin</p>
+                                                  <code>img/products/aktin/aktin-balanced-preworkout/main.webp</code>
+                                                                          <small class="admin-note">Packshot brief: main.webp / 1200x1200</small>
+                                                <div class="admin-status-pills">
+                          <span class="admin-status-pill is-warning">Affiliate chyba</span>
+                          <span class="admin-status-pill is-warning">Obrazok chyba</span>
+                        </div>
+                      </div>
+                      <div class="admin-queue-actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=aktin-balanced-preworkout&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Obrazok produktu</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=aktin-balanced-preworkout&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Produkt</a>
+                                                                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="img/products/aktin/aktin-balanced-preworkout/main.webp">Kopirovat path</button>
+                                                                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realisticky ecommerce packshot produktu Balanced stim pre-workout od Aktin, cisty obal doplnku vyzivy na svetlom neutralnom pozadi, jemny tien, produkt v strede, bez textovych overlayov, bez dekoracii, moderny health and fitness look, stvorcovy format. Vizual drz minimalisticky, s cistym bielym pozadim a prirodzenym ecommerce stylom podobnym produktom z Aktinu.">Kopirovat prompt</button>
+                                                                                                <form method="post" enctype="multipart/form-data" class="admin-inline-upload">
+                          <input type="hidden" name="action" value="upload_packshot_only" />
+                          <input type="hidden" name="product_slug" value="aktin-balanced-preworkout" />
+                          <input type="hidden" name="return_section" value="images" />
+                          <input type="hidden" name="return_slug" value="pre-workout-ako-vybrat" />
+                          <label class="admin-inline-upload__label">
+                            <span>Obrazok</span>
+                            <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
+                          </label>
+                          <button class="btn btn-secondary btn-small" type="submit">Nahrat obrazok</button>
+                        </form>
+                      </div>
+                    </article>
+                                      <article class="admin-queue-item">
+                      <div>
+                        <strong>High-stim pre-workout</strong>
+                        <p>gymbeam-high-stim-preworkout / GymBeam</p>
+                                                  <code>img/products/gymbeam/gymbeam-high-stim-preworkout/main.webp</code>
+                                                                          <small class="admin-note">Packshot brief: main.webp / 1200x1200</small>
+                                                <div class="admin-status-pills">
+                          <span class="admin-status-pill is-warning">Affiliate chyba</span>
+                          <span class="admin-status-pill is-warning">Obrazok chyba</span>
+                        </div>
+                      </div>
+                      <div class="admin-queue-actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=gymbeam-high-stim-preworkout&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Obrazok produktu</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=gymbeam-high-stim-preworkout&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Produkt</a>
+                                                                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="img/products/gymbeam/gymbeam-high-stim-preworkout/main.webp">Kopirovat path</button>
+                                                                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realisticky ecommerce packshot produktu High-stim pre-workout od GymBeam, cisty obal doplnku vyzivy na svetlom neutralnom pozadi, jemny tien, produkt v strede, bez textovych overlayov, bez dekoracii, moderny health and fitness look, stvorcovy format. Ak mas referencny GymBeam packshot, drz sa jeho realistickeho ecommerce stylu bez dalsich grafickych prvkov.">Kopirovat prompt</button>
+                                                                                                <form method="post" enctype="multipart/form-data" class="admin-inline-upload">
+                          <input type="hidden" name="action" value="upload_packshot_only" />
+                          <input type="hidden" name="product_slug" value="gymbeam-high-stim-preworkout" />
+                          <input type="hidden" name="return_section" value="images" />
+                          <input type="hidden" name="return_slug" value="pre-workout-ako-vybrat" />
+                          <label class="admin-inline-upload__label">
+                            <span>Obrazok</span>
+                            <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
+                          </label>
+                          <button class="btn btn-secondary btn-small" type="submit">Nahrat obrazok</button>
+                        </form>
+                      </div>
+                    </article>
+                                      <article class="admin-queue-item">
+                      <div>
+                        <strong>Non-stim pump formula</strong>
+                        <p>myprotein-non-stim-pump / Myprotein</p>
+                                                  <code>img/products/myprotein/myprotein-non-stim-pump/main.webp</code>
+                                                                          <small class="admin-note">Packshot brief: main.webp / 1200x1200</small>
+                                                <div class="admin-status-pills">
+                          <span class="admin-status-pill is-warning">Affiliate chyba</span>
+                          <span class="admin-status-pill is-warning">Obrazok chyba</span>
+                        </div>
+                      </div>
+                      <div class="admin-queue-actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=myprotein-non-stim-pump&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Obrazok produktu</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=myprotein-non-stim-pump&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Produkt</a>
+                                                                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="img/products/myprotein/myprotein-non-stim-pump/main.webp">Kopirovat path</button>
+                                                                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realisticky ecommerce packshot produktu Non-stim pump formula od Myprotein, cisty obal doplnku vyzivy na svetlom neutralnom pozadi, jemny tien, produkt v strede, bez textovych overlayov, bez dekoracii, moderny health and fitness look, stvorcovy format. Vizual nech je cisty, studiovy a mierne kontrastnejsi, podobny klasickym ecommerce packshotom Myprotein.">Kopirovat prompt</button>
+                                                                                                <form method="post" enctype="multipart/form-data" class="admin-inline-upload">
+                          <input type="hidden" name="action" value="upload_packshot_only" />
+                          <input type="hidden" name="product_slug" value="myprotein-non-stim-pump" />
+                          <input type="hidden" name="return_section" value="images" />
+                          <input type="hidden" name="return_slug" value="pre-workout-ako-vybrat" />
+                          <label class="admin-inline-upload__label">
+                            <span>Obrazok</span>
+                            <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
+                          </label>
+                          <button class="btn btn-secondary btn-small" type="submit">Nahrat obrazok</button>
+                        </form>
+                      </div>
+                    </article>
+                                  </div>
+              </section>
+            
+                          <section class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Produkty v tomto clanku</h3>
+                    <p class="admin-meta">Prehlad odporucanych produktov aj so stavom obrazka a affiliate priamo v image workflowe.</p>
+                  </div>
+                </div>
+                <div class="admin-mini-product-grid">
+                                                          <article class="admin-mini-product-card">
+                      <div class="admin-mini-product-card__media">
+                        <img src="/assets/img/placeholders/product-1x1.svg?v=1773208434" alt="Produktový placeholder pre balanced pre-workout Aktin" loading="lazy" decoding="async" class="admin-mini-product-card__image" sizes="(min-width: 1100px) 280px, 50vw">                      </div>
+                      <div class="admin-mini-product-card__body">
+                        <strong>Balanced stim pre-workout</strong>
+                        <small>aktin-balanced-preworkout / Aktin</small>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill is-warning">Affiliate chyba</span>
+                          <span class="admin-status-pill is-warning">Obrazok chyba</span>
+                        </div>
+                                                  <small><code>img/products/aktin/aktin-balanced-preworkout/main.webp</code></small>
+                                              </div>
+                      <div class="admin-inline-actions admin-mini-product-card__actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=aktin-balanced-preworkout&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Produkt</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=aktin-balanced-preworkout&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Obrazok produktu</a>
+                                                  <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=pre-workout-ako-vybrat-aktin&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Affiliate</a>
+                                                                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="img/products/aktin/aktin-balanced-preworkout/main.webp">Kopirovat path</button>
+                                                                      </div>
+                                                  <form method="post" enctype="multipart/form-data" class="admin-inline-upload">
+                            <input type="hidden" name="action" value="upload_packshot_only" />
+                            <input type="hidden" name="product_slug" value="aktin-balanced-preworkout" />
+                            <input type="hidden" name="return_section" value="images" />
+                            <input type="hidden" name="return_slug" value="pre-workout-ako-vybrat" />
+                            <label class="admin-inline-upload__label">
+                              <span>Obrazok</span>
+                              <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
+                            </label>
+                            <button class="btn btn-secondary btn-small" type="submit">Nahrat obrazok</button>
+                          </form>
+                                            </article>
+                                                          <article class="admin-mini-product-card">
+                      <div class="admin-mini-product-card__media">
+                        <img src="/assets/img/products/gymbeam/gymbeam-enjoy-pre-workout/main.png?v=1773400546" alt="GymBeam ENJOY Pre-Workout" loading="lazy" decoding="async" class="admin-mini-product-card__image" width="700" height="700" srcset="/assets/img/products/gymbeam/gymbeam-enjoy-pre-workout/main.png?v=1773400546 700w" sizes="(min-width: 1100px) 280px, 50vw">                      </div>
+                      <div class="admin-mini-product-card__body">
+                        <strong>GymBeam ENJOY Pre-Workout</strong>
+                        <small>gymbeam-enjoy-pre-workout / GymBeam</small>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill is-warning">Affiliate chyba</span>
+                          <span class="admin-status-pill is-good">Obrazok pripraveny</span>
+                        </div>
+                                                  <small><code>img/products/gymbeam/gymbeam-enjoy-pre-workout/main.webp</code></small>
+                                              </div>
+                      <div class="admin-inline-actions admin-mini-product-card__actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=gymbeam-enjoy-pre-workout&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Produkt</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=gymbeam-enjoy-pre-workout&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Obrazok produktu</a>
+                                                  <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=pre-workout-ako-vybrat-gymbeam&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Affiliate</a>
+                                                                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="img/products/gymbeam/gymbeam-enjoy-pre-workout/main.webp">Kopirovat path</button>
+                                                                      </div>
+                                            </article>
+                                                          <article class="admin-mini-product-card">
+                      <div class="admin-mini-product-card__media">
+                        <img src="/assets/img/placeholders/product-1x1.svg?v=1773208434" alt="Produktový placeholder pre high-stim pre-workout GymBeam" loading="lazy" decoding="async" class="admin-mini-product-card__image" sizes="(min-width: 1100px) 280px, 50vw">                      </div>
+                      <div class="admin-mini-product-card__body">
+                        <strong>High-stim pre-workout</strong>
+                        <small>gymbeam-high-stim-preworkout / GymBeam</small>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill is-warning">Affiliate chyba</span>
+                          <span class="admin-status-pill is-warning">Obrazok chyba</span>
+                        </div>
+                                                  <small><code>img/products/gymbeam/gymbeam-high-stim-preworkout/main.webp</code></small>
+                                              </div>
+                      <div class="admin-inline-actions admin-mini-product-card__actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=gymbeam-high-stim-preworkout&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Produkt</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=gymbeam-high-stim-preworkout&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Obrazok produktu</a>
+                                                  <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=pre-workout-ako-vybrat-gymbeam&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Affiliate</a>
+                                                                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="img/products/gymbeam/gymbeam-high-stim-preworkout/main.webp">Kopirovat path</button>
+                                                                      </div>
+                                                  <form method="post" enctype="multipart/form-data" class="admin-inline-upload">
+                            <input type="hidden" name="action" value="upload_packshot_only" />
+                            <input type="hidden" name="product_slug" value="gymbeam-high-stim-preworkout" />
+                            <input type="hidden" name="return_section" value="images" />
+                            <input type="hidden" name="return_slug" value="pre-workout-ako-vybrat" />
+                            <label class="admin-inline-upload__label">
+                              <span>Obrazok</span>
+                              <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
+                            </label>
+                            <button class="btn btn-secondary btn-small" type="submit">Nahrat obrazok</button>
+                          </form>
+                                            </article>
+                                                          <article class="admin-mini-product-card">
+                      <div class="admin-mini-product-card__media">
+                        <img src="/assets/img/placeholders/product-1x1.svg?v=1773208434" alt="Produktový placeholder pre non-stim pre-workout Myprotein" loading="lazy" decoding="async" class="admin-mini-product-card__image" sizes="(min-width: 1100px) 280px, 50vw">                      </div>
+                      <div class="admin-mini-product-card__body">
+                        <strong>Non-stim pump formula</strong>
+                        <small>myprotein-non-stim-pump / Myprotein</small>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill is-warning">Affiliate chyba</span>
+                          <span class="admin-status-pill is-warning">Obrazok chyba</span>
+                        </div>
+                                                  <small><code>img/products/myprotein/myprotein-non-stim-pump/main.webp</code></small>
+                                              </div>
+                      <div class="admin-inline-actions admin-mini-product-card__actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=myprotein-non-stim-pump&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Produkt</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=myprotein-non-stim-pump&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Obrazok produktu</a>
+                                                  <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=pre-workout-ako-vybrat-myprotein&amp;return_section=images&amp;return_slug=pre-workout-ako-vybrat">Affiliate</a>
+                                                                          <button class="btn btn-secondary btn-small" type="button" data-copy-value="img/products/myprotein/myprotein-non-stim-pump/main.webp">Kopirovat path</button>
+                                                                      </div>
+                                                  <form method="post" enctype="multipart/form-data" class="admin-inline-upload">
+                            <input type="hidden" name="action" value="upload_packshot_only" />
+                            <input type="hidden" name="product_slug" value="myprotein-non-stim-pump" />
+                            <input type="hidden" name="return_section" value="images" />
+                            <input type="hidden" name="return_slug" value="pre-workout-ako-vybrat" />
+                            <label class="admin-inline-upload__label">
+                              <span>Obrazok</span>
+                              <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" required />
+                            </label>
+                            <button class="btn btn-secondary btn-small" type="submit">Nahrat obrazok</button>
+                          </form>
+                                            </article>
+                                  </div>
+              </section>
+            
+            <div class="admin-brief-grid">
+              <div class="admin-brief-card">
+                <h3>Brief</h3>
+                <p><strong>Prompt:</strong><br>Realistic professional hero photo, pre-workout supplement jar, shaker, energetic gym detail, bright minimal background, soft pastel palette, modern fitness look, natural light, no text, no collage, 3:2 aspect ratio.</p>
+                <p><strong>Filename:</strong><br>pre-workout-ako-vybrat.webp</p>
+                <p><strong>Alt text:</strong><br>Ako vybrať pre-workout – stimulanty aj pumpa</p>
+                <p><strong>Dimensions:</strong><br>1200x800</p>
+                <p><strong>Target path:</strong><br>public/assets/img/articles/heroes/pre-workout-ako-vybrat.webp</p>
+                <p><strong>Style brief:</strong><br>Realistic editorial hero visual, bright minimal background, soft pastel palette, natural light, premium health and fitness look, no text, no logo, no collage.</p>
+                <div class="admin-inline-actions">
+                  <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, pre-workout supplement jar, shaker, energetic gym detail, bright minimal background, soft pastel palette, modern fitness look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                  <button class="btn btn-secondary btn-small" type="button" data-copy-value="pre-workout-ako-vybrat.webp">Kopirovat filename</button>
+                  <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/pre-workout-ako-vybrat.webp">Kopirovat path</button>
+                </div>
+              </div>
+              <div class="admin-brief-card">
+                <h3>Workflow</h3>
+                <ol class="admin-workflow-list">
+                  <li>Skopiruj prompt do Canvy alebo AI generatora.</li>
+                  <li>Exportuj WebP v rozmere 1200x800.</li>
+                  <li>Dodrz naming podla odporucaneho filename.</li>
+                  <li>Nahraj obrazok sem alebo do cielovej cesty v assets.</li>
+                  <li>Clanok automaticky pouzije novy hero asset.</li>
+                </ol>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Otvorit hero helper</a>
+                    <a class="btn btn-secondary btn-small" href="/clanky/pre-workout-ako-vybrat" target="_blank" rel="noopener">Otvorit clanok</a>
+                  </div>
+                <form method="post" enctype="multipart/form-data" class="admin-form">
+                  <input type="hidden" name="action" value="upload_hero_only" />
+                  <input type="hidden" name="slug" value="pre-workout-ako-vybrat" />
+                  <label>
+                    <span>Nahrat finalny hero obrazok</span>
+                    <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" required />
+                    <small class="admin-note">Cielovy hero asset: <code>public/assets/img/articles/heroes/pre-workout-ako-vybrat.webp</code></small>
+                  </label>
+                  <button class="btn btn-cta" type="submit">Nahrat hero obrazok</button>
+                </form>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Hero image backlog</p>
+                <h2>Queue chybajucich hero obrazkov</h2>
+              </div>
+              <div class="admin-filter-pills">
+                <a class="admin-filter-pill is-active" href="/admin?section=images&amp;slug=pre-workout-ako-vybrat&amp;image_filter=missing">Chyba WebP (32)</a>
+                <a class="admin-filter-pill" href="/admin?section=images&amp;slug=pre-workout-ako-vybrat&amp;image_filter=ready">Hotovo (0)</a>
+                <a class="admin-filter-pill" href="/admin?section=images&amp;slug=pre-workout-ako-vybrat&amp;image_filter=all">Vsetko (32)</a>
+              </div>
+            </div>
+            <div class="admin-queue-list">
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Ako vybrať pre-workout – stimulanty aj pumpa</strong>
+                    <p>pre-workout-ako-vybrat / local</p>
+                    <code>public/assets/img/articles/heroes/pre-workout-ako-vybrat.webp</code>
+                    <small class="admin-note">pre-workout-ako-vybrat.webp / 1200x800</small>
+                                          <small class="admin-note">Ako vybrať pre-workout – stimulanty aj pumpa</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=pre-workout-ako-vybrat&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, pre-workout supplement jar, shaker, energetic gym detail, bright minimal background, soft pastel palette, modern fitness look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/pre-workout-ako-vybrat.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/pre-workout-ako-vybrat" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Aminokyseliny: BCAA a EAA – rozdiely a použitie</strong>
+                    <p>aminokyseliny-bcaa-eaa / local</p>
+                    <code>public/assets/img/articles/heroes/aminokyseliny-bcaa-eaa.webp</code>
+                    <small class="admin-note">aminokyseliny-bcaa-eaa.webp / 1200x800</small>
+                                          <small class="admin-note">Aminokyseliny: BCAA a EAA – rozdiely a použitie</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=aminokyseliny-bcaa-eaa&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, amino acid supplement, shaker and subtle training setup, bright minimal background, soft pastel palette, modern health and fitness look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/aminokyseliny-bcaa-eaa.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/aminokyseliny-bcaa-eaa" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>BCAA vs. EAA – ktoré a kedy</strong>
+                    <p>bcaa-vs-eaa / local</p>
+                    <code>public/assets/img/articles/heroes/bcaa-vs-eaa.webp</code>
+                    <small class="admin-note">bcaa-vs-eaa.webp / 1200x800</small>
+                                          <small class="admin-note">BCAA vs. EAA – ktoré a kedy</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=bcaa-vs-eaa&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, two sports supplement jars side by side for comparison, bright minimal background, soft pastel palette, modern health and fitness look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/bcaa-vs-eaa.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/bcaa-vs-eaa" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Chudnutie – rýchle tipy, ktoré fungujú</strong>
+                    <p>chudnutie-tip / local</p>
+                    <code>public/assets/img/articles/heroes/chudnutie-tip.webp</code>
+                    <small class="admin-note">chudnutie-tip.webp / 1200x800</small>
+                                          <small class="admin-note">Chudnutie – rýchle tipy, ktoré fungujú</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=chudnutie-tip&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, healthy breakfast, measuring tape and soft weight loss lifestyle styling, bright minimal background, soft pastel palette, modern health look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/chudnutie-tip.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/chudnutie-tip" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Clear proteín – čo to je a kedy dáva zmysel</strong>
+                    <p>clear-protein / local</p>
+                    <code>public/assets/img/articles/heroes/clear-protein.webp</code>
+                    <small class="admin-note">clear-protein.webp / 1200x800</small>
+                                          <small class="admin-note">Clear proteín – čo to je a kedy dáva zmysel</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=clear-protein&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, clear protein drink with fruit and shaker, bright minimal background, soft pastel palette, modern health and fitness look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/clear-protein.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/clear-protein" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Doplnky výživy – top výber 2025</strong>
+                    <p>doplnky-vyzivy / local</p>
+                    <code>public/assets/img/articles/heroes/doplnky-vyzivy.webp</code>
+                    <small class="admin-note">doplnky-vyzivy.webp / 1200x800</small>
+                                          <small class="admin-note">Doplnky výživy – top výber 2025</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=doplnky-vyzivy&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, overview of nutrition supplements arranged on a clean table, bright minimal background, soft pastel palette, modern health look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/doplnky-vyzivy.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/doplnky-vyzivy" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Doplnky výživy – top výber 2025</strong>
+                    <p>doplnky-vyzivy-top-vyber-2025 / local</p>
+                    <code>public/assets/img/articles/heroes/doplnky-vyzivy-top-vyber-2025.webp</code>
+                    <small class="admin-note">doplnky-vyzivy-top-vyber-2025.webp / 1200x800</small>
+                                          <small class="admin-note">Doplnky výživy – top výber 2025</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=doplnky-vyzivy-top-vyber-2025&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, selected nutrition supplements in a curated product layout, bright minimal background, soft pastel palette, modern health look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/doplnky-vyzivy-top-vyber-2025.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/doplnky-vyzivy-top-vyber-2025" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Horčík – ktorý je najlepší a prečo?</strong>
+                    <p>horcik-ktory-je-najlepsi-a-preco / local</p>
+                    <code>public/assets/img/articles/heroes/horcik-ktory-je-najlepsi-a-preco.webp</code>
+                    <small class="admin-note">horcik-ktory-je-najlepsi-a-preco.webp / 1200x800</small>
+                                          <small class="admin-note">Horčík – ktorý je najlepší a prečo?</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=horcik-ktory-je-najlepsi-a-preco&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, magnesium capsules and mineral supplement bottle in a clean product layout, bright minimal background, soft pastel palette, modern health look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/horcik-ktory-je-najlepsi-a-preco.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/horcik-ktory-je-najlepsi-a-preco" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Horčík – typy, vstrebávanie a koľko ho treba</strong>
+                    <p>horcik / local</p>
+                    <code>public/assets/img/articles/heroes/horcik.webp</code>
+                    <small class="admin-note">horcik.webp / 1200x800</small>
+                                          <small class="admin-note">Horčík – typy, vstrebávanie a koľko ho treba</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=horcik&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, magnesium capsules or mineral supplement on a clean stone surface, bright minimal background, soft pastel palette, modern health look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/horcik.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/horcik" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Imunita – 5 prírodných látok, ktoré fungujú</strong>
+                    <p>imunita-prirodne-latky-ktore-funguju / local</p>
+                    <code>public/assets/img/articles/heroes/imunita-prirodne-latky-ktore-funguju.webp</code>
+                    <small class="admin-note">imunita-prirodne-latky-ktore-funguju.webp / 1200x800</small>
+                                          <small class="admin-note">Imunita – 5 prírodných látok, ktoré fungujú</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=imunita-prirodne-latky-ktore-funguju&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, vitamins, citrus fruits, capsules and healthy lifestyle detail, bright minimal background, soft pastel palette, modern wellness look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/imunita-prirodne-latky-ktore-funguju.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/imunita-prirodne-latky-ktore-funguju" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Kedy brať kreatín a koľko – načasovanie, dávky a pauzy</strong>
+                    <p>kedy-brat-kreatin-a-kolko / local</p>
+                    <code>public/assets/img/articles/heroes/kedy-brat-kreatin-a-kolko.webp</code>
+                    <small class="admin-note">kedy-brat-kreatin-a-kolko.webp / 1200x800</small>
+                                          <small class="admin-note">Kedy brať kreatín a koľko – načasovanie, dávky a pauzy</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=kedy-brat-kreatin-a-kolko&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, creatine jar, shaker and training journal, bright minimal background, soft pastel palette, modern fitness look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/kedy-brat-kreatin-a-kolko.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/kedy-brat-kreatin-a-kolko" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Kolagén na kĺby – porovnanie a odporúčania</strong>
+                    <p>kolagen-na-klby-porovnanie / local</p>
+                    <code>public/assets/img/articles/heroes/kolagen-na-klby-porovnanie.webp</code>
+                    <small class="admin-note">kolagen-na-klby-porovnanie.webp / 1200x800</small>
+                                          <small class="admin-note">Kolagén na kĺby – porovnanie a odporúčania</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=kolagen-na-klby-porovnanie&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, collagen supplement, glass of water and active lifestyle detail, bright minimal background, soft pastel palette, modern wellness look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/kolagen-na-klby-porovnanie.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/kolagen-na-klby-porovnanie" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Kolagén – recenzie a výber (typ I/II/III)</strong>
+                    <p>kolagen-recenzia / local</p>
+                    <code>public/assets/img/articles/heroes/kolagen-recenzia.webp</code>
+                    <small class="admin-note">kolagen-recenzia.webp / 1200x800</small>
+                                          <small class="admin-note">Kolagén – recenzie a výber (typ I/II/III)</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=kolagen-recenzia&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, collagen powder supplement, scoop, subtle wellness and beauty detail, bright minimal background, soft pastel palette, modern health look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/kolagen-recenzia.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/kolagen-recenzia" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Kolagén – základné informácie a užívanie</strong>
+                    <p>kolagen / local</p>
+                    <code>public/assets/img/articles/heroes/kolagen.webp</code>
+                    <small class="admin-note">kolagen.webp / 1200x800</small>
+                                          <small class="admin-note">Kolagén – základné informácie a užívanie</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=kolagen&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, collagen powder, scoop and clean wellness packshot, bright minimal background, soft pastel palette, modern health look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/kolagen.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/kolagen" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Kreatín monohydrát vs. HCL – rozdiely a čo kúpiť</strong>
+                    <p>kreatin-monohydrat-vs-hcl / local</p>
+                    <code>public/assets/img/articles/heroes/kreatin-monohydrat-vs-hcl.webp</code>
+                    <small class="admin-note">kreatin-monohydrat-vs-hcl.webp / 1200x800</small>
+                                          <small class="admin-note">Kreatín monohydrát vs. HCL – rozdiely a čo kúpiť</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=kreatin-monohydrat-vs-hcl&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, two creatine products in a side by side comparison layout, bright minimal background, soft pastel palette, modern fitness look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/kreatin-monohydrat-vs-hcl.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/kreatin-monohydrat-vs-hcl" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                              <article class="admin-queue-item">
+                  <div>
+                    <strong>Kreatín – porovnanie a výber (Creapure, monohydrát, HCl)</strong>
+                    <p>kreatin-porovnanie / local</p>
+                    <code>public/assets/img/articles/heroes/kreatin-porovnanie.webp</code>
+                    <small class="admin-note">kreatin-porovnanie.webp / 1200x800</small>
+                                          <small class="admin-note">Kreatín – porovnanie a výber (Creapure, monohydrát, HCl)</small>
+                                      </div>
+                  <div class="admin-queue-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=kreatin-porovnanie&amp;image_filter=missing">Otvorit</a>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="Realistic professional hero photo, creatine supplement jar, shaker, subtle gym environment in soft blur, bright minimal background, soft pastel palette, modern health and fitness look, natural light, no text, no collage, 3:2 aspect ratio.">Kopirovat prompt</button>
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="public/assets/img/articles/heroes/kreatin-porovnanie.webp">Kopirovat path</button>
+                    <a class="btn btn-secondary btn-small" href="/clanky/kreatin-porovnanie" target="_blank" rel="noopener">Clanok</a>
+                  </div>
+                </article>
+                          </div>
+          </section>
+        
+        
+        
+              </div>
+    </div>
+  </section>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <p>&copy; <span id="year"></span> Interesa. Vsetky prava vyhradene. Niektore odkazy mozu viest na partnerske obchody.</p>
+    <nav aria-label="Sekundarna navigacia">
+      <a href="/clanky/">Clanky</a>
+      <a href="/kategorie/imunita">Imunita</a>
+      <a href="/kategorie/klby-koza">Klby a pokozka</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="/assets/js/app.js?v=1773158388" defer></script>
+<script src="/assets/js/admin.js?v=1773346163" defer></script>
+</body>
+</html>
+
+
+
+

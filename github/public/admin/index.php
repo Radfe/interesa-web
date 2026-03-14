@@ -972,7 +972,9 @@ $page_description = 'Interny admin panel pre clanky, produkty, obrazky a affilia
 $page_canonical = '/admin';
 $page_robots = 'noindex,nofollow';
 $page_styles = [asset('css/admin.css')];
-$page_scripts = [asset('js/admin.js')];
+$adminScript = asset('js/admin.js');
+$adminScript .= (str_contains($adminScript, '?') ? '&' : '?') . 'copyfix=20260314a';
+$page_scripts = [$adminScript];
 
 $section = interessa_admin_selected_section();
 $flash = trim((string) ($_GET['saved'] ?? ''));

@@ -787,26 +787,126 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  let copyToastTimer = null;
+
+  const ensureCopyToast = () => {
+    let toast = document.querySelector('[data-admin-copy-toast]');
+    if (toast instanceof HTMLElement) {
+      return toast;
+    }
+
+    toast = document.createElement('div');
+    toast.dataset.adminCopyToast = 'true';
+    Object.assign(toast.style, {
+      position: 'fixed',
+      right: '20px',
+      bottom: '20px',
+      zIndex: '9999',
+      maxWidth: 'min(360px, calc(100vw - 32px))',
+      padding: '12px 16px',
+      borderRadius: '12px',
+      background: '#133b2c',
+      color: '#fff',
+      boxShadow: '0 12px 30px rgba(15, 23, 42, 0.22)',
+      fontWeight: '600',
+      opacity: '0',
+      transform: 'translateY(10px)',
+      pointerEvents: 'none',
+      transition: 'opacity .18s ease, transform .18s ease'
+    });
+    toast.setAttribute('aria-live', 'polite');
+    toast.setAttribute('aria-atomic', 'true');
+    document.body.appendChild(toast);
+    return toast;
+  };
+
+  const showCopyToast = (message, isError = false) => {
+    const toast = ensureCopyToast();
+    toast.textContent = message;
+    toast.style.background = isError ? '#8a1c1c' : '#133b2c';
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateY(0)';
+
+    if (copyToastTimer) {
+      window.clearTimeout(copyToastTimer);
+    }
+
+    copyToastTimer = window.setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+    }, 2200);
+  };
+
+  const fallbackCopyValue = (value) => {
+    const textarea = document.createElement('textarea');
+    textarea.value = value;
+    textarea.setAttribute('readonly', 'readonly');
+    Object.assign(textarea.style, {
+      position: 'fixed',
+      top: '-9999px',
+      left: '-9999px'
+    });
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    let success = false;
+    try {
+      success = document.execCommand('copy');
+    } catch (error) {
+      success = false;
+    }
+
+    document.body.removeChild(textarea);
+    return success;
+  };
+
+  const markCopyButton = (button) => {
+    const originalText = button.dataset.copyOriginalText || button.textContent || 'Kopirovane';
+    button.dataset.copyOriginalText = originalText;
+    button.textContent = 'Skopirovane';
+    button.classList.add('is-copied');
+
+    window.setTimeout(() => {
+      button.textContent = button.dataset.copyOriginalText || originalText;
+      button.classList.remove('is-copied');
+    }, 1400);
+  };
+
+  const copyValue = async (value) => {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function' && window.isSecureContext) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+
+    return fallbackCopyValue(value);
+  };
+
   document.addEventListener('click', async (event) => {
     const trigger = event.target.closest('[data-copy-value]');
     if (!(trigger instanceof HTMLButtonElement)) {
       return;
     }
 
+    event.preventDefault();
+
     const value = trigger.getAttribute('data-copy-value') || '';
     if (!value) {
+      showCopyToast('Nic na kopirovanie.', true);
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(value);
-      const original = trigger.textContent;
-      trigger.textContent = 'Skopirovane';
-      window.setTimeout(() => {
-        trigger.textContent = original;
-      }, 1200);
+      const copied = await copyValue(value);
+      if (!copied) {
+        throw new Error('copy-failed');
+      }
+
+      markCopyButton(trigger);
+      showCopyToast('Skopirovane.');
     } catch (error) {
       console.error(error);
+      showCopyToast('Kopirovanie zlyhalo. Skus znova.', true);
     }
   });
 });
