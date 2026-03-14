@@ -26,7 +26,13 @@ return [
     'veganske-proteiny-top-vyber-2025' => [
         'prompt' => 'Realistic professional hero photo, vegan protein powder, plant ingredients, clean product styling, bright minimal background, soft pastel palette, modern health and fitness look, natural light, no text, no collage, 3:2 aspect ratio.',
     ],
+    'veganske-proteiny-top-vyber-2026' => [
+        'prompt' => 'Realistic professional hero photo, vegan protein powder, plant ingredients, clean product styling, bright minimal background, soft pastel palette, modern health and fitness look, natural light, no text, no collage, 3:2 aspect ratio.',
+    ],
     'najlepsie-proteiny-2025' => [
+        'prompt' => 'Realistic professional hero photo, several protein products arranged in a modern comparison layout, bright minimal background, soft pastel palette, modern health and fitness look, natural light, no text, no collage, 3:2 aspect ratio.',
+    ],
+    'najlepsie-proteiny-2026' => [
         'prompt' => 'Realistic professional hero photo, several protein products arranged in a modern comparison layout, bright minimal background, soft pastel palette, modern health and fitness look, natural light, no text, no collage, 3:2 aspect ratio.',
     ],
     'najlepsi-protein-na-chudnutie-wpc-vs-wpi' => [

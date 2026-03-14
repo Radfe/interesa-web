@@ -1,23 +1,27 @@
 <?php
 return [
-  'veganske-proteiny-top-vyber-2025' => [
-    'VegĂˇnske proteĂ­ny â€“ top vĂ˝ber 2025',
-    'NajlepĹˇie rastlinnĂ© proteĂ­ny podÄľa chuti, zloĹľenia a ceny.'
+  'horcik-ktory-je-najlepsi-a-preco' => [
+    'Horcik - ktory je najlepsi a preco?',
+    'Formy Mg a ich vstrebatelnost: bisglycinat, citrat, malat a oxid.',
   ],
   'kolagen-recenzia' => [
-    'KolagĂ©n â€“ recenzia a vĂ˝ber (typ I/II/III)',
-    'ÄŚo oÄŤakĂˇvaĹĄ pri kolagĂ©ne, formy, gramĂˇĹľ a preÄŤo pridaĹĄ vitamĂ­n C.'
+    'Kolagen - recenzia a vyber (typ I/II/III)',
+    'Co sledovat pri kolagene: formy, gramaz a preco pridat vitamin C.',
   ],
-  'horcik-ktory-je-najlepsi-a-preco' => [
-    'HorÄŤĂ­k â€“ ktorĂ˝ je najlepĹˇĂ­ a preÄŤo?',
-    'Formy Mg a ich vstrebateÄľnosĹĄ: bisglycinĂˇt, citrĂˇt, malĂˇt, oxid.'
+  'najlepsie-proteiny-2025' => [
+    'Najlepsie proteiny 2026 - prehlad a vyber podla ciela',
+    'Najlepsie proteiny podla ciela, zlozenia a ceny.',
   ],
   'proteiny-na-chudnutie' => [
-    'ProteĂ­ny na chudnutie â€“ ÄŤo funguje?',
-    'Kedy voliĹĄ WPI/Hydro a ako dĂˇvkovaĹĄ.'
+    'Proteiny na chudnutie - co funguje?',
+    'Kedy volit WPI alebo Hydro a ako davkovat.',
   ],
   'srvatkovy-protein-vs-izolat-vs-hydro' => [
-    'SrvĂˇtkovĂ˝ proteĂ­n vs. izolĂˇt vs. hydro â€“ ÄŤo sa oplatĂ­?',
-    'Rozdiely v rĂ˝chlosti, cene, chuti a laktĂłze.'
+    'Srvatkovy protein vs. izolat vs. hydro - co sa oplati?',
+    'Rozdiely v rychlosti, cene, chuti a laktoze.',
+  ],
+  'veganske-proteiny-top-vyber-2025' => [
+    'Veganske proteiny - top vyber 2026',
+    'Najlepsie rastlinne proteiny podla chuti, zlozenia a ceny.',
   ],
 ];

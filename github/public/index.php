@@ -147,7 +147,7 @@ include __DIR__ . '/inc/head.php';
 <section class="hero">
   <div class="container hero-inner">
     <div class="hero-copy">
-      <p class="hub-eyebrow">Affiliate magazin o vyzive</p>
+      <p class="hub-eyebrow">Prakticky magazin o vyzive</p>
       <h1>Vyber si doplnky a vyzivu bez chaosu a marketingoveho balastu</h1>
       <p>Interesa spaja tematicke huby, nakupne navody, recenzie a porovnania tak, aby si sa vedel rychlo dostat k rozumnemu vyberu podla ciela.</p>
       <div class="hero-cta">
@@ -159,7 +159,7 @@ include __DIR__ . '/inc/head.php';
     <div class="hero-media">
       <figure class="hero-figure">
         <?= interessa_render_image($homeHeroImage, ['style' => 'aspect-ratio:16/9;object-fit:cover;']) ?>
-        <figcaption>Prakticke navody, ciste /go/ odkazy a obsah stavany na dlhodobe pouzivanie.</figcaption>
+        <figcaption>Prakticke navody, porovnania a odporucania stavane na dlhodobe pouzivanie, nie len na rychly klik.</figcaption>
       </figure>
     </div>
   </div>
@@ -176,19 +176,19 @@ include __DIR__ . '/inc/head.php';
   </article>
   <article class="stats-card">
     <strong><?= esc((string) $recentArticlesCount) ?> aktualizovanych za 60 dni</strong>
-    <p>Affiliate vrstva je oddelena od obsahu a spravovana cez interne <code>/go/</code> route.</p>
+    <p>Obsah priebezne kontrolujeme a dorovnavame podla toho, co ludia realne najcastejsie hladaju.</p>
   </article>
   <article class="stats-card">
     <strong><?= esc((string) $commercialArticleCount) ?> clankov s odporucaniami</strong>
-    <p>Na tychto strankach uz vies prejst priamo na porovnane produkty a obchody.</p>
+    <p>Na tychto strankach uz vies prejst od vysvetlenia temy priamo k porovnanym produktom a obchodom.</p>
   </article>
 </section>
 
 <section class="container home-section home-discovery-links">
   <div class="hero-cta">
     <a class="btn btn-ghost" href="/clanky?commercial=1">Clanky s odporucaniami</a>
-    <a class="btn btn-ghost" href="/clanky?coverage=full">Najviac pripravene clanky</a>
-    <a class="btn btn-ghost" href="/search?q=protein&commercial=1">Hladat nakupne navody</a>
+    <a class="btn btn-ghost" href="/clanky?coverage=full">Najviac pripravene porovnania</a>
+    <a class="btn btn-ghost" href="/kategorie/chudnutie">Zacat podla ciela</a>
   </div>
 </section>
 
@@ -314,27 +314,27 @@ include __DIR__ . '/inc/head.php';
 
 <section class="container home-section home-trust">
   <div class="section-head">
-    <h2>Ako je web postaveny</h2>
-    <p class="meta">Cielom nie je len rychly klik, ale zrozumitelny a udrziavatelny affiliate web s dlhodobym SEO zakladom.</p>
+    <h2>Preco sa na webe vies rychlo zorientovat</h2>
+    <p class="meta">Interesa ma fungovat ako redakcny pomocnik pri vybere, nie ako agresivna predajna stranka.</p>
   </div>
 
   <div class="card-grid home-trust-grid">
     <article class="card">
       <div class="card-body">
-        <h3>Obsah oddeleny od affiliate vrstvy</h3>
-        <p>Clanky nie su zahltene tvrdymi affiliate URL. Produkty a odkazy sa spravuju centralne.</p>
+        <h3>Ako hodnotime produkty</h3>
+        <p>Pozerame sa na ciel pouzitia, zlozenie, davku, cenu na porciu a to, ci produkt dava zmysel v realnej rutine.</p>
       </div>
     </article>
     <article class="card">
       <div class="card-body">
-        <h3>Pripravene kategorie a huby</h3>
-        <p>Kategorie funguju ako obsahove uzly pre interne prelinkovanie, SEO a lepsiu orientaciu pouzivatela.</p>
+        <h3>Porovnavame viac obchodov</h3>
+        <p>V odporucaniach nechavame priestor viacerym merchantom. GymBeam je silny partner, ale web nema stat len na jednej znacke.</p>
       </div>
     </article>
     <article class="card">
       <div class="card-body">
-        <h3>Image workflow s fallbackmi</h3>
-        <p>Aj tam, kde este chyba vlastny hero obrazok, web uz pouziva tematicky vizual namiesto rozbiteho placeholdera.</p>
+        <h3>Affiliate odkazy nemenia cenu</h3>
+        <p>Niektore odkazy vedu do partnerskych obchodov. Ak cez ne nakupis, web moze ziskat proviziu bez navysenia ceny pre teba.</p>
       </div>
     </article>
   </div>

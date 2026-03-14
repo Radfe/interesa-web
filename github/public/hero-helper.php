@@ -19,7 +19,7 @@ function hero_helper_prompt_map(): array {
 }
 
 function hero_helper_priority_slugs(): array {
-    return [
+    $preferred = [
         'protein-na-chudnutie',
         'kreatin-porovnanie',
         'kolagen-recenzia',
@@ -27,10 +27,15 @@ function hero_helper_priority_slugs(): array {
         'imunita-prirodne-latky-ktore-funguju',
         'pre-workout-ako-vybrat',
         'probiotika-ako-vybrat',
-        'veganske-proteiny-top-vyber-2025',
-        'najlepsie-proteiny-2025',
+        'veganske-proteiny-top-vyber-2026',
+        'najlepsie-proteiny-2026',
         'najlepsi-protein-na-chudnutie-wpc-vs-wpi',
     ];
+
+    return array_values(array_unique(array_map(
+        static fn(string $slug): string => canonical_article_slug($slug),
+        $preferred
+    )));
 }
 
 $page_title = 'Hero Helper | Interesa';
