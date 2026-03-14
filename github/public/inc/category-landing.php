@@ -102,6 +102,9 @@ usort($readyArticles, static function (array $a, array $b): int {
 });
 $readyArticles = array_slice($readyArticles, 0, 3);
 $crossThemePaths = interessa_cross_theme_paths($slug);
+$primaryCommercialGuideCoverage = $primaryCommercialGuideSlug !== ''
+    ? interessa_article_commerce_coverage_state($primaryCommercialGuideSlug)
+    : null;
 
 $page_schema = [
     breadcrumb_schema([
@@ -151,7 +154,9 @@ include dirname(__DIR__) . '/inc/head.php';
           <a class="btn btn-primary" href="<?= esc(article_url($primaryGuideSlug)) ?>">Zacat hlavnym clankom</a>
         <?php endif; ?>
         <?php if ($primaryCommercialGuideSlug !== ''): ?>
-          <a class="btn btn-ghost" href="<?= esc(article_url($primaryCommercialGuideSlug)) ?>">Prejst na odporucania</a>
+          <a class="btn btn-ghost" href="<?= esc(article_url($primaryCommercialGuideSlug)) ?>">
+            <?= esc($primaryCommercialGuideCoverage === 'full' ? 'Prejst na porovnanie a vyber' : 'Prejst na odporucane produkty') ?>
+          </a>
         <?php else: ?>
           <a class="btn btn-ghost" href="/clanky/?category=<?= esc($slug) ?>&amp;commercial=1">Clanky s odporucaniami</a>
         <?php endif; ?>
@@ -179,6 +184,16 @@ include dirname(__DIR__) . '/inc/head.php';
               <?= esc((string) $count) ?>
             </span>
           <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+      <?php if ($commercialCount > 0): ?>
+        <div class="article-card-submeta">
+          <span class="article-card-subchip">Odporucania v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+          <?php if ($fullCoverageCount > 0): ?>
+            <span class="article-card-subchip is-coverage is-full">Porovnanie + packshoty v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+          <?php else: ?>
+            <span class="article-card-subchip is-coverage is-partial">Shortlist uz je pripraveny</span>
+          <?php endif; ?>
         </div>
       <?php endif; ?>
       <?php if (!empty($hub['focus_points'])): ?>

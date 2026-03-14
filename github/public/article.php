@@ -41,6 +41,7 @@ $categoryStats = interessa_article_category_stats($slug, (string) ($meta['catego
 $shortlistStats = interessa_commerce_shortlist_stats($commerce);
 $shortlistCoveragePercent = interessa_shortlist_coverage_percent($shortlistStats);
 $shortlistCoverageLabel = interessa_shortlist_coverage_label($shortlistStats);
+$comparisonTable = interessa_article_comparison_table_payload($slug, $commerce);
 $hasDecisionLayer = $comparisonTable !== null || $commerce !== null;
 $crossThemePaths = $categoryMeta !== null ? interessa_cross_theme_paths((string) ($categoryMeta['slug'] ?? '')) : [];
 
@@ -59,8 +60,6 @@ if ($usesAdminContent) {
     $articleHeadings = is_array($articlePrepared['headings'] ?? null) ? $articlePrepared['headings'] : [];
     $readingTime = (int) ($articlePrepared['reading_time'] ?? 1);
 }
-
-$comparisonTable = interessa_article_comparison_table_payload($slug, $commerce);
 
 $pageTitleBase = trim((string) ($meta['meta_title'] ?? '')) !== '' ? trim((string) $meta['meta_title']) : $meta['title'];
 $pageDescriptionBase = trim((string) ($meta['meta_description'] ?? '')) !== ''
@@ -198,6 +197,35 @@ include __DIR__ . '/inc/head.php';
             <a class="btn btn-ghost" href="#caste-otazky">Caste otazky</a>
           <?php endif; ?>
         </div>
+      <?php endif; ?>
+
+      <?php if ($shortlistStats !== null || $categoryStats !== null): ?>
+        <section class="stats-strip article-summary-strip" aria-label="Rychly prehlad clanku">
+          <?php if ($shortlistStats !== null && (int) ($shortlistStats['count'] ?? 0) > 0): ?>
+            <article class="stats-card">
+              <strong><?= esc((string) ((int) ($shortlistStats['count'] ?? 0))) ?> <?= esc(interessa_pluralize_slovak((int) ($shortlistStats['count'] ?? 0), 'produkt', 'produkty', 'produktov')) ?> vo vybere</strong>
+              <p>Najrychlejsia cesta k shortlistu bez potreby citat cely clanok naraz.</p>
+            </article>
+          <?php endif; ?>
+          <?php if ($shortlistStats !== null && (int) ($shortlistStats['merchant_count'] ?? 0) > 0): ?>
+            <article class="stats-card">
+              <strong><?= esc((string) ((int) ($shortlistStats['merchant_count'] ?? 0))) ?> <?= esc(interessa_pluralize_slovak((int) ($shortlistStats['merchant_count'] ?? 0), 'obchod', 'obchody', 'obchodov')) ?> porovnane</strong>
+              <p>Vyber nie je postaveny len na jednom partnerovi, aj ked GymBeam zostava prioritny tam, kde dava zmysel.</p>
+            </article>
+          <?php endif; ?>
+          <?php if ($shortlistStats !== null && $shortlistCoveragePercent > 0): ?>
+            <article class="stats-card">
+              <strong><?= esc(ucfirst($shortlistCoverageLabel)) ?> (<?= esc((string) $shortlistCoveragePercent) ?>%)</strong>
+              <p><?= esc($shortlistCoveragePercent >= 100 ? 'Packshoty a porovnanie su pripravene na rychle rozhodnutie.' : 'Cast vyberu uz ma realne packshoty, zvysok priebezne dorovnavame.') ?></p>
+            </article>
+          <?php endif; ?>
+          <?php if ($categoryStats !== null): ?>
+            <article class="stats-card">
+              <strong><?= esc((string) ((int) ($categoryStats['count'] ?? 0))) ?> <?= esc(interessa_pluralize_slovak((int) ($categoryStats['count'] ?? 0), 'clanok', 'clanky', 'clankov')) ?> v teme</strong>
+              <p>Za poslednych 60 dni bolo v tejto teme aktualizovanych <?= esc((string) ((int) ($categoryStats['recent_count'] ?? 0))) ?> <?= esc(interessa_pluralize_slovak((int) ($categoryStats['recent_count'] ?? 0), 'clanok', 'clanky', 'clankov')) ?>.</p>
+            </article>
+          <?php endif; ?>
+        </section>
       <?php endif; ?>
 
       <?php if ($commerce !== null): ?>

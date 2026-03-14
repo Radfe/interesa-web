@@ -34,6 +34,7 @@ foreach ($allItems as &$item) {
     $item['format_label'] = $formatLabels[(string) ($item['format_slug'] ?? '')] ?? interessa_article_format_label($slug, (string) ($item['title'] ?? ''));
     $item['has_commerce'] = interessa_article_has_commerce($slug);
     $item['coverage_state'] = interessa_article_commerce_coverage_state($slug);
+    $item['coverage_percent'] = interessa_shortlist_coverage_percent(interessa_article_commerce_summary($slug));
     if ($itemCategorySlug !== '') {
         $categoryCounts[$itemCategorySlug] = ($categoryCounts[$itemCategorySlug] ?? 0) + 1;
     }
@@ -222,6 +223,14 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
                   <?php if ($updatedDate !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc($updatedDate) ?></span><?php endif; ?>
                 </div>
                 <?= interessa_render_article_commerce_submeta($slug, 'compact') ?>
+                <?php if ((int) ($item['coverage_percent'] ?? 0) > 0): ?>
+                  <div class="article-card-submeta">
+                    <span class="article-card-subchip is-coverage <?= (string) ($item['coverage_state'] ?? '') === 'full' ? 'is-full' : 'is-partial' ?>">
+                      <?= esc((string) ($item['coverage_state'] ?? '') === 'full' ? 'Packshoty pripravene' : 'Packshoty priebezne doplname') ?>
+                    </span>
+                    <span class="article-card-subchip">Packshoty: <?= esc((string) ($item['coverage_percent'] ?? 0)) ?>%</span>
+                  </div>
+                <?php endif; ?>
                 <h3><a href="<?= esc($url) ?>"><?= esc($title) ?></a></h3>
                 <?php if ($description !== ''): ?><p><?= esc($description) ?></p><?php endif; ?>
                 <a class="card-link" href="<?= esc($url) ?>"><?= esc(interessa_article_cta_label($slug, $title)) ?></a>

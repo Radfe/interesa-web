@@ -48,6 +48,20 @@ if (!function_exists('interessa_product_image_status_label')) {
     }
 }
 
+if (!function_exists('interessa_is_priority_merchant')) {
+    function interessa_is_priority_merchant(string $merchant, string $merchantSlug = ''): bool {
+        $merchant = strtolower(trim($merchant));
+        $merchantSlug = strtolower(trim($merchantSlug));
+        return $merchant === 'gymbeam' || $merchantSlug === 'gymbeam';
+    }
+}
+
+if (!function_exists('interessa_priority_merchant_label')) {
+    function interessa_priority_merchant_label(string $merchant, string $merchantSlug = ''): string {
+        return interessa_is_priority_merchant($merchant, $merchantSlug) ? 'Preferovany partner' : '';
+    }
+}
+
 if (!function_exists('interessa_product_image_status_class')) {
     function interessa_product_image_status_class(string $sourceType): string {
         $sourceType = strtolower(trim($sourceType));
@@ -145,7 +159,8 @@ if (!function_exists('interessa_render_product_media')) {
         if (is_array($image) && !empty($image['src']) && $sourceType !== 'placeholder') {
             $html = '<div class="' . esc($wrapperClass . ' is-real is-' . $sourceType) . '">';
             if ($showBadge && $merchant !== '') {
-                $html .= '<span class="' . esc($badgeClass) . '">' . esc($merchant) . '</span>';
+                $merchantClass = interessa_is_priority_merchant($merchant, $merchantSlug) ? ' is-priority' : '';
+                $html .= '<span class="' . esc($badgeClass . $merchantClass) . '">' . esc($merchant) . '</span>';
             }
             $html .= '<div class="' . esc($frameClass) . '">';
             $html .= interessa_render_image($image, ['class' => $imageClass]);
@@ -156,12 +171,17 @@ if (!function_exists('interessa_render_product_media')) {
         $merchantSlugClass = $merchantSlug !== '' ? ' is-merchant-' . $merchantSlug : '';
         $html = '<div class="' . esc($wrapperClass . ' is-fallback' . $merchantSlugClass) . '">';
         if ($showBadge && $merchant !== '') {
-            $html .= '<span class="' . esc($badgeClass) . '">' . esc($merchant) . '</span>';
+            $merchantClass = interessa_is_priority_merchant($merchant, $merchantSlug) ? ' is-priority' : '';
+            $html .= '<span class="' . esc($badgeClass . $merchantClass) . '">' . esc($merchant) . '</span>';
         }
         $html .= '<div class="' . esc($frameClass . ' is-fallback-frame') . '">';
         $html .= '<div class="product-fallback-copy">';
         if ($imageStatus !== '') {
             $html .= '<span class="product-fallback-badge ' . esc($imageStatusClass) . '">' . esc($imageStatus) . '</span>';
+        }
+        $priorityLabel = interessa_priority_merchant_label($merchant, $merchantSlug);
+        if ($priorityLabel !== '') {
+            $html .= '<span class="product-fallback-badge is-priority">' . esc($priorityLabel) . '</span>';
         }
         $html .= '<span class="product-fallback-emblem" aria-hidden="true">' . esc(interessa_product_merchant_initials($merchant)) . '</span>';
         if ($productName !== '') {

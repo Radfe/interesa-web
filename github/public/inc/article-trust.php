@@ -106,8 +106,8 @@ if (!function_exists('interessa_render_article_trust_box')) {
 
         echo '<section class="article-trust" aria-label="' . esc('Redakcne poznamky') . '">';
         echo '<div class="section-head">';
-        echo '<h2>' . esc('Ako s clankom pracovat') . '</h2>';
-        echo '<p class="meta">' . esc('Kratke vysvetlenie, ako je obsah pripraveny, ako funguju odkazy a kedy bol naposledy kontrolovany.') . '</p>';
+        echo '<h2>' . esc('Co je dobre vediet pred vyberom') . '</h2>';
+        echo '<p class="meta">' . esc('Kratke vysvetlenie, ako je obsah pripraveny, ako funguju odkazy a v akom stave je produktovy vyber.') . '</p>';
         echo '</div>';
         echo '<div class="article-trust-grid">';
 
@@ -126,6 +126,9 @@ if (!function_exists('interessa_render_article_trust_box')) {
             ? $disclosure
             : 'Aj pri informacnych clankoch zachovavame ciste interne odkazy a priebezne upratujeme strukturu tak, aby bol obsah dlhodobo udrzatelny.') . '</p>';
         echo '<p class="article-meta-inline"><strong>' . esc('Forma odkazov:') . '</strong> interne <code>/go/</code> route a ' . esc('centralna sprava partnerov.') . '</p>';
+        if ($commerce !== null && $shortlistMeta !== null && (int) ($shortlistMeta['merchant_count'] ?? 0) > 0) {
+            echo '<p class="article-meta-inline"><strong>' . esc('Rozsah porovnania:') . '</strong> ' . esc((string) $shortlistMeta['merchant_count']) . ' ' . esc(interessa_pluralize_slovak((int) $shortlistMeta['merchant_count'], 'obchod', 'obchody', 'obchodov')) . ' a priebezne kontrolovane prechody do produktu.</p>';
+        }
         echo '</article>';
 
         echo '<article class="article-trust-card">';
@@ -142,8 +145,11 @@ if (!function_exists('interessa_render_article_trust_box')) {
             if (($shortlistMeta['merchant_count'] ?? 0) > 0) {
                 echo '<p class="article-meta-inline"><strong>' . esc('Porovnane obchody:') . '</strong> ' . esc((string) $shortlistMeta['merchant_count']) . '</p>';
             }
+            if (($shortlistMeta['real_packshots'] ?? 0) > 0) {
+                echo '<p class="article-meta-inline"><strong>' . esc('Packshot coverage:') . '</strong> ' . esc((string) $shortlistMeta['real_packshots']) . '/' . esc((string) $shortlistMeta['count']) . '</p>';
+            }
             if (($shortlistMeta['editorial_visuals'] ?? 0) > 0) {
-                echo '<p class="article-meta-inline">' . esc('Pri niektorych produktoch este doplname finalne obrazky baleni.') . '</p>';
+                echo '<p class="article-meta-inline">' . esc('Pri casti vyberu zatial pouzivame redakcny vizual, aby ostalo porovnanie citatelne. Odkazy a odporucania tym nie su ovplyvnene.') . '</p>';
             }
         }
         echo '<p class="article-meta-inline"><strong>' . esc('Slug:') . '</strong> ' . esc(interessa_article_preferred_slug($slug)) . '</p>';

@@ -39,10 +39,13 @@ foreach ($hubs as $slug => $hub) {
         }
 
         $guideMeta = article_meta($guideSlug);
+        $guideSummary = interessa_article_commerce_summary($guideSlug);
         $primaryGuide = [
             'slug' => $guideSlug,
             'label' => trim((string) ($guide['label'] ?? 'Start')) ?: 'Start',
             'title' => trim((string) ($guideMeta['title'] ?? humanize_slug($guideSlug))),
+            'has_commerce' => is_array($guideSummary) && (int) ($guideSummary['count'] ?? 0) > 0,
+            'coverage_state' => interessa_article_commerce_coverage_state($guideSlug),
         ];
         break;
     }
@@ -152,6 +155,15 @@ include __DIR__ . '/../inc/head.php';
               <?php endif; ?>
             </div>
           <?php endif; ?>
+          <?php if (is_array($primaryGuide) && !empty($primaryGuide['has_commerce'])): ?>
+            <div class="article-card-submeta">
+              <?php if (($primaryGuide['coverage_state'] ?? '') === 'full'): ?>
+                <span class="article-card-subchip is-coverage is-full">Startovaci clanok uz ma porovnanie a vyber</span>
+              <?php else: ?>
+                <span class="article-card-subchip is-coverage is-partial">Startovaci clanok uz ma shortlist produktov</span>
+              <?php endif; ?>
+            </div>
+          <?php endif; ?>
           <h3><a href="<?= esc(category_url($slug)) ?>"><?= esc((string) $hub['title']) ?></a></h3>
           <p><?= esc((string) ($hub['description'] ?? '')) ?></p>
           <div class="home-goal-actions">
@@ -192,6 +204,15 @@ include __DIR__ . '/../inc/head.php';
               <span class="article-card-subchip">Odporucania v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php if ($fullCoverageCount > 0): ?>
                 <span class="article-card-subchip is-coverage is-full">Kompletne vybery v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <?php endif; ?>
+            </div>
+          <?php endif; ?>
+          <?php if (is_array($primaryGuide) && !empty($primaryGuide['has_commerce'])): ?>
+            <div class="article-card-submeta">
+              <?php if (($primaryGuide['coverage_state'] ?? '') === 'full'): ?>
+                <span class="article-card-subchip is-coverage is-full">Startovaci clanok uz ma porovnanie a vyber</span>
+              <?php else: ?>
+                <span class="article-card-subchip is-coverage is-partial">Startovaci clanok uz ma shortlist produktov</span>
               <?php endif; ?>
             </div>
           <?php endif; ?>

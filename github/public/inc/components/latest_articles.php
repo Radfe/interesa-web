@@ -39,6 +39,7 @@ if (is_dir($dir)) {
             'commerce_summary' => $commerceSummary,
             'has_commerce' => is_array($commerceSummary) && (int) ($commerceSummary['count'] ?? 0) > 0,
             'has_full_coverage' => interessa_article_has_full_packshot_coverage($canonicalSlug),
+            'coverage_percent' => interessa_shortlist_coverage_percent($commerceSummary),
         ];
     }
 }
@@ -113,6 +114,9 @@ foreach ($items as $item) {
             echo '<span class="article-card-subchip is-coverage is-full">Porovnanie aj shortlist pripraveny</span>';
         } elseif ($showRecommendations && $summary !== null) {
             echo '<span class="article-card-subchip">Odporucania v ' . esc((string) ((int) ($summary['count'] ?? 0))) . ' produktoch</span>';
+        }
+        if ((int) ($item['coverage_percent'] ?? 0) > 0) {
+            echo '<span class="article-card-subchip">Packshoty: ' . esc((string) ((int) ($item['coverage_percent'] ?? 0))) . '%</span>';
         }
         echo '</div>';
     }

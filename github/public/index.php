@@ -115,14 +115,17 @@ foreach ($featuredGuideSlugs as $slug) {
     $meta = article_meta($slug);
     $categorySlug = normalize_category_slug((string) ($meta['category'] ?? ''));
     $articleFile = __DIR__ . '/content/articles/' . $slug . '.html';
+    $commerceSummary = interessa_article_commerce_summary($slug);
     $featuredGuides[] = [
         'slug' => $slug,
         'title' => $meta['title'],
         'description' => interessa_article_card_description($slug, trim((string) ($meta['description'] ?? '')), 20),
         'image' => interessa_article_image_meta($slug, 'hero', true),
         'format_label' => interessa_article_format_label($slug, (string) ($meta['title'] ?? '')),
-        'commerce_summary' => interessa_article_commerce_summary($slug),
+        'commerce_summary' => $commerceSummary,
         'category_meta' => $categorySlug !== '' ? category_meta($categorySlug) : null,
+        'coverage_percent' => interessa_shortlist_coverage_percent($commerceSummary),
+        'coverage_label' => interessa_shortlist_coverage_label($commerceSummary),
         'updated_date' => is_file($articleFile) ? date('d.m.Y', (int) @filemtime($articleFile)) : '',
     ];
 }
@@ -131,6 +134,8 @@ $homeLeadSlug = 'najlepsi-protein-na-chudnutie-wpc-vs-wpi';
 $homeLeadMeta = article_meta($homeLeadSlug);
 $homeLeadImage = interessa_article_image_meta($homeLeadSlug, 'hero', true);
 $homeLeadCommerceSummary = interessa_article_commerce_summary($homeLeadSlug);
+$homeLeadCoveragePercent = interessa_shortlist_coverage_percent($homeLeadCommerceSummary);
+$homeLeadCoverageLabel = interessa_shortlist_coverage_label($homeLeadCommerceSummary);
 $homeLeadFile = __DIR__ . '/content/articles/' . $homeLeadSlug . '.html';
 $homeLeadUpdated = is_file($homeLeadFile) ? date('d.m.Y', (int) @filemtime($homeLeadFile)) : '';
 $allIndexedArticles = array_values(indexed_articles());
@@ -297,6 +302,15 @@ include __DIR__ . '/inc/head.php';
           <?php if (is_array($guide['category_meta'] ?? null)): ?><span class="article-card-chip"><?= esc((string) ($guide['category_meta']['title'] ?? '')) ?></span><?php endif; ?>
           <?php if (($guide['updated_date'] ?? '') !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc((string) $guide['updated_date']) ?></span><?php endif; ?>
         </div>
+        <?= interessa_render_article_commerce_submeta((string) $guide['slug'], 'compact') ?>
+        <?php if ((int) ($guide['coverage_percent'] ?? 0) > 0): ?>
+          <div class="article-card-submeta">
+            <span class="article-card-subchip is-coverage <?= (int) ($guide['coverage_percent'] ?? 0) >= 100 ? 'is-full' : 'is-partial' ?>">
+              <?= esc(ucfirst((string) ($guide['coverage_label'] ?? 'vyber produktov'))) ?>
+            </span>
+            <span class="article-card-subchip">Packshoty: <?= esc((string) ($guide['coverage_percent'] ?? 0)) ?>%</span>
+          </div>
+        <?php endif; ?>
         <h3><a href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc((string) $guide['title']) ?></a></h3>
         <?php if ($guide['description'] !== ''): ?><p><?= esc((string) $guide['description']) ?></p><?php endif; ?>
           <a class="btn" href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc(interessa_article_cta_label((string) $guide['slug'], (string) $guide['title'])) ?></a>
@@ -348,6 +362,15 @@ include __DIR__ . '/inc/head.php';
           <?php if ($homeLeadCategory !== null): ?><span class="article-card-chip"><?= esc((string) ($homeLeadCategory['title'] ?? '')) ?></span><?php endif; ?>
           <?php if ($homeLeadUpdated !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc($homeLeadUpdated) ?></span><?php endif; ?>
         </div>
+        <?= interessa_render_article_commerce_submeta($homeLeadSlug, 'full') ?>
+        <?php if ($homeLeadCoveragePercent > 0): ?>
+          <div class="article-card-submeta">
+            <span class="article-card-subchip is-coverage <?= $homeLeadCoveragePercent >= 100 ? 'is-full' : 'is-partial' ?>">
+              <?= esc(ucfirst($homeLeadCoverageLabel)) ?>
+            </span>
+            <span class="article-card-subchip">Packshoty: <?= esc((string) $homeLeadCoveragePercent) ?>%</span>
+          </div>
+        <?php endif; ?>
         <p class="meta">Ak prave riesis chudnutie alebo chces rozumiet rozdielu medzi WPC a WPI, tu ma zmysel zacat.</p>
       </header>
 
