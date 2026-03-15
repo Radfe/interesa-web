@@ -1761,6 +1761,12 @@ $selectedProduct = $selectedProductSlug !== '' ? interessa_product($selectedProd
 $selectedProduct = is_array($selectedProduct) ? interessa_normalize_product($selectedProduct) : null;
 $selectedProductImage = is_array($selectedProduct) ? ($selectedProduct['image'] ?? null) : null;
 $selectedProductImageSource = is_array($selectedProduct) ? (string) ($selectedProduct['image_mode'] ?? 'placeholder') : 'missing';
+$selectedProductImageSourceLabel = match ($selectedProductImageSource) {
+    'local' => 'hotovy obrazok produktu',
+    'remote' => 'nasiel sa obrazok z obchodu',
+    'placeholder' => 'docasny obrazok',
+    default => 'bez obrazka',
+};
 $selectedProductLocalAsset = is_array($selectedProduct) ? trim((string) ($selectedProduct['image_local_asset'] ?? '')) : '';
 $selectedProductLocalImageUrl = $selectedProductLocalAsset !== '' ? asset($selectedProductLocalAsset) : '';
 $selectedProductImageBrief = is_array($selectedProduct) ? interessa_admin_product_image_brief($selectedProduct) : [];
@@ -2612,7 +2618,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div>
                 <p class="admin-kicker">Produkty na webe</p>
                 <h2>Produkty</h2>
-                <p class="admin-note">Tu riesis len 2 veci: obrazok produktu a stranku produktu v obchode. Kam clovek po kliknuti odide, to nastavujes az v casti Affiliate odkazy.</p>
+                <p class="admin-note">Tu riesis len samotny produkt: jeho nazov, obrazok a adresu produktu v obchode. Kam clovek po kliknuti odide, nastavujes az v casti Klikacie odkazy.</p>
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="products" />
@@ -2637,18 +2643,22 @@ require dirname(__DIR__) . '/inc/head.php';
               <div class="admin-subsection-head">
                 <div>
                   <h3>Ako na produkt bez chaosu</h3>
-                  <p class="admin-meta">Tu je bezny postup. Nemusis riesit technicke detaily ani pola, ktore bezne netreba.</p>
+                  <p class="admin-meta">Tu je bezny postup. Nemusis riesit technicke detaily ani zbytocne polia.</p>
                 </div>
               </div>
               <ol class="admin-quickstart-list">
                 <li><strong>Krok 1:</strong> pozri blok <strong>Co kliknut teraz</strong>. Tam mas vzdy len jeden dalsi krok.</li>
-                <li><strong>Krok 2:</strong> ak admin pyta adresu produktu, klikni na tlacidlo pre doplnenie adresy a otvori sa ti miesto, kde ju doplnis.</li>
-                <li><strong>Krok 3:</strong> klikni <strong>Ulozit produkt</strong>.</li>
-                <li><strong>Krok 4:</strong> klikni <strong>Nacitat udaje z obchodu</strong>.</li>
-                <li><strong>Krok 5:</strong> ak sa nasiel obrazok, klikni <strong>Ulozit obrazok z e-shopu</strong>.</li>
-                <li><strong>Krok 6:</strong> az nakoniec ries klikaci odkaz v casti <strong>Affiliate odkazy</strong>.</li>
+                <li><strong>Krok 2:</strong> ak uz mas Dognet alebo iny klikaci odkaz, najprv ho uloz v casti <strong>Affiliate odkazy</strong>.</li>
+                <li><strong>Krok 3:</strong> ak admin pyta adresu produktu, klikni na tlacidlo pre doplnenie produktu a otvori sa ti presne miesto, kde ju doplnis.</li>
+                <li><strong>Krok 4:</strong> klikni <strong>Ulozit produkt</strong>.</li>
+                <li><strong>Krok 5:</strong> klikni <strong>Nacitat udaje z obchodu</strong>.</li>
+                <li><strong>Krok 6:</strong> ak sa nasiel obrazok, klikni <strong>Ulozit obrazok z e-shopu</strong>.</li>
               </ol>
-              <p class="admin-note">Dolezite: ciel je jednoduchy. Tu riesis len stranku produktu a obrazok. Kam clovek po kliknuti odide, nastavujes az v Affiliate odkazoch.</p>
+              <p class="admin-note">Dolezite: ciel je jednoduchy. Tu riesis len produkt. Klikaci odkaz je az vedla v casti Klikacie odkazy.</p>
+              <div class="admin-inline-actions">
+                <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($selectedAffiliateCode) ?>">Mam uz klikaci odkaz</a>
+                <a class="btn btn-secondary btn-small" href="#product-edit-form">Chcem doplnit produkt</a>
+              </div>
             </section>
 
             <section class="admin-subsection is-compact">
@@ -2663,7 +2673,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <p><?= esc($selectedProductNextStepNote) ?></p>
                 <div class="admin-inline-actions">
                   <?php if ($selectedProductNextStep === 'fill_url'): ?>
-                    <a class="btn btn-secondary btn-small" href="#product-edit-form">1. Otvorit miesto na doplnenie adresy produktu</a>
+                    <a class="btn btn-secondary btn-small" href="#product-edit-form">1. Otvorit produkt a doplnit, co chyba</a>
                   <?php elseif ($selectedProductNextStep === 'enrich'): ?>
                     <form method="post" class="admin-inline-form">
                       <input type="hidden" name="action" value="enrich_product_from_source" />
@@ -2724,7 +2734,7 @@ require dirname(__DIR__) . '/inc/head.php';
             <section class="admin-subsection">
               <div class="admin-subsection-head">
                 <div>
-                  <h3>Produkty, ktore este nemaju hotovy obrazok</h3>
+                  <h3>Produkty bez hotoveho obrazka</h3>
                   <p class="admin-meta">Tu robis len jednu vec: doplnis obrazok produktu. Najprv skus obrazok z e-shopu. Vlastny upload je len zaloha.</p>
                 </div>
                 <div class="admin-filter-pills">
@@ -2763,8 +2773,8 @@ require dirname(__DIR__) . '/inc/head.php';
                     <div class="admin-queue-actions">
                       <span class="admin-note"><?= esc($queueImageModeLabel) ?></span>
                       <?php if (!$queueHasDirectUrl): ?>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>&amp;focus=product_edit#product-edit-form">1. DOPLNIT ADRESU PRODUKTU</a>
-                        <span class="admin-note">Admin este nevie, z ktorej stranky produktu ma citat udaje a obrazok.</span>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>&amp;focus=product_edit#product-edit-form">1. OTVORIT PRODUKT A DOPLNIT, CO CHYBA</a>
+                        <span class="admin-note">Tomuto produktu zatial chyba priama adresa produktu v obchode alebo klikaci odkaz, z ktoreho sa da adresa doplnit.</span>
                       <?php elseif ($queueNeedsLocal && $queueRemoteSrc === ''): ?>
                         <form method="post" class="admin-inline-form">
                           <input type="hidden" name="action" value="autofill_product_from_source" />
@@ -2783,7 +2793,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($queueRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc((string) ($queueRow['merchant_slug'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($queueRow['slug'] ?? '')) ?>">4. Dokoncit klikaci odkaz</a>
                         <span class="admin-note">Produkt uz ma obrazok. Chyba uz len klikaci odkaz.</span>
                       <?php else: ?>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>&amp;focus=product_edit#product-edit-form">Otvorit doplnenie produktu</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>&amp;focus=product_edit#product-edit-form">Skontrolovat produkt</a>
                         <span class="admin-note">Tento produkt je uz skoro hotovy. Tu ho vies len skontrolovat alebo doladit.</span>
                       <?php endif; ?>
                     </div>
@@ -2886,7 +2896,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?= interessa_render_image($selectedProductImage, ['class' => 'admin-asset-preview__image']) ?>
                 </div>
                 <div class="admin-asset-preview__body">
-                  <p><strong>Co sa teraz zobrazuje:</strong> <?= esc($selectedProductImageSource) ?></p>
+                  <p><strong>Co sa teraz zobrazuje:</strong> <?= esc($selectedProductImageSourceLabel) ?></p>
                   <p><strong>Ulozeny obrazok u nas:</strong> <code><?= esc($selectedProductLocalAsset !== '' ? $selectedProductLocalAsset : 'zatial chyba') ?></code></p>
                   <p><strong>Kam sa ulozi hotovy obrazok:</strong> <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></p>
                   <?php $selectedProductHasDirectSourceUrl = interessa_admin_looks_like_product_url((string) ($selectedProduct['fallback_url'] ?? '')); ?>
@@ -2957,12 +2967,15 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php endif; ?>
                     </div>
                   <?php endif; ?>
-                  <div class="admin-diagnostic-list">
-                    <p><strong>Affiliate kod:</strong> <?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?: 'chyba' ?></p>
-                    <p><strong>Typ linku:</strong> <?= esc($selectedProductAffiliateType !== '' ? $selectedProductAffiliateType : 'neznamy') ?></p>
-                    <p><strong>Registry source:</strong> <?= esc((string) ($selectedProductAffiliate['source'] ?? 'bez registry')) ?></p>
-                    <p><strong>Cielova URL:</strong> <?= esc((string) ($selectedProductAffiliateUrl ?? ($selectedProduct['fallback_url'] ?? ''))) ?></p>
-                  </div>
+                  <details class="admin-subsection is-compact">
+                    <summary><strong>Viac detailov o odkaze a produkte</strong> - otvor len ked to naozaj potrebujes</summary>
+                    <div class="admin-diagnostic-list">
+                      <p><strong>Klikaci kod:</strong> <?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?: 'zatial chyba' ?></p>
+                      <p><strong>Typ odkazu:</strong> <?= esc($selectedProductAffiliateType !== '' ? $selectedProductAffiliateType : 'neznamy') ?></p>
+                      <p><strong>Odkial je zaznam:</strong> <?= esc((string) ($selectedProductAffiliate['source'] ?? 'bez zaznamu')) ?></p>
+                      <p><strong>Kam teraz klik smeruje:</strong> <?= esc((string) ($selectedProductAffiliateUrl ?? ($selectedProduct['fallback_url'] ?? ''))) ?></p>
+                    </div>
+                  </details>
                     <?php if (trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== ''): ?>
                       <div class="admin-inline-actions">
                         <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?>">Otvorit klikaci odkaz</a>
@@ -3046,30 +3059,30 @@ require dirname(__DIR__) . '/inc/head.php';
               <div id="product-edit-form" class="admin-subsection is-compact<?= $focusPanel === 'product_edit' ? ' is-focused' : '' ?>">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>Tu doplnis odkaz a obrazok produktu</h3>
-                    <p class="admin-meta">Toto je hlavne miesto, kam ta posielaju tlacidla vyssie. Najprv sem vloz adresu konkretneho produktu v obchode, potom uloz produkt a az potom nacitaj udaje z obchodu.</p>
+                    <h3>Tu doplnis stranku produktu a obrazok</h3>
+                    <p class="admin-meta">Sem ta posielaju tlacidla vyssie. Najprv sem doplnis adresu konkretneho produktu v obchode, potom ulozis produkt a az potom nacitas udaje z obchodu.</p>
                   </div>
                 </div>
-                <div class="admin-flash is-success" style="margin-bottom:16px;">Bezny postup: 1. vloz adresu produktu v obchode -> 2. klikni Ulozit produkt -> 3. klikni Nacitat udaje z obchodu -> 4. klikni Ulozit obrazok z e-shopu.</div>
+                <div class="admin-flash is-success" style="margin-bottom:16px;">Bezny postup: 1. dopln adresu produktu v obchode alebo najprv uloz klikaci odkaz -> 2. klikni Ulozit produkt -> 3. klikni Nacitat udaje z obchodu -> 4. klikni Ulozit obrazok z e-shopu.</div>
                 <div class="admin-grid three-up">
-                  <label><span>Interny nazov (nemusis menit)</span><input type="text" name="product_slug" value="<?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?>" /></label>
+                  <label><span>Kod produktu (bezne nemen)</span><input type="text" name="product_slug" value="<?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?>" /></label>
                   <label><span>Nazov produktu na webe</span><input type="text" name="name" value="<?= esc((string) ($selectedProduct['name'] ?? '')) ?>" /></label>
                   <label><span>Znacka</span><input type="text" name="brand" value="<?= esc((string) ($selectedProduct['brand'] ?? '')) ?>" /></label>
                 </div>
                 <div class="admin-grid three-up">
                   <label><span>Obchod</span><input type="text" name="merchant" value="<?= esc((string) ($selectedProduct['merchant'] ?? '')) ?>" /></label>
-                  <label><span>Interny kod obchodu (nemusis menit)</span><input type="text" name="merchant_slug" value="<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>" /></label>
-                  <label><span>Skupina</span><input type="text" name="category" value="<?= esc((string) ($selectedProduct['category'] ?? '')) ?>" /></label>
+                  <label><span>Kod obchodu (bezne nemen)</span><input type="text" name="merchant_slug" value="<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>" /></label>
+                  <label><span>Tema produktu</span><input type="text" name="category" value="<?= esc((string) ($selectedProduct['category'] ?? '')) ?>" /></label>
                 </div>
                 <div class="admin-grid two-up">
-                  <label><span>Adresa konkretneho produktu v obchode</span><input type="url" name="fallback_url" value="<?= esc((string) ($selectedProduct['fallback_url'] ?? '')) ?>" placeholder="https://obchod.sk/konkretny-produkt" /></label>
+                  <label><span>Priama adresa produktu v obchode</span><input type="url" name="fallback_url" value="<?= esc((string) ($selectedProduct['fallback_url'] ?? '')) ?>" placeholder="https://obchod.sk/konkretny-produkt" /></label>
                   <label><span>Rating</span><input type="number" min="0" max="5" step="0.1" name="rating" value="<?= esc((string) ($selectedProduct['rating'] ?? '')) ?>" data-product-rating-input /></label>
                 </div>
                 <p class="admin-note">Sem patri priamo stranka jedneho konkretneho produktu v obchode. Ak uz ma produkt klikaci /go/ odkaz, admin si ju casto doplni sam. Ty ju dopln len vtedy, ked ju admin este nepozna.</p>
                 <details class="admin-subsection is-compact">
                   <summary><strong>Menej pouzivane polia</strong> - otvor len ked ich naozaj potrebujes</summary>
                   <div class="admin-grid two-up">
-                    <label><span>Klikaci kod odkazu (/go/)</span><input type="text" name="affiliate_code" value="<?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?>" /></label>
+                    <label><span>Kod klikacieho odkazu (/go/)</span><input type="text" name="affiliate_code" value="<?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?>" /></label>
                     <label><span>Priama adresa obrazka (pokrocile, netreba bezne vyplnat)</span><input type="url" name="image_remote_src" value="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>" /></label>
                   </div>
                 </details>
@@ -3452,7 +3465,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         </div>
                       </div>
                       <div class="admin-queue-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Otvorit produkt</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Otvorit produkt</a>
                         <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
                           <?php if (interessa_admin_looks_like_product_url((string) ($queueRow['fallback_url'] ?? ''))): ?>
                             <form method="post" class="admin-inline-form">
@@ -3526,7 +3539,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <?php endif; ?>
                       </div>
                       <div class="admin-inline-actions admin-mini-product-card__actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Otvorit produkt</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Otvorit produkt</a>
                         <?php if ($previewImageUrl !== ''): ?>
                           <a class="btn btn-secondary btn-small" href="<?= esc($previewImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny obrazok</a>
                         <?php else: ?>
@@ -3712,7 +3725,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div>
                 <p class="admin-kicker">Affiliate management</p>
                 <h2>Centralizovane /go/ odkazy</h2>
-                <p class="admin-note">Affiliate odkazy = finalny klikaci odkaz. Tu urcujes kam ma clovek odist po kliknuti z clanku, tlacidla alebo obrazka.</p>
+                <p class="admin-note">Tu riesis len kliknutie. Teda kam clovek odide, ked klikne na tlacidlo, obrazok alebo odkaz na webe.</p>
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="affiliates" />
@@ -3729,7 +3742,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Kontext vybraneho odkazu</h3>
-                    <p class="admin-meta">Pred ulozenim si over, ze /go/ kod smeruje na spravny produkt a merchant.</p>
+                    <p class="admin-meta">Pred ulozenim si over, ze klikaci odkaz smeruje na spravny produkt a spravny obchod.</p>
                   </div>
                 </div>
                 <div class="admin-help-grid">
@@ -3747,8 +3760,8 @@ require dirname(__DIR__) . '/inc/head.php';
                     </article>
                   <?php endif; ?>
                   <article class="admin-help-card">
-                    <h3>Kontrola ciela</h3>
-                    <p class="admin-note">Najprv si skontroluj samotny Dognet deeplink a potom aj interny /go/ odkaz.</p>
+                      <h3>Kontrola kam klik vedie</h3>
+                      <p class="admin-note">Najprv si skontroluj samotny Dognet link a potom aj interny /go/ odkaz.</p>
                     <?php if (trim((string) ($selectedAffiliate['url'] ?? '')) !== ''): ?>
                       <p><code><?= esc((string) ($selectedAffiliate['url'] ?? '')) ?></code></p>
                     <?php endif; ?>
@@ -3777,33 +3790,33 @@ require dirname(__DIR__) . '/inc/head.php';
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
-                  <h3>Ako postupovat pri odkaze</h3>
+                  <h3>Ako postupovat pri klikacom odkaze</h3>
                   <p class="admin-meta">Tu riesis kam clovek realne odide po kliknuti z clanku, tlacidla alebo obrazka.</p>
                 </div>
               </div>
               <ol class="admin-quickstart-list">
                 <li>Vyber alebo vytvor interny <strong>/go/ odkaz</strong>.</li>
-                <li>Do pola <strong>Cielova URL</strong> vloz finalny Dognet alebo iny finalny odkaz.</li>
-                <li>Skontroluj obchod, merchant slug a pripadne product slug.</li>
+                <li>Do pola <strong>Cielova URL</strong> vloz finalny Dognet link alebo iny finalny odkaz do obchodu.</li>
+                <li>Skontroluj nazov obchodu a pripadne produkt.</li>
                 <li>Na zaver klikni <strong>Otvorit interny /go/ odkaz</strong> a over, kam clovek realne odide.</li>
               </ol>
             </section>
 
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
-                <h3>Rychlo vytvorit novy /go/ odkaz</h3>
+                <h3>Rychlo vytvorit novy klikaci odkaz</h3>
               </div>
               <form method="post" class="admin-form admin-form-stack">
                 <input type="hidden" name="action" value="create_affiliate" />
                 <?php if ($returnSectionPrefill !== ""): ?><input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill) ?>" /><?php endif; ?>
                 <?php if ($returnSlugPrefill !== ""): ?><input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" /><?php endif; ?>
                 <div class="admin-grid three-up">
-                  <label><span>Kod</span><input type="text" name="new_affiliate_code" value="<?= esc($prefillAffiliateCode) ?>" placeholder="kolagen-recenzia-gymbeam" /></label>
-                  <label><span>Merchant</span><input type="text" name="new_affiliate_merchant" value="<?= esc($prefillAffiliateMerchant) ?>" placeholder="GymBeam" /></label>
-                  <label><span>Merchant slug</span><input type="text" name="new_affiliate_merchant_slug" value="<?= esc($prefillAffiliateMerchantSlug) ?>" placeholder="gymbeam" /></label>
+                  <label><span>Kod odkazu</span><input type="text" name="new_affiliate_code" value="<?= esc($prefillAffiliateCode) ?>" placeholder="kolagen-recenzia-gymbeam" /></label>
+                  <label><span>Nazov obchodu</span><input type="text" name="new_affiliate_merchant" value="<?= esc($prefillAffiliateMerchant) ?>" placeholder="GymBeam" /></label>
+                  <label><span>Kod obchodu</span><input type="text" name="new_affiliate_merchant_slug" value="<?= esc($prefillAffiliateMerchantSlug) ?>" placeholder="gymbeam" /></label>
                 </div>
                 <div class="admin-grid two-up">
-                  <label><span>Product slug</span><input type="text" name="new_affiliate_product_slug" value="<?= esc($prefillAffiliateProductSlug) ?>" placeholder="gymbeam-collagen-complex" /></label>
+                  <label><span>Kod produktu</span><input type="text" name="new_affiliate_product_slug" value="<?= esc($prefillAffiliateProductSlug) ?>" placeholder="gymbeam-collagen-complex" /></label>
                   <label><span>Typ linku</span>
                     <select name="new_affiliate_link_type">
                       <option value="affiliate">affiliate</option>
@@ -3812,7 +3825,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   </label>
                 </div>
                 <div class="admin-actions">
-                  <button class="btn btn-secondary" type="submit">Vytvorit /go/ odkaz</button>
+                  <button class="btn btn-secondary" type="submit">Vytvorit klikaci odkaz</button>
                 </div>
               </form>
             </section>
@@ -3822,7 +3835,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <?php if ($returnSectionPrefill !== ""): ?><input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill) ?>" /><?php endif; ?>
               <?php if ($returnSlugPrefill !== ""): ?><input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" /><?php endif; ?>
               <div class="admin-grid two-up">
-                <label><span>Kod</span><input type="text" name="code" value="<?= esc((string) ($selectedAffiliate['code'] ?? $selectedAffiliateCode)) ?>" /></label>
+                <label><span>Kod odkazu</span><input type="text" name="code" value="<?= esc((string) ($selectedAffiliate['code'] ?? $selectedAffiliateCode)) ?>" /></label>
                 <label><span>Typ linku</span>
                   <select name="link_type">
                     <?php $linkType = (string) ($selectedAffiliate['link_type'] ?? 'affiliate'); ?>
@@ -3833,12 +3846,12 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
               <label><span>Cielova URL</span><input type="url" name="url" value="<?= esc((string) ($selectedAffiliate['url'] ?? '')) ?>" /></label>
               <div class="admin-grid three-up">
-                <label><span>Obchod</span><input type="text" name="merchant" value="<?= esc((string) ($selectedAffiliate['merchant'] ?? '')) ?>" /></label>
-                <label><span>Merchant slug</span><input type="text" name="merchant_slug" value="<?= esc((string) ($selectedAffiliate['merchant_slug'] ?? '')) ?>" /></label>
-                <label><span>Product slug</span><input type="text" name="product_slug" value="<?= esc((string) ($selectedAffiliate['product_slug'] ?? '')) ?>" /></label>
+                <label><span>Nazov obchodu</span><input type="text" name="merchant" value="<?= esc((string) ($selectedAffiliate['merchant'] ?? '')) ?>" /></label>
+                <label><span>Kod obchodu</span><input type="text" name="merchant_slug" value="<?= esc((string) ($selectedAffiliate['merchant_slug'] ?? '')) ?>" /></label>
+                <label><span>Kod produktu</span><input type="text" name="product_slug" value="<?= esc((string) ($selectedAffiliate['product_slug'] ?? '')) ?>" /></label>
               </div>
               <div class="admin-actions">
-                <button class="btn btn-cta" type="submit">Ulozit /go/ odkaz</button>
+                <button class="btn btn-cta" type="submit">Ulozit klikaci odkaz</button>
                 <?php if ($selectedAffiliateCode !== ''): ?>
                   <a class="btn btn-secondary" href="/go/<?= rawurlencode($selectedAffiliateCode) ?>" target="_blank" rel="noopener">Otvorit interny /go/ odkaz</a>
                 <?php endif; ?>
