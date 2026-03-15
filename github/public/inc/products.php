@@ -124,6 +124,9 @@ if (!function_exists('interessa_normalize_product')) {
         $merchantSlug = trim((string) ($product['merchant_slug'] ?? ''));
         $affiliateCode = trim((string) ($product['affiliate_code'] ?? ''));
         $fallbackUrl = trim((string) ($product['fallback_url'] ?? ''));
+        if ($fallbackUrl === '' && $affiliateCode !== '') {
+            $fallbackUrl = aff_product_url_for_code($affiliateCode);
+        }
         $imageConfig = is_array($product['image'] ?? null) ? $product['image'] : [];
         $imageConfig['merchant_slug'] = $merchantSlug !== '' ? $merchantSlug : (string) ($imageConfig['merchant_slug'] ?? '');
         $image = $slug !== '' ? interessa_product_image_meta($slug, $imageConfig, true) : null;

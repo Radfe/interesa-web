@@ -32,7 +32,7 @@ if (!function_exists('interessa_article_methodology_points')) {
 
         if ($commerce !== null) {
             $points[] = 'Produkty vo vybere vyberame podla relevancie k teme clanku a tomu, co citatel najcastejsie hlada.';
-            $points[] = 'Odkazy do obchodov spravujeme centralne cez interne /go/ route, takze ich vieme aktualizovat bez zasahu do textu clanku.';
+            $points[] = 'Odkazy do obchodov priebezne kontrolujeme a aktualizujeme tak, aby si sa dostal na spravny produkt bez zbytocneho hladania.';
         }
 
         switch ($category) {
@@ -125,9 +125,8 @@ if (!function_exists('interessa_render_article_trust_box')) {
         echo '<p>' . esc($commerce !== null
             ? $disclosure
             : 'Aj pri informacnych clankoch zachovavame ciste interne odkazy a priebezne upratujeme strukturu tak, aby bol obsah dlhodobo udrzatelny.') . '</p>';
-        echo '<p class="article-meta-inline"><strong>' . esc('Forma odkazov:') . '</strong> interne <code>/go/</code> route a ' . esc('centralna sprava partnerov.') . '</p>';
         if ($commerce !== null && $shortlistMeta !== null && (int) ($shortlistMeta['merchant_count'] ?? 0) > 0) {
-            echo '<p class="article-meta-inline"><strong>' . esc('Rozsah porovnania:') . '</strong> ' . esc((string) $shortlistMeta['merchant_count']) . ' ' . esc(interessa_pluralize_slovak((int) $shortlistMeta['merchant_count'], 'obchod', 'obchody', 'obchodov')) . ' a priebezne kontrolovane prechody do produktu.</p>';
+            echo '<p class="article-meta-inline"><strong>' . esc('Vo vybere:') . '</strong> ' . esc((string) $shortlistMeta['merchant_count']) . ' ' . esc(interessa_pluralize_slovak((int) $shortlistMeta['merchant_count'], 'obchod', 'obchody', 'obchodov')) . ' s priebeznou kontrolou odkazov.</p>';
         }
         echo '</article>';
 
@@ -141,18 +140,17 @@ if (!function_exists('interessa_render_article_trust_box')) {
             echo '<p class="article-meta-inline"><strong>' . esc('Tema:') . '</strong> ' . esc($categoryTitle) . '</p>';
         }
         if ($shortlistMeta !== null) {
-            echo '<p class="article-meta-inline"><strong>' . esc('Vyber produktov:') . '</strong> ' . esc((string) $shortlistMeta['count']) . ' ' . esc(interessa_pluralize_slovak((int) $shortlistMeta['count'], 'produkt', 'produkty', 'produktov')) . '</p>';
+            echo '<p class="article-meta-inline"><strong>' . esc('Pocet produktov:') . '</strong> ' . esc((string) $shortlistMeta['count']) . ' ' . esc(interessa_pluralize_slovak((int) $shortlistMeta['count'], 'produkt', 'produkty', 'produktov')) . '</p>';
             if (($shortlistMeta['merchant_count'] ?? 0) > 0) {
-                echo '<p class="article-meta-inline"><strong>' . esc('Porovnane obchody:') . '</strong> ' . esc((string) $shortlistMeta['merchant_count']) . '</p>';
+                echo '<p class="article-meta-inline"><strong>' . esc('Pocet obchodov:') . '</strong> ' . esc((string) $shortlistMeta['merchant_count']) . '</p>';
             }
             if (($shortlistMeta['real_packshots'] ?? 0) > 0) {
-                echo '<p class="article-meta-inline"><strong>' . esc('Packshot coverage:') . '</strong> ' . esc((string) $shortlistMeta['real_packshots']) . '/' . esc((string) $shortlistMeta['count']) . '</p>';
+                echo '<p class="article-meta-inline"><strong>' . esc('Realne fotky:') . '</strong> ' . esc((string) $shortlistMeta['real_packshots']) . '/' . esc((string) $shortlistMeta['count']) . '</p>';
             }
             if (($shortlistMeta['editorial_visuals'] ?? 0) > 0) {
-                echo '<p class="article-meta-inline">' . esc('Pri casti vyberu zatial pouzivame redakcny vizual, aby ostalo porovnanie citatelne. Odkazy a odporucania tym nie su ovplyvnene.') . '</p>';
+                echo '<p class="article-meta-inline">' . esc('Pri casti vyberu zatial vidis ilustracny redakcny vizual. Odkazy a odporucania tym nie su ovplyvnene.') . '</p>';
             }
         }
-        echo '<p class="article-meta-inline"><strong>' . esc('Slug:') . '</strong> ' . esc(interessa_article_preferred_slug($slug)) . '</p>';
         echo '</article>';
 
         echo '</div>';

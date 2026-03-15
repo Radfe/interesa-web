@@ -209,11 +209,11 @@ include dirname(__DIR__) . '/inc/head.php';
       <?php endif; ?>
       <?php if ($commercialCount > 0): ?>
         <div class="article-card-submeta">
-          <span class="article-card-subchip">Odporucania v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+          <span class="article-card-subchip">Vyber produktov v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
           <?php if ($fullCoverageCount > 0): ?>
-            <span class="article-card-subchip is-coverage is-full">Porovnanie + packshoty v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+            <span class="article-card-subchip is-coverage is-full">Tabulka a realne fotky v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
           <?php else: ?>
-            <span class="article-card-subchip is-coverage is-partial">Shortlist uz je pripraveny</span>
+            <span class="article-card-subchip is-coverage is-partial">Vyber je pripraveny</span>
           <?php endif; ?>
         </div>
       <?php endif; ?>

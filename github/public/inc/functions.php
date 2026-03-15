@@ -59,6 +59,12 @@ if (!function_exists('page_title')) {
 if (!function_exists('raw_page_description')) {
     function raw_page_description(): string {
         global $page_description, $PAGE_DESCRIPTION, $page;
+        $resolvedDescription = $page_description
+            ?? $PAGE_DESCRIPTION
+            ?? ($page['description'] ?? null)
+            ?? 'Interesa je obsahovy magazin o vyzive, doplnkoch a zmysluplnom vybere produktov.';
+        return (string) $resolvedDescription;
+
         return (string) ($page_description
             ?? $PAGE_DESCRIPTION
             ?? ($page['description'] ?? null)
@@ -546,7 +552,7 @@ if (!function_exists('interessa_category_seo_meta')) {
         $overrides = [
             'proteiny' => [
                 'meta_title' => 'Proteiny - porovnania, vyber a clanky | Interesa',
-                'meta_description' => 'Tematicky hub pre proteiny: najlepsie proteiny, protein na chudnutie, WPC vs WPI a veganske alternativy.',
+                'meta_description' => 'Proteiny na jednom mieste: najlepsie proteiny, protein na chudnutie, WPC vs WPI a veganske alternativy.',
             ],
             'vyziva' => [
                 'meta_title' => 'Zdrava vyziva - doplnky, probiotika a vyber | Interesa',
@@ -554,7 +560,7 @@ if (!function_exists('interessa_category_seo_meta')) {
             ],
             'mineraly' => [
                 'meta_title' => 'Vitaminy a mineraly - vyber a porovnania | Interesa',
-                'meta_description' => 'Hub pre vitaminy a mineraly: horcik, vitamin D3, vitamin C a zinok s fokusom na vyber, davku a realne pouzitie.',
+                'meta_description' => 'Vitaminy a mineraly na jednom mieste: horcik, vitamin D3, vitamin C a zinok s fokusom na vyber, davku a realne pouzitie.',
             ],
             'imunita' => [
                 'meta_title' => 'Imunita - vitaminy, doplnky a clanky | Interesa',
@@ -562,7 +568,7 @@ if (!function_exists('interessa_category_seo_meta')) {
             ],
             'sila' => [
                 'meta_title' => 'Sila a vykon - kreatin, pre-workout a vyber | Interesa',
-                'meta_description' => 'Tematicky hub pre silu a vykon: kreatin, pre-workout, regeneracia a clanky pre prakticky vyber doplnkov na trening.',
+                'meta_description' => 'Sila a vykon na jednom mieste: kreatin, pre-workout, regeneracia a clanky pre prakticky vyber doplnkov na trening.',
             ],
             'klby-koza' => [
                 'meta_title' => 'Klby a koza - kolagen a doplnky | Interesa',

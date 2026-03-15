@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/affiliates.php';
+
 const INTERESSA_ADMIN_STORAGE_DIR = __DIR__ . '/../storage/admin';
 const INTERESSA_ADMIN_ARTICLES_DIR = INTERESSA_ADMIN_STORAGE_DIR . '/articles';
 const INTERESSA_ADMIN_PRODUCTS_FILE = INTERESSA_ADMIN_STORAGE_DIR . '/products.json';
@@ -1222,6 +1224,9 @@ if (!function_exists('interessa_admin_enrich_product_record_from_source')) {
         $normalized = interessa_normalize_product($product);
         $override = interessa_admin_product_record($slug) ?? [];
         $fallbackUrl = trim((string) ($override['fallback_url'] ?? $normalized['fallback_url'] ?? ''));
+        if ($fallbackUrl === '') {
+            $fallbackUrl = aff_product_url_for_code((string) ($normalized['affiliate_code'] ?? ''));
+        }
         if ($fallbackUrl === '') {
             throw new RuntimeException('Produkt nema referencnu URL produktu na e-shope. Najprv vloz priamu URL konkretneho produktu.');
         }

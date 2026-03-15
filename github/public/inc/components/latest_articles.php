@@ -78,7 +78,7 @@ if ($latestArticlesCategorySlug !== '') {
     echo '<p class="muted">' . esc($latestCategoryTitle !== '' ? ('Aktualne clanky a vybery v teme ' . $latestCategoryTitle . '.') : interessa_text('Aktualne clanky a vybery v tejto teme.')) . '</p>';
 } else {
     echo '<h3>' . esc(interessa_text('Nove a aktualizovane clanky')) . '</h3>';
-    echo '<p class="muted">' . esc(interessa_text('Clanky, ktore sa oplati otvorit, ak chces nove informacie alebo uz pripraveny vyber produktov.')) . '</p>';
+    echo '<p class="muted">' . esc(interessa_text('Clanky, ktore sa oplati otvorit, ak chces nove informacie alebo rychly prechod k vhodnemu vyberu.')) . '</p>';
 }
 
 if ($items === []) {
@@ -111,9 +111,9 @@ foreach ($items as $item) {
     if ($showComparisonReady || $showRecommendations) {
         echo '<div class="article-card-submeta">';
         if ($showComparisonReady) {
-            echo '<span class="article-card-subchip is-coverage is-full">Mas tam aj rychly vyber</span>';
+            echo '<span class="article-card-subchip is-coverage is-full">V clanku najdes rychly prehlad</span>';
         } elseif ($showRecommendations && $summary !== null) {
-            echo '<span class="article-card-subchip">Odporucane produkty v clanku</span>';
+            echo '<span class="article-card-subchip">Vyber produktov v clanku</span>';
         }
         if ((int) ($item['coverage_percent'] ?? 0) > 0) {
             echo '<span class="article-card-subchip">Realne fotky: ' . esc((string) ((int) ($item['coverage_percent'] ?? 0))) . '%</span>';

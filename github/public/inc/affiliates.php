@@ -288,3 +288,39 @@ function aff_resolve(string $code): ?string {
     $url = trim((string) ($record['url'] ?? ''));
     return $url !== '' ? $url : null;
 }
+
+function aff_extract_final_url(string $url): string {
+    $url = trim($url);
+    if ($url === '') {
+        return '';
+    }
+
+    $parts = @parse_url($url);
+    if (!is_array($parts)) {
+        return $url;
+    }
+
+    $query = [];
+    parse_str((string) ($parts['query'] ?? ''), $query);
+    $candidate = trim((string) ($query['url'] ?? ''));
+    if ($candidate === '') {
+        return $url;
+    }
+
+    $candidate = rawurldecode($candidate);
+    return preg_match('~^https?://~i', $candidate) ? $candidate : $url;
+}
+
+function aff_product_url_for_code(string $code): string {
+    $record = aff_record($code);
+    if (!is_array($record)) {
+        return '';
+    }
+
+    $url = trim((string) ($record['url'] ?? ''));
+    if ($url === '') {
+        return '';
+    }
+
+    return aff_extract_final_url($url);
+}

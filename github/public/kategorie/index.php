@@ -166,7 +166,7 @@ include __DIR__ . '/../inc/head.php';
     <article class="card">
       <div class="card-body">
         <h3>Detailne a podporne temy</h3>
-        <p>Tieto temy doplnaju hlavne huby. Pomozu ti, ked uz vies, co hladas a potrebujes uzsi vyber.</p>
+        <p>Tieto temy doplnaju hlavne temy webu. Pomozu ti, ked uz vies, co hladas a potrebujes uzsi vyber.</p>
       </div>
     </article>
   </div>
@@ -176,7 +176,7 @@ include __DIR__ . '/../inc/head.php';
 <section class="container home-section">
   <div class="section-head">
     <h2>Vyber si temu podla toho, co prave riesis</h2>
-    <p class="meta">Namiesto prezerania celeho zoznamu si vyber intent a chod rovno na temu, ktora dava najvacsi zmysel.</p>
+    <p class="meta">Namiesto prezerania celeho zoznamu si vyber zamer a chod rovno na temu, ktora dava najvacsi zmysel.</p>
   </div>
 
   <div class="intent-lane-grid">
@@ -207,7 +207,7 @@ include __DIR__ . '/../inc/head.php';
 <section class="container home-section">
   <div class="section-head">
     <h2>Hlavne temy, v ktorych sa oplati zacat</h2>
-    <p class="meta">Najsilnejsie smery webu, na ktorych stoja hlavne porovnania, sprievodcovia a produktove vybery.</p>
+        <p class="meta">Najsilnejsie smery webu, na ktorych stoja hlavne porovnania, sprievodcovia a produktove vybery.</p>
   </div>
 
   <div class="hub-grid">
@@ -241,9 +241,9 @@ include __DIR__ . '/../inc/head.php';
           <?php if (is_array($primaryGuide) && !empty($primaryGuide['has_commerce'])): ?>
             <div class="article-card-submeta">
               <?php if (($primaryGuide['coverage_state'] ?? '') === 'full'): ?>
-                <span class="article-card-subchip is-coverage is-full">Startovaci clanok uz ma rychly prehlad aj vyber</span>
+                <span class="article-card-subchip is-coverage is-full">V uvodnom clanku uz najdes rychly prehlad aj vyber</span>
               <?php else: ?>
-                <span class="article-card-subchip is-coverage is-partial">Startovaci clanok uz ma odporucane produkty</span>
+                <span class="article-card-subchip is-coverage is-partial">V uvodnom clanku uz najdes odporucane produkty</span>
               <?php endif; ?>
             </div>
           <?php endif; ?>
@@ -298,9 +298,9 @@ include __DIR__ . '/../inc/head.php';
           <?php if (is_array($primaryGuide) && !empty($primaryGuide['has_commerce'])): ?>
             <div class="article-card-submeta">
               <?php if (($primaryGuide['coverage_state'] ?? '') === 'full'): ?>
-                <span class="article-card-subchip is-coverage is-full">Startovaci clanok uz ma rychly prehlad aj vyber</span>
+                <span class="article-card-subchip is-coverage is-full">V uvodnom clanku uz najdes rychly prehlad aj vyber</span>
               <?php else: ?>
-                <span class="article-card-subchip is-coverage is-partial">Startovaci clanok uz ma odporucane produkty</span>
+                <span class="article-card-subchip is-coverage is-partial">V uvodnom clanku uz najdes odporucane produkty</span>
               <?php endif; ?>
             </div>
           <?php endif; ?>
@@ -310,7 +310,7 @@ include __DIR__ . '/../inc/head.php';
             <?php if (is_array($primaryGuide)): ?>
               <a class="btn btn-primary" href="<?= esc(article_url((string) ($primaryGuide['slug'] ?? ''))) ?>"><?= esc('Zacat: ' . (string) ($primaryGuide['label'] ?? 'Start')) ?></a>
             <?php endif; ?>
-            <a class="btn btn-ghost" href="<?= esc(category_url($slug)) ?>">Pozriet hub</a>
+            <a class="btn btn-ghost" href="<?= esc(category_url($slug)) ?>">Otvorit temu</a>
           </div>
         </div>
       </article>

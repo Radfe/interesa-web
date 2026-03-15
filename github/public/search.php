@@ -196,7 +196,7 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
             <a class="filter-chip<?= $commercialOnly ? ' is-active' : ' is-muted' ?>" href="/search?<?= esc(http_build_query($commercialOnly ? $commercialResetQuery : $commercialQuery)) ?>">S odporucaniami (<?= esc((string) $commercialCountInScope) ?>)</a>
             <?php $coverageQuery = array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => 'full']); ?>
             <?php $coverageResetQuery = array_filter(['q' => $q, 'category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null]); ?>
-            <a class="filter-chip<?= $coverageFilter === 'full' ? ' is-active' : ' is-muted' ?>" href="/search?<?= esc(http_build_query($coverageFilter === 'full' ? $coverageResetQuery : $coverageQuery)) ?>">Najviac pripravene (<?= esc((string) $fullCoverageCountInScope) ?>)</a>
+            <a class="filter-chip<?= $coverageFilter === 'full' ? ' is-active' : ' is-muted' ?>" href="/search?<?= esc(http_build_query($coverageFilter === 'full' ? $coverageResetQuery : $coverageQuery)) ?>">S realnymi fotkami (<?= esc((string) $fullCoverageCountInScope) ?>)</a>
           </div>
         <?php endif; ?>
 
@@ -220,7 +220,7 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
           <div class="empty-state">
             <p class="note">
               <?php if ($coverageFilter === 'full'): ?>
-                Nenasli sa ziadne clanky s hotovymi produktovymi obrazkami.
+                Nenasli sa ziadne clanky s realnymi fotkami produktov.
               <?php elseif ($commercialOnly): ?>
                 Nenasli sa ziadne clanky s odporucaniami produktov.
               <?php else: ?>
@@ -247,7 +247,7 @@ function match_article_result(string $slug, array $meta, string $query): ?array 
               <span class="search-summary-chip">iba s odporucaniami produktov</span>
             <?php endif; ?>
             <?php if ($coverageFilter === 'full'): ?>
-              <span class="search-summary-chip">iba s hotovymi obrazkami</span>
+              <span class="search-summary-chip">iba s realnymi fotkami</span>
             <?php endif; ?>
             <?php if ($categoryMeta !== null): ?>
               <span class="search-summary-chip">tema: <?= esc((string) $categoryMeta['title']) ?></span>

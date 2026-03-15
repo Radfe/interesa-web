@@ -125,9 +125,9 @@ if (!function_exists('interessa_render_commerce_verdict')) {
         $editorialCount = (int) ($shortlistStats['editorial_visuals'] ?? 0);
         $realPackshots = (int) ($shortlistStats['real_packshots'] ?? 0);
         $coveragePercent = interessa_shortlist_coverage_percent($shortlistStats);
-        echo '<section class="commerce-verdict" aria-label="Rychly vyber">';
+        echo '<section class="commerce-verdict" aria-label="Odporucena volba">';
         echo '<div class="commerce-verdict-copy">';
-        echo '<p class="hub-eyebrow">Rychly vyber</p>';
+        echo '<p class="hub-eyebrow">Odporucena volba</p>';
         echo '<h2>' . esc($leadName !== '' ? $leadName : $title) . '</h2>';
         if ($leadSummary !== '') {
             echo '<p class="commerce-verdict-lead">' . esc($leadSummary) . '</p>';
@@ -140,7 +140,7 @@ if (!function_exists('interessa_render_commerce_verdict')) {
         echo '<a class="btn btn-ghost" href="#odporucane-produkty">Pozriet cely vyber</a>';
         echo '</div>';
         if ($merchantNames !== []) {
-            echo '<div class="commerce-verdict-merchants" aria-label="Porovnane obchody">';
+            echo '<div class="commerce-verdict-merchants" aria-label="Obchody vo vybere">';
             foreach ($merchantNames as $merchantName) {
                 $merchantClass = interessa_is_priority_merchant($merchantName) ? ' is-priority' : '';
                 $priorityLabel = interessa_is_priority_merchant($merchantName) ? ' <span class="commerce-verdict-chip-note">preferovany partner</span>' : '';
@@ -149,22 +149,22 @@ if (!function_exists('interessa_render_commerce_verdict')) {
             echo '</div>';
         }
         if ($editorialCount > 0) {
-            echo '<p class="commerce-verdict-coverage-note">' . esc('Pri casti vyberu zatial pouzivame redakcny vizual, aby bolo porovnanie citatelne. Odporucania aj odkazy smeruju na konkretne produkty v obchodoch.') . '</p>';
+            echo '<p class="commerce-verdict-coverage-note">' . esc('Pri casti vyberu zatial vidis ilustracny redakcny vizual. Odporucania aj odkazy smeruju na konkretne produkty v obchodoch.') . '</p>';
         } else {
             echo '<p class="commerce-verdict-coverage-note is-complete">' . esc('Vyber je pripraveny na rychle porovnanie aj prechod do obchodu.') . '</p>';
         }
         echo '</div>';
 
         echo '<div class="commerce-verdict-stats">';
-        echo '<div class="commerce-verdict-stat"><strong>' . esc((string) count($resolvedProducts)) . '</strong><span>odporucane produkty</span></div>';
+        echo '<div class="commerce-verdict-stat"><strong>' . esc((string) count($resolvedProducts)) . '</strong><span>produkty v porovnani</span></div>';
         if ($merchantCount > 0) {
-            echo '<div class="commerce-verdict-stat"><strong>' . esc((string) $merchantCount) . '</strong><span>porovnane obchody</span></div>';
+            echo '<div class="commerce-verdict-stat"><strong>' . esc((string) $merchantCount) . '</strong><span>obchody vo vybere</span></div>';
         }
         if ($realPackshots > 0) {
-            echo '<div class="commerce-verdict-stat"><strong>' . esc((string) $coveragePercent) . '%</strong><span>realne packshoty vo vybere</span></div>';
+            echo '<div class="commerce-verdict-stat"><strong>' . esc((string) $coveragePercent) . '%</strong><span>realne fotky</span></div>';
         }
         if ($rating > 0) {
-            echo '<div class="commerce-verdict-stat"><strong>' . esc(number_format($rating, 1)) . '/5</strong><span>redakcne hodnotenie top volby</span></div>';
+            echo '<div class="commerce-verdict-stat"><strong>' . esc(number_format($rating, 1)) . '/5</strong><span>redakcne hodnotenie</span></div>';
         }
         if ($leadMerchant !== '') {
             $merchantClass = interessa_is_priority_merchant($leadMerchant, (string) ($lead['merchant_slug'] ?? '')) ? ' is-priority' : '';
@@ -200,19 +200,19 @@ if (!function_exists('interessa_render_top_products')) {
             echo '<p class="topbox-intro">' . esc($intro) . '</p>';
         }
         echo '<div class="topbox-metrics" aria-label="Prehlad vyberu">';
-        echo '<span class="topbox-metric"><strong>' . esc((string) count($resolvedProducts)) . '</strong><span>produkty vo vybere</span></span>';
+        echo '<span class="topbox-metric"><strong>' . esc((string) count($resolvedProducts)) . '</strong><span>produkty v porovnani</span></span>';
         if ($merchantNames !== []) {
-            echo '<span class="topbox-metric"><strong>' . esc((string) count($merchantNames)) . '</strong><span>porovnane obchody</span></span>';
+            echo '<span class="topbox-metric"><strong>' . esc((string) count($merchantNames)) . '</strong><span>obchody vo vybere</span></span>';
         }
         echo '<span class="topbox-metric"><strong>' . esc((string) $catalogResolvedCount) . '/' . esc((string) count($resolvedProducts)) . '</strong><span>konkretne produkty v katalogu</span></span>';
         if ($realPackshots > 0) {
-            echo '<span class="topbox-metric"><strong>' . esc((string) $coveragePercent) . '%</strong><span>realne packshoty vo vybere</span></span>';
+            echo '<span class="topbox-metric"><strong>' . esc((string) $coveragePercent) . '%</strong><span>realne fotky</span></span>';
         }
         echo '</div>';
         if ($editorialCount > 0) {
-            echo '<p class="topbox-coverage-note">' . esc('Cast vyberu zatial pouziva redakcny vizual namiesto packshotu z obchodu. Poradie, odporucania aj affiliate odkazy tym nie su ovplyvnene a packshoty priebezne dorovnavame.') . '</p>';
+            echo '<p class="topbox-coverage-note">' . esc('Pri casti vyberu zatial vidis redakcny vizual namiesto fotky produktu z obchodu. Poradie, odporucania aj odkazy tym nie su ovplyvnene a realne fotky priebezne doplname.') . '</p>';
         } elseif ($realPackshots > 0) {
-            echo '<p class="topbox-coverage-note">' . esc('Vyber uz obsahuje realne packshoty produktov a je pripraveny na rychle porovnanie aj preklik do obchodu.') . '</p>';
+            echo '<p class="topbox-coverage-note">' . esc('Vyber uz obsahuje realne fotky produktov a je pripraveny na rychle porovnanie aj prechod do obchodu.') . '</p>';
         }
         echo '</div>';
         echo '<div class="top-products-grid">';

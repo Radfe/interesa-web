@@ -72,7 +72,7 @@ foreach ($featuredCategorySlugs as $slug) {
             'sila' => 'Vykon, kreatin a trening',
             'klby-koza' => 'Kolagen, klby a regeneracia',
             'imunita' => 'Imunita a obranyschopnost',
-            default => 'Tematicky hub',
+            default => 'Hlavna tema',
         },
         'image' => interessa_category_image_meta($slug, 'hero', true),
         'count' => count(category_articles($slug)),
@@ -286,7 +286,7 @@ include __DIR__ . '/inc/head.php';
     <div class="hero-copy">
       <p class="hub-eyebrow">Prakticky magazin o vyzive</p>
       <h1>Vyber si doplnky a vyzivu bez chaosu a marketingoveho balastu</h1>
-      <p>Interesa spaja tematicke huby, nakupne navody, recenzie a porovnania tak, aby si sa vedel rychlo dostat k rozumnemu vyberu podla ciela.</p>
+      <p>Interesa spaja hlavne temy, nakupne navody, recenzie a porovnania tak, aby si sa vedel rychlo dostat k rozumnemu vyberu podla ciela.</p>
       <div class="hero-cta">
         <a class="btn btn-primary" href="/clanky/najlepsie-proteiny-2026">Zacat porovnanim</a>
         <a class="btn btn-ghost" href="/kategorie">Otvorit temy</a>
@@ -304,7 +304,7 @@ include __DIR__ . '/inc/head.php';
 
 <section class="container stats-strip" aria-label="Co na webe najdes">
   <article class="stats-card">
-    <strong><?= esc((string) $categoryCount) ?> tematickych hubov</strong>
+    <strong><?= esc((string) $categoryCount) ?> hlavnych tem</strong>
     <p>Zacni podla ciela a az potom ries konkretny produkt.</p>
   </article>
   <article class="stats-card">
@@ -324,7 +324,7 @@ include __DIR__ . '/inc/head.php';
 <?php if ($homeQuickStartPaths !== []): ?>
 <section class="container home-section home-section--quickstart">
   <div class="section-head">
-    <p class="hub-eyebrow">Quick start</p>
+    <p class="hub-eyebrow">Rychly start</p>
     <h2>Tri najrychlejsie cesty cez web</h2>
     <p class="meta">Ak nechces najprv prechadzat cely web, zacni jednou z tychto troch ciest. Kazda ta rychlo dovedie k uzitocnemu clanku a rozumnejsiemu vyberu.</p>
   </div>
@@ -451,7 +451,7 @@ include __DIR__ . '/inc/head.php';
           <?= interessa_render_image($category['image'], ['class' => 'hub-card-image theme-card-image category-asset-image', 'alt' => $category['title']]) ?>
           <div class="theme-card-badge-row">
             <span class="theme-card-kicker">Hlavna tema</span>
-            <span class="theme-card-kicker is-soft"><?= esc((string) ($category['theme_label'] ?? 'Tematicky hub')) ?></span>
+            <span class="theme-card-kicker is-soft"><?= esc((string) ($category['theme_label'] ?? 'Hlavna tema')) ?></span>
           </div>
         </div>
         <div class="hub-card-body">
@@ -523,7 +523,7 @@ include __DIR__ . '/inc/head.php';
 <section class="container home-section">
   <div class="section-head">
     <h2>Clanky, kde sa vies rozhodnut najrychlejsie</h2>
-    <p class="meta">Vybery, v ktorych uz mas shortlist, porovnanie alebo jasne odporucania pripravene na rychle rozhodnutie.</p>
+    <p class="meta">Vybery, v ktorych uz mas prehlad produktov a jasne odporucania pripravene na rychle rozhodnutie.</p>
   </div>
 
   <div class="hub-grid article-teaser-grid">
@@ -553,7 +553,7 @@ include __DIR__ . '/inc/head.php';
 <section class="container home-section">
   <div class="section-head">
     <h2>Rychle porovnania v tabulke</h2>
-    <p class="meta">Ak chces ist rovno na porovnanie produktov, tu najdes clanky, kde uz je pripravena comparison table aj shortlist.</p>
+    <p class="meta">Ak chces ist rovno na porovnanie produktov, tu najdes clanky, kde uz mas pripravenu prehladnu tabulku aj odporucania.</p>
   </div>
 
   <div class="hub-grid article-teaser-grid">
@@ -569,8 +569,8 @@ include __DIR__ . '/inc/head.php';
             <?php if (($guide['updated_date'] ?? '') !== ''): ?><span class="article-card-date">Aktualizovane: <?= esc((string) $guide['updated_date']) ?></span><?php endif; ?>
           </div>
           <div class="article-card-submeta">
-            <span class="article-card-subchip is-coverage is-full">Comparison table pripravena</span>
-            <span class="article-card-subchip">Packshoty: <?= esc((string) ($guide['coverage_percent'] ?? 0)) ?>%</span>
+            <span class="article-card-subchip is-coverage is-full">Prehladna tabulka produktov</span>
+            <span class="article-card-subchip">Realne fotky: <?= esc((string) ($guide['coverage_percent'] ?? 0)) ?>%</span>
           </div>
           <h3><a href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc((string) $guide['title']) ?></a></h3>
           <?php if (($guide['description'] ?? '') !== ''): ?><p><?= esc((string) $guide['description']) ?></p><?php endif; ?>
@@ -600,7 +600,7 @@ include __DIR__ . '/inc/head.php';
             <span class="article-card-subchip is-coverage <?= $homeLeadCoveragePercent >= 100 ? 'is-full' : 'is-partial' ?>">
               <?= esc(ucfirst($homeLeadCoverageLabel)) ?>
             </span>
-            <span class="article-card-subchip">Packshoty: <?= esc((string) $homeLeadCoveragePercent) ?>%</span>
+            <span class="article-card-subchip">Realne fotky: <?= esc((string) $homeLeadCoveragePercent) ?>%</span>
           </div>
         <?php endif; ?>
         <p class="meta">Ak prave riesis chudnutie alebo chces rozumiet rozdielu medzi WPC a WPI, tu ma zmysel zacat.</p>

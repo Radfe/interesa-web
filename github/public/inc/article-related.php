@@ -127,9 +127,9 @@ if (!function_exists('interessa_render_related_articles')) {
             if ($showComparisonReady || $showRecommendations) {
                 echo '<div class="article-card-submeta">';
                 if ($showComparisonReady) {
-                    echo '<span class="article-card-subchip is-coverage is-full">Mas tam aj rychly vyber</span>';
+                    echo '<span class="article-card-subchip is-coverage is-full">V clanku najdes rychly prehlad</span>';
                 } elseif ($showRecommendations && $summary !== null) {
-                    echo '<span class="article-card-subchip">Odporucane produkty v clanku</span>';
+                    echo '<span class="article-card-subchip">Vyber produktov v clanku</span>';
                 }
                 if ((int) ($item['coverage_percent'] ?? 0) > 0) {
                     echo '<span class="article-card-subchip">Realne fotky: ' . esc((string) ((int) ($item['coverage_percent'] ?? 0))) . '%</span>';

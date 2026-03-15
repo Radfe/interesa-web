@@ -116,7 +116,7 @@ if (!function_exists('interessa_article_commerce_sections')) {
             ],
             'najlepsi-protein-na-chudnutie-wpc-vs-wpi' => [
                 'title' => 'WPC vs WPI: odporúčané voľby',
-                'intro' => 'Ak sa rozhoduješ medzi koncentrátom a izolátom, nižšie máš jednoduchý shortlist podľa rozpočtu a citlivosti na laktózu.',
+                'intro' => 'Ak sa rozhodujes medzi koncentratom a izolatom, nizsie mas jednoduchy vyber podla rozpoctu a citlivosti na laktozu.',
                 'products' => [
                     [
                         'name' => 'WPI izolát / redukcia a čistota',
@@ -176,7 +176,7 @@ if (!function_exists('interessa_article_commerce_sections')) {
             ],
             'doplnky-vyzivy' => [
                 'title' => 'Odporúčané doplnky výživy',
-                'intro' => 'Ak chceš rýchly shortlist bez prechádzania celej tabuľky, nižšie máš základné typy doplnkov podľa najčastejšieho cieľa: výkon, imunita, regenerácia, spánok a každodenný základ.',
+                'intro' => 'Ak chces rychly vyber bez prechadzania celej tabulky, nizsie mas zakladne typy doplnkov podla najcastejsieho ciela: vykon, imunita, regeneracia, spanok a kazdodenny zaklad.',
                 'products' => [
                     [
                         'name' => 'Multivitamín pre aktívnych',
@@ -325,7 +325,7 @@ if (!function_exists('interessa_article_commerce_sections')) {
             ],
             'probiotika-ako-vybrat' => [
                 'title' => 'Probiotiká: top výber',
-                'intro' => 'Pri probiotikách sleduj konkrétne kmene, počet CFU pri expiracii a jednoduché dávkovanie. Nižšie je shortlist praktických volieb.',
+                'intro' => 'Pri probiotikach sleduj konkretne kmene, pocet CFU pri expiracii a jednoduche davkovanie. Nizsie je vyber praktickych volieb.',
                 'products' => [
                     [
                         'name' => 'Multi-strain probiotiká',
@@ -487,7 +487,7 @@ if (!function_exists('interessa_article_comparison_table_payload')) {
 
         return [
             'title' => 'Porovnanie produktov',
-            'intro' => 'Rovnaky vyber ako v shortliste nizsie, len v rychlej tabulkovej verzii.',
+            'intro' => 'Rovnaky vyber ako nizsie, len v rychlej tabulkovej verzii na jeden pohlad.',
             'columns' => [
                 ['label' => 'Produkt', 'key' => 'name', 'type' => 'product'],
                 ['label' => 'Hlavny benefit', 'key' => 'main_benefit', 'type' => 'text'],
