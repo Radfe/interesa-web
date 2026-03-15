@@ -1009,6 +1009,22 @@ if (!function_exists('interessa_admin_fetch_remote_html')) {
     }
 }
 
+if (!function_exists('interessa_admin_looks_like_product_url')) {
+    function interessa_admin_looks_like_product_url(string $url): bool {
+        $url = trim($url);
+        if ($url === '' || !preg_match('~^https?://~i', $url)) {
+            return false;
+        }
+
+        $path = trim((string) parse_url($url, PHP_URL_PATH));
+        if ($path === '' || $path === '/') {
+            return false;
+        }
+
+        return true;
+    }
+}
+
 if (!function_exists('interessa_admin_url_join')) {
     function interessa_admin_url_join(string $baseUrl, string $candidate): string {
         $candidate = trim($candidate);
@@ -1207,7 +1223,10 @@ if (!function_exists('interessa_admin_enrich_product_record_from_source')) {
         $override = interessa_admin_product_record($slug) ?? [];
         $fallbackUrl = trim((string) ($override['fallback_url'] ?? $normalized['fallback_url'] ?? ''));
         if ($fallbackUrl === '') {
-            throw new RuntimeException('Produkt nema referencnu produktovu URL na obchode.');
+            throw new RuntimeException('Produkt nema referencnu URL produktu na e-shope. Najprv vloz priamu URL konkretneho produktu.');
+        }
+        if (!interessa_admin_looks_like_product_url($fallbackUrl)) {
+            throw new RuntimeException('Toto zatial nie je priama URL produktu. Do pola URL produktu vloz konkretnu stranku produktu z e-shopu, nie len hlavnu stranku obchodu.');
         }
 
         $detected = interessa_admin_extract_product_page_data($fallbackUrl);

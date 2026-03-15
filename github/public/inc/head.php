@@ -25,6 +25,7 @@ if ($interessaIsLocalDev && !headers_sent()) {
 
   <meta property="og:type" content="<?= esc(page_og_type()) ?>" />
   <meta property="og:site_name" content="Interesa" />
+  <meta property="og:locale" content="sk_SK" />
   <meta property="og:url" content="<?= esc(page_canonical()) ?>" />
   <meta property="og:title" content="<?= page_title() ?>" />
   <meta property="og:description" content="<?= page_description() ?>" />
@@ -37,6 +38,7 @@ if ($interessaIsLocalDev && !headers_sent()) {
   <meta name="twitter:image" content="<?= esc(page_image_url()) ?>" />
   <meta name="twitter:image:alt" content="<?= page_title() ?>" />
 
+  <link rel="shortcut icon" href="<?= asset('img/brand/favicon-32.png') ?>" type="image/png" />
   <link rel="icon" href="<?= asset('img/brand/logo-icon.svg') ?>" type="image/svg+xml" />
   <link rel="icon" href="<?= asset('img/brand/favicon-32.png') ?>" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="<?= asset('img/brand/apple-touch-icon.png') ?>" />
@@ -54,6 +56,10 @@ if ($interessaIsLocalDev && !headers_sent()) {
     <div class="container header-inner">
       <a class="brand" href="/" aria-label="Domov">
         <?= interessa_render_image(interessa_brand_image_meta('logo-full'), ['alt' => 'Interesa.sk logo', 'width' => '148', 'height' => '32']) ?>
+        <span class="brand-copy">
+          <strong>Interesa.sk</strong>
+          <span>Prakticke porovnania a navody pre vyzivu</span>
+        </span>
       </a>
 
       <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />

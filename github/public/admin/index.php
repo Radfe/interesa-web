@@ -1226,7 +1226,7 @@ $section = interessa_admin_selected_section();
 $flash = trim((string) ($_GET['saved'] ?? ''));
 $focusProductSlug = trim((string) ($_GET['focus_product'] ?? ''));
 $focusPanel = trim((string) ($_GET['focus'] ?? ''));
-$error = '';
+$error = trim((string) ($_GET['error'] ?? ''));
 
 interessa_admin_session_boot();
 
@@ -1672,6 +1672,53 @@ if ($isAuthed) {
         }
     } catch (Throwable $e) {
         $error = trim($e->getMessage());
+
+        if (in_array($action, [
+            'create_product',
+            'save_product',
+            'upload_packshot_only',
+            'mirror_packshot_from_remote',
+            'enrich_product_from_source',
+            'autofill_product_from_source',
+        ], true)) {
+            $productSlug = trim((string) ($_POST['product_slug'] ?? $_POST['new_product_slug'] ?? ''));
+            $returnSection = trim((string) ($_POST['return_section'] ?? ''));
+            $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+            $query = [
+                'error' => $error,
+            ];
+            if ($productSlug !== '') {
+                $query['product'] = $productSlug;
+            }
+            if ($action === 'upload_packshot_only' || $action === 'mirror_packshot_from_remote') {
+                $query['focus'] = 'product_image';
+            }
+            if ($returnSection !== '' && $returnSlug !== '') {
+                $query['return_section'] = $returnSection;
+                $query['return_slug'] = $returnSlug;
+            }
+            interessa_admin_redirect('products', $query);
+        }
+
+        if (in_array($action, [
+            'create_affiliate',
+            'save_affiliate',
+        ], true)) {
+            $affiliateCode = trim((string) ($_POST['code'] ?? $_POST['new_affiliate_code'] ?? ''));
+            $returnSection = trim((string) ($_POST['return_section'] ?? ''));
+            $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+            $query = [
+                'error' => $error,
+            ];
+            if ($affiliateCode !== '') {
+                $query['code'] = $affiliateCode;
+            }
+            if ($returnSection !== '' && $returnSlug !== '') {
+                $query['return_section'] = $returnSection;
+                $query['return_slug'] = $returnSlug;
+            }
+            interessa_admin_redirect('affiliates', $query);
+        }
     }
 }
 $articleOptions = interessa_admin_article_options();
@@ -2551,6 +2598,21 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               </section>
             <?php endif; ?>
+
+            <section class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Ako postupovat pri produkte</h3>
+                  <p class="admin-meta">Tu riesis samotny produkt: nazov, obchod, obrazok a referencnu URL produktu.</p>
+                </div>
+              </div>
+              <ol class="admin-quickstart-list">
+                <li>Najprv vloz priamu URL konkretneho produktu z e-shopu. Nie len hlavnu stranku obchodu.</li>
+                <li>Potom klikni <strong>1. Nacitat data z e-shopu</strong>.</li>
+                <li>Ak sa nasiel obrazok, klikni <strong>2. Ulozit obrazok z e-shopu</strong>.</li>
+                <li>Ak chces zmenit kam clovek po kliknuti odide, otvor sekciu <strong>Affiliate odkazy</strong>.</li>
+              </ol>
+            </section>
 
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
@@ -3589,7 +3651,22 @@ require dirname(__DIR__) . '/inc/head.php';
 
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
-                    <h3>Rychlo vytvorit novy /go/ odkaz</h3>
+                <div>
+                  <h3>Ako postupovat pri odkaze</h3>
+                  <p class="admin-meta">Tu riesis kam clovek realne odide po kliknuti z clanku, tlacidla alebo obrazka.</p>
+                </div>
+              </div>
+              <ol class="admin-quickstart-list">
+                <li>Vyber alebo vytvor interny <strong>/go/ odkaz</strong>.</li>
+                <li>Do pola <strong>Cielova URL</strong> vloz finalny Dognet alebo iny finalny odkaz.</li>
+                <li>Skontroluj obchod, merchant slug a pripadne product slug.</li>
+                <li>Na zaver klikni <strong>Otvorit interny /go/ odkaz</strong> a over, kam clovek realne odide.</li>
+              </ol>
+            </section>
+
+            <section class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <h3>Rychlo vytvorit novy /go/ odkaz</h3>
               </div>
               <form method="post" class="admin-form admin-form-stack">
                 <input type="hidden" name="action" value="create_affiliate" />

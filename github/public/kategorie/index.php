@@ -5,8 +5,8 @@ require_once __DIR__ . '/../inc/functions.php';
 require_once __DIR__ . '/../inc/category-hubs.php';
 require_once __DIR__ . '/../inc/article-commerce.php';
 
-$page_title = 'Kategorie doplnkov vyzivy a porovnani | Interesa';
-$page_description = 'Tematicke huby pre proteiny, vyzivu, vitaminy, mineraly, imunitu, silu a vykon aj klby a kozu.';
+$page_title = 'Kategorie doplnkov vyzivy, porovnani a navodov | Interesa';
+$page_description = 'Temy, cez ktore sa rychlo dostanes od zakladnej orientacie k najlepsim clankom, porovnaniam a odporucaniam.';
 $page_canonical = '/kategorie';
 $page_image = asset('img/brand/og-default.svg');
 $page_og_type = 'website';
@@ -108,38 +108,38 @@ include __DIR__ . '/../inc/head.php';
 ?>
 <section class="container home-section">
   <article class="card hub-hero-card categories-overview">
-    <p class="hub-eyebrow">Obsahove huby</p>
+    <p class="hub-eyebrow">Prehlad tem</p>
     <h1>Kategorie</h1>
-    <p class="lead">Kategorie na Interese su stavane ako tematicke huby. Ich cielom je dostat citatela od sirokej orientacie k najdolezitejsim clankom a az potom ku konkretnym produktom.</p>
+    <p class="lead">Kategorie na Interese sluzia ako vstup do temy. Pomozu ti rychlo sa zorientovat, otvorit spravny clanok a az potom riesit konkretny vyber produktu.</p>
     <div class="stats-strip categories-stats" aria-label="Prehlad kategorii">
       <article class="stats-card">
         <strong><?= count($primaryHubs) ?></strong>
-        <p>hlavnych tem, v ktorych sa oplati zacat ako prve</p>
+        <p>hlavnych tem, v ktorych sa oplati zacat</p>
       </article>
       <article class="stats-card">
         <strong><?= count($secondaryHubs) ?></strong>
-        <p>specializovanych tem pre detailnejsie otazky a dalsie clanky</p>
+        <p>specializovanych tem pre detailnejsie otazky</p>
       </article>
       <article class="stats-card">
         <strong><?= count($hubs) ?></strong>
-        <p>hubov pripravenych na porovnania, navody a recenzie</p>
+        <p>tem pripravenych na navody, porovnania a recenzie</p>
       </article>
       <article class="stats-card">
         <strong><?= esc((string) $totalCommercialArticles) ?></strong>
-        <p>clankov s odporucaniami napriec kategoriami</p>
+        <p>clankov, kde sa dostanes aj k odporucaniam</p>
       </article>
       <article class="stats-card">
         <strong><?= esc((string) $activeCommercialHubs) ?></strong>
-        <p>hubov, kde uz je pripraveny komercny obsah</p>
+        <p>tem, kde uz vies prejst aj k vyberu</p>
       </article>
       <article class="stats-card">
         <strong><?= esc((string) $totalFullCoverageArticles) ?></strong>
-        <p>clankov s packshotmi v porovnaniach</p>
+        <p>clankov s realnymi fotkami produktov</p>
       </article>
     </div>
     <div class="hero-cta">
-      <a class="btn btn-ghost" href="/clanky?commercial=1">Otvorit clanky s vyberom produktov</a>
-      <a class="btn btn-ghost" href="/clanky?coverage=full">Pozriet porovnania s packshotmi</a>
+      <a class="btn btn-ghost" href="/clanky?commercial=1">Otvorit clanky s odporucaniami</a>
+      <a class="btn btn-ghost" href="/clanky?coverage=full">Pozriet porovnania s realnymi fotkami</a>
     </div>
   </article>
 </section>
@@ -147,14 +147,14 @@ include __DIR__ . '/../inc/head.php';
 <section class="container home-section">
   <div class="section-head">
     <h2>Ako sa v 12 temach nestratit</h2>
-    <p class="meta">Nie kazda tema ma na webe rovnaku ulohu. Tento prehlad ti pomoze pochopit, kde sa oplati zacat a co je skor doplnkova cesta.</p>
+    <p class="meta">Nie kazda tema ma rovnaku ulohu. Tento prehlad ti pomoze pochopit, kde sa oplati zacat a co je skor doplnkova cesta.</p>
   </div>
 
   <div class="card-grid home-trust-grid categories-system-grid">
     <article class="card">
       <div class="card-body">
         <h3>Hlavne vstupne temy</h3>
-        <p>Toto su siroke huby, kde dava najvacsi zmysel zacat: proteiny, vyziva, mineraly, imunita, sila a klby.</p>
+        <p>Toto su siroke temy, kde dava najvacsi zmysel zacat: proteiny, vyziva, mineraly, imunita, sila a klby.</p>
       </div>
     </article>
     <article class="card">
@@ -166,7 +166,7 @@ include __DIR__ . '/../inc/head.php';
     <article class="card">
       <div class="card-body">
         <h3>Detailne a podporne temy</h3>
-        <p>Tieto temy doplnaju hlavne huby. Pomozu ti, ked uz vies, co hladas a potrebujes jemnejsi vyber.</p>
+        <p>Tieto temy doplnaju hlavne huby. Pomozu ti, ked uz vies, co hladas a potrebujes uzsi vyber.</p>
       </div>
     </article>
   </div>
@@ -207,7 +207,7 @@ include __DIR__ . '/../inc/head.php';
 <section class="container home-section">
   <div class="section-head">
     <h2>Hlavne temy, v ktorych sa oplati zacat</h2>
-    <p class="meta">Najsilnejsie obsahove smery webu, na ktorych stoja hlavne porovnania, buying guides a produktove vybery.</p>
+    <p class="meta">Najsilnejsie smery webu, na ktorych stoja hlavne porovnania, sprievodcovia a produktove vybery.</p>
   </div>
 
   <div class="hub-grid">
@@ -232,18 +232,18 @@ include __DIR__ . '/../inc/head.php';
           </div>
           <?php if ($commercialCount > 0): ?>
             <div class="article-card-submeta">
-              <span class="article-card-subchip">Odporucania v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <span class="article-card-subchip">Vyber produktov v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php if ($fullCoverageCount > 0): ?>
-              <span class="article-card-subchip is-coverage is-full">Kompletne vybery v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <span class="article-card-subchip is-coverage is-full">Najrychlejsie sa zorientujes v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php endif; ?>
             </div>
           <?php endif; ?>
           <?php if (is_array($primaryGuide) && !empty($primaryGuide['has_commerce'])): ?>
             <div class="article-card-submeta">
               <?php if (($primaryGuide['coverage_state'] ?? '') === 'full'): ?>
-                <span class="article-card-subchip is-coverage is-full">Startovaci clanok uz ma porovnanie a vyber</span>
+                <span class="article-card-subchip is-coverage is-full">Startovaci clanok uz ma rychly prehlad aj vyber</span>
               <?php else: ?>
-                <span class="article-card-subchip is-coverage is-partial">Startovaci clanok uz ma shortlist produktov</span>
+                <span class="article-card-subchip is-coverage is-partial">Startovaci clanok uz ma odporucane produkty</span>
               <?php endif; ?>
             </div>
           <?php endif; ?>
@@ -264,7 +264,7 @@ include __DIR__ . '/../inc/head.php';
 <section class="container home-section home-section--secondary-hubs">
   <div class="section-head">
     <h2>Detailnejsie temy a doplnkove cesty</h2>
-    <p class="meta">Podporne huby pre konkretne typy doplnkov, uzsie problemy a hlbsie interlinkovanie napriec webom.</p>
+    <p class="meta">Temy pre konkretne typy doplnkov, uzsie problemy a hlbsie prepojenie obsahu napriec webom.</p>
   </div>
 
   <div class="hub-grid">
@@ -289,18 +289,18 @@ include __DIR__ . '/../inc/head.php';
           </div>
           <?php if ($commercialCount > 0): ?>
             <div class="article-card-submeta">
-              <span class="article-card-subchip">Odporucania v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <span class="article-card-subchip">Vyber produktov v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php if ($fullCoverageCount > 0): ?>
-                <span class="article-card-subchip is-coverage is-full">Kompletne vybery v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
+                <span class="article-card-subchip is-coverage is-full">Najrychlejsie sa zorientujes v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php endif; ?>
             </div>
           <?php endif; ?>
           <?php if (is_array($primaryGuide) && !empty($primaryGuide['has_commerce'])): ?>
             <div class="article-card-submeta">
               <?php if (($primaryGuide['coverage_state'] ?? '') === 'full'): ?>
-                <span class="article-card-subchip is-coverage is-full">Startovaci clanok uz ma porovnanie a vyber</span>
+                <span class="article-card-subchip is-coverage is-full">Startovaci clanok uz ma rychly prehlad aj vyber</span>
               <?php else: ?>
-                <span class="article-card-subchip is-coverage is-partial">Startovaci clanok uz ma shortlist produktov</span>
+                <span class="article-card-subchip is-coverage is-partial">Startovaci clanok uz ma odporucane produkty</span>
               <?php endif; ?>
             </div>
           <?php endif; ?>

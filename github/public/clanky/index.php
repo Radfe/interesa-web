@@ -13,7 +13,7 @@ $page_title = $categoryMeta !== null
     ? ($categoryMeta['title'] . ' - clanky, porovnania a vybery | Interesa')
     : 'Clanky o doplnkoch vyzivy a porovnania | Interesa';
 $page_description = $categoryMeta !== null
-    ? ('Prehlad clankov v teme ' . $categoryMeta['title'] . ', vratane porovnani, buying guides a odporucanych vyberov.')
+    ? ('Prehlad clankov v teme ' . $categoryMeta['title'] . ', vratane porovnani, sprievodcov a odporucanych vyberov.')
     : 'Prehlad clankov o proteinoch, vyzive, vitaminoch, mineraloch a dalsich doplnkoch s porovnaniami a odporucaniami.';
 $page_canonical = '/clanky' . ($categoryMeta !== null ? '?category=' . rawurlencode($categoryMeta['slug']) : '');
 $page_og_type = 'website';
@@ -113,9 +113,9 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
         <h1><?= esc($categoryMeta['title'] ?? interessa_text('Clanky')) ?></h1>
         <p class="meta">
           <?php if ($categoryMeta !== null): ?>
-            Kuratorovany prehlad clankov v teme <?= esc($categoryMeta['title']) ?>.
+            Najdolezitejsie clanky v teme <?= esc($categoryMeta['title']) ?> na jednom mieste.
           <?php else: ?>
-            Prehlad buying guide clankov, porovnani, recenzii a zakladnych navodov napriec hlavnymi temami webu.
+            Prehlad sprievodcov, porovnani, recenzii a zakladnych navodov napriec hlavnymi temami webu.
           <?php endif; ?>
         </p>
       </div>
@@ -151,7 +151,7 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
         <a class="filter-chip<?= $commercialOnly ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $commercialOnly ? (($categoryMeta !== null || $formatFilter !== '' || $coverageFilter !== '') ? '/?' . esc(http_build_query(array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'coverage' => $coverageFilter !== '' ? $coverageFilter : null]))) : '/') : '/?' . esc(http_build_query($commercialQuery)) ?>">S odporucaniami (<?= esc((string) $commercialCountInScope) ?>)</a>
         <?php $coverageQuery = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null, 'coverage' => 'full']); ?>
         <?php $coverageResetQuery = array_filter(['category' => $categoryMeta['slug'] ?? null, 'format' => $formatFilter !== '' ? $formatFilter : null, 'commercial' => $commercialOnly ? '1' : null]); ?>
-          <a class="filter-chip<?= $coverageFilter === 'full' ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $coverageFilter === 'full' ? ($coverageResetQuery !== [] ? '/?' . esc(http_build_query($coverageResetQuery)) : '/') : '/?' . esc(http_build_query($coverageQuery)) ?>">Porovnania s packshotmi (<?= esc((string) $fullCoverageCountInScope) ?>)</a>
+          <a class="filter-chip<?= $coverageFilter === 'full' ? ' is-active' : ' is-muted' ?>" href="/clanky<?= $coverageFilter === 'full' ? ($coverageResetQuery !== [] ? '/?' . esc(http_build_query($coverageResetQuery)) : '/') : '/?' . esc(http_build_query($coverageQuery)) ?>">Porovnania s realnymi fotkami (<?= esc((string) $fullCoverageCountInScope) ?>)</a>
       </div>
 
       <?php if ($topFormats !== []): ?>
@@ -173,7 +173,7 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
       <?php if (!$items): ?>
         <p class="note">
           <?php if ($coverageFilter === 'full'): ?>
-            Pre tento filter zatial nie su ziadne clanky s pripravenym porovnanim a packshotmi produktov.
+            Pre tento filter zatial nie su ziadne clanky s pripravenym porovnanim a realnymi fotkami produktov.
           <?php elseif ($commercialOnly): ?>
             Pre tento filter zatial nie su ziadne clanky s odporucaniami produktov.
           <?php else: ?>
@@ -181,7 +181,7 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
           <?php endif; ?>
         </p>
         <?php if ($commercialOnly || $coverageFilter === 'full'): ?>
-            <p class="muted">Skus vypnut filter <strong><?= $coverageFilter === 'full' ? 'Porovnania s packshotmi' : 'S odporucaniami' ?></strong> alebo otvor inu temu, kde je uz pripraveny komercny obsah.</p>
+            <p class="muted">Skus vypnut filter <strong><?= $coverageFilter === 'full' ? 'Porovnania s realnymi fotkami' : 'S odporucaniami' ?></strong> alebo otvor inu temu, kde je uz pripraveny vyber produktov.</p>
         <?php endif; ?>
       <?php else: ?>
         <p class="search-summary muted">
@@ -190,7 +190,7 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
             <span class="search-summary-chip">iba s odporucaniami produktov</span>
           <?php endif; ?>
           <?php if ($coverageFilter === 'full'): ?>
-            <span class="search-summary-chip">iba s packshotmi a porovnanim</span>
+            <span class="search-summary-chip">iba s realnymi fotkami a porovnanim</span>
           <?php endif; ?>
           <?php if ($categoryMeta !== null): ?>
             <span class="search-summary-chip">tema: <?= esc((string) $categoryMeta['title']) ?></span>
@@ -226,9 +226,9 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
                 <?php if ((int) ($item['coverage_percent'] ?? 0) > 0): ?>
                   <div class="article-card-submeta">
                     <span class="article-card-subchip is-coverage <?= (string) ($item['coverage_state'] ?? '') === 'full' ? 'is-full' : 'is-partial' ?>">
-                      <?= esc((string) ($item['coverage_state'] ?? '') === 'full' ? 'Packshoty pripravene' : 'Packshoty priebezne doplname') ?>
+                      <?= esc((string) ($item['coverage_state'] ?? '') === 'full' ? 'Realne fotky pripravene' : 'Realne fotky priebezne doplname') ?>
                     </span>
-                    <span class="article-card-subchip">Packshoty: <?= esc((string) ($item['coverage_percent'] ?? 0)) ?>%</span>
+                    <span class="article-card-subchip">Realne fotky: <?= esc((string) ($item['coverage_percent'] ?? 0)) ?>%</span>
                   </div>
                 <?php endif; ?>
                 <h3><a href="<?= esc($url) ?>"><?= esc($title) ?></a></h3>
