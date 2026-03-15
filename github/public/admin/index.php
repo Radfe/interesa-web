@@ -1689,8 +1689,14 @@ if ($isAuthed) {
             ];
             if ($productSlug !== '') {
                 $query['product'] = $productSlug;
+                $query['focus_product'] = $productSlug;
             }
-            if ($action === 'upload_packshot_only' || $action === 'mirror_packshot_from_remote') {
+            if (in_array($action, [
+                'upload_packshot_only',
+                'mirror_packshot_from_remote',
+                'enrich_product_from_source',
+                'autofill_product_from_source',
+            ], true)) {
                 $query['focus'] = 'product_image';
             }
             if ($returnSection !== '' && $returnSlug !== '') {
@@ -2672,11 +2678,15 @@ require dirname(__DIR__) . '/inc/head.php';
                         <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>">Otvorit produkt</a>
                         <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['target_asset'] ?? '')) ?>">Kopirovat cestu obrazka</button>
                       <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
-                        <form method="post" class="admin-inline-form">
-                          <input type="hidden" name="action" value="autofill_product_from_source" />
-                          <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
-                          <button class="btn btn-secondary btn-small" type="submit">1. Nacitat data z e-shopu</button>
-                        </form>
+                        <?php if (interessa_admin_looks_like_product_url((string) ($queueRow['fallback_url'] ?? ''))): ?>
+                          <form method="post" class="admin-inline-form">
+                            <input type="hidden" name="action" value="autofill_product_from_source" />
+                            <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
+                            <button class="btn btn-secondary btn-small" type="submit">1. Nacitat data z e-shopu</button>
+                          </form>
+                        <?php else: ?>
+                          <span class="admin-note">Najprv vloz URL produktu</span>
+                        <?php endif; ?>
                       <?php endif; ?>
                       <?php if (trim((string) ($queueRow['remote_src'] ?? '')) !== ''): ?>
                           <a class="btn btn-secondary btn-small" href="<?= esc((string) $queueRow['remote_src']) ?>" target="_blank" rel="noopener">Pozriet najdeny obrazok</a>
@@ -2790,10 +2800,13 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p><strong>Zdroj:</strong> <?= esc($selectedProductImageSource) ?></p>
                   <p><strong>Ulozeny lokalny asset:</strong> <code><?= esc($selectedProductLocalAsset !== '' ? $selectedProductLocalAsset : 'zatial chyba') ?></code></p>
                   <p><strong>Cielovy asset:</strong> <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></p>
+                  <?php $selectedProductHasDirectSourceUrl = interessa_admin_looks_like_product_url((string) ($selectedProduct['fallback_url'] ?? '')); ?>
                   <?php if ($selectedProductPackshotReady): ?>
                     <p class="admin-note">Toto je hotovy obrazok produktu, ktory sa zobrazi na webe.</p>
                   <?php elseif (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
                       <p class="admin-note">Nasiel sa obrazok z e-shopu. Teraz klikni <strong>2. Ulozit obrazok z e-shopu</strong>.</p>
+                    <?php elseif (!$selectedProductHasDirectSourceUrl): ?>
+                      <p class="admin-note">Najprv vloz priamu URL konkretneho produktu do pola <strong>Fallback URL</strong> a potom klikni <strong>Ulozit produkt</strong>.</p>
                     <?php else: ?>
                       <p class="admin-note">Produkt este nema obrazok ulozeny u nas. Najprv klikni <strong>1. Nacitat data z e-shopu</strong>.</p>
                     <?php endif; ?>
@@ -2833,14 +2846,18 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php if (trim((string) ($selectedProduct['fallback_url'] ?? '')) !== ''): ?>
                     <div class="admin-inline-actions">
                       <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProduct['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit e-shop</a>
-                      <form method="post" class="admin-inline-form">
-                        <input type="hidden" name="action" value="enrich_product_from_source" />
-                        <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
-                        <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
-                        <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
+                      <?php if ($selectedProductHasDirectSourceUrl): ?>
+                        <form method="post" class="admin-inline-form">
+                          <input type="hidden" name="action" value="enrich_product_from_source" />
+                          <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
+                          <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
+                          <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
                           <button class="btn btn-secondary btn-small" type="submit">1. Nacitat data z e-shopu</button>
                         </form>
-                      <?php if (!$selectedProductPackshotReady): ?>
+                      <?php else: ?>
+                        <span class="admin-note">Najprv vloz priamu URL produktu a uloz produkt.</span>
+                      <?php endif; ?>
+                      <?php if (!$selectedProductPackshotReady && $selectedProductHasDirectSourceUrl): ?>
                         <form method="post" class="admin-inline-form">
                           <input type="hidden" name="action" value="autofill_product_from_source" />
                           <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
@@ -3333,13 +3350,17 @@ require dirname(__DIR__) . '/inc/head.php';
                       <div class="admin-queue-actions">
                         <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Otvorit produkt</a>
                         <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
-                          <form method="post" class="admin-inline-form">
-                            <input type="hidden" name="action" value="autofill_product_from_source" />
-                            <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
-                            <input type="hidden" name="return_section" value="images" />
-                            <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
-                            <button class="btn btn-secondary btn-small" type="submit">1. Nacitat data z e-shopu</button>
-                          </form>
+                          <?php if (interessa_admin_looks_like_product_url((string) ($queueRow['fallback_url'] ?? ''))): ?>
+                            <form method="post" class="admin-inline-form">
+                              <input type="hidden" name="action" value="autofill_product_from_source" />
+                              <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
+                              <input type="hidden" name="return_section" value="images" />
+                              <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
+                              <button class="btn btn-secondary btn-small" type="submit">1. Nacitat data z e-shopu</button>
+                            </form>
+                          <?php else: ?>
+                            <span class="admin-note">Najprv vloz URL produktu</span>
+                          <?php endif; ?>
                         <?php endif; ?>
                         <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
                           <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit e-shop</a>
