@@ -120,6 +120,30 @@ foreach ($homeGoalSlugs as $slug) {
     ];
 }
 
+$homeQuickStartPaths = [
+    [
+        'eyebrow' => 'Najrychlejsi start',
+        'title' => 'Chcem hned porovnat proteiny podla ciela',
+        'description' => 'Najsilnejsia vstupna stranka, ked chces ist rovno do prehladu a potom k shortlistu.',
+        'href' => article_url('najlepsie-proteiny-2026'),
+        'cta' => 'Otvorit vyber',
+    ],
+    [
+        'eyebrow' => 'Kazdodenny zaklad',
+        'title' => 'Chcem rychlo pochopit zakladne doplnky vyzivy',
+        'description' => 'Dobry start pre beznu rutinu: kreatin, D3+K2, magnezium, kolagen a omega-3.',
+        'href' => article_url('doplnky-vyzivy'),
+        'cta' => 'Otvorit sprievodcu',
+    ],
+    [
+        'eyebrow' => 'Porovnanie v tabulke',
+        'title' => 'Chcem ist rovno na hotove porovnanie produktov',
+        'description' => 'Ak uz nechces citat zaklady, otvor clanok s comparison table a cistym shortlistom.',
+        'href' => article_url('kreatin-porovnanie'),
+        'cta' => 'Otvorit porovnanie',
+    ],
+];
+
 $homeThemeIntentGroups = [
     [
         'title' => 'Zacni hlavnou temou',
@@ -296,6 +320,27 @@ include __DIR__ . '/inc/head.php';
     <p>Na tychto strankach uz vies prejst od vysvetlenia temy priamo k porovnanym produktom a obchodom.</p>
   </article>
 </section>
+
+<?php if ($homeQuickStartPaths !== []): ?>
+<section class="container home-section home-section--quickstart">
+  <div class="section-head">
+    <p class="hub-eyebrow">Quick start</p>
+    <h2>Tri najrychlejsie cesty cez web</h2>
+    <p class="meta">Ak nechces najprv studovat celu strukturu webu, zacni jednou z tychto troch ciest. Kazda vedie na silny clanok s vysokou hodnotou pre rozhodovanie.</p>
+  </div>
+
+  <div class="quickstart-grid">
+    <?php foreach ($homeQuickStartPaths as $path): ?>
+      <article class="quickstart-card">
+        <span class="quickstart-eyebrow"><?= esc((string) ($path['eyebrow'] ?? 'Start')) ?></span>
+        <h3><a href="<?= esc((string) ($path['href'] ?? '/')) ?>"><?= esc((string) ($path['title'] ?? '')) ?></a></h3>
+        <p><?= esc((string) ($path['description'] ?? '')) ?></p>
+        <a class="btn btn-primary" href="<?= esc((string) ($path['href'] ?? '/')) ?>"><?= esc((string) ($path['cta'] ?? 'Otvorit')) ?></a>
+      </article>
+    <?php endforeach; ?>
+  </div>
+</section>
+<?php endif; ?>
 
 <?php if ($homeGoalCards !== []): ?>
 <section class="container home-section">

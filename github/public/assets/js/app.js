@@ -43,12 +43,13 @@
     });
   });
 
-  // Keep desktop mega menus open while the pointer moves between trigger and panel.
+  // Keep desktop mega menus open until the user intentionally closes them.
   const desktopMegaMq = window.matchMedia('(min-width: 861px)');
   const megaItems = Array.from(document.querySelectorAll('.menu-item.has-mega'));
   const megaCloseTimers = new WeakMap();
   const megaTray = document.getElementById('megaTray');
   const headerContainer = document.querySelector('.site-header .container');
+  const siteHeader = document.querySelector('.site-header');
   let activeMegaItem = null;
 
   if (megaTray && megaItems.length > 0) {
@@ -81,7 +82,9 @@
     const arrowLeft = containerRect
       ? Math.max(24, Math.min(containerRect.width - 24, (triggerRect.left - containerRect.left) + (triggerRect.width / 2)))
       : 56;
+    const trayTop = siteHeader ? Math.round(siteHeader.getBoundingClientRect().bottom) : 68;
 
+    megaTray.style.top = trayTop + 'px';
     megaTray.innerHTML = '<div class="mega-tray-shell"><div class="mega mega--tray" style="--mega-arrow-left:' + arrowLeft + 'px">' + panel.innerHTML + '</div></div>';
     megaTray.classList.add('is-active');
     megaTray.setAttribute('aria-hidden', 'false');
@@ -111,32 +114,25 @@
     renderMegaTray(item);
   }
 
-  function scheduleMegaClose(item){
-    if (!desktopMegaMq.matches) return;
-    clearMegaTimer(item);
-    const timer = window.setTimeout(()=>closeMega(item), 180);
-    megaCloseTimers.set(item, timer);
-  }
-
   megaItems.forEach((item)=>{
     const trigger = item.querySelector('.main-nav__link[data-mega]');
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
 
     const onPointerEnter = ()=>openMega(item);
-    const onPointerLeave = (event)=>{
-      const nextTarget = event.relatedTarget;
-      if (nextTarget instanceof Node && item.contains(nextTarget)) {
-        return;
-      }
-      scheduleMegaClose(item);
-    };
 
     item.addEventListener('mouseenter', onPointerEnter);
-    item.addEventListener('mouseleave', onPointerLeave);
 
     if (trigger) {
       trigger.addEventListener('mouseenter', onPointerEnter);
-      trigger.addEventListener('mouseleave', onPointerLeave);
+      trigger.addEventListener('click', (event)=>{
+        if (!desktopMegaMq.matches) return;
+        event.preventDefault();
+        if (activeMegaItem === item && item.classList.contains('is-open')) {
+          closeMega(item);
+          return;
+        }
+        openMega(item);
+      });
     }
 
     item.addEventListener('focusin', ()=>openMega(item));
@@ -152,15 +148,26 @@
   if (megaTray) {
     megaTray.addEventListener('mouseenter', ()=>{
       if (activeMegaItem) {
-        openMega(activeMegaItem);
-      }
-    });
-    megaTray.addEventListener('mouseleave', ()=>{
-      if (activeMegaItem) {
-        scheduleMegaClose(activeMegaItem);
+        clearMegaTimer(activeMegaItem);
+        renderMegaTray(activeMegaItem);
       }
     });
   }
+
+  document.addEventListener('click', (event)=>{
+    if (!desktopMegaMq.matches || !activeMegaItem) return;
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (activeMegaItem.contains(target)) return;
+    if (megaTray && megaTray.contains(target)) return;
+    closeMega(activeMegaItem);
+  });
+
+  document.addEventListener('keydown', (event)=>{
+    if (event.key === 'Escape' && activeMegaItem) {
+      closeMega(activeMegaItem);
+    }
+  });
 
   function resetMegaMode(){
     if (!desktopMegaMq.matches) {
