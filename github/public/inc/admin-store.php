@@ -1209,6 +1209,117 @@ if (!function_exists('interessa_admin_extract_product_page_data')) {
     }
 }
 
+if (!function_exists('interessa_admin_guess_merchant_from_url')) {
+    function interessa_admin_guess_merchant_from_url(string $url): array {
+        $host = strtolower(trim((string) parse_url($url, PHP_URL_HOST)));
+        $host = preg_replace('~^www\.~', '', $host) ?? $host;
+
+        if ($host === '') {
+            return ['merchant' => '', 'merchant_slug' => ''];
+        }
+
+        $map = [
+            'gymbeam' => ['merchant' => 'GymBeam', 'merchant_slug' => 'gymbeam'],
+            'aktin' => ['merchant' => 'Aktin', 'merchant_slug' => 'aktin'],
+            'vilgain' => ['merchant' => 'Aktin', 'merchant_slug' => 'aktin'],
+            'myprotein' => ['merchant' => 'Myprotein', 'merchant_slug' => 'myprotein'],
+            'protein' => ['merchant' => 'Protein.sk', 'merchant_slug' => 'protein-sk'],
+            'ironaesthetics' => ['merchant' => 'IronAesthetics', 'merchant_slug' => 'ironaesthetics'],
+            'symprove' => ['merchant' => 'Symprove', 'merchant_slug' => 'symprove'],
+            'imunoklub' => ['merchant' => 'Imunoklub', 'merchant_slug' => 'imunoklub'],
+            'kloubus' => ['merchant' => 'Kloubus', 'merchant_slug' => 'kloubus'],
+        ];
+
+        foreach ($map as $needle => $merchantMeta) {
+            if (str_contains($host, $needle)) {
+                return $merchantMeta;
+            }
+        }
+
+        $parts = explode('.', $host);
+        $base = count($parts) >= 2 ? $parts[count($parts) - 2] : $host;
+        $slug = interessa_admin_slugify($base);
+
+        return [
+            'merchant' => $slug !== '' ? ucfirst($slug) : '',
+            'merchant_slug' => $slug,
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_prepare_product_from_input_link')) {
+    function interessa_admin_prepare_product_from_input_link(string $slug, string $inputUrl): array {
+        $slug = interessa_admin_slugify($slug);
+        if ($slug === '') {
+            throw new RuntimeException('Chyba kod produktu.');
+        }
+
+        $product = interessa_product($slug);
+        if (!is_array($product)) {
+            throw new RuntimeException('Vybrany produkt sa nenasiel v katalogu.');
+        }
+
+        $inputUrl = trim($inputUrl);
+        if ($inputUrl === '') {
+            throw new RuntimeException('Vloz link na produkt alebo Dognet link.');
+        }
+        if (!preg_match('~^https?://~i', $inputUrl)) {
+            throw new RuntimeException('Link musi zacinat na http:// alebo https:// .');
+        }
+
+        $normalized = interessa_normalize_product($product);
+        $override = interessa_admin_product_record($slug) ?? [];
+        $payload = array_replace($normalized, $override);
+
+        $linkType = aff_detect_link_type_from_url($inputUrl, 'affiliate');
+        $finalUrl = $linkType === 'affiliate' ? aff_extract_final_url($inputUrl) : $inputUrl;
+        $finalUrl = trim($finalUrl);
+        if ($finalUrl === '') {
+            throw new RuntimeException('Z linku sa nepodarilo zistit cielovu stranku produktu.');
+        }
+        if (!interessa_admin_looks_like_product_url($finalUrl)) {
+            throw new RuntimeException('Tento link zatial nevyzera ako konkretna stranka produktu. Vloz link priamo na jeden produkt.');
+        }
+
+        $merchantMeta = interessa_admin_guess_merchant_from_url($finalUrl);
+        if (trim((string) ($payload['merchant'] ?? '')) === '' && trim((string) ($merchantMeta['merchant'] ?? '')) !== '') {
+            $payload['merchant'] = (string) $merchantMeta['merchant'];
+        }
+        if (trim((string) ($payload['merchant_slug'] ?? '')) === '' && trim((string) ($merchantMeta['merchant_slug'] ?? '')) !== '') {
+            $payload['merchant_slug'] = (string) $merchantMeta['merchant_slug'];
+        }
+
+        $affiliateCode = trim((string) ($payload['affiliate_code'] ?? ''));
+        if ($affiliateCode === '') {
+            $merchantPart = interessa_admin_slugify((string) ($payload['merchant_slug'] ?? ''));
+            $affiliateCode = $merchantPart !== '' ? ($slug . '-' . $merchantPart) : ($slug . '-link');
+            $payload['affiliate_code'] = $affiliateCode;
+        }
+
+        $payload['fallback_url'] = $finalUrl;
+
+        interessa_admin_save_affiliate_record($affiliateCode, [
+            'url' => $inputUrl,
+            'merchant' => (string) ($payload['merchant'] ?? ''),
+            'merchant_slug' => (string) ($payload['merchant_slug'] ?? ''),
+            'product_slug' => $slug,
+            'link_type' => $linkType,
+            'source' => 'admin-quick-link',
+        ]);
+
+        interessa_admin_save_product_record($slug, $payload);
+        $enrichment = interessa_admin_enrich_product_record_from_source($slug);
+
+        return [
+            'slug' => $slug,
+            'affiliate_code' => $affiliateCode,
+            'final_url' => $finalUrl,
+            'link_type' => $linkType,
+            'enrichment' => $enrichment,
+        ];
+    }
+}
+
 if (!function_exists('interessa_admin_enrich_product_record_from_source')) {
     function interessa_admin_enrich_product_record_from_source(string $slug): array {
         $slug = interessa_admin_slugify($slug);

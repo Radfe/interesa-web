@@ -212,7 +212,7 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
         $target = interessa_affiliate_target($normalized);
         $affiliateCode = trim((string) ($normalized['affiliate_code'] ?? ''));
         $resolved = $affiliateCode !== '' ? aff_resolve($affiliateCode) : null;
-        $affiliateReady = is_array($resolved) && trim((string) ($resolved['href'] ?? '')) !== '';
+        $affiliateReady = is_string($resolved) && trim($resolved) !== '';
         $hasClickTarget = trim((string) ($target['href'] ?? '')) !== '';
         $imageMode = trim((string) ($normalized['image_mode'] ?? 'placeholder'));
         $packshotReady = !empty($normalized['has_local_image']);
@@ -1061,7 +1061,7 @@ function interessa_admin_product_quality_queue(array $catalog, int $limit = 12):
         $cons = is_array($normalized['cons'] ?? null) ? array_values(array_filter(array_map('strval', $normalized['cons']))) : [];
         $affiliateCode = trim((string) ($normalized['affiliate_code'] ?? ''));
         $resolved = $affiliateCode !== '' ? aff_resolve($affiliateCode) : null;
-        $affiliateReady = is_array($resolved) && trim((string) ($resolved['href'] ?? '')) !== '';
+        $affiliateReady = is_string($resolved) && trim($resolved) !== '';
         $packshotReady = !empty($normalized['has_local_image']);
 
         $issues = [];
@@ -1416,6 +1416,38 @@ if ($isAuthed) {
                 interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'product']);
             }
 
+            if ($action === 'prepare_product_from_link') {
+                $slug = trim((string) ($_POST['product_slug'] ?? ''));
+                $returnSection = trim((string) ($_POST['return_section'] ?? ''));
+                $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                $result = interessa_admin_prepare_product_from_input_link($slug, (string) ($_POST['source_link'] ?? ''));
+                $savedKey = 'product-link-ready';
+
+                $preparedProduct = interessa_product($slug);
+                if (is_array($preparedProduct)) {
+                    $normalizedPreparedProduct = interessa_normalize_product($preparedProduct);
+                    $hasLocalImage = !empty($normalizedPreparedProduct['has_local_image']);
+                    $remoteSrc = trim((string) ($normalizedPreparedProduct['image_remote_src'] ?? ''));
+                    if (!$hasLocalImage && $remoteSrc !== '') {
+                        $savedKey = 'product-remote-ready';
+                    }
+                }
+
+                if ($returnSection === 'images' && $returnSlug !== '') {
+                    interessa_admin_redirect('products', interessa_admin_product_image_redirect_query((string) ($result['slug'] ?? $slug), $savedKey, 'images', $returnSlug));
+                }
+                if ($returnSection === 'articles' && $returnSlug !== '') {
+                    interessa_admin_redirect('articles', ['slug' => $returnSlug, 'saved' => $savedKey]);
+                }
+
+                interessa_admin_redirect('products', [
+                    'product' => (string) ($result['slug'] ?? $slug),
+                    'saved' => $savedKey,
+                    'focus' => 'product_image',
+                    'focus_product' => (string) ($result['slug'] ?? $slug),
+                ]);
+            }
+
             if ($action === 'delete_affiliate_override') {
                 $code = trim((string) ($_POST['code'] ?? ''));
                 interessa_admin_delete_affiliate_record($code);
@@ -1674,6 +1706,7 @@ if ($isAuthed) {
         if (in_array($action, [
             'create_product',
             'save_product',
+            'prepare_product_from_link',
             'upload_packshot_only',
             'mirror_packshot_from_remote',
             'enrich_product_from_source',
@@ -1772,13 +1805,22 @@ $selectedProductLocalImageUrl = $selectedProductLocalAsset !== '' ? asset($selec
 $selectedProductImageBrief = is_array($selectedProduct) ? interessa_admin_product_image_brief($selectedProduct) : [];
 $selectedProductAffiliate = is_array($selectedProduct) && trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== '' ? aff_record((string) $selectedProduct['affiliate_code']) : null;
 $selectedProductAffiliateUrl = is_array($selectedProduct) && trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== '' ? aff_resolve((string) $selectedProduct['affiliate_code']) : null;
+$selectedProductDirectUrl = is_array($selectedProduct) ? trim((string) ($selectedProduct['fallback_url'] ?? '')) : '';
+$selectedProductDerivedUrl = is_string($selectedProductAffiliateUrl) ? aff_product_url_for_code((string) ($selectedProduct['affiliate_code'] ?? '')) : '';
+$selectedProductSourceUrl = '';
+if ($selectedProductDirectUrl !== '' && interessa_admin_looks_like_product_url($selectedProductDirectUrl)) {
+    $selectedProductSourceUrl = $selectedProductDirectUrl;
+} elseif ($selectedProductDerivedUrl !== '' && interessa_admin_looks_like_product_url($selectedProductDerivedUrl)) {
+    $selectedProductSourceUrl = $selectedProductDerivedUrl;
+}
+$selectedProductHasUsableSourceUrl = $selectedProductSourceUrl !== '';
 $selectedProductAffiliateType = $selectedProductAffiliate !== null ? aff_link_type($selectedProductAffiliate) : '';
 $selectedProductTarget = is_array($selectedProduct) ? interessa_affiliate_target($selectedProduct) : ['href' => '', 'label' => ''];
 $selectedProductPros = is_array($selectedProduct) && is_array($selectedProduct['pros'] ?? null) ? array_values(array_filter(array_map('strval', $selectedProduct['pros']))) : [];
 $selectedProductCons = is_array($selectedProduct) && is_array($selectedProduct['cons'] ?? null) ? array_values(array_filter(array_map('strval', $selectedProduct['cons']))) : [];
 $selectedProductSummaryReady = is_array($selectedProduct) && trim((string) ($selectedProduct['summary'] ?? '')) !== '';
 $selectedProductRatingReady = is_array($selectedProduct) && trim((string) ($selectedProduct['rating'] ?? '')) !== '';
-$selectedProductAffiliateReady = is_array($selectedProductAffiliateUrl) && trim((string) ($selectedProductAffiliateUrl['href'] ?? '')) !== '';
+$selectedProductAffiliateReady = is_string($selectedProductAffiliateUrl) && trim($selectedProductAffiliateUrl) !== '';
 $selectedProductPackshotReady = is_array($selectedProduct) && !empty($selectedProduct['has_local_image']);
 $selectedProductChecklist = [
     'Popis' => $selectedProductSummaryReady,
@@ -1812,6 +1854,8 @@ if (!in_array($returnSectionPrefill, ['articles', 'images'], true)) {
     $returnSectionPrefill = '';
 }
 $returnSlugPrefill = canonical_article_slug(trim((string) ($_GET['return_slug'] ?? '')));
+$prefillNewProductName = trim((string) ($_GET['prefill_product_name'] ?? ''));
+$prefillNewProductSlug = trim((string) ($_GET['prefill_product_slug'] ?? ''));
 $prefillNewProductBrand = trim((string) ($_GET['prefill_product_brand'] ?? ''));
 $prefillNewProductMerchant = trim((string) ($_GET['prefill_product_merchant'] ?? ''));
 $prefillNewProductMerchantSlug = trim((string) ($_GET['prefill_product_merchant_slug'] ?? ''));
@@ -1917,6 +1961,7 @@ $flashMessages = [
     'article-reset' => 'Override clanku bol resetovany.',
     'product' => 'Produkt bol ulozeny.',
     'product-created' => 'Novy produkt bol vytvoreny.',
+    'product-link-ready' => 'Link bol ulozeny. Produkt uz ma klikaci odkaz aj adresu produktu v obchode.',
     'product-reset' => 'Override produktu bol zmazany.',
     'affiliate' => 'Affiliate zaznam bol ulozeny.',
     'affiliate-created' => 'Novy affiliate zaznam bol vytvoreny.',
@@ -2584,15 +2629,15 @@ require dirname(__DIR__) . '/inc/head.php';
 
         <?php if ($section === 'products'): ?>
           <?php
-            $selectedProductDirectUrl = trim((string) ($selectedProduct['fallback_url'] ?? ''));
             $selectedProductAffiliateCode = trim((string) ($selectedProduct['affiliate_code'] ?? ''));
             $selectedProductRemoteSrc = trim((string) ($selectedProduct['image_remote_src'] ?? ''));
-            $selectedProductHasDirectUrl = $selectedProductDirectUrl !== '' && interessa_admin_looks_like_product_url($selectedProductDirectUrl);
-            $selectedProductNextStep = 'fill_url';
-            $selectedProductNextStepLabel = '1. DOPLNIT ADRESU PRODUKTU';
-            $selectedProductNextStepNote = 'Tento produkt este nema pripravenu konkretnu stranku produktu v obchode.';
+            $selectedProductAffiliateInputUrl = is_array($selectedProductAffiliate) ? trim((string) ($selectedProductAffiliate['url'] ?? '')) : '';
+            $selectedProductQuickInputUrl = $selectedProductAffiliateInputUrl !== '' ? $selectedProductAffiliateInputUrl : $selectedProductSourceUrl;
+            $selectedProductNextStep = 'enter_link';
+            $selectedProductNextStepLabel = '1. VLOZIT LINK PRODUKTU ALEBO DOGNET LINK';
+            $selectedProductNextStepNote = 'Sem vloz konkretne produktove URL alebo Dognet link. Admin sa potom pokusi sam doplnit adresu produktu, klikaci odkaz a obrazok.';
 
-            if ($selectedProductHasDirectUrl) {
+            if ($selectedProductHasUsableSourceUrl) {
               $selectedProductNextStep = 'enrich';
               $selectedProductNextStepLabel = '2. NACITAT UDAJE Z OBCHODU';
               $selectedProductNextStepNote = 'Admin uz pozna stranku produktu a vie z nej skusit nacitat nazov, text a obrazok.';
@@ -2605,7 +2650,7 @@ require dirname(__DIR__) . '/inc/head.php';
             if ($selectedProductPackshotReady && $selectedProductAffiliateCode === '') {
               $selectedProductNextStep = 'affiliate';
               $selectedProductNextStepLabel = '4. DOKONCIT KLIKACI ODKAZ';
-              $selectedProductNextStepNote = 'Obrazok je hotovy. Ak este chyba klikaci odkaz, dalsi krok je Affiliate odkazy.';
+              $selectedProductNextStepNote = 'Obrazok je hotovy. Ak este chyba klikaci odkaz, dalsi krok je Klikacie odkazy.';
             }
             if ($selectedProductPackshotReady && $selectedProductAffiliateCode !== '') {
               $selectedProductNextStep = 'done';
@@ -2648,17 +2693,43 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
               <ol class="admin-quickstart-list">
                 <li><strong>Krok 1:</strong> pozri blok <strong>Co kliknut teraz</strong>. Tam mas vzdy len jeden dalsi krok.</li>
-                <li><strong>Krok 2:</strong> ak uz mas Dognet alebo iny klikaci odkaz, najprv ho uloz v casti <strong>Affiliate odkazy</strong>.</li>
-                <li><strong>Krok 3:</strong> ak admin pyta adresu produktu, klikni na tlacidlo pre doplnenie produktu a otvori sa ti presne miesto, kde ju doplnis.</li>
-                <li><strong>Krok 4:</strong> klikni <strong>Ulozit produkt</strong>.</li>
-                <li><strong>Krok 5:</strong> klikni <strong>Nacitat udaje z obchodu</strong>.</li>
-                <li><strong>Krok 6:</strong> ak sa nasiel obrazok, klikni <strong>Ulozit obrazok z e-shopu</strong>.</li>
+                <li><strong>Krok 2:</strong> najjednoduchsia cesta je vlozit sem link produktu alebo Dognet link. Nemusis hladat technicke polia.</li>
+                <li><strong>Krok 3:</strong> ak admin uz pozna stranku produktu, klikni <strong>Nacitat udaje z obchodu</strong>.</li>
+                <li><strong>Krok 4:</strong> ak sa nasiel obrazok, klikni <strong>Ulozit obrazok z e-shopu</strong>.</li>
+                <li><strong>Krok 5:</strong> az nakoniec dolad <strong>Klikaci odkaz</strong>, ak este chyba.</li>
               </ol>
-              <p class="admin-note">Dolezite: ciel je jednoduchy. Tu riesis len produkt. Klikaci odkaz je az vedla v casti Klikacie odkazy.</p>
+              <p class="admin-note">Dolezite: tu riesis len produkt. Klikaci odkaz je az vedla v casti Klikacie odkazy.</p>
               <div class="admin-inline-actions">
-                <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($selectedAffiliateCode) ?>">Mam uz klikaci odkaz</a>
-                <a class="btn btn-secondary btn-small" href="#product-edit-form">Chcem doplnit produkt</a>
+                <?php if ($selectedAffiliateCode !== ''): ?>
+                  <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($selectedAffiliateCode) ?>">Mam uz klikaci odkaz</a>
+                <?php else: ?>
+                  <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($selectedProduct['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>">Chcem vytvorit klikaci odkaz</a>
+                <?php endif; ?>
+                <a class="btn btn-secondary btn-small" href="#product-link-form">Chcem vlozit link produktu</a>
               </div>
+            </section>
+
+            <section id="product-link-form" class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Najjednoduchsia cesta</h3>
+                  <p class="admin-meta">Sem vloz konkretne produktove URL alebo Dognet link. Admin sa pokusi sam doplnit produkt, stranku produktu a klikaci odkaz.</p>
+                </div>
+              </div>
+              <form method="post" class="admin-form admin-form-stack">
+                <input type="hidden" name="action" value="prepare_product_from_link" />
+                <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
+                <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
+                <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
+                <label>
+                  <span>Link produktu alebo Dognet link</span>
+                  <input type="url" name="source_link" value="<?= esc($selectedProductQuickInputUrl) ?>" placeholder="https://go.dognet.com/... alebo https://obchod.sk/konkretny-produkt" />
+                </label>
+                <p class="admin-note">Sem patri bud Dognet link pre tento produkt, alebo priamo stranka produktu v obchode. Nemusis zatial rucne vyplnat ostatne polia, ak to admin zvladne zistit sam.</p>
+                <div class="admin-actions">
+                  <button class="btn btn-cta" type="submit">1. Vlozit link a pripravit produkt</button>
+                </div>
+              </form>
             </section>
 
             <section class="admin-subsection is-compact">
@@ -2672,8 +2743,8 @@ require dirname(__DIR__) . '/inc/head.php';
                 <strong><?= esc($selectedProductNextStepLabel) ?></strong>
                 <p><?= esc($selectedProductNextStepNote) ?></p>
                 <div class="admin-inline-actions">
-                  <?php if ($selectedProductNextStep === 'fill_url'): ?>
-                    <a class="btn btn-secondary btn-small" href="#product-edit-form">1. Otvorit produkt a doplnit, co chyba</a>
+                  <?php if ($selectedProductNextStep === 'enter_link'): ?>
+                    <a class="btn btn-secondary btn-small" href="#product-link-form">1. Vlozit link produktu alebo Dognet link</a>
                   <?php elseif ($selectedProductNextStep === 'enrich'): ?>
                     <form method="post" class="admin-inline-form">
                       <input type="hidden" name="action" value="enrich_product_from_source" />
@@ -2749,7 +2820,15 @@ require dirname(__DIR__) . '/inc/head.php';
                 <?php foreach ($productImageQueue as $queueRow): ?>
                   <?php
                     $queueFallbackUrl = trim((string) ($queueRow['fallback_url'] ?? ''));
-                    $queueHasDirectUrl = $queueFallbackUrl !== '' && interessa_admin_looks_like_product_url($queueFallbackUrl);
+                    $queueAffiliateCode = trim((string) ($queueRow['affiliate_code'] ?? ''));
+                    $queueDerivedUrl = $queueAffiliateCode !== '' ? aff_product_url_for_code($queueAffiliateCode) : '';
+                    $queueSourceUrl = '';
+                    if ($queueFallbackUrl !== '' && interessa_admin_looks_like_product_url($queueFallbackUrl)) {
+                        $queueSourceUrl = $queueFallbackUrl;
+                    } elseif ($queueDerivedUrl !== '' && interessa_admin_looks_like_product_url($queueDerivedUrl)) {
+                        $queueSourceUrl = $queueDerivedUrl;
+                    }
+                    $queueHasUsableSourceUrl = $queueSourceUrl !== '';
                     $queueRemoteSrc = trim((string) ($queueRow['remote_src'] ?? ''));
                     $queueNeedsLocal = !empty($queueRow['needs_local_packshot']);
                     $queueImageMode = trim((string) ($queueRow['image_mode'] ?? ''));
@@ -2772,9 +2851,9 @@ require dirname(__DIR__) . '/inc/head.php';
                     </div>
                     <div class="admin-queue-actions">
                       <span class="admin-note"><?= esc($queueImageModeLabel) ?></span>
-                      <?php if (!$queueHasDirectUrl): ?>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>&amp;focus=product_edit#product-edit-form">1. OTVORIT PRODUKT A DOPLNIT, CO CHYBA</a>
-                        <span class="admin-note">Tomuto produktu zatial chyba priama adresa produktu v obchode alebo klikaci odkaz, z ktoreho sa da adresa doplnit.</span>
+                      <?php if (!$queueHasUsableSourceUrl): ?>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>#product-link-form">1. VLOZIT LINK PRODUKTU</a>
+                        <span class="admin-note">Sem treba vlozit bud Dognet link, alebo priamo link na tento produkt v obchode. Az potom admin vie hladat obrazok.</span>
                       <?php elseif ($queueNeedsLocal && $queueRemoteSrc === ''): ?>
                         <form method="post" class="admin-inline-form">
                           <input type="hidden" name="action" value="autofill_product_from_source" />
@@ -2899,13 +2978,12 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p><strong>Co sa teraz zobrazuje:</strong> <?= esc($selectedProductImageSourceLabel) ?></p>
                   <p><strong>Ulozeny obrazok u nas:</strong> <code><?= esc($selectedProductLocalAsset !== '' ? $selectedProductLocalAsset : 'zatial chyba') ?></code></p>
                   <p><strong>Kam sa ulozi hotovy obrazok:</strong> <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></p>
-                  <?php $selectedProductHasDirectSourceUrl = interessa_admin_looks_like_product_url((string) ($selectedProduct['fallback_url'] ?? '')); ?>
                   <?php if ($selectedProductPackshotReady): ?>
                     <p class="admin-note">Toto je hotovy obrazok produktu, ktory sa zobrazi na webe.</p>
                   <?php elseif (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
                       <p class="admin-note">Nasiel sa obrazok z obchodu. Teraz klikni <strong>3. Ulozit obrazok z e-shopu</strong>.</p>
-                    <?php elseif (!$selectedProductHasDirectSourceUrl): ?>
-                      <p class="admin-note">Najprv dole dopln pole <strong>URL produktu v obchode</strong> a klikni <strong>Ulozit produkt</strong>.</p>
+                    <?php elseif (!$selectedProductHasUsableSourceUrl): ?>
+                      <p class="admin-note">Najprv hore vloz <strong>link produktu alebo Dognet link</strong>. Az potom bude admin vediet hladat obrazok.</p>
                     <?php else: ?>
                       <p class="admin-note">Produkt este nema obrazok ulozeny u nas. Najprv klikni <strong>2. Nacitat udaje z obchodu</strong>.</p>
                     <?php endif; ?>
@@ -2942,10 +3020,10 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php endif; ?>
                     </div>
                   <?php endif; ?>
-                  <?php if (trim((string) ($selectedProduct['fallback_url'] ?? '')) !== ''): ?>
+                  <?php if ($selectedProductSourceUrl !== ''): ?>
                     <div class="admin-inline-actions">
-                      <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProduct['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit e-shop</a>
-                      <?php if ($selectedProductHasDirectSourceUrl): ?>
+                      <a class="btn btn-secondary btn-small" href="<?= esc($selectedProductSourceUrl) ?>" target="_blank" rel="noopener">Otvorit produkt v obchode</a>
+                      <?php if ($selectedProductHasUsableSourceUrl): ?>
                         <form method="post" class="admin-inline-form">
                           <input type="hidden" name="action" value="enrich_product_from_source" />
                           <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
@@ -2954,9 +3032,9 @@ require dirname(__DIR__) . '/inc/head.php';
                           <button class="btn btn-secondary btn-small" type="submit">2. Nacitat udaje z obchodu</button>
                         </form>
                       <?php else: ?>
-                      <span class="admin-note">Ak admin este nema adresu produktu, dole ju dopln do pola Adresa konkretneho produktu v obchode a uloz produkt.</span>
+                      <span class="admin-note">Ak admin este nema link produktu, vloz ho hore do bloku Najjednoduchsia cesta.</span>
                       <?php endif; ?>
-                      <?php if (!$selectedProductPackshotReady && $selectedProductHasDirectSourceUrl): ?>
+                      <?php if (!$selectedProductPackshotReady && $selectedProductHasUsableSourceUrl): ?>
                         <form method="post" class="admin-inline-form">
                           <input type="hidden" name="action" value="autofill_product_from_source" />
                           <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
@@ -2973,7 +3051,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <p><strong>Klikaci kod:</strong> <?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?: 'zatial chyba' ?></p>
                       <p><strong>Typ odkazu:</strong> <?= esc($selectedProductAffiliateType !== '' ? $selectedProductAffiliateType : 'neznamy') ?></p>
                       <p><strong>Odkial je zaznam:</strong> <?= esc((string) ($selectedProductAffiliate['source'] ?? 'bez zaznamu')) ?></p>
-                      <p><strong>Kam teraz klik smeruje:</strong> <?= esc((string) ($selectedProductAffiliateUrl ?? ($selectedProduct['fallback_url'] ?? ''))) ?></p>
+                      <p><strong>Kam teraz klik smeruje:</strong> <?= esc((string) ($selectedProductAffiliateUrl ?? $selectedProductSourceUrl)) ?></p>
                     </div>
                   </details>
                     <?php if (trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== ''): ?>
@@ -3465,22 +3543,31 @@ require dirname(__DIR__) . '/inc/head.php';
                         </div>
                       </div>
                       <div class="admin-queue-actions">
+                        <?php
+                          $queueFallbackUrl = trim((string) ($queueRow['fallback_url'] ?? ''));
+                          $queueAffiliateCode = trim((string) ($queueRow['affiliate_code'] ?? ''));
+                          $queueDerivedUrl = $queueAffiliateCode !== '' ? aff_product_url_for_code($queueAffiliateCode) : '';
+                          $queueSourceUrl = '';
+                          if ($queueFallbackUrl !== '' && interessa_admin_looks_like_product_url($queueFallbackUrl)) {
+                              $queueSourceUrl = $queueFallbackUrl;
+                          } elseif ($queueDerivedUrl !== '' && interessa_admin_looks_like_product_url($queueDerivedUrl)) {
+                              $queueSourceUrl = $queueDerivedUrl;
+                          }
+                        ?>
                         <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Otvorit produkt</a>
-                        <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
-                          <?php if (interessa_admin_looks_like_product_url((string) ($queueRow['fallback_url'] ?? ''))): ?>
-                            <form method="post" class="admin-inline-form">
+                        <?php if ($queueSourceUrl !== ''): ?>
+                          <form method="post" class="admin-inline-form">
                               <input type="hidden" name="action" value="autofill_product_from_source" />
                               <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
                               <input type="hidden" name="return_section" value="images" />
                               <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
                               <button class="btn btn-secondary btn-small" type="submit">1. Nacitat data z e-shopu</button>
                             </form>
-                          <?php else: ?>
-                            <span class="admin-note">Najprv vloz URL produktu</span>
-                          <?php endif; ?>
+                        <?php else: ?>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>#product-link-form">1. Vlozit link produktu</a>
                         <?php endif; ?>
-                        <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
-                          <a class="btn btn-secondary btn-small" href="<?= esc((string) ($queueRow['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit e-shop</a>
+                        <?php if ($queueSourceUrl !== ''): ?>
+                          <a class="btn btn-secondary btn-small" href="<?= esc($queueSourceUrl) ?>" target="_blank" rel="noopener">Otvorit produkt v obchode</a>
                         <?php endif; ?>
                         <?php if (trim((string) ($queueRow['remote_src'] ?? '')) !== ''): ?>
                           <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
@@ -3752,9 +3839,9 @@ require dirname(__DIR__) . '/inc/head.php';
                       <p><strong><?= esc((string) ($selectedAffiliateProduct['name'] ?? '')) ?></strong></p>
                       <p class="admin-note"><?= esc((string) ($selectedAffiliateProduct['slug'] ?? '')) ?><?php if (trim((string) ($selectedAffiliateProduct['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($selectedAffiliateProduct['merchant'] ?? '')) ?><?php endif; ?></p>
                       <div class="admin-inline-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($selectedAffiliateProduct['slug'] ?? '')) ?>">Produkt</a>
+                      <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($selectedAffiliateProduct['slug'] ?? '')) ?>">Produkt</a>
                         <?php if (trim((string) ($selectedAffiliateProduct['fallback_url'] ?? '')) !== ''): ?>
-                          <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedAffiliateProduct['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Referencny produkt</a>
+                          <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedAffiliateProduct['fallback_url'] ?? '')) ?>" target="_blank" rel="noopener">Produkt v obchode</a>
                         <?php endif; ?>
                       </div>
                     </article>
@@ -3769,8 +3856,8 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php if ($selectedAffiliateCode !== ''): ?>
                         <a class="btn btn-secondary btn-small" href="/go/<?= rawurlencode($selectedAffiliateCode) ?>" target="_blank" rel="noopener">Otvorit /go/</a>
                       <?php endif; ?>
-                      <?php if (is_array($selectedAffiliateResolvedTarget) && trim((string) ($selectedAffiliateResolvedTarget['href'] ?? '')) !== ''): ?>
-                        <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedAffiliateResolvedTarget['href'] ?? '')) ?>" target="_blank" rel="noopener">Finalny ciel</a>
+                      <?php if (is_string($selectedAffiliateResolvedTarget) && trim($selectedAffiliateResolvedTarget) !== ''): ?>
+                        <a class="btn btn-secondary btn-small" href="<?= esc($selectedAffiliateResolvedTarget) ?>" target="_blank" rel="noopener">Finalny ciel</a>
                       <?php endif; ?>
                     </div>
                   </article>

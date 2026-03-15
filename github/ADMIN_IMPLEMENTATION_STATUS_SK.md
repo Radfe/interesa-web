@@ -7,6 +7,7 @@ Tento dokument je spolocny stavovy prehlad pre:
 Zdroj pravdy pre obsahovu a produktovu prioritu:
 - [WEB_CONTENT_PRODUCT_MAP_SK.md](C:/data/praca/webova_stranka/github/WEB_CONTENT_PRODUCT_MAP_SK.md)
 - [CAMPAIGN_ARTICLE_MAP_SK.md](C:/data/praca/webova_stranka/github/CAMPAIGN_ARTICLE_MAP_SK.md)
+- [FINAL_CAMPAIGN_SHORTLIST_SK.md](C:/data/praca/webova_stranka/github/FINAL_CAMPAIGN_SHORTLIST_SK.md)
 - [ADMIN_PRODUCT_IMPORT_BRIEF_SK.md](C:/data/praca/webova_stranka/github/ADMIN_PRODUCT_IMPORT_BRIEF_SK.md)
 
 ## 1. Pravidlo prace
@@ -15,6 +16,7 @@ Admin vrstva neriesi znovu:
 - ktore clanky su priorita
 - ktore kampane su priorita
 - ake typy produktov patria do clankov
+- aky ma byt finalny shortlist kampani a produktov
 
 Admin vrstva riesi:
 - ako dostat produkt do systemu
@@ -75,17 +77,34 @@ Posledne doplnenie:
   - nacitat udaje z obchodu
   - ulozit obrazok
 
+Najnovsie doplnenie:
+- v `Produkty` pribudla jednoducha cesta:
+  - vlozit link produktu alebo Dognet link
+  - admin sa pokusi sam doplnit:
+    - adresu produktu v obchode
+    - klikaci odkaz
+    - obchod
+    - obrazok z obchodu
+- produktovy workflow uz nepozera len na rucne vyplnenu adresu produktu
+- ak uz existuje klikaci odkaz, admin vie casto pouzit aj jeho cielovu adresu ako zdroj pre nacitanie produktu
+- zrozumitelnejsi je aj dalsi krok v `Co kliknut teraz`
+
 Vysledok tohto kroku:
 - Produkty hovoria ludskejsie a menej technicky
 - Affiliate odkazy hovoria ludskejsie a menej technicky
 - tlacidlo `Otvorit produkt` z obrazkovych workflowov uz vedie priamo na formular produktu
 - diagnosticke technicke udaje pri produkte su schovane do rozbalovacieho bloku
+- v produktoch je novy hlavny vstup `Link produktu alebo Dognet link`
+- admin vie pouzit bud:
+  - priamu adresu produktu
+  - alebo existujuci klikaci odkaz
+- queue pri produktoch uz nehovori len `doplni URL`, ale smeruje na vlozenie linku
 
 ## 4. Co este chyba
 
 ### Produkty a klikacie odkazy
 Chyba najma:
-- jednoduchy workflow typu:
+- uplne bezchybny workflow typu:
   - vloz produktovy link alebo Dognet link
   - admin pripravi produkt
   - admin pripravi obrazok
@@ -94,25 +113,46 @@ Chyba najma:
   - produkt -> clanok
   - produkt -> merchant
   - produkt -> typ boxu
+- este treba dotiahnut:
+  - skrytie dalsich menej dolezitych poli
+  - este jasnejsie kroky pri produktoch bez klikacieho odkazu
+  - finalne samostatne tlacidlo pre `vloz link -> priprav produkt`
 
 ### Prioritne naplnenie
 Treba sa sustredit najprv na clanky urcene v:
 - [WEB_CONTENT_PRODUCT_MAP_SK.md](C:/data/praca/webova_stranka/github/WEB_CONTENT_PRODUCT_MAP_SK.md)
 - [CAMPAIGN_ARTICLE_MAP_SK.md](C:/data/praca/webova_stranka/github/CAMPAIGN_ARTICLE_MAP_SK.md)
+- [FINAL_CAMPAIGN_SHORTLIST_SK.md](C:/data/praca/webova_stranka/github/FINAL_CAMPAIGN_SHORTLIST_SK.md)
 
 Najprv riesit:
 - P1 a P2 clanky
 - kampane fazy 1A a 1B
+- a v prvej admin faze hlavne tieto stranky:
+  - `najlepsie-proteiny-2026`
+  - `kreatin-porovnanie`
+  - `doplnky-vyzivy`
 
 ## 5. Najblizsi admin krok
 
 Najblizsi odporucany krok v admine:
-- pripravit jednoduchy polo-rucny system:
+- dotiahnut novy jednoduchy polo-rucny system:
   - vlozit konkretny produktovy link alebo Dognet deeplink
-  - vytvorit produkt
+  - vytvorit alebo doplnit produkt
   - skusit ziskat obrazok
   - pripravit klikaci odkaz
-- ciel je, aby bezny pouzivatel nemusel hladat technicke polia a nerozhodoval sa medzi viacerymi podobnymi tlacidlami
+- a hned ho aplikovat aspon na:
+  - `najlepsie-proteiny-2026`
+  - `kreatin-porovnanie`
+  - `doplnky-vyzivy`
+- pri produktoch riesit len prvu fazu:
+  - pridat produkt
+  - pridat odkaz do obchodu
+  - nahrat realny obrazok produktu
+  - priradit produkt ku clanku
+  - nastavit, ci ide do porovnania, odporucanych produktov alebo ako hlavne odporucanie
+- ciel ostava rovnaky:
+  - bezny pouzivatel nema hladat technicke polia
+  - nema premyslat medzi viacerymi podobnymi tlacidlami
 
 Zatial nerobit:
 - velky hromadny XML importer pre vsetko
