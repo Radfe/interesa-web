@@ -10,6 +10,10 @@
   </div>
 </footer>
 
+<?php if (function_exists('interessa_is_local_dev') && interessa_is_local_dev()): ?>
+<button class="dev-reload-fab" type="button" data-dev-reload>Obnovit verziu</button>
+<?php endif; ?>
+
 <script src="<?= asset('js/app.js') ?>" defer></script>
 <?= script_tags(page_script_urls()) ?>
 

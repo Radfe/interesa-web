@@ -43,12 +43,22 @@
     });
   });
 
-  // Desktop mega menu uses explicit open/close state directly on the original menu.
+  // Desktop mega menu uses standard hover/focus behavior while keeping links clickable.
   const desktopMegaMq = window.matchMedia('(min-width: 861px)');
   const megaItems = Array.from(document.querySelectorAll('.menu-item.has-mega'));
+  const megaCloseTimers = new WeakMap();
   let activeMegaItem = null;
 
+  function clearMegaTimer(item){
+    const timer = megaCloseTimers.get(item);
+    if (timer) {
+      window.clearTimeout(timer);
+      megaCloseTimers.delete(item);
+    }
+  }
+
   function closeMega(item){
+    clearMegaTimer(item);
     item.classList.remove('is-open');
     const trigger = item.querySelector('.main-nav__link[data-mega]');
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
@@ -62,6 +72,7 @@
     megaItems.forEach((other)=>{
       if (other !== item) closeMega(other);
     });
+    clearMegaTimer(item);
     item.classList.add('is-open');
     const trigger = item.querySelector('.main-nav__link[data-mega]');
     if (trigger) trigger.setAttribute('aria-expanded', 'true');
@@ -72,16 +83,18 @@
     const trigger = item.querySelector('.main-nav__link[data-mega]');
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
 
-    if (trigger) {
-      trigger.addEventListener('click', (event)=>{
-        if (!desktopMegaMq.matches) return;
-        if (activeMegaItem === item && item.classList.contains('is-open')) {
-          return;
-        }
-        event.preventDefault();
-        openMega(item);
-      });
-    }
+    item.addEventListener('mouseenter', ()=>{
+      if (!desktopMegaMq.matches) return;
+      openMega(item);
+    });
+
+    item.addEventListener('mouseleave', ()=>{
+      if (!desktopMegaMq.matches) return;
+      const timer = window.setTimeout(()=>{
+        closeMega(item);
+      }, 120);
+      megaCloseTimers.set(item, timer);
+    });
 
     item.addEventListener('focusin', ()=>openMega(item));
     item.addEventListener('focusout', ()=>{
@@ -119,6 +132,8 @@
   function resetMegaMode(){
     if (!desktopMegaMq.matches) {
       megaItems.forEach((item)=>closeMega(item));
+    } else if (activeMegaItem) {
+      closeMega(activeMegaItem);
     }
   }
 

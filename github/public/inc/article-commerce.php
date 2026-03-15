@@ -546,7 +546,7 @@ if (!function_exists('interessa_render_article_commerce_submeta')) {
         $html = '<div class="article-card-submeta">';
         if ($variant === 'compact') {
             if ($coverageState === 'full') {
-                $html .= '<span class="article-card-subchip is-coverage is-full">Porovnanie + vyber</span>';
+                $html .= '<span class="article-card-subchip is-coverage is-full">Porovnanie a odporucania</span>';
             } else {
                 $html .= '<span class="article-card-subchip">Odporucane produkty</span>';
             }
@@ -560,9 +560,9 @@ if (!function_exists('interessa_render_article_commerce_submeta')) {
             $html .= '<span class="article-card-subchip">' . esc((string) $merchantCount) . ' ' . esc(interessa_pluralize_slovak($merchantCount, 'obchod', 'obchody', 'obchodov')) . '</span>';
         }
         if ($coverageState === 'full') {
-            $html .= '<span class="article-card-subchip is-coverage is-full">Porovnanie pripravene</span>';
+            $html .= '<span class="article-card-subchip is-coverage is-full">Prehlad je pripraveny</span>';
         } elseif ($coverageState === 'partial') {
-            $html .= '<span class="article-card-subchip is-coverage is-partial">Shortlist pripraveny</span>';
+            $html .= '<span class="article-card-subchip is-coverage is-partial">Vyber je pripraveny</span>';
         }
         $html .= '</div>';
 

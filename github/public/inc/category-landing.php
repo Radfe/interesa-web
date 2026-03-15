@@ -230,7 +230,7 @@ include dirname(__DIR__) . '/inc/head.php';
       <section class="card">
         <div class="section-head">
           <h2>Zacat podla toho, co riesis</h2>
-          <p class="meta">Kratsia cesta k spravnemu clanku podla intentu: rychly vyber, porovnanie alebo tematiky sprievodca.</p>
+          <p class="meta">Vyber si clanok podla toho, co chces vyriesit ako prve: rychly vyber, porovnanie alebo prakticky sprievodca.</p>
         </div>
         <div class="hub-grid article-related-grid">
           <?php foreach ($featuredGuides as $guide): ?>
@@ -265,8 +265,8 @@ include dirname(__DIR__) . '/inc/head.php';
     <?php if ($comparisonReadyArticles !== []): ?>
       <section class="card">
         <div class="section-head">
-          <h2>Rychle porovnania v tabulke</h2>
-          <p class="meta">Tieto clanky maju comparison table aj shortlist, takze sa cez ne vies dostat k vyberu najrychlejsie.</p>
+          <h2>Kde sa zorientujes najrychlejsie</h2>
+          <p class="meta">Ak nechces citat dlhy uvod a chces ist rovno na prehlad produktov, zacni jednym z tychto clankov.</p>
         </div>
         <div class="hub-grid article-related-grid">
           <?php foreach ($comparisonReadyArticles as $item): ?>
@@ -290,8 +290,8 @@ include dirname(__DIR__) . '/inc/head.php';
                   <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
                 </div>
                 <div class="article-card-submeta">
-                  <span class="article-card-subchip is-coverage is-full">Comparison table pripravena</span>
-                  <span class="article-card-subchip">Packshoty: <?= esc((string) ($item['_coverage_percent'] ?? 0)) ?>%</span>
+                  <span class="article-card-subchip is-coverage is-full">Prehladna tabulka vyberu</span>
+                  <span class="article-card-subchip">Realne fotky: <?= esc((string) ($item['_coverage_percent'] ?? 0)) ?>%</span>
                 </div>
                 <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
                 <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
@@ -306,7 +306,7 @@ include dirname(__DIR__) . '/inc/head.php';
     <?php if ($readyArticles !== []): ?>
       <section class="card">
         <div class="section-head">
-          <h2>Najrychlejsie sa dostanes k vyberu tu</h2>
+          <h2>Ked chces prejst rovno k odporucaniam</h2>
           <p class="meta">Ak uz nechces len studovat temu, ale prejst ku konkretnym produktom, zacni jednym z tychto clankov.</p>
         </div>
         <div class="hub-grid article-related-grid">
@@ -343,8 +343,8 @@ include dirname(__DIR__) . '/inc/head.php';
 
     <section class="card">
       <div class="section-head">
-        <h2>Klucove clanky</h2>
-        <p class="meta">Najlepsia cesta je zacat jednym z tychto clankov a az potom riesit konkretny produkt.</p>
+        <h2>Najdolezitejsie clanky v teme</h2>
+        <p class="meta">Toto su clanky, od ktorych sa oplati zacat, ak si chces temu rychlo utriedit a az potom riesit konkretny produkt.</p>
       </div>
       <?php if ($featuredGuides !== []): ?>
         <div class="hub-grid">
@@ -426,7 +426,7 @@ include dirname(__DIR__) . '/inc/head.php';
       <section class="card">
         <div class="section-head">
           <h2>Suvisiace temy, ktore davaju zmysel ako dalsi krok</h2>
-          <p class="meta">Ak uz mas tuto temu zorientovanu, tieto pribuzne cesty ta posunu k dalsiemu logickemu vyberu.</p>
+          <p class="meta">Ak uz mas tuto temu zorientovanu, tieto pribuzne smery ti pomozu prirodzene pokracovat dalej.</p>
         </div>
         <div class="hub-grid article-related-grid">
           <?php foreach ($crossThemePaths as $path): ?>

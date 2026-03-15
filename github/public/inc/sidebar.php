@@ -46,8 +46,8 @@ if ($sidebarCategorySlug !== '') {
             'full_coverage' => interessa_article_has_full_packshot_coverage($itemSlug),
             'coverage_percent' => interessa_shortlist_coverage_percent($summary),
             'note' => interessa_article_has_full_packshot_coverage($itemSlug)
-                ? 'Shortlist aj porovnanie su pripravene.'
-                : 'Clanok uz obsahuje shortlist odporucanych produktov.',
+                ? 'Mas tam aj rychly prehlad a odporucane produkty.'
+                : 'Clanok uz obsahuje odporucane produkty a prakticky vyber.',
             'updated_ts' => is_file($itemFile) ? (int) @filemtime($itemFile) : 0,
         ];
     }
@@ -108,7 +108,7 @@ $sidebarGuideTitle = $sidebarCategorySlug !== '' ? 'Zacat v tejto teme' : 'Top n
 
   <?php if ($sidebarCommercialLinks !== []): ?>
     <section class="widget">
-      <h3>Najlepsie pripravene vybery</h3>
+      <h3>Kde sa dostanes k vyberu najrychlejsie</h3>
       <ul class="list">
         <?php foreach ($sidebarCommercialLinks as $link): ?>
           <li>
@@ -122,6 +122,6 @@ $sidebarGuideTitle = $sidebarCategorySlug !== '' ? 'Zacat v tejto teme' : 'Top n
 
   <section class="widget">
     <h3>Ako funguju odkazy</h3>
-    <p class="muted">Niektore odkazy vedu na partnerske obchody. Ak cez ne nakupis, web moze ziskat proviziu bez navysenia ceny pre teba. Odkazy priebezne kontrolujeme a aktualizujeme tak, aby smerovali na relevantne produkty.</p>
+    <p class="muted">Niektore odkazy vedu na partnerske obchody. Ak cez ne nakupis, web moze ziskat proviziu bez navysenia ceny pre teba. Odkazy priebezne kontrolujeme tak, aby smerovali na relevantne produkty.</p>
   </section>
 </aside>

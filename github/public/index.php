@@ -124,21 +124,21 @@ $homeQuickStartPaths = [
     [
         'eyebrow' => 'Najrychlejsi start',
         'title' => 'Chcem hned porovnat proteiny podla ciela',
-        'description' => 'Najsilnejsia vstupna stranka, ked chces ist rovno do prehladu a potom k shortlistu.',
+        'description' => 'Dobry start, ak sa chces rychlo zorientovat a hned vidiet, ktore typy proteinov davaju zmysel pre tvoj ciel.',
         'href' => article_url('najlepsie-proteiny-2026'),
         'cta' => 'Otvorit vyber',
     ],
     [
         'eyebrow' => 'Kazdodenny zaklad',
         'title' => 'Chcem rychlo pochopit zakladne doplnky vyzivy',
-        'description' => 'Dobry start pre beznu rutinu: kreatin, D3+K2, magnezium, kolagen a omega-3.',
+        'description' => 'Dobry start pre beznu rutinu: co ma zmysel brat pravidelne a co je skôr doplnok navyse.',
         'href' => article_url('doplnky-vyzivy'),
         'cta' => 'Otvorit sprievodcu',
     ],
     [
         'eyebrow' => 'Porovnanie v tabulke',
         'title' => 'Chcem ist rovno na hotove porovnanie produktov',
-        'description' => 'Ak uz nechces citat zaklady, otvor clanok s comparison table a cistym shortlistom.',
+        'description' => 'Ak nechces citat dlhy uvod, otvor si clanok, kde mas produkty porovnane na jeden pohlad.',
         'href' => article_url('kreatin-porovnanie'),
         'cta' => 'Otvorit porovnanie',
     ],
@@ -326,7 +326,7 @@ include __DIR__ . '/inc/head.php';
   <div class="section-head">
     <p class="hub-eyebrow">Quick start</p>
     <h2>Tri najrychlejsie cesty cez web</h2>
-    <p class="meta">Ak nechces najprv studovat celu strukturu webu, zacni jednou z tychto troch ciest. Kazda vedie na silny clanok s vysokou hodnotou pre rozhodovanie.</p>
+    <p class="meta">Ak nechces najprv prechadzat cely web, zacni jednou z tychto troch ciest. Kazda ta rychlo dovedie k uzitocnemu clanku a rozumnejsiemu vyberu.</p>
   </div>
 
   <div class="quickstart-grid">
@@ -346,7 +346,7 @@ include __DIR__ . '/inc/head.php';
 <section class="container home-section">
   <div class="section-head">
     <h2>Zacni podla toho, co riesis</h2>
-    <p class="meta">Najrychlejsia cesta cez web: vyber si ciel a otvor prvy clanok, ktory ta dovedie k porovnaniu alebo shortlistu.</p>
+    <p class="meta">Vyber si ciel a otvor prvy clanok, ktory ta najrychlejsie dostane k odpovedi, nie k dalsiemu chaosu.</p>
   </div>
 
   <div class="hub-grid home-goals-grid">
@@ -377,9 +377,9 @@ include __DIR__ . '/inc/head.php';
 <?php if ($homeThemeIntentGroups !== []): ?>
 <section class="container home-section home-section--theme-system">
   <div class="section-head">
-    <p class="hub-eyebrow">System tem</p>
-    <h2>Ako je rozdelenych vsetkych 12 tem</h2>
-    <p class="meta">Na webe nie su vsetky temy rovnako siroke. Tento prehlad ti pomoze pochopit, kde sa oplati zacat a co je skor doplnkova cesta.</p>
+    <p class="hub-eyebrow">Ako sa zorientovat</p>
+    <h2>Najprv si vyber sirsiu temu</h2>
+    <p class="meta">Niektore temy sluzia ako vstup do problemu, ine su skor na uzsi detail. Tento prehlad ti pomoze zacat tam, kde to bude davat najvacsi zmysel.</p>
   </div>
 
   <div class="intent-lane-grid home-intent-grid">
@@ -410,9 +410,9 @@ include __DIR__ . '/inc/head.php';
 <?php if ($homeSupportThemes !== []): ?>
 <section class="container home-section home-section--support-themes">
   <div class="section-head">
-    <p class="hub-eyebrow">Druhy krok</p>
-    <h2>Doplnkove temy a specializovane cesty</h2>
-    <p class="meta">Tieto temy doriesuju uzsie otazky. Su vhodne vtedy, ked uz nechces prechadzat siroku temu, ale riesis konkretny detail.</p>
+    <p class="hub-eyebrow">Ked uz vies, co hladat</p>
+    <h2>Specializovane temy pre konkretne otazky</h2>
+    <p class="meta">Tieto temy su vhodne vtedy, ked uz nechces studovat zaklad, ale riesis konkretny problem alebo detail vyberu.</p>
   </div>
 
   <div class="support-theme-grid">
@@ -428,7 +428,7 @@ include __DIR__ . '/inc/head.php';
         <div class="article-card-submeta">
           <span class="article-card-subchip"><?= esc((string) ($theme['count'] ?? 0)) ?> <?= esc(interessa_pluralize_slovak((int) ($theme['count'] ?? 0), 'clanok', 'clanky', 'clankov')) ?></span>
           <?php if ((int) ($theme['commercial_count'] ?? 0) > 0): ?>
-            <span class="article-card-subchip is-coverage is-partial">Odporucania v <?= esc((string) ($theme['commercial_count'] ?? 0)) ?> <?= esc(interessa_pluralize_slovak((int) ($theme['commercial_count'] ?? 0), 'clanku', 'clankoch', 'clankoch')) ?></span>
+            <span class="article-card-subchip is-coverage is-partial">Vyber produktov v <?= esc((string) ($theme['commercial_count'] ?? 0)) ?> <?= esc(interessa_pluralize_slovak((int) ($theme['commercial_count'] ?? 0), 'clanku', 'clankoch', 'clankoch')) ?></span>
           <?php endif; ?>
         </div>
         <a class="card-link" href="<?= esc(category_url((string) $theme['slug'])) ?>">Otvorit temu</a>
@@ -441,7 +441,7 @@ include __DIR__ . '/inc/head.php';
 <section class="container home-section">
   <div class="section-head">
     <h2>Vyber si temu, v ktorej zacat</h2>
-    <p class="meta">Kazda tema ma mat jasnu ulohu: pomoct ti zorientovat sa, ukazat spravny prvy clanok a potom ta posunut k vhodnemu vyberu.</p>
+    <p class="meta">Kazda tema ta ma rychlo zorientovat, ukazat najlepsi prvy clanok a potom ta posunut k vhodnemu vyberu.</p>
   </div>
 
   <div class="hub-grid home-theme-grid">
@@ -468,9 +468,9 @@ include __DIR__ . '/inc/head.php';
           </div>
           <?php if ((int) ($category['commercial_count'] ?? 0) > 0): ?>
             <div class="article-card-submeta">
-              <span class="article-card-subchip">Odporucania v <?= esc((string) $category['commercial_count']) ?> <?= esc(interessa_pluralize_slovak((int) $category['commercial_count'], 'clanku', 'clankoch', 'clankoch')) ?></span>
+              <span class="article-card-subchip">Vyber produktov v <?= esc((string) $category['commercial_count']) ?> <?= esc(interessa_pluralize_slovak((int) $category['commercial_count'], 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php if ((int) ($category['full_coverage_count'] ?? 0) > 0): ?>
-                <span class="article-card-subchip is-coverage is-full">Najlepsie pripravene v <?= esc((string) $category['full_coverage_count']) ?> <?= esc(interessa_pluralize_slovak((int) $category['full_coverage_count'], 'clanku', 'clankoch', 'clankoch')) ?></span>
+                <span class="article-card-subchip is-coverage is-full">Najrychlejsia cesta k vyberu v <?= esc((string) $category['full_coverage_count']) ?> <?= esc(interessa_pluralize_slovak((int) $category['full_coverage_count'], 'clanku', 'clankoch', 'clankoch')) ?></span>
               <?php endif; ?>
             </div>
           <?php endif; ?>
@@ -486,10 +486,10 @@ include __DIR__ . '/inc/head.php';
 </section>
 
 <section class="container home-section">
-  <div class="section-head">
-    <h2>Najlepsie clanky na prvy klik</h2>
-    <p class="meta">Sem chod, ked uz riesis konkretny vyber a nechces sa prehrabavat celou temou od zaciatku.</p>
-  </div>
+      <div class="section-head">
+        <h2>Najlepsie clanky na prvy klik</h2>
+        <p class="meta">Sem chod vtedy, ked uz riesis konkretny vyber a nechces sa prehrabavat celou temou od zaciatku.</p>
+      </div>
 
   <div class="hub-grid">
     <?php foreach ($featuredGuides as $guide): ?>
@@ -507,7 +507,7 @@ include __DIR__ . '/inc/head.php';
             <span class="article-card-subchip is-coverage <?= (int) ($guide['coverage_percent'] ?? 0) >= 100 ? 'is-full' : 'is-partial' ?>">
               <?= esc(ucfirst((string) ($guide['coverage_label'] ?? 'vyber produktov'))) ?>
             </span>
-            <span class="article-card-subchip">Packshoty: <?= esc((string) ($guide['coverage_percent'] ?? 0)) ?>%</span>
+            <span class="article-card-subchip">Realne fotky: <?= esc((string) ($guide['coverage_percent'] ?? 0)) ?>%</span>
           </div>
         <?php endif; ?>
         <h3><a href="<?= esc(article_url((string) $guide['slug'])) ?>"><?= esc((string) $guide['title']) ?></a></h3>

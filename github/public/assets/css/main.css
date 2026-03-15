@@ -38,39 +38,6 @@ a:hover{color:#0954aa}
 /* Header & nav */
 .site-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(16,24,40,.02)}
 .header-inner{display:flex;align-items:center;gap:1rem;min-height:68px;padding-block:.45rem}
-.dev-bar{
-  position:sticky;
-  top:68px;
-  z-index:49;
-  background:#0f172a;
-  color:#e2e8f0;
-  border-bottom:1px solid rgba(148,163,184,.22);
-}
-.dev-bar-inner{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:1rem;
-  min-height:42px;
-}
-.dev-bar-label{
-  font-size:.92rem;
-  font-weight:700;
-  letter-spacing:-.01em;
-}
-.dev-bar-button{
-  appearance:none;
-  border:none;
-  background:#16a34a;
-  color:#fff;
-  border-radius:999px;
-  padding:.55rem .95rem;
-  font:inherit;
-  font-weight:800;
-  cursor:pointer;
-  box-shadow:0 8px 18px rgba(22,163,74,.26);
-}
-.dev-bar-button:hover{background:#15803d}
 .brand{display:flex;align-items:center;gap:.5rem}
 .nav-toggle{display:none}
 .nav-toggle-btn{
@@ -145,6 +112,23 @@ a:hover{color:#0954aa}
 .has-mega.is-open>.mega{
   display:grid;
 }
+.dev-reload-fab{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:70;
+  appearance:none;
+  border:1px solid #cfe1d7;
+  background:#ffffff;
+  color:#0f5f46;
+  border-radius:999px;
+  padding:.72rem 1rem;
+  font:inherit;
+  font-weight:800;
+  box-shadow:0 16px 34px rgba(16,24,40,.12);
+  cursor:pointer;
+}
+.dev-reload-fab:hover{background:#f4faf7}
 
 /* Hero */
 .hero{padding:clamp(1.6rem,3.5vw + 1rem,4.5rem) 0}
@@ -239,10 +223,8 @@ a:hover{color:#0954aa}
   .two-col{grid-template-columns:1fr}
   .sidebar{order:-1}
 }
-  @media (max-width:860px){
+@media (max-width:860px){
   .mega-tray{display:none!important}
-  .dev-bar{top:66px}
-  .dev-bar-inner{align-items:flex-start;flex-direction:column;padding-block:.6rem}
   .nav-toggle-btn{display:grid}
   .main-nav{
     position:fixed;inset:66px 0 auto 0;background:#fff;border-bottom:1px solid var(--line);
@@ -270,6 +252,7 @@ a:hover{color:#0954aa}
   .mega-col h3{font-size:.88rem;color:#5b6672;padding:.1rem .5rem}
   .mega-link{padding:.55rem .6rem}
   .mega-toggle:checked ~ .mega{display:grid}
+  .dev-reload-fab{right:14px;bottom:14px;padding:.68rem .92rem}
 }
 
 /* Doplnenia pre SVG (ak by si ich pouÄ‚â€žĂ˘â‚¬ĹˇÄ‚ËĂ˘â€šÂ¬ÄąÄľĂ„â€šĂ˘â‚¬ĹľÄ‚ËĂ˘â€šÂ¬Ă‚Â¦Ä‚â€žĂ˘â‚¬ĹˇÄ‚ËĂ˘â€šÂ¬ÄąÄľĂ„â€šĂ˘â‚¬ĹľÄ‚â€žĂ„Äľil) */

@@ -204,19 +204,19 @@ include __DIR__ . '/inc/head.php';
           <?php if ($shortlistStats !== null && (int) ($shortlistStats['count'] ?? 0) > 0): ?>
             <article class="stats-card">
               <strong><?= esc((string) ((int) ($shortlistStats['count'] ?? 0))) ?> <?= esc(interessa_pluralize_slovak((int) ($shortlistStats['count'] ?? 0), 'produkt', 'produkty', 'produktov')) ?> vo vybere</strong>
-              <p>Najrychlejsia cesta k shortlistu bez potreby citat cely clanok naraz.</p>
+              <p>Ak chces ist rovno k odporucaniam, toto je najrychlejsia cesta bez dlheho hladania v texte.</p>
             </article>
           <?php endif; ?>
           <?php if ($shortlistStats !== null && (int) ($shortlistStats['merchant_count'] ?? 0) > 0): ?>
             <article class="stats-card">
-              <strong><?= esc((string) ((int) ($shortlistStats['merchant_count'] ?? 0))) ?> <?= esc(interessa_pluralize_slovak((int) ($shortlistStats['merchant_count'] ?? 0), 'obchod', 'obchody', 'obchodov')) ?> porovnane</strong>
-              <p>Vyber nie je postaveny len na jednom partnerovi, aj ked GymBeam zostava prioritny tam, kde dava zmysel.</p>
+              <strong><?= esc((string) ((int) ($shortlistStats['merchant_count'] ?? 0))) ?> <?= esc(interessa_pluralize_slovak((int) ($shortlistStats['merchant_count'] ?? 0), 'obchod', 'obchody', 'obchodov')) ?> v prehlade</strong>
+              <p>Vyber stavame tak, aby si mal po ruke viac moznosti a vedel sa rychlejsie rozhodnut.</p>
             </article>
           <?php endif; ?>
           <?php if ($shortlistStats !== null && $shortlistCoveragePercent > 0): ?>
             <article class="stats-card">
               <strong><?= esc(ucfirst($shortlistCoverageLabel)) ?> (<?= esc((string) $shortlistCoveragePercent) ?>%)</strong>
-              <p><?= esc($shortlistCoveragePercent >= 100 ? 'Packshoty a porovnanie su pripravene na rychle rozhodnutie.' : 'Cast vyberu uz ma realne packshoty, zvysok priebezne dorovnavame.') ?></p>
+              <p><?= esc($shortlistCoveragePercent >= 100 ? 'Mas tu aj realne fotky produktov, takze sa zorientujes rychlejsie.' : 'Cast vyberu uz ma realne fotky produktov, zvysok priebezne doplname.') ?></p>
             </article>
           <?php endif; ?>
           <?php if ($categoryStats !== null): ?>
@@ -236,8 +236,8 @@ include __DIR__ . '/inc/head.php';
 
       <?php if ($hasDecisionLayer): ?>
         <section class="section-head">
-          <h2>Rychle rozhodnutie</h2>
-          <p class="meta">Najprv mas po ruke rychle porovnanie a shortlist odporucanych produktov, az potom hlbsi rozbor temy.</p>
+          <h2>Ak chces prejst rovno k vyberu</h2>
+          <p class="meta">Najprv si pozri rychle zhrnutie a porovnanie, az potom detailnejsi rozbor temy nizsie v clanku.</p>
         </section>
       <?php endif; ?>
 
@@ -248,7 +248,7 @@ include __DIR__ . '/inc/head.php';
             <?php if (!empty($comparisonTable['intro'])): ?>
               <p class="topbox-intro"><?= esc((string) $comparisonTable['intro']) ?></p>
             <?php endif; ?>
-            <p class="meta">Tabulkova verzia ti ukaze rovnaky shortlist ako nizsie, len v rychlejsom prehlade na jeden pohlad.</p>
+            <p class="meta">Ak chces rychly prehlad na jeden pohlad, zacni touto tabulkou. Nizsie najdes aj detailnejsie odporucania.</p>
           </div>
           <?php
           echo interessa_render_comparison_table(
