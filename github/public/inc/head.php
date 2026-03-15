@@ -1,4 +1,15 @@
 <?php declare(strict_types=1); ?>
+<?php
+$interessaHost = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+$interessaIsLocalDev = $interessaHost === ''
+    || str_contains($interessaHost, '127.0.0.1')
+    || str_contains($interessaHost, 'localhost');
+if ($interessaIsLocalDev && !headers_sent()) {
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Pragma: no-cache');
+    header('Expires: 0');
+}
+?>
 <?php require_once __DIR__ . '/navigation.php'; ?>
 <!doctype html>
 <html lang="sk">

@@ -43,7 +43,7 @@
     });
   });
 
-  // Keep desktop mega menus open until the user intentionally closes them.
+  // Desktop mega menu uses explicit open/close state instead of hover-only behavior.
   const desktopMegaMq = window.matchMedia('(min-width: 861px)');
   const megaItems = Array.from(document.querySelectorAll('.menu-item.has-mega'));
   const megaCloseTimers = new WeakMap();
@@ -118,19 +118,11 @@
     const trigger = item.querySelector('.main-nav__link[data-mega]');
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
 
-    const onPointerEnter = ()=>openMega(item);
-
-    item.addEventListener('mouseenter', onPointerEnter);
-
     if (trigger) {
-      trigger.addEventListener('mouseenter', onPointerEnter);
       trigger.addEventListener('click', (event)=>{
         if (!desktopMegaMq.matches) return;
         event.preventDefault();
-        if (activeMegaItem === item && item.classList.contains('is-open')) {
-          closeMega(item);
-          return;
-        }
+        if (activeMegaItem === item && item.classList.contains('is-open')) return;
         openMega(item);
       });
     }
@@ -167,6 +159,15 @@
     if (event.key === 'Escape' && activeMegaItem) {
       closeMega(activeMegaItem);
     }
+  });
+
+  document.addEventListener('click', async (event)=>{
+    const devReload = event.target.closest('[data-dev-reload]');
+    if (!devReload) return;
+    event.preventDefault();
+    const current = new URL(window.location.href);
+    current.searchParams.set('_devreload', String(Date.now()));
+    window.location.replace(current.toString());
   });
 
   function resetMegaMode(){

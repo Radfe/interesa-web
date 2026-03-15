@@ -10,6 +10,16 @@
   </div>
 </footer>
 
+<?php
+$interessaHost = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+$interessaIsLocalDev = $interessaHost === ''
+    || str_contains($interessaHost, '127.0.0.1')
+    || str_contains($interessaHost, 'localhost');
+?>
+<?php if ($interessaIsLocalDev): ?>
+  <button class="dev-reload-btn" type="button" data-dev-reload>Obnovit aktualnu verziu</button>
+<?php endif; ?>
+
 <script src="<?= asset('js/app.js') ?>" defer></script>
 <?= script_tags(page_script_urls()) ?>
 
