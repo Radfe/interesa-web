@@ -2034,15 +2034,15 @@ require dirname(__DIR__) . '/inc/head.php';
             </ol>
           <?php elseif ($section === 'products'): ?>
             <ol class="admin-quickstart-list">
-              <li>Dopln nazov, obchod, summary, rating, plusy a minusy.</li>
-              <li>Skontroluj affiliate kod a produktovy obrazok.</li>
-              <li>Pozri pouzitie produktu v clankoch a vrat sa spat do workflowu.</li>
+              <li>Tu riesis samotny produkt: nazov, obchod, obrazok a napojenie na odkaz.</li>
+              <li>Najprv nacitaj data z e-shopu, potom uloz obrazok a az potom kontroluj klikaci odkaz.</li>
+              <li>Ak chces zmenit kam clovek po kliknuti odide, otvor Affiliate odkazy.</li>
             </ol>
           <?php elseif ($section === 'affiliates'): ?>
             <ol class="admin-quickstart-list">
-              <li>Vyber alebo vytvor interny /go/ kod.</li>
-              <li>Vloz finalnu cielovu URL a merchant data.</li>
-              <li>Vrat sa na produkt alebo clanok a skontroluj CTA.</li>
+              <li>Tu riesis kam clovek po kliknuti odide.</li>
+              <li>Vyber alebo vytvor interny /go/ odkaz.</li>
+              <li>Vloz finalnu cielovu URL a potom skontroluj klik na webe.</li>
             </ol>
           <?php elseif ($section === 'help'): ?>
             <ol class="admin-quickstart-list">
@@ -2531,6 +2531,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div>
                 <p class="admin-kicker">Product management</p>
                 <h2>Reusable produkty</h2>
+                <p class="admin-note">Produkty = co sa zobrazuje na webe ako produktova karta. Tu riesis nazov, obchod, obrazok, referencnu URL a napojenie na interny /go/ odkaz.</p>
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="products" />
@@ -2606,22 +2607,22 @@ require dirname(__DIR__) . '/inc/head.php';
                     </div>
                     <div class="admin-queue-actions">
                       <span class="admin-note"><?= esc((string) $queueRow['image_mode']) ?></span>
-                      <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>">Otvorit detail produktu</a>
-                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['target_asset'] ?? '')) ?>">Kopirovat asset</button>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>">Otvorit produkt</a>
+                        <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($queueRow['target_asset'] ?? '')) ?>">Kopirovat cestu obrazka</button>
                       <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
                         <form method="post" class="admin-inline-form">
                           <input type="hidden" name="action" value="autofill_product_from_source" />
                           <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
-                          <button class="btn btn-secondary btn-small" type="submit">Auto doplnit</button>
+                          <button class="btn btn-secondary btn-small" type="submit">1. Nacitat data z e-shopu</button>
                         </form>
                       <?php endif; ?>
                       <?php if (trim((string) ($queueRow['remote_src'] ?? '')) !== ''): ?>
-                        <a class="btn btn-secondary btn-small" href="<?= esc((string) $queueRow['remote_src']) ?>" target="_blank" rel="noopener">Remote preview</a>
+                          <a class="btn btn-secondary btn-small" href="<?= esc((string) $queueRow['remote_src']) ?>" target="_blank" rel="noopener">Pozriet najdeny obrazok</a>
                         <?php if (!empty($queueRow['needs_local_packshot'])): ?>
                           <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
                             <input type="hidden" name="action" value="mirror_packshot_from_remote" />
                             <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
-                            <button class="btn btn-secondary btn-small" type="submit">Ulozit obrazok produktu z e-shopu</button>
+                              <button class="btn btn-secondary btn-small" type="submit">2. Ulozit obrazok z e-shopu</button>
                           </form>
                         <?php endif; ?>
                       <?php endif; ?>

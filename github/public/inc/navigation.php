@@ -10,6 +10,15 @@ if (!function_exists('interessa_nav_category_title')) {
     }
 }
 
+if (!function_exists('interessa_is_local_dev')) {
+    function interessa_is_local_dev(): bool {
+        $host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
+        return $host === ''
+            || str_contains($host, '127.0.0.1')
+            || str_contains($host, 'localhost');
+    }
+}
+
 if (!function_exists('interessa_primary_navigation_items')) {
     function interessa_primary_navigation_items(): array {
         return [
@@ -142,6 +151,12 @@ if (!function_exists('interessa_render_primary_navigation')) {
                 $html .= '</div>';
             }
 
+            $html .= '</li>';
+        }
+
+        if (interessa_is_local_dev()) {
+            $html .= '<li class="menu-item menu-item--dev">';
+            $html .= '<button class="main-nav__link main-nav__button main-nav__button--dev" type="button" data-dev-reload>Obnovit verziu</button>';
             $html .= '</li>';
         }
 

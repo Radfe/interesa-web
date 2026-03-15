@@ -684,9 +684,50 @@ if (!function_exists('interessa_admin_product_image_target_path_for_ext')) {
 }
 
 if (!function_exists('interessa_admin_fetch_remote_image_bytes_via_curl_exe')) {
+    function interessa_admin_windows_curl_executable(): string {
+        $systemRoot = rtrim((string) getenv('SystemRoot'), '\\/');
+        $candidates = array_filter([
+            $systemRoot !== '' ? $systemRoot . '\\System32\\curl.exe' : '',
+            $systemRoot !== '' ? $systemRoot . '\\Sysnative\\curl.exe' : '',
+            'curl.exe',
+        ], static fn(string $value): bool => trim($value) !== '');
+
+        foreach ($candidates as $candidate) {
+            if (str_ends_with(strtolower($candidate), 'curl.exe') && is_file($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return 'curl.exe';
+    }
+}
+
+if (!function_exists('interessa_admin_detect_remote_image_extension_from_body')) {
+    function interessa_admin_detect_remote_image_extension_from_body(string $body): string {
+        if ($body === '') {
+            return '';
+        }
+        if (substr($body, 0, 4) === 'RIFF' && substr($body, 8, 4) === 'WEBP') {
+            return 'webp';
+        }
+        if (substr($body, 0, 8) === "\x89PNG\x0D\x0A\x1A\x0A") {
+            return 'png';
+        }
+        if (substr($body, 0, 3) === "\xFF\xD8\xFF") {
+            return 'jpg';
+        }
+        if (substr($body, 0, 6) === 'GIF87a' || substr($body, 0, 6) === 'GIF89a') {
+            return 'gif';
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('interessa_admin_fetch_remote_image_bytes_via_curl_exe')) {
     function interessa_admin_fetch_remote_image_bytes_via_curl_exe(string $url): array {
         if (!function_exists('exec')) {
-            throw new RuntimeException('Systemovy curl.exe nie je dostupny.');
+            throw new RuntimeException('Systemove stiahnutie nie je dostupne.');
         }
 
         $tempFile = tempnam(sys_get_temp_dir(), 'interessa-packshot-');
@@ -695,7 +736,8 @@ if (!function_exists('interessa_admin_fetch_remote_image_bytes_via_curl_exe')) {
         }
 
         $contentType = '';
-        $command = 'curl.exe -L --fail --silent --show-error '
+        $curlExecutable = interessa_admin_windows_curl_executable();
+        $command = escapeshellarg($curlExecutable) . ' -L --fail --silent --show-error '
             . '--output ' . escapeshellarg($tempFile) . ' '
             . '--write-out ' . escapeshellarg('%{content_type}') . ' '
             . escapeshellarg($url) . ' 2>&1';
@@ -708,7 +750,7 @@ if (!function_exists('interessa_admin_fetch_remote_image_bytes_via_curl_exe')) {
         if ($exitCode !== 0) {
             @unlink($tempFile);
             $message = trim($contentType);
-            throw new RuntimeException('Nepodarilo sa stiahnut remote packshot: ' . ($message !== '' ? $message : 'curl.exe zlyhal.'));
+            throw new RuntimeException('Nepodarilo sa stiahnut obrazok z e-shopu: ' . ($message !== '' ? $message : 'systemove stiahnutie zlyhalo.'));
         }
 
         $body = @file_get_contents($tempFile);
@@ -780,7 +822,14 @@ if (!function_exists('interessa_admin_fetch_remote_image_bytes')) {
         }
 
         if ((!is_string($body) || $body === '') && strtoupper(substr(PHP_OS_FAMILY, 0, 7)) === 'WINDOWS') {
-            return interessa_admin_fetch_remote_image_bytes_via_curl_exe($url);
+            $fallback = interessa_admin_fetch_remote_image_bytes_via_curl_exe($url);
+            if (trim((string) ($fallback['content_type'] ?? '')) === '' && is_string($fallback['body'] ?? null)) {
+                $detectedExt = interessa_admin_detect_remote_image_extension_from_body((string) $fallback['body']);
+                if ($detectedExt !== '') {
+                    $fallback['content_type'] = $detectedExt === 'jpg' ? 'image/jpeg' : ('image/' . $detectedExt);
+                }
+            }
+            return $fallback;
         }
 
         if (!is_string($body) || $body === '') {
@@ -870,7 +919,7 @@ if (!function_exists('interessa_admin_prepare_remote_product_image_download')) {
 if (!function_exists('interessa_admin_fetch_remote_html_via_curl_exe')) {
     function interessa_admin_fetch_remote_html_via_curl_exe(string $url): string {
         if (!function_exists('exec')) {
-            throw new RuntimeException('Systemovy curl.exe nie je dostupny.');
+            throw new RuntimeException('Systemove stiahnutie nie je dostupne.');
         }
 
         $tempFile = tempnam(sys_get_temp_dir(), 'interessa-html-');
@@ -878,7 +927,8 @@ if (!function_exists('interessa_admin_fetch_remote_html_via_curl_exe')) {
             throw new RuntimeException('Nepodarilo sa pripravit docasny subor pre HTML.');
         }
 
-        $command = 'curl.exe -L --fail --silent --show-error '
+        $curlExecutable = interessa_admin_windows_curl_executable();
+        $command = escapeshellarg($curlExecutable) . ' -L --fail --silent --show-error '
             . '--output ' . escapeshellarg($tempFile) . ' '
             . escapeshellarg($url) . ' 2>&1';
 
@@ -888,7 +938,7 @@ if (!function_exists('interessa_admin_fetch_remote_html_via_curl_exe')) {
         if ($exitCode !== 0) {
             @unlink($tempFile);
             $message = trim((string) implode("\n", $output));
-            throw new RuntimeException('Nepodarilo sa stiahnut produktovu stranku: ' . ($message !== '' ? $message : 'curl.exe zlyhal.'));
+            throw new RuntimeException('Nepodarilo sa stiahnut produktovu stranku: ' . ($message !== '' ? $message : 'systemove stiahnutie zlyhalo.'));
         }
 
         $body = @file_get_contents($tempFile);
