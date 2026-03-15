@@ -43,61 +43,17 @@
     });
   });
 
-  // Desktop mega menu uses explicit open/close state instead of hover-only behavior.
+  // Desktop mega menu uses explicit open/close state directly on the original menu.
   const desktopMegaMq = window.matchMedia('(min-width: 861px)');
   const megaItems = Array.from(document.querySelectorAll('.menu-item.has-mega'));
-  const megaCloseTimers = new WeakMap();
-  const megaTray = document.getElementById('megaTray');
-  const headerContainer = document.querySelector('.site-header .container');
-  const siteHeader = document.querySelector('.site-header');
   let activeMegaItem = null;
 
-  if (megaTray && megaItems.length > 0) {
-    document.body.classList.add('mega-tray-ready');
-  }
-
-  function clearMegaTimer(item){
-    const timer = megaCloseTimers.get(item);
-    if (timer) {
-      window.clearTimeout(timer);
-      megaCloseTimers.delete(item);
-    }
-  }
-
-  function hideMegaTray(){
-    if (!megaTray) return;
-    megaTray.classList.remove('is-active');
-    megaTray.setAttribute('aria-hidden', 'true');
-    megaTray.innerHTML = '';
-  }
-
-  function renderMegaTray(item){
-    if (!megaTray || !desktopMegaMq.matches) return;
-    const trigger = item.querySelector('.main-nav__link[data-mega]');
-    const panel = item.querySelector('.mega');
-    if (!trigger || !panel) return;
-
-    const containerRect = headerContainer ? headerContainer.getBoundingClientRect() : null;
-    const triggerRect = trigger.getBoundingClientRect();
-    const arrowLeft = containerRect
-      ? Math.max(24, Math.min(containerRect.width - 24, (triggerRect.left - containerRect.left) + (triggerRect.width / 2)))
-      : 56;
-    const trayTop = siteHeader ? Math.round(siteHeader.getBoundingClientRect().bottom) : 68;
-
-    megaTray.style.top = trayTop + 'px';
-    megaTray.innerHTML = '<div class="mega-tray-shell"><div class="mega mega--tray" style="--mega-arrow-left:' + arrowLeft + 'px">' + panel.innerHTML + '</div></div>';
-    megaTray.classList.add('is-active');
-    megaTray.setAttribute('aria-hidden', 'false');
-  }
-
   function closeMega(item){
-    clearMegaTimer(item);
     item.classList.remove('is-open');
     const trigger = item.querySelector('.main-nav__link[data-mega]');
     if (trigger) trigger.setAttribute('aria-expanded', 'false');
     if (activeMegaItem === item) {
       activeMegaItem = null;
-      hideMegaTray();
     }
   }
 
@@ -106,12 +62,10 @@
     megaItems.forEach((other)=>{
       if (other !== item) closeMega(other);
     });
-    clearMegaTimer(item);
     item.classList.add('is-open');
     const trigger = item.querySelector('.main-nav__link[data-mega]');
     if (trigger) trigger.setAttribute('aria-expanded', 'true');
     activeMegaItem = item;
-    renderMegaTray(item);
   }
 
   megaItems.forEach((item)=>{
@@ -121,8 +75,10 @@
     if (trigger) {
       trigger.addEventListener('click', (event)=>{
         if (!desktopMegaMq.matches) return;
+        if (activeMegaItem === item && item.classList.contains('is-open')) {
+          return;
+        }
         event.preventDefault();
-        if (activeMegaItem === item && item.classList.contains('is-open')) return;
         openMega(item);
       });
     }
@@ -137,21 +93,11 @@
     });
   });
 
-  if (megaTray) {
-    megaTray.addEventListener('mouseenter', ()=>{
-      if (activeMegaItem) {
-        clearMegaTimer(activeMegaItem);
-        renderMegaTray(activeMegaItem);
-      }
-    });
-  }
-
   document.addEventListener('click', (event)=>{
     if (!desktopMegaMq.matches || !activeMegaItem) return;
     const target = event.target;
     if (!(target instanceof Node)) return;
     if (activeMegaItem.contains(target)) return;
-    if (megaTray && megaTray.contains(target)) return;
     closeMega(activeMegaItem);
   });
 
@@ -173,7 +119,6 @@
   function resetMegaMode(){
     if (!desktopMegaMq.matches) {
       megaItems.forEach((item)=>closeMega(item));
-      hideMegaTray();
     }
   }
 
