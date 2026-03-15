@@ -27,7 +27,7 @@ function Stop-ByPidFile {
 
 function Stop-ByPortFallback {
     $stopped = $false
-    $connections = Get-NetTCPConnection -LocalPort 5000 -State Listen -ErrorAction SilentlyContinue
+    $connections = Get-NetTCPConnection -LocalPort 5001 -State Listen -ErrorAction SilentlyContinue
     foreach ($connection in $connections) {
         $proc = Get-Process -Id $connection.OwningProcess -ErrorAction SilentlyContinue
         if ($proc) {

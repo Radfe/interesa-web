@@ -1870,7 +1870,7 @@ $flashMessages = [
     'packshot-mirrored' => 'Remote obrazok bol zrkadleny do lokalneho assetu.',
     'product-enriched' => 'Produkt bol doplneny z referencnej produktovej stranky.',
     'product-autofill' => 'Produkt bol automaticky doplneny a obrazok sa pokusil zrkadlit.',
-    'product-remote-ready' => 'Produkt ma zisteny obrazok z e-shopu. Teraz klikni Ulozit obrazok produktu z e-shopu a vznikne lokalny WebP.',
+    'product-remote-ready' => 'Produkt ma najdeny obrazok z e-shopu. Teraz klikni 2. Ulozit obrazok z e-shopu a vznikne lokalny WebP.',
 ];
 $flashMessage = $importSummary !== '' ? $importSummary : ($flashMessages[$flash] ?? '');
 
@@ -2731,10 +2731,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php if ($selectedProductPackshotReady): ?>
                     <p class="admin-note">Toto je hotovy obrazok produktu, ktory sa zobrazi na webe.</p>
                   <?php elseif (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
-                    <p class="admin-note">Nasiel sa obrazok z e-shopu. Teraz klikni <strong>2. Ulozit obrazok produktu</strong>.</p>
-                  <?php else: ?>
-                    <p class="admin-note">Produkt este nema obrazok ulozeny u nas. Najprv klikni <strong>1. Najst obrazok z e-shopu</strong>.</p>
-                  <?php endif; ?>
+                      <p class="admin-note">Nasiel sa obrazok z e-shopu. Teraz klikni <strong>2. Ulozit obrazok z e-shopu</strong>.</p>
+                    <?php else: ?>
+                      <p class="admin-note">Produkt este nema obrazok ulozeny u nas. Najprv klikni <strong>1. Nacitat data z e-shopu</strong>.</p>
+                    <?php endif; ?>
                   <div class="admin-inline-actions">
                     <?php if ($selectedProductLocalImageUrl !== ''): ?>
                       <a class="btn btn-secondary btn-small" href="<?= esc($selectedProductLocalImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny obrazok</a>
@@ -2776,7 +2776,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
                         <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
                         <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
-                          <button class="btn btn-secondary btn-small" type="submit">1. Najst obrazok z e-shopu</button>
+                          <button class="btn btn-secondary btn-small" type="submit">1. Nacitat data z e-shopu</button>
                         </form>
                       <?php if (!$selectedProductPackshotReady): ?>
                         <form method="post" class="admin-inline-form">
@@ -2784,7 +2784,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
                           <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
                           <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
-                          <button class="btn btn-secondary btn-small" type="submit">Skusit najst obrazok automaticky</button>
+                          <button class="btn btn-secondary btn-small" type="submit">Skusit doplnit produkt automaticky</button>
                         </form>
                       <?php endif; ?>
                     </div>
@@ -3276,7 +3276,7 @@ require dirname(__DIR__) . '/inc/head.php';
                             <input type="hidden" name="product_slug" value="<?= esc((string) ($queueRow['slug'] ?? '')) ?>" />
                             <input type="hidden" name="return_section" value="images" />
                             <input type="hidden" name="return_slug" value="<?= esc($selectedArticleSlug) ?>" />
-                            <button class="btn btn-secondary btn-small" type="submit">1. Najst obrazok z e-shopu</button>
+                            <button class="btn btn-secondary btn-small" type="submit">1. Nacitat data z e-shopu</button>
                           </form>
                         <?php endif; ?>
                         <?php if (trim((string) ($queueRow['fallback_url'] ?? '')) !== ''): ?>
@@ -3525,6 +3525,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div>
                 <p class="admin-kicker">Affiliate management</p>
                 <h2>Centralizovane /go/ odkazy</h2>
+                <p class="admin-note">Affiliate odkazy = finalny klikaci odkaz. Tu urcujes kam ma clovek odist po kliknuti z clanku, tlacidla alebo obrazka.</p>
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="affiliates" />
@@ -3588,7 +3589,7 @@ require dirname(__DIR__) . '/inc/head.php';
 
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
-                <h3>Rychlo vytvorit novy affiliate kod</h3>
+                    <h3>Rychlo vytvorit novy /go/ odkaz</h3>
               </div>
               <form method="post" class="admin-form admin-form-stack">
                 <input type="hidden" name="action" value="create_affiliate" />
@@ -3609,7 +3610,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   </label>
                 </div>
                 <div class="admin-actions">
-                  <button class="btn btn-secondary" type="submit">Vytvorit affiliate kod</button>
+                  <button class="btn btn-secondary" type="submit">Vytvorit /go/ odkaz</button>
                 </div>
               </form>
             </section>
@@ -3635,9 +3636,9 @@ require dirname(__DIR__) . '/inc/head.php';
                 <label><span>Product slug</span><input type="text" name="product_slug" value="<?= esc((string) ($selectedAffiliate['product_slug'] ?? '')) ?>" /></label>
               </div>
               <div class="admin-actions">
-                <button class="btn btn-cta" type="submit">Ulozit affiliate odkaz</button>
+                <button class="btn btn-cta" type="submit">Ulozit /go/ odkaz</button>
                 <?php if ($selectedAffiliateCode !== ''): ?>
-                  <a class="btn btn-secondary" href="/go/<?= rawurlencode($selectedAffiliateCode) ?>" target="_blank" rel="noopener">Otvorit /go/ link</a>
+                  <a class="btn btn-secondary" href="/go/<?= rawurlencode($selectedAffiliateCode) ?>" target="_blank" rel="noopener">Otvorit interny /go/ odkaz</a>
                 <?php endif; ?>
                 <button class="btn btn-secondary" type="submit" name="action" value="delete_affiliate_override" onclick="return confirm('Naozaj zmazat admin override affiliate odkazu?');">Zmazat override odkazu</button>
               </div>
@@ -3783,7 +3784,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <h3>3. Chcem doplnit obrazok produktu</h3>
                 <ol class="admin-quickstart-list">
                   <li>Otvor <a href="/admin?section=products&product=<?= esc($selectedProductSlug) ?>">Produkty</a> alebo queue chybajucich obrazkov v image workflowe.</li>
-                  <li>Ak uz produkt ma najdeny obrazok z obchodu, klikni <strong>Ulozit obrazok produktu z e-shopu</strong>.</li>
+                    <li>Ak uz produkt ma najdeny obrazok z obchodu, klikni <strong>2. Ulozit obrazok z e-shopu</strong>.</li>
                   <li>Manualny upload pouzi iba ako fallback, ked remote obrazok nie je k dispozicii.</li>
                   <li>Vrat sa na clanok a skontroluj, ci karta uz ukazuje finalny produktovy obrazok.</li>
                 </ol>
@@ -3854,7 +3855,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <div class="admin-check-card">
                       <div>
                         <strong>Produktove obrazky, ktore vies doplnit hned</strong>
-                    <small>Tieto produkty uz maju najdeny obrazok z e-shopu, takze ich vies zvycajne dokoncit jednym klikom cez <strong>Ulozit obrazok produktu z e-shopu</strong>.</small>
+                      <small>Tieto produkty uz maju najdeny obrazok z e-shopu, takze ich vies zvycajne dokoncit jednym klikom cez <strong>2. Ulozit obrazok z e-shopu</strong>.</small>
                         <div class="admin-queue-list">
                           <?php foreach ($helpPriorityProductImages as $productRow): ?>
                             <article class="admin-queue-item is-done">

@@ -10,4 +10,6 @@ if errorlevel 1 (
     )
 )
 cd /d "%~dp0"
-"%PHP_BIN%" -S 127.0.0.1:5000 -t public public/router.php
+set "PUBLIC_ROOT=%~dp0public"
+set "ROUTER_PATH=%PUBLIC_ROOT%\router.php"
+"%PHP_BIN%" -S 127.0.0.1:5001 -t "%PUBLIC_ROOT%" "%ROUTER_PATH%"

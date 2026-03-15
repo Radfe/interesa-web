@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-$siteUrl = 'http://127.0.0.1:5000/'
+$siteUrl = 'http://127.0.0.1:5001/'
 $stateDir = Join-Path $projectRoot '.codex-local'
 $stdoutLog = Join-Path $stateDir 'php-server.out.log'
 $stderrLog = Join-Path $stateDir 'php-server.err.log'
@@ -65,19 +65,22 @@ function Start-LocalServer {
     $php = Get-PhpPath
     New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
     Remove-StalePid
+    $publicRoot = Join-Path $projectRoot 'public'
+    $routerPath = Join-Path $publicRoot 'router.php'
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $php
+    $psi.WorkingDirectory = $projectRoot
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+    $psi.Arguments = ('-S 127.0.0.1:5001 -t "{0}" "{1}"' -f $publicRoot, $routerPath)
 
-    [System.Environment]::SetEnvironmentVariable('PATH', $null, 'Process')
+    $proc = New-Object System.Diagnostics.Process
+    $proc.StartInfo = $psi
 
-    $startParams = @{
-        FilePath = $php
-        ArgumentList = @('-S', '127.0.0.1:5000', '-t', 'public', 'public/router.php')
-        WorkingDirectory = $projectRoot
-        RedirectStandardOutput = $stdoutLog
-        RedirectStandardError = $stderrLog
-        PassThru = $true
+    if (-not $proc.Start()) {
+        throw 'Local PHP server process could not be started.'
     }
 
-    $proc = Start-Process @startParams
     Set-Content -Path $pidFile -Value $proc.Id
     return $proc.Id
 }
@@ -111,4 +114,8 @@ if (-not (Test-SiteReady)) {
     }
 }
 
-Start-Process $siteUrl | Out-Null
+try {
+    Start-Process $siteUrl | Out-Null
+} catch {
+    Write-Warning "Local server is running, but browser could not be opened automatically."
+}

@@ -154,12 +154,6 @@ if (!function_exists('interessa_render_primary_navigation')) {
             $html .= '</li>';
         }
 
-        if (interessa_is_local_dev()) {
-            $html .= '<li class="menu-item menu-item--dev">';
-            $html .= '<button class="main-nav__link main-nav__button main-nav__button--dev" type="button" data-dev-reload>Obnovit verziu</button>';
-            $html .= '</li>';
-        }
-
         $html .= '</ul></nav>';
         return $html;
     }

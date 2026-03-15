@@ -4,6 +4,18 @@ $interessaHost = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));
 $interessaIsLocalDev = $interessaHost === ''
     || str_contains($interessaHost, '127.0.0.1')
     || str_contains($interessaHost, 'localhost');
+$interessaDevBuild = '';
+if ($interessaIsLocalDev) {
+    $interessaDevBuild = date(
+        'H:i:s',
+        max(
+            (int) @filemtime(__DIR__ . '/../assets/js/app.js'),
+            (int) @filemtime(__DIR__ . '/../assets/css/main.css'),
+            (int) @filemtime(__DIR__ . '/../index.php'),
+            (int) @filemtime(__FILE__)
+        )
+    );
+}
 if ($interessaIsLocalDev && !headers_sent()) {
     header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
     header('Pragma: no-cache');
@@ -64,6 +76,14 @@ if ($interessaIsLocalDev && !headers_sent()) {
       <?= interessa_render_primary_navigation() ?>
     </div>
   </header>
+  <?php if ($interessaIsLocalDev): ?>
+  <div class="dev-bar" role="status" aria-live="polite">
+    <div class="container dev-bar-inner">
+      <span class="dev-bar-label">Lokalny build: <?= esc($interessaDevBuild) ?></span>
+      <button class="dev-bar-button" type="button" data-dev-reload>Obnovit verziu</button>
+    </div>
+  </div>
+  <?php endif; ?>
 
   <div id="megaTray" class="mega-tray" aria-hidden="true"></div>
   <main id="obsah">

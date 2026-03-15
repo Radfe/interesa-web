@@ -38,6 +38,39 @@ a:hover{color:#0954aa}
 /* Header & nav */
 .site-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(16,24,40,.02)}
 .header-inner{display:flex;align-items:center;gap:1rem;min-height:68px;padding-block:.45rem}
+.dev-bar{
+  position:sticky;
+  top:68px;
+  z-index:49;
+  background:#0f172a;
+  color:#e2e8f0;
+  border-bottom:1px solid rgba(148,163,184,.22);
+}
+.dev-bar-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  min-height:42px;
+}
+.dev-bar-label{
+  font-size:.92rem;
+  font-weight:700;
+  letter-spacing:-.01em;
+}
+.dev-bar-button{
+  appearance:none;
+  border:none;
+  background:#16a34a;
+  color:#fff;
+  border-radius:999px;
+  padding:.55rem .95rem;
+  font:inherit;
+  font-weight:800;
+  cursor:pointer;
+  box-shadow:0 8px 18px rgba(22,163,74,.26);
+}
+.dev-bar-button:hover{background:#15803d}
 .brand{display:flex;align-items:center;gap:.5rem}
 .nav-toggle{display:none}
 .nav-toggle-btn{
@@ -235,6 +268,8 @@ body.mega-tray-ready .has-mega.is-open>.mega{
 }
 @media (max-width:860px){
   .mega-tray{display:none!important}
+  .dev-bar{top:66px}
+  .dev-bar-inner{align-items:flex-start;flex-direction:column;padding-block:.6rem}
   .nav-toggle-btn{display:grid}
   .main-nav{
     position:fixed;inset:66px 0 auto 0;background:#fff;border-bottom:1px solid var(--line);

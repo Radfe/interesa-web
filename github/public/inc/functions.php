@@ -85,7 +85,7 @@ if (!function_exists('request_scheme')) {
 
 if (!function_exists('base_url')) {
     function base_url(): string {
-        $host = (string) ($_SERVER['HTTP_HOST'] ?? '127.0.0.1:5000');
+        $host = (string) ($_SERVER['HTTP_HOST'] ?? '127.0.0.1:5001');
         return request_scheme() . '://' . $host;
     }
 }
