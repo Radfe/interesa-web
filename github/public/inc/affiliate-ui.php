@@ -40,9 +40,8 @@ if (!function_exists('interessa_product_image_status_label')) {
         $sourceType = strtolower(trim($sourceType));
 
         return match ($sourceType) {
-            'local' => interessa_text('Packshot z e-shopu'),
-            'remote' => interessa_text('Packshot z obchodu'),
-            'placeholder' => interessa_text('Redakcny vizual'),
+            'local', 'remote' => interessa_text('Realna fotka produktu'),
+            'placeholder' => interessa_text('Ilustracny vizual'),
             default => '',
         };
     }
@@ -79,10 +78,10 @@ if (!function_exists('interessa_product_editorial_note_text')) {
         $merchant = trim($merchant);
 
         if ($merchant !== '') {
-            return interessa_text('Zatial pouzivame redakcny vizual. Odkaz aj odporucanie smeruju na konkretny produkt v obchode ') . $merchant . '.';
+            return interessa_text('Zatial vidis ilustracny vizual. Odkaz aj odporucanie vedu na konkretny produkt v obchode ') . $merchant . '.';
         }
 
-        return interessa_text('Zatial pouzivame redakcny vizual. Odkaz aj odporucanie smeruju na konkretny produkt v obchode.');
+        return interessa_text('Zatial vidis ilustracny vizual. Odkaz aj odporucanie vedu na konkretny produkt v obchode.');
     }
 }
 

@@ -228,6 +228,36 @@ button:focus-visible,
 @media (max-width: 980px){ .home-theme-grid{grid-template-columns:1fr 1fr} }
 @media (max-width: 980px){ .support-theme-grid{grid-template-columns:1fr 1fr} }
 @media (max-width: 980px){ .quickstart-grid{grid-template-columns:1fr} }
+@media (max-width: 760px){
+  .home-section--quickstart,
+  .home-section--theme-system,
+  .home-section--support-themes{
+    padding:1rem;
+    border-radius:20px;
+  }
+  .quickstart-card,
+  .support-theme-card{
+    padding:.92rem;
+    border-radius:16px;
+  }
+  .theme-card-focus{
+    padding:.68rem .76rem;
+    font-size:.89rem;
+  }
+}
 @media (max-width: 560px){ .home-theme-grid{grid-template-columns:1fr} }
 @media (max-width: 560px){ .support-theme-grid{grid-template-columns:1fr} }
+@media (max-width: 560px){
+  .hero-copy h1{font-size:clamp(2rem,7vw,2.6rem)}
+  .hero-copy p{font-size:1rem;line-height:1.75}
+  .theme-card-head{
+    grid-template-columns:1fr;
+    gap:.6rem;
+  }
+  .theme-card-badge-row{
+    left:.6rem;
+    right:.6rem;
+    top:.6rem;
+  }
+}
 @media (max-width: 420px){ .promo-cards{ grid-template-columns: 1fr; } }

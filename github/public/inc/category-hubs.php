@@ -30,7 +30,7 @@ if (!function_exists('interessa_category_hubs')) {
                     'Kontroluj davku, formu a to, ci produkt riesi realny problem.',
                 ],
                 'featured_guides' => [
-                    ['slug' => 'doplnky-vyzivy', 'label' => 'Zaklad', 'description' => 'Zakladny shortlist doplnkov, ktore davaju zmysel pre vacsinu ludi.'],
+                    ['slug' => 'doplnky-vyzivy', 'label' => 'Zaklad', 'description' => 'Zakladny vyber doplnkov, ktore davaju zmysel pre vacsinu ludi.'],
                     ['slug' => 'probiotika-ako-vybrat', 'label' => 'Travenie', 'description' => 'Ako citat kmene, CFU a vyberat probiotika podla pouzitia.'],
                     ['slug' => 'probiotika-a-travenie', 'label' => 'Sprievodca', 'description' => 'Prakticky uvod do vztahu probiotik a travenia.'],
                 ],
@@ -138,7 +138,7 @@ if (!function_exists('interessa_category_hubs')) {
                     'Pomocne prislusenstvo ma zmysel len vtedy, ked zjednodusuje konzistentnost.',
                 ],
                 'featured_guides' => [
-                    ['slug' => 'doplnky-vyzivy', 'label' => 'Rutina', 'description' => 'Zakladny shortlist doplnkov, ktory pomoze upratat kazdodennu suplementaciu.'],
+                    ['slug' => 'doplnky-vyzivy', 'label' => 'Rutina', 'description' => 'Zakladny vyber doplnkov, ktory pomoze upratat kazdodennu suplementaciu.'],
                     ['slug' => 'kedy-brat-kreatin-a-kolko', 'label' => 'Davkovanie', 'description' => 'Prakticky clanok o nacasovani a jednoduchosti davkovania kreatinu.'],
                     ['slug' => 'pre-workout-ako-vybrat', 'label' => 'Trening', 'description' => 'Ako si vybrat predtreningovku bez zbytocneho chaosu a prestreleneho stimu.'],
                 ],

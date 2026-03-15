@@ -113,7 +113,7 @@ $sidebarGuideTitle = $sidebarCategorySlug !== '' ? 'Zacat v tejto teme' : 'Top n
         <?php foreach ($sidebarCommercialLinks as $link): ?>
           <li>
             <a href="<?= esc((string) ($link['href'] ?? '/clanky/')) ?>"><?= esc((string) ($link['label'] ?? 'Clanok')) ?></a><br>
-            <span class="muted"><?= esc((string) ($link['note'] ?? 'Clanok uz obsahuje odporucania produktov.')) ?></span>
+            <span class="muted"><?= esc((string) ($link['note'] ?? 'Clanok uz obsahuje odporucane produkty.')) ?></span>
           </li>
         <?php endforeach; ?>
       </ul>
