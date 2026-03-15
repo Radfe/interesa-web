@@ -8,6 +8,8 @@
   <title><?= page_title() ?></title>
   <meta name="description" content="<?= page_description() ?>" />
   <meta name="robots" content="<?= esc(page_robots()) ?>" />
+  <meta name="theme-color" content="#11a96d" />
+  <meta name="color-scheme" content="light" />
   <link rel="canonical" href="<?= esc(page_canonical()) ?>" />
 
   <meta property="og:type" content="<?= esc(page_og_type()) ?>" />
@@ -16,13 +18,17 @@
   <meta property="og:title" content="<?= page_title() ?>" />
   <meta property="og:description" content="<?= page_description() ?>" />
   <meta property="og:image" content="<?= esc(page_image_url()) ?>" />
+  <meta property="og:image:alt" content="<?= page_title() ?>" />
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="<?= page_title() ?>" />
   <meta name="twitter:description" content="<?= page_description() ?>" />
   <meta name="twitter:image" content="<?= esc(page_image_url()) ?>" />
+  <meta name="twitter:image:alt" content="<?= page_title() ?>" />
 
   <link rel="icon" href="<?= asset('img/brand/logo-icon.svg') ?>" type="image/svg+xml" />
+  <link rel="icon" href="<?= asset('img/brand/favicon-32.png') ?>" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="<?= asset('img/brand/apple-touch-icon.png') ?>" />
   <link rel="stylesheet" href="<?= asset('css/main.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/compat.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/sidebar.css') ?>" />
