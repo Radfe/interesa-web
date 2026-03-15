@@ -39,6 +39,7 @@ a:hover{color:#0954aa}
 .site-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(16,24,40,.02)}
 .header-inner{display:flex;align-items:center;gap:1rem;min-height:68px;padding-block:.45rem}
 .brand{display:flex;align-items:center;gap:.75rem;color:inherit}
+.brand-mark{width:28px;height:28px;flex:0 0 auto}
 .brand-copy{display:grid;gap:.1rem;line-height:1.1}
 .brand-copy strong{font-size:1rem;letter-spacing:-.01em;color:#10202d}
 .brand-copy span{font-size:.74rem;color:#5b6672;max-width:220px}
@@ -218,7 +219,9 @@ a:hover{color:#0954aa}
 .site-footer{border-top:1px solid var(--line);background:#fff}
 .footer-inner{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:1.5rem;padding:1.4rem 0 1.7rem;align-items:start}
 .footer-brand{display:grid;gap:.7rem}
-.footer-brand-mark{display:inline-flex;align-items:center}
+.footer-brand-mark{display:inline-flex;align-items:center;gap:.65rem;color:inherit}
+.footer-brand-icon{width:28px;height:28px;flex:0 0 auto}
+.footer-brand-title{font-size:1rem;font-weight:800;letter-spacing:-.01em;color:#10202d}
 .footer-brand-copy{margin:0;max-width:58ch;color:#4f5f6b}
 .footer-note{margin:0;color:#6a7782;font-size:.92rem;line-height:1.6}
 .footer-links{display:grid;justify-content:end}

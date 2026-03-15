@@ -3,7 +3,8 @@
   <div class="container footer-inner">
     <div class="footer-brand">
       <a class="footer-brand-mark" href="/" aria-label="Interesa domov">
-        <?= interessa_render_image(interessa_brand_image_meta('logo-full'), ['alt' => 'Interesa.sk logo', 'width' => '148', 'height' => '32']) ?>
+        <?= interessa_render_image(interessa_brand_image_meta('logo-icon'), ['alt' => 'Interesa symbol', 'width' => '28', 'height' => '28', 'class' => 'footer-brand-icon']) ?>
+        <span class="footer-brand-title">Interesa.sk</span>
       </a>
       <p class="footer-brand-copy">Prakticke porovnania, navody a odporucania pre ludi, ktori sa chcu vo vyzive zorientovat bez chaosu.</p>
       <p class="footer-note">&copy; <span id="year"></span> Interesa. Niektore odkazy mozu viest na partnerske obchody. Ak cez ne nakupis, cena pre teba ostava rovnaka.</p>

@@ -55,7 +55,7 @@ if ($interessaIsLocalDev && !headers_sent()) {
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="/" aria-label="Domov">
-        <?= interessa_render_image(interessa_brand_image_meta('logo-full'), ['alt' => 'Interesa.sk logo', 'width' => '148', 'height' => '32']) ?>
+        <?= interessa_render_image(interessa_brand_image_meta('logo-icon'), ['alt' => 'Interesa symbol', 'width' => '28', 'height' => '28', 'class' => 'brand-mark']) ?>
         <span class="brand-copy">
           <strong>Interesa.sk</strong>
           <span>Prakticke porovnania a navody pre vyzivu</span>
