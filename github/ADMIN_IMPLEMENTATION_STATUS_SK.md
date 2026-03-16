@@ -229,6 +229,20 @@ Zatial nerobit:
 - velky hromadny XML importer pre vsetko
 - komplikovane feed mapovanie bez kontroly
 
+Najnovsi krok:
+- v `Clanky` pribudol novy blok `Co v tomto clanku este chyba`
+- hned pri otvoreni clanku uz vidno:
+  - kolko produktov je vybranych
+  - kolko je uplne hotovych
+  - kolkym chyba obrazok
+  - kolkym chyba klik do obchodu
+- pri kazdom vybranom produkte je uz len jeden dalsi krok:
+  - `Doplnit produkt`
+  - `Doplnit obrazok`
+  - `Doplnit odkaz`
+  - `Hotovo`
+- hore v clanku pribudlo aj tlacidlo `Skontrolovat clanok`
+
 ## 6. Co potrebuje web vlakno
 
 ### Handoff pre web vlakno - aktualny stav

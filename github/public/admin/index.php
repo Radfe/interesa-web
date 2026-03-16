@@ -2227,6 +2227,56 @@ $recommendedAffiliateReadyCount = (int) ($recommendedDiagnosticsSummary['affilia
 $recommendedPackshotReadyCount = (int) ($recommendedDiagnosticsSummary['packshot_ready'] ?? 0);
 $recommendedMoneyReadyCount = (int) ($recommendedDiagnosticsSummary['money_ready'] ?? 0);
 $recommendedCardReadyCount = (int) ($recommendedDiagnosticsSummary['card_ready'] ?? 0);
+$articleSelectedProductSlugs = array_values(array_unique(array_merge(array_keys($articleProductPlanMap), $articleEditorProductSlugs)));
+$articleSelectedCount = count($articleSelectedProductSlugs);
+$articleSelectedImageMissingCount = 0;
+$articleSelectedClickMissingCount = 0;
+$articleSelectedReadyCount = 0;
+$articleSelectedMissingProductCount = 0;
+$articleSelectedActionRows = [];
+foreach ($articleSelectedProductSlugs as $articleSelectedSlug) {
+    $articleSelectedRow = $recommendedDiagnosticsBySlug[$articleSelectedSlug] ?? [];
+    $articleSelectedExists = !empty($articleSelectedRow['exists']) || interessa_product($articleSelectedSlug) !== null;
+    $articleSelectedPackshotReady = !empty($articleSelectedRow['packshot_ready']);
+    $articleSelectedAffiliateReady = !empty($articleSelectedRow['affiliate_ready']);
+    if (!$articleSelectedExists) {
+        $articleSelectedMissingProductCount++;
+    }
+    if (!$articleSelectedPackshotReady) {
+        $articleSelectedImageMissingCount++;
+    }
+    if (!$articleSelectedAffiliateReady) {
+        $articleSelectedClickMissingCount++;
+    }
+    if ($articleSelectedExists && $articleSelectedPackshotReady && $articleSelectedAffiliateReady) {
+        $articleSelectedReadyCount++;
+    }
+    $articleSelectedActionHref = '/admin?section=products&product=' . rawurlencode($articleSelectedSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug) . '&focus=product_edit#product-edit-form';
+    $articleSelectedActionLabel = 'Doplnit produkt';
+    $articleSelectedActionNote = 'Tomuto produktu este chyba doplnenie.';
+    if ($articleSelectedExists && $articleSelectedPackshotReady && !$articleSelectedAffiliateReady) {
+        $articleSelectedActionHref = '/admin?section=affiliates&prefill_code=' . rawurlencode($articleSelectedSlug) . '&prefill_merchant=' . rawurlencode((string) ($articleSelectedRow['merchant'] ?? '')) . '&prefill_merchant_slug=' . rawurlencode(interessa_admin_slugify((string) ($articleSelectedRow['merchant'] ?? ''))) . '&prefill_product_slug=' . rawurlencode($articleSelectedSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug);
+        $articleSelectedActionLabel = 'Doplnit odkaz';
+        $articleSelectedActionNote = 'Obrazok je hotovy. Chyba uz len klik do obchodu.';
+    } elseif ($articleSelectedExists && !$articleSelectedPackshotReady) {
+        $articleSelectedActionLabel = 'Doplnit obrazok';
+        $articleSelectedActionNote = 'Produkt uz existuje. Treba este doplnit obrazok.';
+    } elseif ($articleSelectedExists && $articleSelectedPackshotReady && $articleSelectedAffiliateReady) {
+        $articleSelectedActionHref = '/admin?section=affiliates&code=' . rawurlencode((string) ($articleSelectedRow['affiliate_code'] ?? '')) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug);
+        $articleSelectedActionLabel = 'Hotovo';
+        $articleSelectedActionNote = 'Tento produkt je pripraveny.';
+    }
+    $articleSelectedActionRows[] = [
+        'slug' => $articleSelectedSlug,
+        'name' => (string) ($articleSelectedRow['name'] ?? ($catalog[$articleSelectedSlug]['name'] ?? $articleSelectedSlug)),
+        'exists' => $articleSelectedExists,
+        'packshot_ready' => $articleSelectedPackshotReady,
+        'affiliate_ready' => $articleSelectedAffiliateReady,
+        'next_href' => $articleSelectedActionHref,
+        'next_label' => $articleSelectedActionLabel,
+        'next_note' => $articleSelectedActionNote,
+    ];
+}
 $selectedArticlePackshotGaps = array_values(array_map(static function (array $row): array {
     $brief = [];
     $slug = trim((string) ($row['slug'] ?? ''));
@@ -2420,6 +2470,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <h2>Uprava vybraneho clanku</h2>
               </div>
               <div class="admin-inline-actions">
+                <a class="btn btn-secondary btn-small" href="#article-check-block">Skontrolovat clanok</a>
                 <a class="btn btn-secondary btn-small" href="#article-products-block">Produkty v clanku</a>
                 <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit obrazky</a>
                 <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
@@ -2511,6 +2562,62 @@ require dirname(__DIR__) . '/inc/head.php';
               </section>
 
               <p class="admin-note">Ak teraz riesis produkty pre tento clanok, nizsie klikaj len v casti <strong>Produkty v tomto clanku</strong>. Ostatne casti otvor len ked menis samotny text clanku.</p>
+
+              <section class="admin-subsection is-compact" id="article-check-block">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Co v tomto clanku este chyba</h3>
+                    <p class="admin-meta">Tu hned vidis, kolko produktov je vybranych, co je hotove a na co mas kliknut dalej.</p>
+                  </div>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="#article-products-block">Prejst na produkty v clanku</a>
+                  </div>
+                </div>
+                <div class="admin-status-grid">
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $articleSelectedCount) ?></strong>
+                    <span>Vybrane produkty</span>
+                  </article>
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $articleSelectedReadyCount) ?></strong>
+                    <span>Uplne hotove</span>
+                  </article>
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $articleSelectedImageMissingCount) ?></strong>
+                    <span>Chyba obrazok</span>
+                  </article>
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $articleSelectedClickMissingCount) ?></strong>
+                    <span>Chyba klik do obchodu</span>
+                  </article>
+                </div>
+                <?php if ($articleSelectedMissingProductCount > 0): ?>
+                  <p class="admin-note">Pozor: <?= esc((string) $articleSelectedMissingProductCount) ?> vybranych produktov este nie je poriadne doplnenych v katalogu.</p>
+                <?php endif; ?>
+                <?php if ($articleSelectedActionRows !== []): ?>
+                  <div class="admin-queue-list">
+                    <?php foreach ($articleSelectedActionRows as $articleActionRow): ?>
+                      <article class="admin-queue-item<?= ($articleActionRow['exists'] && $articleActionRow['packshot_ready'] && $articleActionRow['affiliate_ready']) ? ' is-done' : '' ?>">
+                        <div>
+                          <strong><?= esc((string) ($articleActionRow['name'] ?? '')) ?></strong>
+                          <p><?= esc((string) ($articleActionRow['slug'] ?? '')) ?></p>
+                          <div class="admin-status-pills">
+                            <span class="admin-status-pill<?= !empty($articleActionRow['exists']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['exists']) ? 'Produkt hotovy' : 'Produkt chyba' ?></span>
+                            <span class="admin-status-pill<?= !empty($articleActionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['packshot_ready']) ? 'Obrazok hotovy' : 'Obrazok chyba' ?></span>
+                            <span class="admin-status-pill<?= !empty($articleActionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['affiliate_ready']) ? 'Klik hotovy' : 'Klik chyba' ?></span>
+                          </div>
+                          <small class="admin-note"><?= esc((string) ($articleActionRow['next_note'] ?? '')) ?></small>
+                        </div>
+                        <div class="admin-inline-actions">
+                          <a class="btn btn-secondary btn-small" href="<?= esc((string) ($articleActionRow['next_href'] ?? '#')) ?>"><?= esc((string) ($articleActionRow['next_label'] ?? 'Otvorit')) ?></a>
+                        </div>
+                      </article>
+                    <?php endforeach; ?>
+                  </div>
+                <?php else: ?>
+                  <p class="admin-note">Tento clanok este nema vybrate ziadne produkty. Nizsie v casti <strong>Produkty v tomto clanku</strong> oznac, co sem patri.</p>
+                <?php endif; ?>
+              </section>
 
               <div class="admin-subsection" id="article-products-block">
                 <div class="admin-subsection-head">
