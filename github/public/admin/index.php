@@ -1860,22 +1860,29 @@ if ($isAuthed) {
             }
 
             if ($action === 'import_product_candidates') {
-                if (empty($_FILES['candidate_file']['tmp_name']) || !is_uploaded_file($_FILES['candidate_file']['tmp_name'])) {
-                    throw new RuntimeException('Najprv vyber subor s produktmi.');
-                }
                 $merchantSlug = interessa_admin_slugify((string) ($_POST['candidate_merchant_slug'] ?? ''));
                 if ($merchantSlug === '') {
                     throw new RuntimeException('Vyber obchod, z ktoreho idu produkty.');
                 }
-                $rows = interessa_admin_parse_feed_file((string) $_FILES['candidate_file']['tmp_name'], $merchantSlug, 0);
+                $candidateFeedUrl = trim((string) ($_POST['candidate_feed_url'] ?? ''));
+                $candidateSourceName = '';
+                if ($candidateFeedUrl !== '') {
+                    $rows = interessa_admin_parse_feed_url($candidateFeedUrl, $merchantSlug, 0);
+                    $candidateSourceName = $candidateFeedUrl;
+                } elseif (!empty($_FILES['candidate_file']['tmp_name']) && is_uploaded_file($_FILES['candidate_file']['tmp_name'])) {
+                    $rows = interessa_admin_parse_feed_file((string) $_FILES['candidate_file']['tmp_name'], $merchantSlug, 0);
+                    $candidateSourceName = (string) ($_FILES['candidate_file']['name'] ?? '');
+                } else {
+                    throw new RuntimeException('Vloz URL feedu alebo vyber subor s produktmi.');
+                }
                 if ($rows === []) {
-                    throw new RuntimeException('V tomto subore sa nenasli ziadne produkty.');
+                    throw new RuntimeException('V tomto zdroji sa nenasli ziadne produkty.');
                 }
                 $imported = interessa_admin_import_product_candidates(
                     $rows,
                     'feed',
                     (string) ($_POST['candidate_merchant_name'] ?? $merchantSlug),
-                    (string) ($_FILES['candidate_file']['name'] ?? '')
+                    $candidateSourceName
                 );
                 $firstCandidate = (string) ($imported[0] ?? '');
                 interessa_admin_redirect('products', [
@@ -3427,11 +3434,21 @@ require dirname(__DIR__) . '/inc/head.php';
                     <input type="text" name="candidate_merchant_name" value="GymBeam.sk" />
                   </label>
                   <label>
+                    <span>URL feedu z Dognetu</span>
+                    <input type="url" name="candidate_feed_url" placeholder="Sem vloz URL feedu z tlacidla Kopirovat URL" />
+                  </label>
+                </div>
+                <div class="admin-grid two-up">
+                  <label>
                     <span>Subor s produktmi</span>
                     <input type="file" name="candidate_file" accept=".xml,.csv,.json,.txt" />
                   </label>
+                  <label>
+                    <span>Poznamka</span>
+                    <input type="text" value="Staci jedno: bud URL feedu, alebo subor." readonly />
+                  </label>
                 </div>
-                <p class="admin-note">Podporene su XML, CSV aj JSON. Admin si z nich vezme nazov produktu, link produktu, obrazok, typ a pripadne cenu.</p>
+                <p class="admin-note">Podporene su XML, CSV aj JSON. Ak mas v Dognete tlacidlo <strong>Kopirovat URL</strong>, vloz ten link sem. Admin si z feedu vezme nazov produktu, link produktu, obrazok, typ a pripadne cenu.</p>
                 <div class="admin-actions">
                   <button class="btn btn-cta" type="submit">Nahraj zoznam produktov</button>
                 </div>

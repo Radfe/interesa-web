@@ -258,6 +258,15 @@ Najnovsi krok:
   - `Doplnit obrazok`
   - `Doplnit odkaz`
   - `Hotovo`
+
+Najnovsie doplnenie:
+- `Krok 1: Nahraj zoznam produktov` uz nevyzaduje len rucne nahraty subor
+- admin uz vie zobrat aj priamu URL feedu z Dognetu
+- prakticky postup je teraz:
+  - v Dognete kliknes `Kopirovat URL`
+  - vlozis to do pola `URL feedu z Dognetu`
+  - admin z toho nacita kandidatov na produkty
+- suborovy upload zostava ako zalozna moznost
 - hore v clanku pribudlo aj tlacidlo `Skontrolovat clanok`
 
 Najnovsie upratanie:
