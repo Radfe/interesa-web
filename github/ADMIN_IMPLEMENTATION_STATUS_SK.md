@@ -355,5 +355,7 @@ Stav:
 - produkty: ciastocne upratane, ale este nie hotovy jednoduchy system pre odkazy + obrazky + priradenie ku clankom
 - produkty: hlavna 4-krokova cesta je pripravena, dalsie ladenie sa ma sustredit na co najmensi pocet klikov a na bezchybne dotiahnutie jedneho produktu od linku az po schvalenie
 - produkty: prva faza je zamerana len na 3 hlavne clanky, aby bola praca prehladna
+- pri jednom nacitanom produkte v 4-krokovej ceste je teraz na ociach uz len blok `Co kliknut teraz`
+- starsie jednotlive kroky a rucne nastavenia su skryte do podrobneho bloku, aby bezny pouzivatel nevidel viac tlacidiel naraz
 - affiliate workflow: funkcny len ciastocne, treba dalej zjednodusit
 - logo a ikonka: zakladny jednoduchy upload je hotovy, dalsie drobnosti sa budu ladit podla testu

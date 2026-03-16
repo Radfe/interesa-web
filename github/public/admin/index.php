@@ -3504,24 +3504,27 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
                 </div>
 
-                <div class="admin-grid three-up">
-                  <form method="post" class="admin-form admin-form-stack">
-                    <input type="hidden" name="action" value="prepare_candidate_click" />
-                    <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
-                    <div class="admin-subsection is-compact">
-                      <div class="admin-subsection-head"><h3>Krok 2: Pripravit klik do obchodu</h3></div>
-                      <p class="admin-note">Admin pouzije ulozeny link produktu a pripravi odkaz, na ktory bude clovek klikat na webe. Ak je to Dognet link, ulozi ho ako Dognet. Ak je to obycajny link, ulozi aspon bezny klik.</p>
+                <section class="admin-subsection is-compact">
+                  <div class="admin-subsection-head">
+                    <div>
+                      <h3>Co kliknut teraz</h3>
+                      <p class="admin-meta">Tu mas len jeden dalsi krok. Klikni toto tlacidlo a potom sa vrat sem.</p>
+                    </div>
+                  </div>
+                  <?php if (!$selectedCandidateHasClick): ?>
+                    <p class="admin-note">Najprv treba pripravit klik do obchodu z ulozeneho linku produktu.</p>
+                    <form method="post" class="admin-form admin-form-stack">
+                      <input type="hidden" name="action" value="prepare_candidate_click" />
+                      <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <div class="admin-actions">
                         <button class="btn btn-cta" type="submit">Krok 2: Pripravit klik do obchodu</button>
                       </div>
-                    </div>
-                  </form>
-
-                  <form method="post" class="admin-form admin-form-stack">
-                    <input type="hidden" name="action" value="save_candidate_assignment" />
-                    <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
-                    <div class="admin-subsection is-compact">
-                      <div class="admin-subsection-head"><h3>Krok 3: Priradit ku clanku</h3></div>
+                    </form>
+                  <?php elseif (!$selectedCandidateHasArticle): ?>
+                    <p class="admin-note">Klik do obchodu je hotovy. Teraz uz len vyber clanok, poradie a miesto vo vybere.</p>
+                    <form method="post" class="admin-form admin-form-stack">
+                      <input type="hidden" name="action" value="save_candidate_assignment" />
+                      <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <label>
                         <span>Clanok</span>
                         <select name="candidate_article_slug">
@@ -3546,22 +3549,57 @@ require dirname(__DIR__) . '/inc/head.php';
                       <div class="admin-actions">
                         <button class="btn btn-cta" type="submit">Krok 3: Priradit ku clanku</button>
                       </div>
-                    </div>
-                  </form>
-
-                  <form method="post" class="admin-form admin-form-stack">
-                    <input type="hidden" name="action" value="approve_candidate_for_web" />
-                    <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
-                    <div class="admin-subsection is-compact">
-                      <div class="admin-subsection-head"><h3>Krok 4: Schvalit pre web</h3></div>
-                      <p class="admin-note">Az tento krok zapise produkt do hlavneho systemu. Samotne nacitanie produktu este neznamena zverejnenie.</p>
-                      <p class="admin-note">Ak uz kandidat ma aj obrazok z obchodu vo WebP, admin sa ho pokusi ulozit hned pri schvaleni.</p>
+                    </form>
+                  <?php elseif (!$selectedCandidateApproved): ?>
+                    <p class="admin-note">Produkt uz ma klik aj clanok. Posledny krok je pustit ho na web.</p>
+                    <form method="post" class="admin-form admin-form-stack">
+                      <input type="hidden" name="action" value="approve_candidate_for_web" />
+                      <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <div class="admin-actions">
                         <button class="btn btn-cta" type="submit">Krok 4: Schvalit pre web</button>
                       </div>
+                    </form>
+                  <?php else: ?>
+                    <p class="admin-note">Tento produkt je uz hotovy a pusteny na web.</p>
+                    <div class="admin-inline-actions">
+                      <?php if (trim((string) ($selectedCandidate['article_slug'] ?? '')) !== ''): ?>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc((string) $selectedCandidate['article_slug']) ?>#article-product-binding">Otvorit clanok</a>
+                      <?php endif; ?>
+                      <?php if (trim((string) ($selectedCandidate['product_slug'] ?? '')) !== ''): ?>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $selectedCandidate['product_slug']) ?>#product-main-flow">Otvorit produkt</a>
+                      <?php endif; ?>
                     </div>
-                  </form>
-                </div>
+                  <?php endif; ?>
+                </section>
+
+                <details class="admin-subsection is-compact">
+                  <summary><strong>Podrobne nastavenia tohto produktu</strong> - otvor len ked chces menit jednotlive volby rucne</summary>
+                  <div class="admin-grid two-up">
+                    <form method="post" class="admin-form admin-form-stack">
+                      <input type="hidden" name="action" value="prepare_candidate_click" />
+                      <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
+                      <div class="admin-subsection is-compact">
+                        <div class="admin-subsection-head"><h3>Krok 2: Pripravit klik do obchodu</h3></div>
+                        <p class="admin-note">Admin pouzije ulozeny link produktu a pripravi odkaz, na ktory bude clovek klikat na webe.</p>
+                        <div class="admin-actions">
+                          <button class="btn btn-secondary" type="submit">Znovu pripravit klik</button>
+                        </div>
+                      </div>
+                    </form>
+
+                    <form method="post" class="admin-form admin-form-stack">
+                      <input type="hidden" name="action" value="approve_candidate_for_web" />
+                      <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
+                      <div class="admin-subsection is-compact">
+                        <div class="admin-subsection-head"><h3>Krok 4: Schvalit pre web</h3></div>
+                        <p class="admin-note">Toto pouzi len ked chces znovu zapisat tento produkt do hlavneho systemu.</p>
+                        <div class="admin-actions">
+                          <button class="btn btn-secondary" type="submit">Znovu schvalit pre web</button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </details>
               <?php endif; ?>
             </section>
 
