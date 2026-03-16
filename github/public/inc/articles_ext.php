@@ -722,4 +722,204 @@ $ART += [
     'Ako si pri zinku zjednodusit beznu rutinu tak, aby si na neho nevynechaval len preto, ze mas rozbity alebo hekticky den.',
     'mineraly',
   ],
+  'multivitamin-v-hektickom-dni-ako-ho-nevynechat' => [
+    'Multivitamin v hektickom dni - ako ho nevynechat',
+    'Ako si pri multivitamine nastavit jednoduchu rutinu, ktoru udrzis aj v hektickom dni bez hladania dokonaleho casu.',
+    'vyziva',
+  ],
+  'multivitamin-ked-sa-ti-rozpadne-den-ako-ho-udrzat' => [
+    'Multivitamin ked sa ti rozpadne den - ako ho udrzat',
+    'Ako si pri multivitamine udrzat jednoduchu a odolnu rutinu aj v dni, ked sa ti meni plan a vsetko sa posuva.',
+    'vyziva',
+  ],
+  'vitamin-c-v-hektickom-dni-ako-ho-nevynechat' => [
+    'Vitamin C v hektickom dni - ako ho nevynechat',
+    'Ako si pri vitamine C zjednodusit bezny den tak, aby nepadol hned pri prvom zhone alebo zmene planu.',
+    'mineraly',
+  ],
+  'vitamin-c-ked-sa-ti-rozpadne-den-ako-ho-udrzat' => [
+    'Vitamin C ked sa ti rozpadne den - ako ho udrzat',
+    'Prakticky pristup, ako si pri vitamine C udrzat jednoduchu rutinu aj v neidealnom a chaotickom dni.',
+    'mineraly',
+  ],
+  'beta-glukan-v-hektickom-dni-ako-ho-nevynechat' => [
+    'Beta glukan v hektickom dni - ako ho nevynechat',
+    'Ako si pri beta glukane vytvorit jednoduchu rutinu, ktoru udrzis aj v hektickom dni bez zbytocneho komplikovania.',
+    'imunita',
+  ],
+  'beta-glukan-ked-sa-ti-rozpadne-den-ako-ho-udrzat' => [
+    'Beta glukan ked sa ti rozpadne den - ako ho udrzat',
+    'Ako si pri beta glukane udrzat jednoduchy system aj v dni, ked sa ti meni plan a rutina pada najlahsie.',
+    'imunita',
+  ],
+  'kolagen-v-hektickom-dni-ako-ho-nevynechat' => [
+    'Kolagen v hektickom dni - ako ho nevynechat',
+    'Ako si pri kolagene nastavit jednoduchu rutinu, ktoru udrzis aj v hektickom dni bez zbytocneho chaosu navyse.',
+    'klby-koza',
+  ],
+  'kolagen-ked-sa-ti-rozpadne-den-ako-ho-udrzat' => [
+    'Kolagen ked sa ti rozpadne den - ako ho udrzat',
+    'Prakticky pristup, ako si pri kolagene udrzat jednoduchu rutinu aj v neidealnom dni, ked sa vsetko posuva.',
+    'klby-koza',
+  ],
+  'protein-v-hektickom-dni-ako-ho-nevynechat' => [
+    'Protein v hektickom dni - ako ho nevynechat',
+    'Kedy moze byt protein praktickou poistkou v hektickom dni a ako si ho nastavit tak, aby ti den zjednodusoval, nie komplikoval.',
+    'proteiny',
+  ],
+  'protein-ked-sa-ti-rozpadne-den-ako-ho-udrzat' => [
+    'Protein ked sa ti rozpadne den - ako ho udrzat',
+    'Ako mat protein ako jednoduchu pomoc aj v dni, ked sa ti rozsype plan jedla a nechces pridavat dalsi stres navyse.',
+    'proteiny',
+  ],
+  'horcik-ked-mas-dlhy-den-ako-ho-udrzat-jednoducho' => [
+    'Horcik ked mas dlhy den - ako ho udrzat jednoducho',
+    'Ako si pri horciku nastavit jednoduchu rutinu, ktoru udrzis aj v dlhom a unavnom dni bez zbytocneho komplikovania.',
+    'mineraly',
+  ],
+  'horcik-ked-sa-vracias-neskoro-domov-ako-ho-nevynechat' => [
+    'Horcik ked sa vracias neskoro domov - ako ho nevynechat',
+    'Ako si pri horciku udrzat jednoduchy vecerny system aj vtedy, ked sa domov vracias neskoro a uz nemas energiu riesit viac veci.',
+    'mineraly',
+  ],
+  'omega-3-ked-mas-dlhy-den-ako-si-ju-udrzat' => [
+    'Omega-3 ked mas dlhy den - ako si ju udrzat',
+    'Ako si pri omega-3 udrzat pravidelnost aj v dlhom dni bez zbytocneho hladania idealneho casu a dalsich ritualov navyse.',
+    'vyziva',
+  ],
+  'omega-3-ked-sa-vracias-neskoro-ako-to-nekomplikovat' => [
+    'Omega-3 ked sa vracias neskoro - ako to nekomplikovat',
+    'Ako si pri omega-3 nastavit co najjednoduchsi system aj na neskore vecery, ked uz nechces riesit dalsi komplikovany ritual.',
+    'vyziva',
+  ],
+  'probiotika-ked-mas-dlhy-den-ako-si-ich-zjednodusit' => [
+    'Probiotika ked mas dlhy den - ako si ich zjednodusit',
+    'Ako si pri probiotikach vytvorit jednoduchu rutinu, ktoru udrzis aj v dlhsom dni bez zbytocneho komplikovania.',
+    'imunita',
+  ],
+  'probiotika-ked-sa-vracias-neskoro-ako-ich-udrzat' => [
+    'Probiotika ked sa vracias neskoro - ako ich udrzat',
+    'Ako si pri probiotikach udrzat jednoduchy system aj vtedy, ked sa domov vracias neskoro a rutina sa rozpada najlahsie.',
+    'imunita',
+  ],
+  'vitamin-d3-ked-mas-dlhy-den-ako-ho-zjednodusit' => [
+    'Vitamin D3 ked mas dlhy den - ako ho zjednodusit',
+    'Ako si pri D3 nastavit jednoduchu a odolnu rutinu, ktora funguje aj v natiahnutom dni bez zbytocnych pravidiel navyse.',
+    'mineraly',
+  ],
+  'vitamin-d3-ked-sa-vracias-neskoro-ako-ho-udrzat' => [
+    'Vitamin D3 ked sa vracias neskoro - ako ho udrzat',
+    'Ako si pri D3 udrzat jednoduchy vecerny system aj vtedy, ked sa domov vracias neskoro a uz nechces nic komplikovat.',
+    'mineraly',
+  ],
+  'zinok-ked-mas-dlhy-den-ako-ho-nevynechat' => [
+    'Zinok ked mas dlhy den - ako ho nevynechat',
+    'Ako si pri zinku nastavit jednoduchu rutinu, ktoru udrzis aj v dlhsom a neidealnom dni bez zbytocneho stresu navyse.',
+    'mineraly',
+  ],
+  'zinok-ked-sa-vracias-neskoro-ako-ho-zjednodusit' => [
+    'Zinok ked sa vracias neskoro - ako ho zjednodusit',
+    'Ako si pri zinku zjednodusit vecernu rutinu aj na dni, ked sa vracias neskoro a nechces riesit dalsi komplikovany ukon navyse.',
+    'mineraly',
+  ],
+  'multivitamin-ked-cestujes-ako-ho-nekomplikovat' => [
+    'Multivitamin ked cestujes - ako ho nekomplikovat',
+    'Ako si pri multivitamine vytvorit jednoduchu cestovnu verziu rutiny, ktora nepadne hned pri prvom presune alebo zmene planu.',
+    'vyziva',
+  ],
+  'multivitamin-ked-preskakujes-jedla-ako-ho-udrzat' => [
+    'Multivitamin ked preskakujes jedla - ako ho udrzat',
+    'Ako si pri multivitamine udrzat jednoduchu rutinu aj v dnoch, ked sa ti rozsype jedalny rezim a nechces vsetko zacat odznova.',
+    'vyziva',
+  ],
+  'vitamin-c-ked-cestujes-ako-ho-nekomplikovat' => [
+    'Vitamin C ked cestujes - ako ho nekomplikovat',
+    'Ako si pri vitamine C zjednodusit cestovanie tak, aby sa z doplnku nestala dalsia organizacna starost navyse.',
+    'mineraly',
+  ],
+  'vitamin-c-ked-preskakujes-jedla-ako-ho-udrzat' => [
+    'Vitamin C ked preskakujes jedla - ako ho udrzat',
+    'Ako si pri vitamine C udrzat jednoduchy system aj v dnoch, ked sa ti rozpada bezny jedalny rezim.',
+    'mineraly',
+  ],
+  'beta-glukan-ked-cestujes-ako-ho-nekomplikovat' => [
+    'Beta glukan ked cestujes - ako ho nekomplikovat',
+    'Ako si pri beta glukane nastavit jednoduchu cestovnu rutinu bez zbytocneho komplikovania a dalsich pravidiel navyse.',
+    'imunita',
+  ],
+  'beta-glukan-ked-preskakujes-rutinu-ako-ho-udrzat' => [
+    'Beta glukan ked preskakujes rutinu - ako ho udrzat',
+    'Ako si pri beta glukane udrzat jednoduchy system aj v dnoch, ked sa ti bezna rutina casto rozpada a meni.',
+    'imunita',
+  ],
+  'kolagen-ked-cestujes-ako-ho-mat-jednoduche' => [
+    'Kolagen ked cestujes - ako ho mat jednoduche',
+    'Ako si pri kolagene vytvorit prakticku cestovnu verziu bez zbytocneho hladania dokonaleho nahradneho systemu.',
+    'klby-koza',
+  ],
+  'kolagen-ked-preskakujes-rano-ako-ho-udrzat' => [
+    'Kolagen ked preskakujes rano - ako ho udrzat',
+    'Ako si pri kolagene nastavit jednoduchu alternativu aj na dni, ked sa ti rano rozsype a povodny plan nevychadza.',
+    'klby-koza',
+  ],
+  'protein-ked-cestujes-ako-mat-jednu-jednoduchu-zalohu' => [
+    'Protein ked cestujes - ako mat jednu jednoduchu zalohu',
+    'Ako mat protein na cestach ako jednu prakticku poistku bez toho, aby si zo sebou nosil zbytocne komplikovany system.',
+    'proteiny',
+  ],
+  'protein-ked-preskakujes-jedla-kedy-moze-pomoct' => [
+    'Protein ked preskakujes jedla - kedy moze pomoct',
+    'Kedy moze byt protein uzitocnou pomockou v dni, ked preskakujes jedla, a kedy z neho netreba robit univerzalnu nahradu bezneho jedla.',
+    'proteiny',
+  ],
+  'horcik-ako-mala-rezerva-na-horsi-tyzden' => [
+    'Horcik ako mala rezerva na horsi tyzden',
+    'Kedy moze byt pri horciku mala rezerva uzitocna v horsom tyzdni a ako ju nepretvorit na dalsi komplikovany system navyse.',
+    'mineraly',
+  ],
+  'horcik-ked-na-neho-nechces-stale-mysliet' => [
+    'Horcik ked na neho nechces stale mysliet',
+    'Ako si pri horciku nastavit co najjednoduchsi system, aby sa stal beznou sucastou dna a nebral dalsiu mentalnu kapacitu.',
+    'mineraly',
+  ],
+  'omega-3-ako-mala-rezerva-na-horsi-tyzden' => [
+    'Omega-3 ako mala rezerva na horsi tyzden',
+    'Kedy moze byt pri omega-3 mala zaloha uzitocna v horsom tyzdni a kedy uz len zbytocne komplikuje rutinu.',
+    'vyziva',
+  ],
+  'omega-3-ked-na-nu-nechces-stale-mysliet' => [
+    'Omega-3 ked na nu nechces stale mysliet',
+    'Ako si pri omega-3 nastavit jednoduchsie fungovanie tak, aby si na nu nemusel stale aktivne mysliet.',
+    'vyziva',
+  ],
+  'probiotika-ako-mala-rezerva-na-horsi-tyzden' => [
+    'Probiotika ako mala rezerva na horsi tyzden',
+    'Kedy moze byt pri probiotikach mala rezerva uzitocna v horsom tyzdni a kedy je lepsie este viac zjednodusit hlavnu rutinu.',
+    'imunita',
+  ],
+  'probiotika-ked-na-ne-nechces-stale-mysliet' => [
+    'Probiotika ked na ne nechces stale mysliet',
+    'Ako si pri probiotikach nastavit jednoduchsi system, aby sa z nich nestala dalsia vec, na ktoru musis denne myslit.',
+    'imunita',
+  ],
+  'vitamin-d3-ako-mala-rezerva-na-horsi-tyzden' => [
+    'Vitamin D3 ako mala rezerva na horsi tyzden',
+    'Kedy moze byt pri D3 mala rezerva uzitocna v horsom tyzdni a ako ju udrzat co najjednoduchsiu.',
+    'mineraly',
+  ],
+  'vitamin-d3-ked-na-neho-nechces-stale-mysliet' => [
+    'Vitamin D3 ked na neho nechces stale mysliet',
+    'Ako si pri D3 vytvorit jednoduchu rutinu, ktora funguje bez toho, aby si na doplnok musel stale aktivne mysliet.',
+    'mineraly',
+  ],
+  'zinok-ako-mala-rezerva-na-horsi-tyzden' => [
+    'Zinok ako mala rezerva na horsi tyzden',
+    'Kedy moze byt pri zinku mala rezerva uzitocna v horsom tyzdni a kedy je lepsie este viac zjednodusit hlavny system.',
+    'mineraly',
+  ],
+  'zinok-ked-na-neho-nechces-stale-mysliet' => [
+    'Zinok ked na neho nechces stale mysliet',
+    'Ako si pri zinku nastavit co najjednoduchsie fungovanie, aby nebral dalsiu pozornost a mentalnu kapacitu navyse.',
+    'mineraly',
+  ],
 ];
