@@ -1453,6 +1453,27 @@ if (!function_exists('interessa_admin_prepare_product_from_input_link')) {
 
         interessa_admin_save_product_record($slug, $payload);
         $enrichment = interessa_admin_enrich_product_record_from_source($slug);
+        $autoImageSaved = false;
+        $autoImageError = '';
+
+        $preparedProduct = interessa_product($slug);
+        if (is_array($preparedProduct)) {
+            $preparedNormalized = interessa_normalize_product($preparedProduct);
+            $remoteSrc = trim((string) ($preparedNormalized['image_remote_src'] ?? ''));
+            $merchantSlug = trim((string) ($preparedNormalized['merchant_slug'] ?? ''));
+
+            if (empty($preparedNormalized['has_local_image']) && $remoteSrc !== '' && interessa_admin_detect_remote_image_extension($remoteSrc) === 'webp') {
+                try {
+                    $asset = interessa_admin_mirror_remote_product_image($slug, $merchantSlug, $remoteSrc);
+                    $preparedPayload = array_replace($preparedNormalized, interessa_admin_product_record($slug) ?? []);
+                    $preparedPayload['image_asset'] = $asset;
+                    interessa_admin_save_product_record($slug, $preparedPayload);
+                    $autoImageSaved = true;
+                } catch (Throwable $e) {
+                    $autoImageError = trim((string) $e->getMessage());
+                }
+            }
+        }
 
         return [
             'slug' => $slug,
@@ -1460,6 +1481,9 @@ if (!function_exists('interessa_admin_prepare_product_from_input_link')) {
             'final_url' => $finalUrl,
             'link_type' => $linkType,
             'enrichment' => $enrichment,
+            'auto_image_saved' => $autoImageSaved,
+            'auto_image_error' => $autoImageError,
+            'click_ready' => aff_resolve($affiliateCode) !== null,
         ];
     }
 }

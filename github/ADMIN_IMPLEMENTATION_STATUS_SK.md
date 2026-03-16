@@ -168,6 +168,16 @@ Najnovsie zjednodusenie:
 - technicke a menej dolezite casti su schovane do rozbalovacich blokov
 - pri produktoch bez obrazka uz technicka cesta obrazka nezavadzia na ociach
 
+Najnovsi upratovaci krok:
+- horny prehlad webu je schovany do rozbalovacieho bloku, aby pri beznej praci nezavadzal
+- v `Produkty` pribudol novy hlavny blok `Produkty z vybraneho clanku`
+- admin tam ukazuje len produkty z jedneho prioritneho clanku a pri kazdom produkte uz len:
+  - stav
+  - co este chyba
+  - jeden dalsi krok
+- produkty sa tak uz daju doplnat po clankoch, nie cez chaoticky velky katalog
+- blok `Stav tohto produktu` je oznaceny ako miesto, kam ta maju priviest tlacidla zhora
+
 ## 4. Co este chyba
 
 ### Produkty a klikacie odkazy
