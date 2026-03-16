@@ -1565,6 +1565,15 @@ if ($isAuthed) {
                 interessa_admin_redirect('brand', ['saved' => 'icon']);
             }
 
+            if ($action === 'save_brand_og_default') {
+                if (empty($_FILES['brand_og_file']['tmp_name'])) {
+                    throw new RuntimeException('Najprv vyber obrazok pre zdielanie.');
+                }
+
+                interessa_admin_store_uploaded_brand_file('og-default', $_FILES['brand_og_file'], ['svg', 'png', 'jpg', 'jpeg', 'webp'], 'png');
+                interessa_admin_redirect('brand', ['saved' => 'og']);
+            }
+
             if ($action === 'prepare_product_from_link') {
                 $slug = trim((string) ($_POST['product_slug'] ?? ''));
                 $returnSection = trim((string) ($_POST['return_section'] ?? ''));
@@ -1931,6 +1940,9 @@ $selectedThemeImageSource = $selectedThemeLocalAsset !== '' ? 'vlastny obrazok t
 $selectedThemeThumbImageSource = $selectedThemeThumbLocalAsset !== '' ? 'vlastny mensi obrazok temy' : 'docasny fallback';
 $brandLogoImage = interessa_brand_image_meta('logo-full', true);
 $brandIconImage = interessa_brand_image_meta('logo-icon', true);
+$brandOgImage = interessa_brand_image_meta('og-default', true);
+$brandFaviconImage = interessa_brand_image_meta('favicon-32', false);
+$brandAppleTouchImage = interessa_brand_image_meta('apple-touch-icon', false);
 $brandFaviconAsset = is_file(dirname(__DIR__) . '/assets/img/brand/favicon-32.png') ? 'img/brand/favicon-32.png' : '';
 $brandAppleTouchAsset = is_file(dirname(__DIR__) . '/assets/img/brand/apple-touch-icon.png') ? 'img/brand/apple-touch-icon.png' : '';
 $brandPromptLibrary = [
@@ -1941,6 +1953,10 @@ $brandPromptLibrary = [
     'icon' => [
         'title' => 'Maly symbol a ikonka stranky',
         'note' => 'Vytvor jednoduchy symbol pre Interesa.sk. Musi byt citatelny aj v malom rozmere 32x32 a bez textu.',
+    ],
+    'og' => [
+        'title' => 'Obrazok pri zdielani',
+        'note' => 'Vytvor cisty obrazok pre zdielanie webu Interesa.sk. Bez drobneho textu, s jasnym motivom, v profesionalnom a doveryhodnom style.',
     ],
 ];
 $selectedArticleOverride = $selectedArticleSlug !== '' ? interessa_admin_article_content($selectedArticleSlug) : interessa_admin_normalize_article_override('', []);
@@ -2362,6 +2378,15 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($section === 'articles' && $articleEditorInjectedProduct !== ''): ?>
           <div class="admin-flash is-success"><?= esc($articleEditorInjectedProductName !== '' ? $articleEditorInjectedProductName : $articleEditorInjectedProduct) ?> bol pridany do odporucanych produktov len v editore. Uloz clanok, aby zmena ostala natrvalo.</div>
         <?php endif; ?>
+        <?php if ($section === 'brand' && $saved === 'logo'): ?>
+          <div class="admin-flash is-success">Hlavne logo bolo nahrate.</div>
+        <?php endif; ?>
+        <?php if ($section === 'brand' && $saved === 'icon'): ?>
+          <div class="admin-flash is-success">Ikonka stranky a male verzie boli pripravene.</div>
+        <?php endif; ?>
+        <?php if ($section === 'brand' && $saved === 'og'): ?>
+          <div class="admin-flash is-success">Obrazok pri zdielani bol nahraty.</div>
+        <?php endif; ?>
 
         <?php if ($error !== ''): ?>
 
@@ -2455,7 +2480,14 @@ require dirname(__DIR__) . '/inc/head.php';
               <input type="hidden" name="action" value="save_article" />
               <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
 
-              <div class="admin-grid three-up">
+              <section class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>To najdolezitejsie pri tomto clanku</h3>
+                    <p class="admin-meta">Ak teraz plnis produkty, staci ti nazov, kategoria, kratky uvod a nizsie blok Produkty v tomto clanku.</p>
+                  </div>
+                </div>
+              <div class="admin-grid two-up">
                 <label>
                   <span>Titulok</span>
                   <input type="text" name="title" value="<?= esc((string) ($selectedArticleOverride['title'] ?: $selectedArticleMeta['title'])) ?>" />
@@ -2470,16 +2502,13 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php endforeach; ?>
                   </select>
                 </label>
-                <label>
-                  <span>Hlavny obrazok clanku</span>
-                  <input type="text" name="hero_asset" value="<?= esc((string) ($selectedArticleOverride['hero_asset'] ?? '')) ?>" placeholder="img/articles/heroes/slug.webp" />
-                </label>
               </div>
 
               <label>
                 <span>Intro</span>
                 <textarea name="intro" rows="3"><?= esc((string) ($selectedArticleOverride['intro'] ?: $selectedArticleMeta['description'])) ?></textarea>
               </label>
+              </section>
 
               <p class="admin-note">Ak teraz riesis produkty pre tento clanok, nizsie klikaj len v casti <strong>Produkty v tomto clanku</strong>. Ostatne casti otvor len ked menis samotny text clanku.</p>
 
@@ -2542,6 +2571,12 @@ require dirname(__DIR__) . '/inc/head.php';
 
               <details class="admin-subsection">
                 <summary><strong>Dalsie nastavenia clanku</strong> - otvor len ked menis text alebo pokrocile casti</summary>
+                <div class="admin-grid one-up">
+                  <label>
+                    <span>Hlavny obrazok clanku (pokrocile)</span>
+                    <input type="text" name="hero_asset" value="<?= esc((string) ($selectedArticleOverride['hero_asset'] ?? '')) ?>" placeholder="img/articles/heroes/slug.webp" />
+                  </label>
+                </div>
                 <div class="admin-grid two-up">
                   <label>
                     <span>Meta title</span>

@@ -217,6 +217,11 @@ $ART += [
     'Kedy dava zmysel kombinacia D3 + K2, kedy netreba zbytocne komplikovat suplementaciu a preco nie je vzdy nutne riesit dva samostatne doplnky.',
     'mineraly',
   ],
+  'vitamin-d3-s-jedlom-alebo-nalacno-zalezi-na-tom' => [
+    'Vitamin D3 s jedlom alebo nalacno - zalezi na tom',
+    'Kedy je pri vitamine D3 dolezitejsia jednoduchost a pravidelnost nez zbytocne dogmy a preco netreba z jednej kapsuly robit dalsi kazdodenny experiment.',
+    'mineraly',
+  ],
   'vitamin-b-komplex-kedy-dava-zmysel' => [
     'Vitamin B komplex - kedy dava zmysel',
     'Kedy ma B-komplex prakticky zmysel, kedy je to len dalsi doplnok navyse a preco netreba automaticky kupovat co najvyssie davky.',
@@ -282,6 +287,21 @@ $ART += [
     'Kedy je pri kolagene praktickejsia forma do kapsy, kedy prasok a preco pri cestovani casto viac zavazi pohodlie a pravidelnost nez teoria okolo idealnej formy.',
     'klby-koza',
   ],
+  'kolagen-kazdy-den-alebo-v-kurach-co-je-praktickejsie' => [
+    'Kolagen kazdy den alebo v kurach - co je praktickejsie',
+    'Kedy dava pri kolagene vacsi zmysel bezna pravidelnost, kedy ludia uvazuju o kurach a preco je casto praktickejsie pozerat sa na jednoduchost nez na zlozite schemy.',
+    'klby-koza',
+  ],
+  'kolagen-na-cesty-oplati-sa-male-balenie-alebo-nie' => [
+    'Kolagen na cesty - oplati sa male balenie alebo nie',
+    'Kedy dava pri kolagene zmysel male balenie na cesty, kedy je to zbytocnost navyse a preco casto viac zavazi pohodlie a pravidelnost nez marketing maleho formatu.',
+    'klby-koza',
+  ],
+  'kolagen-ked-cestujes-oplati-sa-alebo-nie' => [
+    'Kolagen ked cestujes - oplati sa alebo nie',
+    'Kedy dava pri kolagene zmysel riesit ho aj na cestach, kedy je to skor zbytocna komplikacia a preco casto viac zavazi jednoduchost nez dokonaly plan.',
+    'klby-koza',
+  ],
   'vitamin-c' => [
     'Vitamin C - davky, zdroje a kedy ho doplnat',
     'Kedy vitamin C staci zo stravy, kedy dava zmysel doplnok a preco viac nie je vzdy lepsie.',
@@ -291,6 +311,16 @@ $ART += [
     'Vitamin C rano alebo vecer - zalezi na tom',
     'Kedy je pri vitamine C dolezitejsia jednoduchost a pravidelnost nez presna hodina a preco netreba z neho robit zbytocne komplikovanu rutinu.',
     'mineraly',
+  ],
+  'vitamin-c-s-jedlom-alebo-nalacno-zalezi-na-tom' => [
+    'Vitamin C s jedlom alebo nalacno - zalezi na tom',
+    'Kedy je pri vitamine C dolezitejsia jednoduchost a tolerancia nez internetove dogmy a preco netreba z bezneho doplnku robit zbytocne komplikovany ritual.',
+    'mineraly',
+  ],
+  'beta-glukan-rano-alebo-vecer-zalezi-na-tom' => [
+    'Beta glukan rano alebo vecer - zalezi na tom',
+    'Kedy je pri beta glukane dolezitejsia pravidelnost a jednoducha rutina nez presna hodina a preco netreba z imunity doplnku robit dalsi komplikovany ritual.',
+    'imunita',
   ],
   'zinek' => [
     'Zinok - formy, davky a kedy ho doplnat',
@@ -345,6 +375,21 @@ $ART += [
   'protein-v-necviciaci-den-oplati-sa-alebo-nie' => [
     'Protein v necviciaci den - oplati sa alebo nie',
     'Kedy ma protein zmysel aj v den bez treningu, kedy je to len pohodlna forma bielkovin a preco netreba tento doplnok vnimat len cez dni, ked cvicis.',
+    'proteiny',
+  ],
+  'protein-ked-mas-malo-jedla-oplati-sa-alebo-nie' => [
+    'Protein ked mas malo jedla - oplati sa alebo nie',
+    'Kedy moze byt protein praktickou pomocou v hektickom dni, kedy len zachranuje situaciu a preco netreba z neho robit plnohodnotnu nahradu kazdeho bezneho jedla.',
+    'proteiny',
+  ],
+  'protein-ked-nestihas-ranajky-oplati-sa-alebo-nie' => [
+    'Protein ked nestihas ranajky - oplati sa alebo nie',
+    'Kedy moze byt protein praktickou pomocou, ked rano nestihas jest, kedy len zachranuje hekticke rano a preco netreba z neho robit univerzalnu nahradu ranajok pre kazdeho.',
+    'proteiny',
+  ],
+  'protein-dvakrat-denne-oplati-sa-alebo-je-to-zbytocne' => [
+    'Protein dvakrat denne - oplati sa alebo je to zbytocne',
+    'Kedy moze byt protein dvakrat denne praktickou pomockou, kedy je to uz zbytocne a preco netreba pocet shakeov riesit oddelene od celeho dna.',
     'proteiny',
   ],
 ];
