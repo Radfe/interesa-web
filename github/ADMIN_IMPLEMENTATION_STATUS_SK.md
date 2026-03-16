@@ -111,6 +111,8 @@ Najnovsi krok:
   - `recommended_products`
   - `comparison.rows`
 - pokrocile povodne polia ostavaju ako fallback, ale bezny tok ma ist cez tento novy blok
+- v hornej casti clanku pribudlo priame tlacidlo `Produkty v clanku`
+- zakladanie noveho clanku je schovane do rozbalovacieho bloku, aby nezavadzalo pri beznej praci
 
 ## 4. Co este chyba
 

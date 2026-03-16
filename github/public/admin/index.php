@@ -2357,9 +2357,10 @@ require dirname(__DIR__) . '/inc/head.php';
             <div class="admin-card-head">
               <div>
                 <p class="admin-kicker">Article management</p>
-                <h2>Strukturovany obsah clanku</h2>
+                <h2>Uprava vybraneho clanku</h2>
               </div>
               <div class="admin-inline-actions">
+                <a class="btn btn-secondary btn-small" href="#article-products-block">Produkty v clanku</a>
                 <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit obrazky</a>
                 <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
                 <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
@@ -2374,10 +2375,8 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </div>
 
-            <section class="admin-subsection">
-              <div class="admin-subsection-head">
-                <h3>Vytvorit novy clanok</h3>
-              </div>
+            <details class="admin-subsection">
+              <summary>Vytvorit novy clanok (bezne netreba)</summary>
               <form method="post" class="admin-form admin-form-stack">
                 <input type="hidden" name="action" value="create_article" />
                 <div class="admin-grid three-up">
@@ -2415,7 +2414,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <button class="btn btn-cta" type="submit">Vytvorit clanok</button>
                 </div>
               </form>
-            </section>
+            </details>
 
             <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
               <input type="hidden" name="action" value="save_article" />
@@ -2479,11 +2478,11 @@ require dirname(__DIR__) . '/inc/head.php';
                 </template>
               </div>
 
-              <div class="admin-subsection">
+              <div class="admin-subsection" id="article-products-block">
                 <div class="admin-subsection-head">
                   <h3>Produkty v tomto clanku</h3>
                 </div>
-                <p class="admin-note">Tu nastav poradie produktov a kde sa maju ukazovat. Prvy produkt v poradi bude hlavna odporucana volba.</p>
+                <p class="admin-note">Tu robis len toto: vyber produkt, nastav poradie a povedz, ci ma byt v odporucanych produktoch a v porovnani. Prvy produkt v poradi bude hlavna odporucana volba.</p>
                 <div class="admin-check-grid">
                   <?php foreach ($catalog as $productSlug => $productRow): ?>
                     <?php

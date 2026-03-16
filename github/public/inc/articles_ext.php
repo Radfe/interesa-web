@@ -132,6 +132,11 @@ $ART += [
     'Kedy dava vacsi zmysel bisglycinat, kedy citrat a preco netreba automaticky kupovat najdrahsiu formu len preto, ze znie lepsie.',
     'mineraly',
   ],
+  'magnezium-rano-alebo-vecer-kedy-ho-brat' => [
+    'Magnezium rano alebo vecer - kedy ho brat',
+    'Kedy pri magneziu viac zavazi pravidelnost a tolerancia nez presna hodina a preco netreba z jednoducheho doplnku robit zlozitu strategiu.',
+    'mineraly',
+  ],
   'najlepsie-probiotika-po-antibiotikach' => [
     'Najlepsie probiotika po antibiotikach - co sledovat',
     'Na co sa pozerat pri probiotikach po antibiotikach, ako nad nimi rozmyslat a preco nestaci len nahodny napis na obale.',
@@ -172,9 +177,19 @@ $ART += [
     'Kedy dava protein na ranajky prakticky zmysel, kedy je to len pohodlna forma bielkovin a preco to netreba brat ako povinny ritual.',
     'proteiny',
   ],
+  'protein-s-vodou-alebo-s-mliekom-co-je-lepsie' => [
+    'Protein s vodou alebo s mliekom - co je lepsie',
+    'Kedy dava vacsi zmysel voda, kedy mlieko a preco nejde o univerzalne pravidlo, ale hlavne o ciel, chut a toleranciu.',
+    'proteiny',
+  ],
   'probiotika-pri-naduvani-co-realne-sledovat' => [
     'Probiotika pri naduvani - co realne sledovat',
     'Kedy maju pri nafukovani probiotika zmysel, preco nie su okamzite riesenie na kazdy problem a ako nad nimi premyslat rozumne.',
+    'imunita',
+  ],
+  'probiotika-rano-alebo-vecer-zalezi-na-tom' => [
+    'Probiotika rano alebo vecer - zalezi na tom',
+    'Kedy je pri probiotikach dolezitejsia pravidelnost a trpezlivost nez presna hodina a preco netreba z jednoducheho doplnku robit zlozitu rutinu.',
     'imunita',
   ],
   'vitamin-d3-k2-spolu-alebo-osobitne' => [
@@ -190,6 +205,11 @@ $ART += [
   'vitamin-b12-kedy-ho-riesit' => [
     'Vitamin B12 - kedy ho riesit',
     'Kedy ma vitamin B12 prakticky zmysel, preco ho niektori ludia riesia cielenejsie a preco netreba robit paniku len preto, ze je casto spominany online.',
+    'mineraly',
+  ],
+  'vitamin-d-v-lete-treba-ho-brat' => [
+    'Vitamin D v lete - treba ho brat',
+    'Kedy v lete vitamin D este riesit, kedy z neho netreba robit automaticku povinnost a preco je dolezity sirsi kontext, nie len kalendar.',
     'mineraly',
   ],
   'kolagen-typ-1-2-3-co-znamenaju' => [
