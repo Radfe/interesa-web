@@ -37,6 +37,18 @@ if (!function_exists('interessa_admin_feed_is_xml')) {
     }
 }
 
+if (!function_exists('interessa_admin_feed_is_json')) {
+    function interessa_admin_feed_is_json(string $path): bool {
+        $head = file_get_contents($path, false, null, 0, 256);
+        if (!is_string($head)) {
+            return false;
+        }
+
+        $head = ltrim($head);
+        return $head !== '' && ($head[0] === '{' || $head[0] === '[');
+    }
+}
+
 if (!function_exists('interessa_admin_feed_xml_value')) {
     function interessa_admin_feed_xml_value(SimpleXMLElement $item, string $tag): string {
         return trim((string) ($item->{$tag} ?? ''));
@@ -47,6 +59,10 @@ if (!function_exists('interessa_admin_parse_feed_file')) {
     function interessa_admin_parse_feed_file(string $path, string $merchantSlug, int $limit = 0): array {
         if (!is_file($path)) {
             throw new RuntimeException('Feed subor neexistuje.');
+        }
+
+        if (interessa_admin_feed_is_json($path)) {
+            return interessa_admin_parse_json_feed($path, $merchantSlug, $limit);
         }
 
         return interessa_admin_feed_is_xml($path)
@@ -93,6 +109,10 @@ if (!function_exists('interessa_admin_parse_xml_feed')) {
                 'name' => $name,
                 'merchant' => ucfirst($merchantSlug),
                 'merchant_slug' => $merchantSlug,
+                'category' => interessa_admin_feed_xml_value($item, 'CATEGORYTEXT'),
+                'product_type' => interessa_admin_feed_xml_value($item, 'CATEGORYNAME'),
+                'price' => interessa_admin_feed_xml_value($item, 'PRICE_VAT'),
+                'url' => $url,
                 'fallback_url' => $url,
                 'image_remote_src' => interessa_admin_feed_xml_value($item, 'IMGURL'),
                 'summary' => interessa_admin_feed_xml_value($item, 'CATEGORYTEXT'),
@@ -147,6 +167,10 @@ if (!function_exists('interessa_admin_parse_csv_feed')) {
                 'name' => $name,
                 'merchant' => ucfirst($merchantSlug),
                 'merchant_slug' => $merchantSlug,
+                'category' => trim((string) ($record['category'] ?? $record['category_text'] ?? '')),
+                'product_type' => trim((string) ($record['product_type'] ?? $record['type'] ?? '')),
+                'price' => trim((string) ($record['price'] ?? $record['price_vat'] ?? '')),
+                'url' => trim((string) ($record['deeplink'] ?? $record['url'] ?? '')),
                 'fallback_url' => trim((string) ($record['deeplink'] ?? $record['url'] ?? '')),
                 'image_remote_src' => trim((string) ($record['image'] ?? $record['image_url'] ?? '')),
                 'summary' => trim((string) ($record['category'] ?? $record['category_text'] ?? '')),
@@ -161,6 +185,60 @@ if (!function_exists('interessa_admin_parse_csv_feed')) {
         }
 
         fclose($handle);
+        return $rows;
+    }
+}
+
+if (!function_exists('interessa_admin_parse_json_feed')) {
+    function interessa_admin_parse_json_feed(string $path, string $merchantSlug, int $limit = 0): array {
+        $json = file_get_contents($path);
+        $data = json_decode((string) $json, true);
+        if (!is_array($data)) {
+            throw new RuntimeException('JSON feed sa nepodarilo precitat.');
+        }
+
+        $items = $data;
+        if (isset($data['products']) && is_array($data['products'])) {
+            $items = $data['products'];
+        } elseif (isset($data['items']) && is_array($data['items'])) {
+            $items = $data['items'];
+        }
+
+        $rows = [];
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $name = trim((string) ($item['name'] ?? $item['title'] ?? $item['product'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $slug = $merchantSlug . '-' . interessa_admin_feed_slugify($name);
+            $url = trim((string) ($item['url'] ?? $item['product_url'] ?? $item['link'] ?? ''));
+            $rows[] = [
+                'slug' => $slug,
+                'name' => $name,
+                'merchant' => ucfirst($merchantSlug),
+                'merchant_slug' => $merchantSlug,
+                'category' => trim((string) ($item['category'] ?? $item['category_text'] ?? '')),
+                'product_type' => trim((string) ($item['product_type'] ?? $item['type'] ?? '')),
+                'price' => trim((string) ($item['price'] ?? $item['price_vat'] ?? '')),
+                'url' => $url,
+                'fallback_url' => $url,
+                'image_remote_src' => trim((string) ($item['image'] ?? $item['image_url'] ?? '')),
+                'summary' => trim((string) ($item['summary'] ?? $item['description'] ?? '')),
+                'merchant_product_id' => trim((string) ($item['id'] ?? $item['product_id'] ?? '')),
+                'ean' => trim((string) ($item['ean'] ?? '')),
+                'feed_source' => 'json',
+            ];
+
+            if ($limit > 0 && count($rows) >= $limit) {
+                break;
+            }
+        }
+
         return $rows;
     }
 }

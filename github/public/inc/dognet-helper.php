@@ -153,6 +153,57 @@ if (!function_exists('dognet_helper_write_rows')) {
     }
 }
 
+if (!function_exists('dognet_helper_ensure_row')) {
+    function dognet_helper_ensure_row(array $row): void {
+        $table = dognet_helper_load_rows();
+        $headers = $table['headers'];
+        $rows = $table['rows'];
+
+        if ($headers === []) {
+            $headers = [
+                'code',
+                'deeplink_url',
+                'product_url',
+                'merchant_slug',
+                'product_slug',
+                'merchant',
+                'link_type',
+                'product_name',
+                'notes',
+            ];
+        }
+
+        $code = trim((string) ($row['code'] ?? ''));
+        if ($code === '') {
+            throw new RuntimeException('Chyba kod pre Dognet pomocnika.');
+        }
+
+        $normalized = [];
+        foreach ($headers as $header) {
+            $normalized[$header] = trim((string) ($row[$header] ?? ''));
+        }
+
+        $found = false;
+        foreach ($rows as $index => $existing) {
+            if (trim((string) ($existing['code'] ?? '')) !== $code) {
+                continue;
+            }
+
+            $rows[$index] = dognet_helper_mark_row_status(array_replace($existing, $normalized));
+            $found = true;
+            break;
+        }
+
+        if (!$found) {
+            $rows[] = dognet_helper_mark_row_status($normalized);
+        }
+
+        $rows = dognet_helper_propagate_shared_product_links($rows);
+        dognet_helper_write_rows($headers, $rows);
+        dognet_helper_sync_overrides($rows);
+    }
+}
+
 if (!function_exists('dognet_helper_sync_overrides')) {
     function dognet_helper_sync_overrides(array $rows): void {
         $path = dognet_helper_overrides_path();
