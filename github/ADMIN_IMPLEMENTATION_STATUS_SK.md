@@ -312,6 +312,11 @@ Najnovsie velke zjednodusenie:
   - priradit ku clanku
   - schvalit pre web
 - a az vynimocne otvaral rucne polia pre jeden produkt
+- produktove kroky su teraz zamerane len na prvu fazu:
+  - `najlepsie-proteiny-2026`
+  - `kreatin-porovnanie`
+  - `doplnky-vyzivy`
+- kandidat aj vyber clanku v produktoch sa uz opieraju hlavne o tieto 3 clanky, aby sa bezny pouzivatel nestracal v prilis sirokom zozname
 
 ## 6. Co potrebuje web vlakno
 
@@ -342,5 +347,6 @@ Stav:
 - obrazky tem: pouzitelne
 - produkty: ciastocne upratane, ale este nie hotovy jednoduchy system pre odkazy + obrazky + priradenie ku clankom
 - produkty: hlavna 4-krokova cesta je pripravena, dalsie ladenie sa ma sustredit na co najmensi pocet klikov a na bezchybne dotiahnutie jedneho produktu od linku az po schvalenie
+- produkty: prva faza je zamerana len na 3 hlavne clanky, aby bola praca prehladna
 - affiliate workflow: funkcny len ciastocne, treba dalej zjednodusit
 - logo a ikonka: zakladny jednoduchy upload je hotovy, dalsie drobnosti sa budu ladit podla testu

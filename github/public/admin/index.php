@@ -2012,6 +2012,11 @@ $priorityArticleSlugs = array_values(array_filter([
     'pre-workout-ako-vybrat',
     'probiotika-ako-vybrat',
 ], static fn(string $slug): bool => isset($articleOptions[$slug])));
+$phaseOneArticleSlugs = array_values(array_filter([
+    'najlepsie-proteiny-2026',
+    'kreatin-porovnanie',
+    'doplnky-vyzivy',
+], static fn(string $slug): bool => isset($articleOptions[$slug])));
 $selectedArticleSlug = canonical_article_slug(trim((string) ($_GET['slug'] ?? array_key_first($articleOptions) ?? '')));
 $selectedArticleMeta = $selectedArticleSlug !== '' ? article_meta($selectedArticleSlug) : ['title' => '', 'description' => '', 'category' => ''];
 $categoryOptions = category_registry();
@@ -2382,7 +2387,9 @@ foreach ($articleSelectedProductSlugs as $articleSelectedSlug) {
         'next_note' => $articleSelectedActionNote,
     ];
 }
-$productArticleOptionSlugs = $priorityArticleSlugs !== [] ? $priorityArticleSlugs : array_keys($articleOptions);
+$productArticleOptionSlugs = $phaseOneArticleSlugs !== []
+    ? $phaseOneArticleSlugs
+    : ($priorityArticleSlugs !== [] ? $priorityArticleSlugs : array_keys($articleOptions));
 $selectedProductArticleSlug = canonical_article_slug(trim((string) ($_GET['article_product_slug'] ?? ($selectedArticleSlug !== '' ? $selectedArticleSlug : ($productArticleOptionSlugs[0] ?? '')))));
 if ($selectedProductArticleSlug === '' || !in_array($selectedProductArticleSlug, $productArticleOptionSlugs, true)) {
     $selectedProductArticleSlug = (string) ($productArticleOptionSlugs[0] ?? '');
@@ -3375,7 +3382,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div>
                 <p class="admin-kicker">Jednoduche doplnenie produktov</p>
                 <h2>Tu to robis bez chaosu</h2>
-                <p class="admin-note">Toto je hlavna cesta pre produkty. Najprv nahraj zoznam produktov, potom priprav klik do obchodu, prirad produkt ku clanku a az nakoniec ho pustis na web. Stare rucne nastavenia su az nizsie a bezne ich netreba otvarat.</p>
+                <p class="admin-note">Toto je hlavna cesta pre produkty. Najprv nahraj zoznam produktov, potom priprav klik do obchodu, prirad produkt ku clanku a az nakoniec ho pustis na web. Zatial je to nastavene len pre prve 3 hlavne clanky. Stare rucne nastavenia su az nizsie a bezne ich netreba otvarat.</p>
               </div>
             </div>
             <div class="admin-status-grid">
@@ -3435,7 +3442,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div class="admin-subsection-head">
                 <div>
                   <h3>Krok 2 az 4: Dokoncenie jedneho produktu</h3>
-                  <p class="admin-meta">Vyber jeden nacitany produkt. Potom mas uz len tri dalsie kroky.</p>
+                  <p class="admin-meta">Vyber jeden nacitany produkt. Potom mas uz len tri dalsie kroky. Clanok vyberas z prvej fazy.</p>
                 </div>
                 <form method="get" action="/admin" class="admin-inline-form">
                   <input type="hidden" name="section" value="products" />
@@ -3606,7 +3613,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div class="admin-subsection-head">
                 <div>
                   <h3>Produkty z vybraneho clanku</h3>
-                  <p class="admin-meta">Tu vidis len produkty, ktore patria do vybraneho prioritneho clanku. Pri kazdom produkte mas uz len jeden dalsi krok.</p>
+                  <p class="admin-meta">Tu vidis len produkty, ktore patria do vybraneho clanku z prvej fazy. Pri kazdom produkte mas uz len jeden dalsi krok.</p>
                 </div>
                 <form method="get" action="/admin" class="admin-inline-form">
                   <input type="hidden" name="section" value="products" />
