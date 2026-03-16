@@ -682,4 +682,44 @@ $ART += [
     'Kedy moze byt protein dvakrat denne praktickou pomockou, kedy je to uz zbytocne a preco netreba pocet shakeov riesit oddelene od celeho dna.',
     'proteiny',
   ],
+  'horcik-ked-sa-ti-rozpadne-den-ako-ho-nevynechat' => [
+    'Horcik ked sa ti rozpadne den - ako ho nevynechat',
+    'Ako si pri horciku nastavit jednoduchu rutinu, ktora prezije aj chaoticky den bez zbytocneho stresu a hladania dokonaleho casu.',
+    'mineraly',
+  ],
+  'horcik-ako-rezerva-na-narocny-den-oplati-sa-alebo-nie' => [
+    'Horcik ako rezerva na narocny den - oplati sa alebo nie',
+    'Kedy dava pri horciku zmysel jednoducha zaloha na narocny den a kedy je to uz len dalsia zbytocna komplikacia navyse.',
+    'mineraly',
+  ],
+  'omega-3-v-hektickom-dni-ako-si-ju-zjednodusit' => [
+    'Omega-3 v hektickom dni - ako si ju zjednodusit',
+    'Ako si omega-3 nastavit jednoducho aj na dni, ked sa ponahlas a nechces z nej robit dalsi komplikovany ritual navyse.',
+    'vyziva',
+  ],
+  'omega-3-ked-mas-chaoticky-den-ako-ju-udrzat' => [
+    'Omega-3 ked mas chaoticky den - ako ju udrzat',
+    'Prakticky pristup, ako pri omega-3 udrzat pravidelnost aj v dni, ked sa ti meni plan a rutina sa ti rozpadava.',
+    'vyziva',
+  ],
+  'probiotika-ked-mas-chaoticky-den-ako-si-ich-udrzat' => [
+    'Probiotika ked mas chaoticky den - ako si ich udrzat',
+    'Ako si pri probiotikach nastavit jednoduchu rutinu, ktoru udrzis aj v dni, ked sa ti vsetko posuva a meni.',
+    'imunita',
+  ],
+  'vitamin-d3-v-hektickom-dni-ako-ho-nevynechat' => [
+    'Vitamin D3 v hektickom dni - ako ho nevynechat',
+    'Ako si pri D3 nastavit odolnu rutinu aj na dni, ked sa ti cely plan rozbieha a nemas priestor riesit idealny cas.',
+    'mineraly',
+  ],
+  'vitamin-d3-ked-sa-ti-rozpadne-den-ako-ho-udrzat' => [
+    'Vitamin D3 ked sa ti rozpadne den - ako ho udrzat',
+    'Prakticky pristup, ako si D3 udrzat aj v neidealnych dnoch bez zbytocneho stresu a hladania dokonaleho rezimu.',
+    'mineraly',
+  ],
+  'zinok-ked-zabudas-ako-si-ho-zjednodusit' => [
+    'Zinok ked zabudas - ako si ho zjednodusit',
+    'Ako si pri zinku zjednodusit beznu rutinu tak, aby si na neho nevynechaval len preto, ze mas rozbity alebo hekticky den.',
+    'mineraly',
+  ],
 ];

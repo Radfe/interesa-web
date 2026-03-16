@@ -3094,6 +3094,34 @@ require dirname(__DIR__) . '/inc/head.php';
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
+                  <h3>Stav tohto produktu</h3>
+                  <p class="admin-meta">Tu hned vidis, co je hotove a co este pri tomto produkte chyba.</p>
+                </div>
+              </div>
+              <div class="admin-status-grid">
+                <article class="admin-status-card">
+                  <strong><?= trim((string) ($selectedProduct['name'] ?? '')) !== '' ? 'Ano' : 'Nie' ?></strong>
+                  <span>Produkt je vytvoreny</span>
+                </article>
+                <article class="admin-status-card">
+                  <strong><?= $selectedProductHasUsableSourceUrl ? 'Ano' : 'Nie' ?></strong>
+                  <span>Pozname stranku produktu v obchode</span>
+                </article>
+                <article class="admin-status-card">
+                  <strong><?= $selectedProductPackshotReady ? 'Ano' : 'Nie' ?></strong>
+                  <span>Obrazok produktu je hotovy</span>
+                </article>
+                <article class="admin-status-card">
+                  <strong><?= $selectedAffiliateCode !== '' ? 'Ano' : 'Nie' ?></strong>
+                  <span>Klik do obchodu je hotovy</span>
+                </article>
+              </div>
+              <p class="admin-note"><strong>Co spravit dalej:</strong> <?= esc($selectedProductNextStepNote) ?></p>
+            </section>
+
+            <section class="admin-subsection is-compact">
+              <div class="admin-subsection-head">
+                <div>
                   <h3>Co spravit pri produkte</h3>
                   <p class="admin-meta">Tu je len bezny postup. Zbytocne technicke veci su schovane nizsie.</p>
                 </div>

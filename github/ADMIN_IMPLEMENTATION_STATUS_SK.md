@@ -243,6 +243,15 @@ Najnovsi krok:
   - `Hotovo`
 - hore v clanku pribudlo aj tlacidlo `Skontrolovat clanok`
 
+Najnovsie upratanie:
+- v `Produkty` pribudol novy blok `Stav tohto produktu`
+- hned pri otvoreni produktu je vidno:
+  - ci je produkt vytvoreny
+  - ci admin pozna stranku produktu v obchode
+  - ci je hotovy obrazok
+  - ci je hotovy klik do obchodu
+- pod tym je uz len jedna veta `Co spravit dalej`, aby nebolo treba rozmyslat medzi viacerymi castami stranky
+
 ## 6. Co potrebuje web vlakno
 
 ### Handoff pre web vlakno - aktualny stav
