@@ -272,6 +272,41 @@ $ART += [
     'Ako si pri multivitamine nastavit jednoduchsie fungovanie, ked na doplnky pravidelne zabudas, a preco casto viac pomoze mala rutina nez dalsie pravidla.',
     'mineraly',
   ],
+  'multivitamin-ako-mala-rutina-v-beznom-dni' => [
+    'Multivitamin ako mala rutina v beznom dni',
+    'Ako sa da multivitamin zaradit do bezneho dna jednoducho a bez zbytocneho komplikovania, ked nechces z neho robit dalsi velky ritual.',
+    'mineraly',
+  ],
+  'vitamin-c-ako-mala-rutina-v-beznom-dni' => [
+    'Vitamin C ako mala rutina v beznom dni',
+    'Ako sa da vitamin C zaradit do bezneho dna jednoducho a bez zbytocneho komplikovania, ked nechces z neho robit dalsi velky ritual.',
+    'mineraly',
+  ],
+  'vitamin-c-ked-zabudas-ako-si-ho-zjednodusit' => [
+    'Vitamin C ked zabudas - ako si ho zjednodusit',
+    'Ako si pri vitamine C nastavit jednoduchsi system, ked na doplnky pravidelne zabudas, a preco casto viac pomoze mala rutina nez dalsie pravidla navyse.',
+    'mineraly',
+  ],
+  'beta-glukan-ako-mala-rutina-v-beznom-dni' => [
+    'Beta glukan ako mala rutina v beznom dni',
+    'Ako sa da beta glukan zaradit do bezneho dna jednoducho a bez zbytocneho komplikovania, ked nechces z neho robit dalsi velky ritual.',
+    'imunita',
+  ],
+  'beta-glukan-ked-zabudas-ako-si-ho-zjednodusit' => [
+    'Beta glukan ked zabudas - ako si ho zjednodusit',
+    'Ako si pri beta glukane nastavit jednoduchsi system, ked na doplnky pravidelne zabudas, a preco casto viac pomoze mala rutina nez stale hladanie dokonaleho planu.',
+    'imunita',
+  ],
+  'protein-ako-mala-rutina-v-beznom-dni' => [
+    'Protein ako mala rutina v beznom dni',
+    'Ako sa da protein zaradit do bezneho dna jednoducho a bez zbytocneho komplikovania, ked nechces z neho robit dalsi velky ritual.',
+    'proteiny',
+  ],
+  'protein-ked-zabudas-ako-si-ho-zjednodusit' => [
+    'Protein ked zabudas - ako si ho zjednodusit',
+    'Ako si pri proteine nastavit jednoduchsi system, ked na neho v beznom dni zabudas, a preco casto viac pomoze mala rutina nez dalsie komplikovanie casu a pravidiel.',
+    'proteiny',
+  ],
   'omega-3-ako-mala-rutina-v-beznom-dni' => [
     'Omega-3 ako mala rutina v beznom dni',
     'Ako sa da omega-3 zaradit do bezneho dna jednoducho a bez zbytocneho komplikovania, ked nechces z doplnku robit dalsi velky ritual.',
@@ -475,6 +510,11 @@ $ART += [
   'kolagen-ako-si-ho-pripravit-aby-si-na-neho-nezabudal' => [
     'Kolagen ako si ho pripravit, aby si na neho nezabudal',
     'Ako si pri kolagene pomoct malou pripravenostou, ked na doplnky bezne zabudas, a preco casto viac pomoze jednoduchost nez dalsie pravidla a teorie.',
+    'klby-koza',
+  ],
+  'kolagen-ako-rezerva-na-hekticky-den-oplati-sa-alebo-nie' => [
+    'Kolagen ako rezerva na hekticky den - oplati sa alebo nie',
+    'Kedy moze byt kolagen pripraveny ako rezerva praktickou pomocou na hekticky den, kedy len dalsou vecou navyse a preco netreba z neho robit povinnu poistku pre kazdu situaciu.',
     'klby-koza',
   ],
   'vitamin-c' => [
