@@ -373,3 +373,24 @@ Stav:
   - hlavny blok pri jednom produkte hovori `Co spravit teraz`
 - affiliate workflow: funkcny len ciastocne, treba dalej zjednodusit
 - logo a ikonka: zakladny jednoduchy upload je hotovy, dalsie drobnosti sa budu ladit podla testu
+- produkty: `Krok 1` uz ide priamo cez Dognet feed URL alebo subor, nie cez samostatne rucne pole `Zdroj`
+- produkty: pri prepinani nacitaneho kandidata sa uz nema prenasat stary vybrany produkt, aby kandidatova cast nespadla na rucnom detaile produktu
+- produkty: nav v admine uz otvara ciste `Produkty` bez natvrdo prilepeneho konkretneho produktu
+
+## 9. Posledny upratovaci krok
+
+Menene subory:
+- [public/admin/index.php](C:/data/praca/webova_stranka/github/public/admin/index.php)
+
+Co sa upravilo:
+- z `Krok 1` zmizlo mätúce pole `Zdroj`
+- import kandidátov teraz berie nazov obchodu priamo zo zvoleného obchodu
+- pri Dognet feede je jasnejsia veta:
+  - chod do `Produktove feedy`
+  - klikni `Kopirovat URL`
+  - vloz link do adminu
+- kandidatovy vyber uz neprenasa stary parameter `product`, aby sa hlavna 4-krokova cast nemiesala so starym rucnym detailom produktu
+
+Co este treba doriesit:
+- bezchybne dotiahnut import prveho realneho Dognet feedu pre prvych 6 kampani
+- dotiahnut `Krok 2`, aby co najviac produktov vedel pripravit odkaz do obchodu bez dalsieho chaosu

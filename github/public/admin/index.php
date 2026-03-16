@@ -1881,7 +1881,7 @@ if ($isAuthed) {
                 $imported = interessa_admin_import_product_candidates(
                     $rows,
                     'feed',
-                    (string) ($_POST['candidate_merchant_name'] ?? $merchantSlug),
+                    (string) ($candidateMerchantOptions[$merchantSlug] ?? $merchantSlug),
                     $candidateSourceName
                 );
                 $firstCandidate = (string) ($imported[0] ?? '');
@@ -2653,7 +2653,7 @@ require dirname(__DIR__) . '/inc/head.php';
         </div>
         <nav class="admin-nav">
           <a class="<?= $section === 'articles' ? 'is-active' : '' ?>" href="/admin?section=articles&slug=<?= esc($selectedArticleSlug) ?>">Clanky</a>
-          <a class="<?= $section === 'products' ? 'is-active' : '' ?>" href="/admin?section=products&product=<?= esc($selectedProductSlug) ?>">Produkty</a>
+          <a class="<?= $section === 'products' ? 'is-active' : '' ?>" href="/admin?section=products">Produkty</a>
           <a class="<?= $section === 'images' ? 'is-active' : '' ?>" href="/admin?section=images&slug=<?= esc($selectedArticleSlug) ?>">Obrazky</a>
           <a class="<?= $section === 'affiliates' ? 'is-active' : '' ?>" href="/admin?section=affiliates&code=<?= esc($selectedAffiliateCode) ?>">Odkazy do obchodu</a>
           <a class="<?= $section === 'brand' ? 'is-active' : '' ?>" href="/admin?section=brand">Logo a ikonka</a>
@@ -3420,7 +3420,7 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
               <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
                 <input type="hidden" name="action" value="import_product_candidates" />
-                <div class="admin-grid three-up">
+                <div class="admin-grid two-up">
                   <label>
                     <span>Obchod</span>
                     <select name="candidate_merchant_slug">
@@ -3428,10 +3428,6 @@ require dirname(__DIR__) . '/inc/head.php';
                         <option value="<?= esc($candidateMerchantSlug) ?>"><?= esc($candidateMerchantName) ?></option>
                       <?php endforeach; ?>
                     </select>
-                  </label>
-                  <label>
-                    <span>Zdroj</span>
-                    <input type="text" name="candidate_merchant_name" value="GymBeam.sk" />
                   </label>
                   <label>
                     <span>URL feedu z Dognetu</span>
@@ -3448,7 +3444,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <input type="text" value="Staci jedno: bud URL feedu, alebo subor." readonly />
                   </label>
                 </div>
-                <p class="admin-note">Podporene su XML, CSV aj JSON. Ak mas v Dognete tlacidlo <strong>Kopirovat URL</strong>, vloz ten link sem. Admin si z feedu vezme nazov produktu, link produktu, obrazok, typ a pripadne cenu.</p>
+                <p class="admin-note">Podporene su XML, CSV aj JSON. V Dognete chod do <strong>Produktove feedy</strong>, klikni <strong>Kopirovat URL</strong> a vloz ten link sem. Admin si z feedu vezme nazov produktu, link produktu, obrazok, typ a pripadne cenu.</p>
                 <div class="admin-actions">
                   <button class="btn btn-cta" type="submit">Nahraj zoznam produktov</button>
                 </div>
@@ -3463,7 +3459,6 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
                 <form method="get" action="/admin" class="admin-inline-form">
                   <input type="hidden" name="section" value="products" />
-                  <?php if ($selectedProductSlug !== ''): ?><input type="hidden" name="product" value="<?= esc($selectedProductSlug) ?>" /><?php endif; ?>
                   <select name="candidate" onchange="this.form.submit()">
                     <?php if ($candidateRows === []): ?>
                       <option value="">Najprv nahraj zoznam produktov</option>
