@@ -257,9 +257,54 @@ $ART += [
     'Ako sa da B komplex zaradit do bezneho dna bez zbytocneho komplikovania a preco pri nom casto viac pomoze jednoduchost nez snaha vyladit kazdy detail.',
     'mineraly',
   ],
+  'horcik-ako-mala-rutina-v-beznom-dni' => [
+    'Horcik ako mala rutina v beznom dni',
+    'Ako sa da horcik zaradit do bezneho dna jednoducho a bez zbytocneho komplikovania, ked nechces z doplnku robit dalsiu velku temu.',
+    'mineraly',
+  ],
+  'horcik-ked-zabudas-ako-si-ho-zjednodusit' => [
+    'Horcik ked zabudas - ako si ho zjednodusit',
+    'Ako si pri horciku nastavit jednoduchsi system, ked na doplnky pravidelne zabudas, a preco casto viac pomoze mala rutina nez dalsie pravidla navyse.',
+    'mineraly',
+  ],
   'multivitamin-ked-zabudas-ako-si-ho-zjednodusit' => [
     'Multivitamin ked zabudas - ako si ho zjednodusit',
     'Ako si pri multivitamine nastavit jednoduchsie fungovanie, ked na doplnky pravidelne zabudas, a preco casto viac pomoze mala rutina nez dalsie pravidla.',
+    'mineraly',
+  ],
+  'omega-3-ako-mala-rutina-v-beznom-dni' => [
+    'Omega-3 ako mala rutina v beznom dni',
+    'Ako sa da omega-3 zaradit do bezneho dna jednoducho a bez zbytocneho komplikovania, ked nechces z doplnku robit dalsi velky ritual.',
+    'mineraly',
+  ],
+  'omega-3-ked-zabudas-ako-si-to-zjednodusit' => [
+    'Omega-3 ked zabudas - ako si to zjednodusit',
+    'Ako si pri omega-3 nastavit jednoduchsi system, ked na doplnky pravidelne zabudas, a preco casto viac pomoze mala rutina nez hladanie dokonaleho planu.',
+    'mineraly',
+  ],
+  'probiotika-ako-mala-rutina-v-beznom-dni' => [
+    'Probiotika ako mala rutina v beznom dni',
+    'Ako sa daju probiotika zaradit do bezneho dna jednoducho a bez zbytocneho komplikovania, ked nechces z nich robit dalsi velky ritual.',
+    'imunita',
+  ],
+  'probiotika-ked-zabudas-ako-si-ich-zjednodusit' => [
+    'Probiotika ked zabudas - ako si ich zjednodusit',
+    'Ako si pri probiotikach nastavit jednoduchsi system, ked na ne pravidelne zabudas, a preco casto viac pomoze mala rutina nez stale hladanie dokonaleho planu.',
+    'imunita',
+  ],
+  'vitamin-d3-ako-mala-rutina-v-beznom-dni' => [
+    'Vitamin D3 ako mala rutina v beznom dni',
+    'Ako sa da vitamin D3 zaradit do bezneho dna jednoducho a bez zbytocneho komplikovania, ked nechces z neho robit dalsi velky ritual.',
+    'mineraly',
+  ],
+  'vitamin-d3-ked-zabudas-ako-si-ho-zjednodusit' => [
+    'Vitamin D3 ked zabudas - ako si ho zjednodusit',
+    'Ako si pri vitamine D3 nastavit jednoduchsi system, ked na doplnky pravidelne zabudas, a preco casto viac pomoze mala rutina nez zbytocne komplikovanie dna.',
+    'mineraly',
+  ],
+  'zinok-ako-mala-rutina-v-beznom-dni' => [
+    'Zinok ako mala rutina v beznom dni',
+    'Ako sa da zinok zaradit do bezneho dna jednoducho a bez zbytocneho komplikovania, ked nechces z doplnku robit dalsiu velku temu.',
     'mineraly',
   ],
   'vitamin-b12-kedy-ho-riesit' => [
