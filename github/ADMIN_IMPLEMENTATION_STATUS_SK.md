@@ -296,6 +296,23 @@ Najnovsie zjednodusenie pre clanky a produkty:
   - `Finalny odkaz do obchodu`
 - rucne vytvaranie odkazu je schovane do rozbalovacieho bloku, aby nezavadzalo pri beznej praci
 
+Najnovsie velke zjednodusenie:
+- v `Produkty` je ako hlavna cesta postaveny 4-krokovy tok:
+  - `Krok 1: Nahraj zoznam produktov`
+  - `Krok 2: Pripravit klik do obchodu`
+  - `Krok 3: Priradit ku clanku`
+  - `Krok 4: Schvalit pre web`
+- tato cast je teraz jasne oznacena ako hlavna cesta pre beznu pracu
+- povodna rucna sprava jednotlivych produktov ostala zachovana, ale je schovana do rozbalovacieho bloku:
+  - `Rucne opravy a starsie nastavenia`
+- ciel je, aby bezny pouzivatel najprv isiel cez:
+  - nahrat zoznam produktov
+  - vybrat jeden produkt
+  - pripravit klik
+  - priradit ku clanku
+  - schvalit pre web
+- a az vynimocne otvaral rucne polia pre jeden produkt
+
 ## 6. Co potrebuje web vlakno
 
 ### Handoff pre web vlakno - aktualny stav
@@ -324,5 +341,6 @@ Stav:
 - obrazky clankov: pouzitelne
 - obrazky tem: pouzitelne
 - produkty: ciastocne upratane, ale este nie hotovy jednoduchy system pre odkazy + obrazky + priradenie ku clankom
+- produkty: hlavna 4-krokova cesta je pripravena, dalsie ladenie sa ma sustredit na co najmensi pocet klikov a na bezchybne dotiahnutie jedneho produktu od linku az po schvalenie
 - affiliate workflow: funkcny len ciastocne, treba dalej zjednodusit
 - logo a ikonka: zakladny jednoduchy upload je hotovy, dalsie drobnosti sa budu ladit podla testu
