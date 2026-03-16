@@ -114,6 +114,22 @@ Najnovsi krok:
 - v hornej casti clanku pribudlo priame tlacidlo `Produkty v clanku`
 - zakladanie noveho clanku je schovane do rozbalovacieho bloku, aby nezavadzalo pri beznej praci
 
+Posledne zjednodusenie:
+- v `Clanky` sa hlavny produktovy blok posunul vyssie hned za titulok, kategoriu a intro
+- pribudla jasna veta, ze ak teraz riesis produkty, ostatne casti mas ignorovat
+- texty pri produktoch su ludskejsie:
+  - `Typ odporucania`
+  - `Hlavny tip`
+  - `Vyhodna volba`
+  - `Ina moznost`
+- pokrocile casti clanku su schovane do rozbalovacieho bloku:
+  - meta title
+  - meta description
+  - text clanku
+  - porovnanie
+  - pokrocile odporucane produkty
+  - kontrola pripravenosti
+
 ## 4. Co este chyba
 
 ### Produkty a klikacie odkazy

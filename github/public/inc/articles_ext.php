@@ -162,6 +162,11 @@ $ART += [
     'Kedy omega-3 dava rozumny zmysel, preco ju ludia riesia pri sirsom zdravi a na co sa pozerat prakticky bez zbytocneho chaosu.',
     'vyziva',
   ],
+  'omega-3-rano-alebo-vecer-zalezi-na-tom' => [
+    'Omega-3 rano alebo vecer - zalezi na tom',
+    'Kedy je pri omega-3 dolezitejsia pravidelnost a pohodlie nez presna hodina a preco netreba z jedneho bezneho doplnku robit dalsi komplikovany ritual.',
+    'vyziva',
+  ],
   'clear-protein-pre-koho-dava-zmysel' => [
     'Clear protein - pre koho dava zmysel',
     'Kedy je clear protein praktickejsi nez klasicky husty shake, komu ulahci pravidelne pitie proteinu a kedy je to len drahsia zaujimavost.',
@@ -180,6 +185,16 @@ $ART += [
   'protein-s-vodou-alebo-s-mliekom-co-je-lepsie' => [
     'Protein s vodou alebo s mliekom - co je lepsie',
     'Kedy dava vacsi zmysel voda, kedy mlieko a preco nejde o univerzalne pravidlo, ale hlavne o ciel, chut a toleranciu.',
+    'proteiny',
+  ],
+  'protein-pri-chudnuti-rano-alebo-vecer' => [
+    'Protein pri chudnuti rano alebo vecer',
+    'Kedy je pri proteine v diete dolezitejsie pohodlie a sytost nez presna hodina a preco netreba z neho robit ritual na minutu presne.',
+    'proteiny',
+  ],
+  'protein-medzi-jedlami-oplati-sa-alebo-nie' => [
+    'Protein medzi jedlami - oplati sa alebo nie',
+    'Kedy dava protein medzi jedlami prakticky zmysel, kedy je to len pohodlna pomocka a kedy ho vobec netreba silit.',
     'proteiny',
   ],
   'probiotika-pri-naduvani-co-realne-sledovat' => [
@@ -212,6 +227,11 @@ $ART += [
     'Kedy v lete vitamin D este riesit, kedy z neho netreba robit automaticku povinnost a preco je dolezity sirsi kontext, nie len kalendar.',
     'mineraly',
   ],
+  'vitamin-d-rano-alebo-vecer-zalezi-na-tom' => [
+    'Vitamin D rano alebo vecer - zalezi na tom',
+    'Kedy je pri vitamine D dolezitejsia pravidelnost a jednoducha rutina nez presna hodina a preco netreba z jednej kapsuly robit celodenny ritual.',
+    'mineraly',
+  ],
   'kolagen-typ-1-2-3-co-znamenaju' => [
     'Kolagen typ 1 2 3 - co znamenaju',
     'Jednoduche vysvetlenie, preco sa pri kolagene spominaju typy I, II a III a preco je dolezitejsi ciel nez samotne cislo na obale.',
@@ -222,14 +242,44 @@ $ART += [
     'Kedy dava hydrolyzovany kolagen prakticky zmysel, preco sa casto spomina pri doplnkoch a preco samotny nazov este neznamena automaticky lepsi produkt.',
     'klby-koza',
   ],
+  'kolagen-do-kavy-alebo-do-vody-oplati-sa' => [
+    'Kolagen do kavy alebo do vody - oplati sa',
+    'Kedy ma pri kolagene vacsi zmysel pohodlie a pravidelnost nez to, do coho ho presne zamiesas a preco netreba z toho robit zlozitu alchymiu.',
+    'klby-koza',
+  ],
+  'kolagen-s-vitaminom-c-ma-to-zmysel' => [
+    'Kolagen s vitaminom C - ma to zmysel',
+    'Kedy dava kombinacia kolagenu a vitaminu C prakticky zmysel, preco sa spomina tak casto a preco netreba slepo verit kazdemu marketingovemu slubu.',
+    'klby-koza',
+  ],
+  'kolagen-s-jedlom-alebo-nalacno-zalezi-na-tom' => [
+    'Kolagen s jedlom alebo nalacno - zalezi na tom',
+    'Kedy je pri kolagene dolezitejsia jednoduchost a pravidelnost nez to, ci si ho das s jedlom alebo nalacno, a preco netreba z bezneho doplnku robit alchymiu.',
+    'klby-koza',
+  ],
+  'kolagen-po-tridsiatke-ma-zmysel-alebo-je-to-len-marketing' => [
+    'Kolagen po tridsiatke - ma zmysel alebo je to len marketing',
+    'Kedy dava kolagen po tridsiatke prakticky zmysel, preco sa tato tema tak casto spomina a preco netreba z jednej vekovej hranice robit automaticke pravidlo pre kazdeho.',
+    'klby-koza',
+  ],
   'vitamin-c' => [
     'Vitamin C - davky, zdroje a kedy ho doplnat',
     'Kedy vitamin C staci zo stravy, kedy dava zmysel doplnok a preco viac nie je vzdy lepsie.',
     'mineraly',
   ],
+  'vitamin-c-rano-alebo-vecer-zalezi-na-tom' => [
+    'Vitamin C rano alebo vecer - zalezi na tom',
+    'Kedy je pri vitamine C dolezitejsia jednoduchost a pravidelnost nez presna hodina a preco netreba z neho robit zbytocne komplikovanu rutinu.',
+    'mineraly',
+  ],
   'zinek' => [
     'Zinok - formy, davky a kedy ho doplnat',
     'Kedy ma zinok realny zmysel, na ake formy sa pozerat a preco netreba tlacit zbytocne vysoke davky.',
+    'mineraly',
+  ],
+  'zinok-rano-alebo-vecer-kedy-ho-brat' => [
+    'Zinok rano alebo vecer - kedy ho brat',
+    'Kedy je pri zinku dolezitejsia jednoduchost a pravidelnost nez presna hodina a preco netreba z neho robit zlozity ritual.',
     'mineraly',
   ],
   'veganske-proteiny-top-vyber-2025' => [
@@ -240,6 +290,16 @@ $ART += [
   'veganske-proteiny-top-vyber-2026' => [
     'Veganske proteiny - top vyber 2026',
     'Najlepsie rastlinne proteiny (hrach, ryza, soja, zmesi). Otestovane podla chuti, zlozenia a ceny.',
+    'proteiny',
+  ],
+  'protein-pred-treningom-oplati-sa-alebo-nie' => [
+    'Protein pred treningom - oplati sa alebo nie',
+    'Kedy dava protein pred treningom prakticky zmysel, kedy je to zbytocne riesenie navyse a preco netreba kazdy doplnok natlacit presne okolo cvicenia.',
+    'proteiny',
+  ],
+  'protein-ked-necvicis-oplati-sa-alebo-nie' => [
+    'Protein ked necvicis - oplati sa alebo nie',
+    'Kedy dava protein zmysel aj mimo cvicenia, kedy je to len pohodlna forma bielkovin a preco netreba tento doplnok automaticky spajat len s fitkom.',
     'proteiny',
   ],
 ];
