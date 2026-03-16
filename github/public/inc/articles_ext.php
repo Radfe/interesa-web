@@ -1182,4 +1182,114 @@ $ART += [
     'Preco pri probiotikach casto funguje najlepsie minimum rozhodovania a jeden jednoduchy opakovany zvyk.',
     'imunita',
   ],
+  'kolagen-ked-mas-malo-energie-ako-to-zjednodusit' => [
+    'Kolagen ked mas malo energie - ako to zjednodusit',
+    'Ako si pri kolagene zjednodusit rutinu na dni, ked mas malo energie a nechces riesit dalsie kroky navyse.',
+    'klby-koza',
+  ],
+  'kolagen-jedna-spolahliva-kotva-v-dni' => [
+    'Kolagen - jedna spolahliva kotva v dni',
+    'Preco pri kolagene casto funguje najlepsie jedna jednoducha kotva v dni namiesto staleho hladania idealneho nacasovania.',
+    'klby-koza',
+  ],
+  'vitamin-d3-ked-mas-malo-energie-ako-ho-udrzat' => [
+    'Vitamin D3 ked mas malo energie - ako ho udrzat',
+    'Ako si pri D3 nastavit rutinu, ktora funguje aj v dnoch, ked mas minimum energie a nechces riesit dalsie rozhodovanie.',
+    'mineraly',
+  ],
+  'vitamin-d3-jedna-spolahliva-kotva-v-dni' => [
+    'Vitamin D3 - jedna spolahliva kotva v dni',
+    'Preco pri D3 casto funguje najlepsie jedna spolahliva kotva v dni namiesto viacerych pravidiel a vynimiek.',
+    'mineraly',
+  ],
+  'zinok-ked-mas-malo-energie-ako-ho-zjednodusit' => [
+    'Zinok ked mas malo energie - ako ho zjednodusit',
+    'Ako si pri zinku zjednodusit rutinu na dni, ked mas malo energie a nechces pridavat dalsi tlak navyse.',
+    'mineraly',
+  ],
+  'zinok-jedna-spolahliva-kotva-v-dni' => [
+    'Zinok - jedna spolahliva kotva v dni',
+    'Preco pri zinku casto funguje najlepsie jedna jednoducha kotva v dni namiesto viacerych pravidiel a scenarov.',
+    'mineraly',
+  ],
+  'multivitamin-ked-mas-malo-energie-ako-ho-zjednodusit' => [
+    'Multivitamin ked mas malo energie - ako ho zjednodusit',
+    'Ako si pri multivitamine zjednodusit rutinu na dni, ked mas malo energie a potrebujes minimum krokov navyse.',
+    'vyziva',
+  ],
+  'multivitamin-jedna-spolahliva-kotva-v-dni' => [
+    'Multivitamin - jedna spolahliva kotva v dni',
+    'Preco pri multivitamine casto funguje najlepsie jedna spolahliva kotva v dni namiesto komplikovaneho planu.',
+    'vyziva',
+  ],
+  'vitamin-c-ked-mas-malo-energie-ako-ho-udrzat' => [
+    'Vitamin C ked mas malo energie - ako ho udrzat',
+    'Ako si pri vitamine C nastavit jednoduchu rutinu na dni, ked mas malo energie a nechces riesit dalsie kroky navyse.',
+    'mineraly',
+  ],
+  'vitamin-c-jedna-spolahliva-kotva-v-dni' => [
+    'Vitamin C - jedna spolahliva kotva v dni',
+    'Preco pri vitamine C casto funguje najlepsie jedna spolahliva kotva v dni namiesto staleho hladania idealneho nacasovania.',
+    'mineraly',
+  ],
+  'beta-glukan-ked-mas-malo-energie-ako-ho-zjednodusit' => [
+    'Beta glukan ked mas malo energie - ako ho zjednodusit',
+    'Ako si pri beta glukane zjednodusit rutinu na dni, ked mas malo energie a nechces pridavat dalsie rozhodovanie navyse.',
+    'imunita',
+  ],
+  'beta-glukan-jedna-spolahliva-kotva-v-dni' => [
+    'Beta glukan - jedna spolahliva kotva v dni',
+    'Preco pri beta glukane casto funguje najlepsie jedna spolahliva kotva v dni namiesto komplikovaneho planu a vynimiek.',
+    'imunita',
+  ],
+  'protein-ked-mas-malo-energie-ako-ho-zjednodusit' => [
+    'Protein ked mas malo energie - ako ho zjednodusit',
+    'Ako si pri proteine zjednodusit rutinu na dni, ked mas malo energie a nechces riesit dalsie rozhodovanie navyse.',
+    'proteiny',
+  ],
+  'protein-jedna-spolahliva-kotva-v-dni' => [
+    'Protein - jedna spolahliva kotva v dni',
+    'Preco pri proteine casto funguje najlepsie jedna spolahliva kotva v dni namiesto staleho vymyslania noveho planu.',
+    'proteiny',
+  ],
+  'horcik-ked-mas-malo-energie-ako-ho-zjednodusit' => [
+    'Horcik ked mas malo energie - ako ho zjednodusit',
+    'Ako si pri horciku zjednodusit rutinu na dni, ked mas malo energie a nechces pridavat dalsie kroky navyse.',
+    'mineraly',
+  ],
+  'horcik-jedna-spolahliva-kotva-v-dni' => [
+    'Horcik - jedna spolahliva kotva v dni',
+    'Preco pri horciku casto funguje najlepsie jedna spolahliva kotva v dni namiesto komplikovaneho planu a vynimiek.',
+    'mineraly',
+  ],
+  'omega-3-ked-mas-malo-energie-ako-ju-zjednodusit' => [
+    'Omega-3 ked mas malo energie - ako ju zjednodusit',
+    'Ako si pri omega-3 zjednodusit rutinu na dni, ked mas malo energie a nechces riesit dalsie rozhodovanie navyse.',
+    'vyziva',
+  ],
+  'omega-3-jedna-spolahliva-kotva-v-dni' => [
+    'Omega-3 - jedna spolahliva kotva v dni',
+    'Preco pri omega-3 casto funguje najlepsie jedna spolahliva kotva v dni namiesto viacerych pravidiel a staleho upravovania planu.',
+    'vyziva',
+  ],
+  'probiotika-ked-mas-malo-energie-ako-si-ich-zjednodusit' => [
+    'Probiotika ked mas malo energie - ako si ich zjednodusit',
+    'Ako si pri probiotikach zjednodusit rutinu na dni, ked mas malo energie a nechces pridavat dalsi tlak navyse.',
+    'imunita',
+  ],
+  'probiotika-jedna-spolahliva-kotva-v-dni' => [
+    'Probiotika - jedna spolahliva kotva v dni',
+    'Preco pri probiotikach casto funguje najlepsie jedna spolahliva kotva v dni namiesto komplikovaneho systemu a vynimiek.',
+    'imunita',
+  ],
+  'multivitamin-ako-mala-rezerva-na-horsi-tyzden' => [
+    'Multivitamin - ako mala rezerva na horsi tyzden',
+    'Preco moze byt multivitamin praktickou malou rezervou na horsi tyzden, ked nechces dalej komplikovat bezny rezim.',
+    'vyziva',
+  ],
+  'multivitamin-ked-na-neho-nechces-stale-mysliet' => [
+    'Multivitamin ked na neho nechces stale mysliet',
+    'Ako si pri multivitamine nastavit rutinu tak, aby si nan nemusel stale mysliet a nezvysoval si si mentalnu zataz.',
+    'vyziva',
+  ],
 ];
