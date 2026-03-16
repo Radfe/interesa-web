@@ -2530,6 +2530,18 @@ require dirname(__DIR__) . '/inc/head.php';
                       $productPackshotReady = !empty($productNormalized['has_local_image']);
                       $productAffiliateCode = trim((string) ($productNormalized['affiliate_code'] ?? ''));
                       $productAffiliateReady = $productAffiliateCode !== '' && aff_resolve($productAffiliateCode) !== null;
+                      $productNextHref = '/admin?section=products&product=' . rawurlencode((string) $productSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug) . '&focus=product_edit#product-edit-form';
+                      $productNextLabel = 'Doplnit produkt';
+                      $productNextNote = 'Ak tomuto produktu este chyba obrazok alebo udaje, klikni sem.';
+                      if ($productPackshotReady && !$productAffiliateReady) {
+                        $productNextHref = '/admin?section=affiliates&prefill_code=' . rawurlencode((string) $productSlug) . '&prefill_merchant=' . rawurlencode((string) ($productNormalized['merchant'] ?? '')) . '&prefill_merchant_slug=' . rawurlencode(interessa_admin_slugify((string) ($productNormalized['merchant'] ?? ''))) . '&prefill_product_slug=' . rawurlencode((string) $productSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug);
+                        $productNextLabel = 'Doplnit odkaz';
+                        $productNextNote = 'Obrazok je hotovy. Chyba uz len kliknutie do obchodu.';
+                      } elseif ($productPackshotReady && $productAffiliateReady) {
+                        $productNextHref = '/admin?section=affiliates&code=' . rawurlencode($productAffiliateCode) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug);
+                        $productNextLabel = 'Hotovo';
+                        $productNextNote = 'Tento produkt je pripraveny.';
+                      }
                     ?>
                     <div class="admin-check-card-wrap">
                       <label class="admin-check-card">
@@ -2555,13 +2567,14 @@ require dirname(__DIR__) . '/inc/head.php';
                         <label><input type="checkbox" name="article_product_comparison[<?= esc((string) $productSlug) ?>]" <?= !empty($planState['show_in_comparison']) ? 'checked' : '' ?> /> Ukazat v porovnani</label>
                       </div>
                       <div class="admin-status-pills">
-                        <span class="admin-status-pill<?= $productAffiliateReady ? ' is-good' : ' is-warning' ?>"><?= $productAffiliateReady ? 'Klik hotovy' : 'Klik chyba' ?></span>
+                        <span class="admin-status-pill<?= $productAffiliateReady ? ' is-good' : ' is-warning' ?>"><?= $productAffiliateReady ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
                         <span class="admin-status-pill<?= $productPackshotReady ? ' is-good' : ' is-warning' ?>"><?= $productPackshotReady ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
                       </div>
+                      <p class="admin-note"><?= esc($productNextNote) ?></p>
                       <div class="admin-inline-actions admin-check-card__actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $productSlug) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Otvorit produkt</a>
+                        <a class="btn btn-secondary btn-small" href="<?= esc($productNextHref) ?>"><?= esc($productNextLabel) ?></a>
                         <?php if ($productAffiliateCode !== ''): ?>
-                          <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($productAffiliateCode) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Otvorit klikaci odkaz</a>
+                          <a class="btn btn-secondary btn-small" href="/dognet-helper?code=<?= esc($productAffiliateCode) ?>" target="_blank" rel="noopener">Dognet pomocnik</a>
                         <?php endif; ?>
                       </div>
                     </div>
@@ -2710,9 +2723,9 @@ require dirname(__DIR__) . '/inc/head.php';
                           <span class="admin-status-pill<?= $productPackshotReady ? ' is-good' : ' is-warning' ?>"><?= $productPackshotReady ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
                         </div>
                         <div class="admin-inline-actions admin-check-card__actions">
-                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $productSlug) ?>">Otvorit produkt</a>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $productSlug) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Doplnit produkt</a>
                           <?php if ($productAffiliateCode !== ''): ?>
-                            <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($productAffiliateCode) ?>">Otvorit klik</a>
+                            <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($productAffiliateCode) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Doplnit odkaz</a>
                           <?php endif; ?>
                           <?php if (trim((string) ($productTarget['href'] ?? '')) !== ''): ?>
                             <a class="btn btn-secondary btn-small" href="<?= esc((string) ($productTarget['href'] ?? '')) ?>" target="_blank" rel="noopener">Ciel</a>
@@ -2974,8 +2987,8 @@ require dirname(__DIR__) . '/inc/head.php';
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
-                  <h3>Ako na produkt bez chaosu</h3>
-                  <p class="admin-meta">Tu je bezny postup. Nemusis riesit technicke detaily ani zbytocne polia.</p>
+                  <h3>Co spravit pri produkte</h3>
+                  <p class="admin-meta">Tu je len bezny postup. Zbytocne technicke veci su schovane nizsie.</p>
                 </div>
               </div>
               <ol class="admin-quickstart-list">
@@ -2985,12 +2998,12 @@ require dirname(__DIR__) . '/inc/head.php';
                 <li><strong>Krok 4:</strong> ak sa nasiel obrazok, klikni <strong>Ulozit obrazok z e-shopu</strong>.</li>
                 <li><strong>Krok 5:</strong> az nakoniec dolad <strong>Klikaci odkaz</strong>, ak este chyba.</li>
               </ol>
-              <p class="admin-note">Dolezite: tu riesis len produkt. Klikaci odkaz je az vedla v casti Klikacie odkazy.</p>
+              <p class="admin-note">Dolezite: tu riesis len produkt. Ked bude hotovy produkt a obrazok, az potom vedla otvor cast Klikacie odkazy.</p>
               <div class="admin-inline-actions">
                 <?php if ($selectedAffiliateCode !== ''): ?>
-                  <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($selectedAffiliateCode) ?>">Mam uz klikaci odkaz</a>
+                  <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($selectedAffiliateCode) ?>">Otvorit klikacie odkazy</a>
                 <?php else: ?>
-                  <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($selectedProduct['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>">Chcem vytvorit klikaci odkaz</a>
+                  <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($selectedProduct['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>">Vytvorit klik do obchodu</a>
                 <?php endif; ?>
                 <a class="btn btn-secondary btn-small" href="#product-link-form">Chcem vlozit link produktu</a>
               </div>
@@ -2999,8 +3012,8 @@ require dirname(__DIR__) . '/inc/head.php';
             <section id="product-link-form" class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
-                  <h3>Najjednoduchsia cesta</h3>
-                  <p class="admin-meta">Sem vloz konkretne produktove URL alebo Dognet link. Admin sa pokusi sam doplnit produkt, stranku produktu a klikaci odkaz.</p>
+                  <h3>1. Vloz link produktu</h3>
+                  <p class="admin-meta">Sem vloz bud priamu stranku produktu, alebo Dognet link. Admin sa pokusi sam doplnit zvysok.</p>
                 </div>
               </div>
               <form method="post" class="admin-form admin-form-stack">
@@ -3012,7 +3025,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <span>Link produktu alebo Dognet link</span>
                   <input type="url" name="source_link" value="<?= esc($selectedProductQuickInputUrl) ?>" placeholder="https://go.dognet.com/... alebo https://obchod.sk/konkretny-produkt" />
                 </label>
-                <p class="admin-note">Sem patri bud Dognet link pre tento produkt, alebo priamo stranka produktu v obchode. Nemusis zatial rucne vyplnat ostatne polia, ak to admin zvladne zistit sam.</p>
+                <p class="admin-note">Sem patri bud Dognet link pre tento produkt, alebo priamo stranka produktu v obchode. Ostatne polia teraz nemusis riesit.</p>
                 <div class="admin-actions">
                   <button class="btn btn-cta" type="submit">1. Vlozit link a pripravit produkt</button>
                 </div>
@@ -3022,8 +3035,8 @@ require dirname(__DIR__) . '/inc/head.php';
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
-                  <h3>Co kliknut teraz</h3>
-                  <p class="admin-meta">Tu mas vzdy len jeden hlavny dalsi krok pre prave vybrany produkt.</p>
+                  <h3>2. Co spravit teraz</h3>
+                  <p class="admin-meta">Tu mas vzdy len jeden dalsi krok. Klikni len toto jedno tlacidlo.</p>
                 </div>
               </div>
               <div class="admin-next-step-card">
@@ -3089,7 +3102,8 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </details>
 
-            <section class="admin-subsection">
+            <details class="admin-subsection">
+              <summary><strong>Produkty bez hotoveho obrazka</strong> - otvor len ked chces doplnat obrazky po jednom</summary>
               <div class="admin-subsection-head">
                 <div>
                   <h3>Produkty bez hotoveho obrazka</h3>
@@ -3134,13 +3148,16 @@ require dirname(__DIR__) . '/inc/head.php';
                     <div>
                       <strong><?= esc((string) $queueRow['name']) ?></strong>
                       <p><?= esc((string) $queueRow['slug']) ?><?php if ($queueRow['merchant'] !== ''): ?> / <?= esc((string) $queueRow['merchant']) ?><?php endif; ?></p>
-                      <small class="admin-note">Kam sa obrazok ulozi: <code><?= esc((string) $queueRow['target_asset']) ?></code></small>
+                      <details class="admin-subsection is-compact">
+                        <summary><strong>Technicke info</strong> - bezne netreba otvarat</summary>
+                        <small class="admin-note">Kam sa obrazok ulozi: <code><?= esc((string) $queueRow['target_asset']) ?></code></small>
+                      </details>
                     </div>
                     <div class="admin-queue-actions">
                       <span class="admin-note"><?= esc($queueImageModeLabel) ?></span>
                       <?php if (!$queueHasUsableSourceUrl): ?>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>#product-link-form">1. VLOZIT LINK PRODUKTU</a>
-                        <span class="admin-note">Sem treba vlozit bud Dognet link, alebo priamo link na tento produkt v obchode. Az potom admin vie hladat obrazok.</span>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>#product-link-form">1. Vlozit link produktu</a>
+                        <span class="admin-note">Sem patri bud Dognet link, alebo priamo link na tento produkt v obchode. Az potom admin vie hladat obrazok.</span>
                       <?php elseif ($queueNeedsLocal && $queueRemoteSrc === ''): ?>
                         <form method="post" class="admin-inline-form">
                           <input type="hidden" name="action" value="autofill_product_from_source" />
@@ -3156,11 +3173,11 @@ require dirname(__DIR__) . '/inc/head.php';
                         </form>
                         <span class="admin-note">Obrazok sa uz nasiel. Teraz ho len ulozime k produktu.</span>
                       <?php elseif (trim((string) ($queueRow['affiliate_code'] ?? '')) === ''): ?>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($queueRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc((string) ($queueRow['merchant_slug'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($queueRow['slug'] ?? '')) ?>">4. Dokoncit klikaci odkaz</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($queueRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc((string) ($queueRow['merchant_slug'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($queueRow['slug'] ?? '')) ?>">4. Dokoncit klik do obchodu</a>
                         <span class="admin-note">Produkt uz ma obrazok. Chyba uz len klikaci odkaz.</span>
                       <?php else: ?>
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>&amp;focus=product_edit#product-edit-form">Skontrolovat produkt</a>
-                        <span class="admin-note">Tento produkt je uz skoro hotovy. Tu ho vies len skontrolovat alebo doladit.</span>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $queueRow['slug']) ?>&amp;product_image_filter=<?= esc($productImageFilter) ?>&amp;focus=product_edit#product-edit-form">Hotovo - len skontrolovat</a>
+                        <span class="admin-note">Tento produkt je uz skoro hotovy. Tu ho vies uz len skontrolovat.</span>
                       <?php endif; ?>
                     </div>
                     </div>
@@ -3168,11 +3185,12 @@ require dirname(__DIR__) . '/inc/head.php';
 
                 <?php endforeach; ?>
               </div>
-            </section>
-            <section class="admin-subsection is-compact">
+            </details>
+            <details class="admin-subsection is-compact">
+              <summary><strong>Produkty bez odkazu do obchodu</strong> - otvor len ked chces dokoncit klikacie odkazy</summary>
               <div class="admin-subsection-head">
                 <div>
-                  <h3>Produkty, ktorym este chyba klikaci odkaz</h3>
+                  <h3>Produkty bez odkazu do obchodu</h3>
                   <p class="admin-meta">Toto ries az potom, ked je produkt a obrazok hotovy. Tu nastavujes kam clovek po kliknuti odide.</p>
                 </div>
                 <span class="admin-note"><?= esc((string) $productAffiliateQueueCount) ?> zaznamov</span>
@@ -3209,9 +3227,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php endforeach; ?>
                 </div>
               <?php endif; ?>
-            </section>
+            </details>
 
-            <section class="admin-subsection is-compact">
+            <details class="admin-subsection is-compact">
+              <summary><strong>Co este pri produktoch chyba</strong> - otvor len ked chces doplnat texty a hodnotenia</summary>
               <div class="admin-subsection-head">
                 <div>
                   <h3>Produkty, ktore este treba doplnit</h3>
@@ -3251,7 +3270,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php endforeach; ?>
                 </div>
               <?php endif; ?>
-            </section>
+            </details>
 
             <section id="product-image-preview" class="admin-subsection admin-asset-preview<?= $focusPanel === 'product_image' ? ' is-focused' : '' ?>">
               <div class="admin-subsection-head">
@@ -3393,7 +3412,8 @@ require dirname(__DIR__) . '/inc/head.php';
               </section>
             <?php endif; ?>
 
-            <section class="admin-subsection is-compact">
+            <details class="admin-subsection is-compact">
+              <summary><strong>Kde sa tento produkt pouziva</strong> - otvor len ked chces skontrolovat clanky</summary>
               <div class="admin-subsection-head">
                 <h3>Kde sa produkt pouziva</h3>
               </div>
@@ -3415,7 +3435,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php endforeach; ?>
                 </div>
               <?php endif; ?>
-            </section>
+            </details>
 
             <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
               <input type="hidden" name="action" value="save_product" />
@@ -3429,80 +3449,75 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
                 </div>
                 <div class="admin-flash is-success" style="margin-bottom:16px;">Bezny postup: 1. dopln adresu produktu v obchode alebo najprv uloz klikaci odkaz -> 2. klikni Ulozit produkt -> 3. klikni Nacitat udaje z obchodu -> 4. klikni Ulozit obrazok z e-shopu.</div>
+                <input type="hidden" name="product_slug" value="<?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?>" />
+                <input type="hidden" name="merchant_slug" value="<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>" />
+                <p class="admin-note"><strong>Kod produktu:</strong> <?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?><?php if (trim((string) ($selectedProduct['merchant_slug'] ?? '')) !== ''): ?> / <strong>Kod obchodu:</strong> <?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?><?php endif; ?></p>
                 <div class="admin-grid three-up">
-                  <label><span>Kod produktu (bezne nemen)</span><input type="text" name="product_slug" value="<?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?>" /></label>
                   <label><span>Nazov produktu na webe</span><input type="text" name="name" value="<?= esc((string) ($selectedProduct['name'] ?? '')) ?>" /></label>
                   <label><span>Znacka</span><input type="text" name="brand" value="<?= esc((string) ($selectedProduct['brand'] ?? '')) ?>" /></label>
-                </div>
-                <div class="admin-grid three-up">
                   <label><span>Obchod</span><input type="text" name="merchant" value="<?= esc((string) ($selectedProduct['merchant'] ?? '')) ?>" /></label>
-                  <label><span>Kod obchodu (bezne nemen)</span><input type="text" name="merchant_slug" value="<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>" /></label>
-                  <label><span>Tema produktu</span><input type="text" name="category" value="<?= esc((string) ($selectedProduct['category'] ?? '')) ?>" /></label>
                 </div>
-                <div class="admin-grid two-up">
+                <div class="admin-grid one-up">
                   <label><span>Priama adresa produktu v obchode</span><input type="url" name="fallback_url" value="<?= esc((string) ($selectedProduct['fallback_url'] ?? '')) ?>" placeholder="https://obchod.sk/konkretny-produkt" /></label>
-                  <label><span>Rating</span><input type="number" min="0" max="5" step="0.1" name="rating" value="<?= esc((string) ($selectedProduct['rating'] ?? '')) ?>" data-product-rating-input /></label>
                 </div>
                 <p class="admin-note">Sem patri priamo stranka jedneho konkretneho produktu v obchode. Ak uz ma produkt klikaci /go/ odkaz, admin si ju casto doplni sam. Ty ju dopln len vtedy, ked ju admin este nepozna.</p>
                 <details class="admin-subsection is-compact">
-                  <summary><strong>Menej pouzivane polia</strong> - otvor len ked ich naozaj potrebujes</summary>
-                  <div class="admin-grid two-up">
+                  <summary><strong>Dalsie nastavenia produktu</strong> - otvor len ked ich naozaj potrebujes</summary>
+                  <div class="admin-grid three-up">
+                    <label><span>Tema produktu</span><input type="text" name="category" value="<?= esc((string) ($selectedProduct['category'] ?? '')) ?>" /></label>
+                    <label><span>Rating</span><input type="number" min="0" max="5" step="0.1" name="rating" value="<?= esc((string) ($selectedProduct['rating'] ?? '')) ?>" data-product-rating-input /></label>
                     <label><span>Kod klikacieho odkazu (/go/)</span><input type="text" name="affiliate_code" value="<?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?>" /></label>
+                  </div>
+                  <div class="admin-grid one-up">
                     <label><span>Priama adresa obrazka (pokrocile, netreba bezne vyplnat)</span><input type="url" name="image_remote_src" value="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>" /></label>
                   </div>
+                  <div class="admin-subsection-head">
+                    <h3>Dalsie veci pre neskor</h3>
+                    <div class="admin-inline-actions">
+                      <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.1">4.1 Budget</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.3">4.3 Solid</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.5">4.5 Value</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.7">4.7 Top pick</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.9">4.9 Flagship</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-fill-product-rating-auto>Auto rating</button>
+                    </div>
+                  </div>
+                  <div class="admin-product-readiness">
+                    <div class="admin-product-readiness__summary">
+                      <strong>Pripravenost produktu: <?= esc((string) $selectedProductChecklistPercent) ?>%</strong>
+                      <small><?= esc((string) $selectedProductChecklistReadyCount) ?> / <?= esc((string) $selectedProductChecklistTotal) ?> zakladnych poloziek je hotovych</small>
+                    </div>
+                    <div class="admin-status-pills">
+                      <?php foreach ($selectedProductChecklist as $checkLabel => $isReady): ?>
+                        <span class="admin-status-pill<?= $isReady ? ' is-good' : ' is-warning' ?>"><?= esc((string) $checkLabel) ?></span>
+                      <?php endforeach; ?>
+                    </div>
+                  </div>
+                  <div class="admin-subsection-head">
+                    <h3>Pomocnik pre texty</h3>
+                    <div class="admin-inline-actions">
+                      <button class="btn btn-secondary btn-small" type="button" data-fill-product-empty>Iba doplnit prazdne</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-fill-product-summary>Starter summary</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-fill-product-pros>Starter plusy</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-fill-product-cons>Starter minusy</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-fill-product-all>Vyplnit vsetko</button>
+                    </div>
+                  </div>
+                  <label>
+                    <span>Kratky popis</span>
+                    <textarea name="summary" rows="3"><?= esc((string) ($selectedProduct['summary'] ?? '')) ?></textarea>
+                  </label>
+                  <div class="admin-grid two-up">
+                    <label>
+                      <span>Plusy (riadok = 1 bod)</span>
+                      <textarea name="pros" rows="6"><?= esc(implode(PHP_EOL, is_array($selectedProduct['pros'] ?? null) ? $selectedProduct['pros'] : [])) ?></textarea>
+                    </label>
+                    <label>
+                      <span>Minusy (riadok = 1 bod)</span>
+                      <textarea name="cons" rows="6"><?= esc(implode(PHP_EOL, is_array($selectedProduct['cons'] ?? null) ? $selectedProduct['cons'] : [])) ?></textarea>
+                    </label>
+                  </div>
                 </details>
-              <details class="admin-subsection is-compact">
-                <div class="admin-subsection-head">
-                  <h3>Rychla priprava produktu</h3>
-                  <div class="admin-inline-actions">
-                    <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.1">4.1 Budget</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.3">4.3 Solid</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.5">4.5 Value</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.7">4.7 Top pick</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-set-product-rating="4.9">4.9 Flagship</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-rating-auto>Auto rating</button>
-                  </div>
-                </div>
-                <div class="admin-product-readiness">
-                  <div class="admin-product-readiness__summary">
-                    <strong>Pripravenost produktu: <?= esc((string) $selectedProductChecklistPercent) ?>%</strong>
-                    <small><?= esc((string) $selectedProductChecklistReadyCount) ?> / <?= esc((string) $selectedProductChecklistTotal) ?> zakladnych poloziek je hotovych</small>
-                  </div>
-                  <div class="admin-status-pills">
-                    <?php foreach ($selectedProductChecklist as $checkLabel => $isReady): ?>
-                      <span class="admin-status-pill<?= $isReady ? ' is-good' : ' is-warning' ?>"><?= esc((string) $checkLabel) ?></span>
-                    <?php endforeach; ?>
-                  </div>
-                </div>
-                <p class="admin-note">Toto je len pomocnik, aby si hned videl co pri produkte este chyba.</p>
-              </details>
-              <details class="admin-subsection is-compact">
-                <div class="admin-subsection-head">
-                  <h3>Pomocnik pre doplnenie textov</h3>
-                  <div class="admin-inline-actions">
-                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-empty>Iba doplnit prazdne</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-summary>Starter summary</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-pros>Starter plusy</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-cons>Starter minusy</button>
-                    <button class="btn btn-secondary btn-small" type="button" data-fill-product-all>Vyplnit vsetko</button>
-                  </div>
-                </div>
-                <p class="admin-note">Toto len rychlo doplni navrh textu. Potom ho mozes upravit normalne ludsky.</p>
-              </details>
-              <label>
-                <span>Kratky popis</span>
-                <textarea name="summary" rows="3"><?= esc((string) ($selectedProduct['summary'] ?? '')) ?></textarea>
-              </label>
-              <div class="admin-grid two-up">
-                <label>
-                  <span>Plusy (riadok = 1 bod)</span>
-                  <textarea name="pros" rows="6"><?= esc(implode(PHP_EOL, is_array($selectedProduct['pros'] ?? null) ? $selectedProduct['pros'] : [])) ?></textarea>
-                </label>
-                <label>
-                  <span>Minusy (riadok = 1 bod)</span>
-                  <textarea name="cons" rows="6"><?= esc(implode(PHP_EOL, is_array($selectedProduct['cons'] ?? null) ? $selectedProduct['cons'] : [])) ?></textarea>
-                </label>
-              </div>
               <details class="admin-subsection is-compact">
                 <summary><strong>Rucne nahrat vlastny obrazok</strong> - pouzi len ked obrazok z obchodu nefunguje</summary>
                 <div class="admin-grid one-up">
@@ -4090,6 +4105,148 @@ require dirname(__DIR__) . '/inc/head.php';
                 </tbody>
               </table>
             </div>
+          </section>
+        <?php endif; ?>
+
+        <?php if ($section === 'brand'): ?>
+          <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Logo a ikonka stranky</p>
+                <h2>Logo a ikonka</h2>
+                <p class="admin-note">Tu vyriesis tri veci: hlavne logo, malu ikonku stranky a obrazok pri zdielani. Vzdy najprv skopiruj zadanie do Canvy, potom nahraj hotovy subor.</p>
+              </div>
+            </div>
+
+            <section class="admin-subsection">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Hlavne logo</h3>
+                  <p class="admin-meta">Toto je logo v hlavicke webu. Nahraj sem hotove logo z Canvy alebo od grafika.</p>
+                </div>
+              </div>
+              <div class="admin-brief-grid">
+                <div class="admin-brief-card">
+                  <h3>Aktualne logo</h3>
+                  <div class="admin-asset-preview__media">
+                    <?= interessa_render_image($brandLogoImage, ['class' => 'admin-asset-preview__image']) ?>
+                  </div>
+                  <p><strong>Aktivny subor:</strong><br><code><?= esc((string) ($brandLogoImage['asset'] ?? 'img/brand/logo-full.svg')) ?></code></p>
+                </div>
+                <div class="admin-brief-card">
+                  <h3>Text pre Canvu</h3>
+                  <p><?= esc((string) ($brandPromptLibrary['logo']['note'] ?? '')) ?></p>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($brandPromptLibrary['logo']['note'] ?? '')) ?>">Skopirovat zadanie</button>
+                  </div>
+                  <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack admin-inline-upload">
+                    <input type="hidden" name="action" value="save_brand_logo" />
+                    <label>
+                      <span>Vyber hotove logo</span>
+                      <input type="file" name="brand_logo_file" accept=".svg,image/svg+xml,image/png,image/jpeg,image/webp" required />
+                    </label>
+                    <div class="admin-actions">
+                      <button class="btn btn-cta" type="submit">Nahraj hlavne logo</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-subsection">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Ikonka stranky</h3>
+                  <p class="admin-meta">Sem nahraj jeden zdrojovy obrazok. Admin z neho sam pripravi malu ikonku pre prehliadac aj mobil.</p>
+                </div>
+              </div>
+              <div class="admin-brief-grid">
+                <div class="admin-brief-card">
+                  <h3>Aktualne male verzie</h3>
+                  <div class="admin-brand-preview-grid">
+                    <div class="admin-brand-preview-tile">
+                      <strong>Logo icon</strong>
+                      <div class="admin-asset-preview__media">
+                        <?= interessa_render_image($brandIconImage, ['class' => 'admin-asset-preview__image']) ?>
+                      </div>
+                    </div>
+                    <div class="admin-brand-preview-tile">
+                      <strong>Favicon 32</strong>
+                      <div class="admin-asset-preview__media">
+                        <?php if ($brandFaviconAsset !== ''): ?>
+                          <img class="admin-asset-preview__image" src="<?= esc(asset($brandFaviconAsset)) ?>" alt="Favicon 32" />
+                        <?php else: ?>
+                          <div class="admin-note">Zatial chyba</div>
+                        <?php endif; ?>
+                      </div>
+                    </div>
+                    <div class="admin-brand-preview-tile">
+                      <strong>Ikona pre mobil</strong>
+                      <div class="admin-asset-preview__media">
+                        <?php if ($brandAppleTouchAsset !== ''): ?>
+                          <img class="admin-asset-preview__image" src="<?= esc(asset($brandAppleTouchAsset)) ?>" alt="Apple touch icon" />
+                        <?php else: ?>
+                          <div class="admin-note">Zatial chyba</div>
+                        <?php endif; ?>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="admin-brief-card">
+                  <h3>Text pre Canvu</h3>
+                  <p><?= esc((string) ($brandPromptLibrary['icon']['note'] ?? '')) ?></p>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($brandPromptLibrary['icon']['note'] ?? '')) ?>">Skopirovat zadanie</button>
+                  </div>
+                  <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack" data-brand-icon-form="true">
+                    <input type="hidden" name="action" value="save_brand_icon_bundle" />
+                    <label>
+                      <span>Vyber zdrojovy obrazok pre ikonku</span>
+                      <input type="file" name="brand_icon_source" accept="image/png,image/jpeg,image/webp" required />
+                    </label>
+                    <p class="admin-note">Staci jeden cisty stvorcovy obrazok. Admin z neho pripravi male verzie automaticky.</p>
+                    <div class="admin-actions">
+                      <button class="btn btn-cta" type="submit">Nahraj ikonku a priprav male verzie</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-subsection">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Obrazok pri zdielani</h3>
+                  <p class="admin-meta">Toto je obrazok, ktory sa ukaze pri zdielani webu. Hodil sa aj ako zaklad pre uvodny obrazok hlavnej stranky.</p>
+                </div>
+              </div>
+              <div class="admin-brief-grid">
+                <div class="admin-brief-card">
+                  <h3>Aktualny obrazok</h3>
+                  <div class="admin-asset-preview__media">
+                    <?= interessa_render_image($brandOgImage, ['class' => 'admin-asset-preview__image']) ?>
+                  </div>
+                  <p><strong>Aktivny subor:</strong><br><code><?= esc((string) ($brandOgImage['asset'] ?? 'img/brand/og-default.svg')) ?></code></p>
+                </div>
+                <div class="admin-brief-card">
+                  <h3>Text pre Canvu</h3>
+                  <p><?= esc((string) ($brandPromptLibrary['og']['note'] ?? '')) ?></p>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($brandPromptLibrary['og']['note'] ?? '')) ?>">Skopirovat zadanie</button>
+                  </div>
+                  <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack admin-inline-upload">
+                    <input type="hidden" name="action" value="save_brand_og_default" />
+                    <label>
+                      <span>Vyber hotovy obrazok pri zdielani</span>
+                      <input type="file" name="brand_og_file" accept=".svg,image/svg+xml,image/png,image/jpeg,image/webp" required />
+                    </label>
+                    <div class="admin-actions">
+                      <button class="btn btn-cta" type="submit">Nahraj obrazok pri zdielani</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </section>
           </section>
         <?php endif; ?>
 
@@ -4829,6 +4986,18 @@ require dirname(__DIR__) . '/inc/head.php';
     box-shadow: 0 20px 40px rgba(52, 211, 153, 0.18);
     border-radius: 20px;
   }
+
+  .admin-brand-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .admin-brand-preview-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 </style>
 <script>
   (function () {
@@ -5342,6 +5511,46 @@ require dirname(__DIR__) . '/inc/head.php';
       });
     }
 
+    function drawImageContainToCanvas(image, targetWidth, targetHeight, options) {
+      const canvas = document.createElement('canvas');
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+
+      const context = canvas.getContext('2d', { alpha: true });
+      if (!context) {
+        return canvas;
+      }
+
+      context.clearRect(0, 0, targetWidth, targetHeight);
+
+      const sourceWidth = image.naturalWidth || image.width || targetWidth;
+      const sourceHeight = image.naturalHeight || image.height || targetHeight;
+      const scale = Math.min(targetWidth / sourceWidth, targetHeight / sourceHeight);
+      const drawWidth = Math.max(1, Math.round(sourceWidth * scale));
+      const drawHeight = Math.max(1, Math.round(sourceHeight * scale));
+      const offsetX = Math.round((targetWidth - drawWidth) / 2);
+      const offsetY = Math.round((targetHeight - drawHeight) / 2);
+
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+      return canvas;
+    }
+
+    async function createPngFileFromUpload(file, width, height, name) {
+      if (!(file instanceof File)) {
+        throw new Error('missing-upload-file');
+      }
+
+      const image = await loadImageFromFile(file);
+      const canvas = drawImageContainToCanvas(image, width, height, {});
+      const blob = await canvasToBlob(canvas, 'image/png');
+      return new File([blob], name, {
+        type: 'image/png',
+        lastModified: Date.now()
+      });
+    }
+
     async function fetchRemotePackshotFile(form) {
       const productSlugInput = form.querySelector('input[name="product_slug"]');
       const productSlug = productSlugInput instanceof HTMLInputElement ? (productSlugInput.value || '').trim() : '';
@@ -5468,6 +5677,54 @@ require dirname(__DIR__) . '/inc/head.php';
       }
     }
 
+    async function submitBrandIconForm(form) {
+      const fileInput = form.querySelector('input[type="file"][name="brand_icon_source"]');
+      if (!(fileInput instanceof HTMLInputElement) || !fileInput.files || !fileInput.files.length) {
+        showToast('Najprv vyber obrazok.', true);
+        return;
+      }
+
+      const sourceFile = fileInput.files[0];
+      setFormBusy(form, true);
+
+      try {
+        const logoIconFile = await createPngFileFromUpload(sourceFile, 512, 512, 'logo-icon.png');
+        const favicon32File = await createPngFileFromUpload(sourceFile, 32, 32, 'favicon-32.png');
+        const favicon48File = await createPngFileFromUpload(sourceFile, 48, 48, 'favicon-48.png');
+        const appleTouchFile = await createPngFileFromUpload(sourceFile, 180, 180, 'apple-touch-icon.png');
+
+        const formData = new FormData();
+        formData.set('action', 'save_brand_icon_bundle');
+        formData.set('logo_icon', logoIconFile, logoIconFile.name);
+        formData.set('favicon_32', favicon32File, favicon32File.name);
+        formData.set('favicon_48', favicon48File, favicon48File.name);
+        formData.set('apple_touch_icon', appleTouchFile, appleTouchFile.name);
+
+        const response = await fetch('/admin', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+
+        if (response.redirected && response.url) {
+          window.location.assign(response.url);
+          return;
+        }
+
+        const html = await response.text();
+        if (typeof html === 'string' && html.trim() !== '') {
+          document.open();
+          document.write(html);
+          document.close();
+          return;
+        }
+
+        window.location.reload();
+      } finally {
+        setFormBusy(form, false);
+      }
+    }
+
     document.querySelectorAll('form.admin-inline-upload, form.admin-form').forEach(function (form) {
       const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="category_image"], input[type="file"][name="category_thumb_image"], input[type="file"][name="product_image"]');
       if (!(fileInput instanceof HTMLInputElement)) {
@@ -5498,6 +5755,18 @@ require dirname(__DIR__) . '/inc/head.php';
           console.error(error);
           const message = error && error.message ? String(error.message) : '';
           showToast(message !== '' ? message : 'Packshot z e-shopu sa nepodarilo ulozit.', true);
+        });
+      }, true);
+    });
+
+    document.querySelectorAll('form[data-brand-icon-form="true"]').forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        submitBrandIconForm(form).catch(function (error) {
+          console.error(error);
+          showToast('Ikonku sa nepodarilo pripravit.', true);
         });
       }, true);
     });

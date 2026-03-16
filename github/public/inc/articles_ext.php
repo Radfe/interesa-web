@@ -227,9 +227,34 @@ $ART += [
     'Kedy ma B-komplex prakticky zmysel, kedy je to len dalsi doplnok navyse a preco netreba automaticky kupovat co najvyssie davky.',
     'mineraly',
   ],
+  'vitamin-b-komplex-rano-alebo-vecer-zalezi-na-tom' => [
+    'Vitamin B komplex rano alebo vecer - zalezi na tom',
+    'Kedy je pri vitamine B komplexe dolezitejsia jednoduchost a pravidelnost nez presna hodina a preco netreba z bezneho doplnku robit dalsie komplikovane pravidlo.',
+    'mineraly',
+  ],
+  'vitamin-b-komplex-s-jedlom-alebo-nalacno-zalezi-na-tom' => [
+    'Vitamin B komplex s jedlom alebo nalacno - zalezi na tom',
+    'Kedy je pri vitamine B komplexe dolezitejsia jednoduchost a tolerancia nez hladanie jedineho spravneho sposobu uzivania a preco netreba z bezneho doplnku robit dalsi kazdodenny experiment.',
+    'mineraly',
+  ],
   'vitamin-b12-kedy-ho-riesit' => [
     'Vitamin B12 - kedy ho riesit',
     'Kedy ma vitamin B12 prakticky zmysel, preco ho niektori ludia riesia cielenejsie a preco netreba robit paniku len preto, ze je casto spominany online.',
+    'mineraly',
+  ],
+  'vitamin-b12-s-jedlom-alebo-nalacno-zalezi-na-tom' => [
+    'Vitamin B12 s jedlom alebo nalacno - zalezi na tom',
+    'Kedy je pri vitamine B12 dolezitejsia jednoduchost a pravidelnost nez presny sposob uzivania a preco netreba z bezneho doplnku robit dalsi kazdodenny ritual.',
+    'mineraly',
+  ],
+  'vitamin-b12-rano-alebo-vecer-zalezi-na-tom' => [
+    'Vitamin B12 rano alebo vecer - zalezi na tom',
+    'Kedy je pri vitamine B12 dolezitejsia jednoduchost a pravidelnost nez presna hodina a preco netreba z bezneho doplnku robit dalsiu kazdodennu mini vedu.',
+    'mineraly',
+  ],
+  'vitamin-b12-ked-zabudas-brat-ako-si-to-zjednodusit' => [
+    'Vitamin B12 ked zabudas brat - ako si to zjednodusit',
+    'Ako si pri vitamine B12 nastavit jednoduchsi system, ked na doplnky pravidelne zabudas, a preco casto viac pomoze prakticka rutina nez hladanie dokonaleho planu.',
     'mineraly',
   ],
   'vitamin-d-v-lete-treba-ho-brat' => [
@@ -302,6 +327,41 @@ $ART += [
     'Kedy dava pri kolagene zmysel riesit ho aj na cestach, kedy je to skor zbytocna komplikacia a preco casto viac zavazi jednoduchost nez dokonaly plan.',
     'klby-koza',
   ],
+  'kolagen-v-praci-oplati-sa-mat-ho-po-ruke' => [
+    'Kolagen v praci - oplati sa mat ho po ruke',
+    'Kedy dava pri kolagene zmysel mat ho po ruke aj v praci, kedy je to prakticka pomocka a kedy len dalsia vec navyse bez realneho vyuzitia.',
+    'klby-koza',
+  ],
+  'kolagen-ked-mas-chaoticky-den-ako-ho-udrzat' => [
+    'Kolagen ked mas chaoticky den - ako ho udrzat',
+    'Ako si pri kolagene udrzat jednoduchu rutinu aj v dnoch, ked je vsetko rozhadzane, a preco casto viac zavazi praktickost nez snaha robit vsetko dokonale.',
+    'klby-koza',
+  ],
+  'kolagen-ked-zabudas-brat-ako-si-ulahcit-rutinu' => [
+    'Kolagen ked zabudas brat - ako si ulahcit rutinu',
+    'Ako si pri kolagene nastavit jednoduchu rutinu, ked na doplnky pravidelne zabudas, a preco casto viac pomoze praktickost nez hladanie dokonaleho systemu.',
+    'klby-koza',
+  ],
+  'kolagen-ked-mas-nepravidelny-den-ako-si-ho-zjednodusit' => [
+    'Kolagen ked mas nepravidelny den - ako si ho zjednodusit',
+    'Ako si pri kolagene nastavit jednoduchsi system aj v dnoch, ked nemas pevny rezim, a preco casto viac pomoze praktickost nez snaha robit vsetko dokonale.',
+    'klby-koza',
+  ],
+  'kolagen-ked-mas-rozbity-tyzden-ako-nevypadnut-z-rutiny' => [
+    'Kolagen ked mas rozbity tyzden - ako nevypadnut z rutiny',
+    'Ako si pri kolagene udrzat jednoduchu rutinu aj v tyzdni, ked je vsetko rozhadzane, a preco casto viac pomoze praktickost nez snaha drzat dokonaly plan.',
+    'klby-koza',
+  ],
+  'kolagen-ked-sa-ti-ruti-rutina-co-je-najjednoduchsie-riesenie' => [
+    'Kolagen ked sa ti ruti rutina - co je najjednoduchsie riesenie',
+    'Ako si pri kolagene pomoct, ked sa ti rozpadava bezna rutina, a preco casto viac pomoze zjednodusenie celeho systemu nez snaha drzat dokonaly plan za kazdu cenu.',
+    'klby-koza',
+  ],
+  'kolagen-ked-mas-rychle-rana-ako-ho-nevynechat' => [
+    'Kolagen ked mas rychle rana - ako ho nevynechat',
+    'Ako si pri kolagene pomoct v dnoch, ked rano len hasis povinnosti, a preco casto viac pomoze jednoduchy system nez snaha trafit idealny moment.',
+    'klby-koza',
+  ],
   'vitamin-c' => [
     'Vitamin C - davky, zdroje a kedy ho doplnat',
     'Kedy vitamin C staci zo stravy, kedy dava zmysel doplnok a preco viac nie je vzdy lepsie.',
@@ -320,6 +380,11 @@ $ART += [
   'beta-glukan-rano-alebo-vecer-zalezi-na-tom' => [
     'Beta glukan rano alebo vecer - zalezi na tom',
     'Kedy je pri beta glukane dolezitejsia pravidelnost a jednoducha rutina nez presna hodina a preco netreba z imunity doplnku robit dalsi komplikovany ritual.',
+    'imunita',
+  ],
+  'probiotika-s-jedlom-alebo-nalacno-zalezi-na-tom' => [
+    'Probiotika s jedlom alebo nalacno - zalezi na tom',
+    'Kedy je pri probiotikach dolezitejsia jednoduchost, pravidelnost a trpezlivost nez hladanie jedineho spravneho sposobu uzivania.',
     'imunita',
   ],
   'zinek' => [
@@ -385,6 +450,41 @@ $ART += [
   'protein-ked-nestihas-ranajky-oplati-sa-alebo-nie' => [
     'Protein ked nestihas ranajky - oplati sa alebo nie',
     'Kedy moze byt protein praktickou pomocou, ked rano nestihas jest, kedy len zachranuje hekticke rano a preco netreba z neho robit univerzalnu nahradu ranajok pre kazdeho.',
+    'proteiny',
+  ],
+  'protein-poobede-oplati-sa-alebo-nie' => [
+    'Protein poobede - oplati sa alebo nie',
+    'Kedy moze byt protein poobede praktickou pomocou v beznom dni, kedy len zaplna dieru v rutine a preco netreba z popoludnia robit dalsie povinne proteinove okno.',
+    'proteiny',
+  ],
+  'protein-v-praci-oplati-sa-mat-ho-po-ruke' => [
+    'Protein v praci - oplati sa mat ho po ruke',
+    'Kedy moze byt protein v praci praktickou pomocou, kedy len dalsou vecou navyse a preco netreba z neho robit povinnu vybavu kazdeho pracovneho dna.',
+    'proteiny',
+  ],
+  'protein-do-tasky-oplati-sa-mat-ho-pripraveny' => [
+    'Protein do tasky - oplati sa mat ho pripraveny',
+    'Kedy moze byt protein v taske praktickou poistkou na bezny den, kedy len dalsou vecou navyse a preco netreba z neho robit povinnu vybavu kazdeho odchodu z domu.',
+    'proteiny',
+  ],
+  'protein-v-aute-alebo-na-ceste-oplati-sa-mat-ho-po-ruke' => [
+    'Protein v aute alebo na ceste - oplati sa mat ho po ruke',
+    'Kedy moze byt protein na ceste alebo v aute praktickou poistkou, kedy len dalsou vecou navyse a preco netreba z neho robit povinnu vybavu kazdeho presunu.',
+    'proteiny',
+  ],
+  'protein-v-batohu-oplati-sa-mat-ho-ako-poistku' => [
+    'Protein v batohu - oplati sa mat ho ako poistku',
+    'Kedy moze byt protein v batohu praktickou rezervou na dlhy den, kedy len dalsou vecou navyse a preco netreba z neho robit povinnu vybavu kazdeho vychodu z domu.',
+    'proteiny',
+  ],
+  'protein-v-sufliku-v-praci-oplati-sa-mat-rezervu' => [
+    'Protein v sufliku v praci - oplati sa mat rezervu',
+    'Kedy moze byt protein odlozeny v praci praktickou rezervou na hekticky den, kedy len dalsou vecou navyse a preco netreba z neho robit povinnu firemnu vybavu.',
+    'proteiny',
+  ],
+  'protein-vecer-ked-si-hladny-oplati-sa-alebo-nie' => [
+    'Protein vecer ked si hladny - oplati sa alebo nie',
+    'Kedy moze byt protein vecer praktickou pomocou pri hlade, kedy len zaplna dieru v dni a preco netreba z neho robit univerzalne riesenie kazdeho vecerneho apetitu.',
     'proteiny',
   ],
   'protein-dvakrat-denne-oplati-sa-alebo-je-to-zbytocne' => [

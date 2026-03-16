@@ -130,6 +130,44 @@ Posledne zjednodusenie:
   - pokrocile odporucane produkty
   - kontrola pripravenosti
 
+Najnovsie doplnenie:
+- sekcia `Produkty` bola este viac upratana
+- na ociach zostala hlavna cesta:
+  - vlozit link produktu
+  - kliknut dalsi krok
+  - ulozit obrazok
+  - az potom riesit odkaz do obchodu
+- hlucne zoznamy su schovane do rozbalovacich blokov:
+  - produkty bez hotoveho obrazka
+  - produkty bez odkazu do obchodu
+  - co este pri produktoch chyba
+  - kde sa produkt pouziva
+- pribudla nova samostatna sekcia `Logo a ikonka`
+- admin uz vie:
+  - nahrat hlavne logo
+  - nahrat jeden zdrojovy obrazok pre ikonku
+  - sam vytvorit male verzie:
+    - favicon-32
+    - favicon-48
+    - apple-touch-icon
+  - nahrat hlavny obrazok pri zdielani
+  - pri kazdom z tychto blokov skopirovat hotove zadanie pre Canvu
+
+Najnovsie zjednodusenie:
+- v `Clanky` pri produktoch su dalsie kroky pomenovane jednoducho:
+  - `Doplnit produkt`
+  - `Doplnit odkaz`
+  - `Hotovo`
+- tlacidla z clanku idu rovno na spravne miesto v produkte
+- v `Produkty` uz nevidno tolko technickych poli naraz
+- hore zostali len bezne veci:
+  - nazov
+  - znacka
+  - obchod
+  - priama adresa produktu v obchode
+- technicke a menej dolezite casti su schovane do rozbalovacich blokov
+- pri produktoch bez obrazka uz technicka cesta obrazka nezavadzia na ociach
+
 ## 4. Co este chyba
 
 ### Produkty a klikacie odkazy
@@ -147,7 +185,9 @@ Chyba najma:
 - este treba dotiahnut:
   - skrytie dalsich menej dolezitych poli
   - este jasnejsie kroky pri produktoch bez klikacieho odkazu
-  - finalne samostatne tlacidlo pre `vloz link -> priprav produkt`
+- finalne samostatne tlacidlo pre `vloz link -> priprav produkt`
+- dalsie zjednodusenie samotneho formulára produktu, aby hore ostali len uplne bezne polia
+- prakticke naviazanie na prve prioritne clanky z dokumentov
 
 ### Prioritne naplnenie
 Treba sa sustredit najprv na clanky urcene v:
@@ -218,3 +258,4 @@ Stav:
 - obrazky tem: pouzitelne
 - produkty: ciastocne upratane, ale este nie hotovy jednoduchy system pre odkazy + obrazky + priradenie ku clankom
 - affiliate workflow: funkcny len ciastocne, treba dalej zjednodusit
+- logo a ikonka: zakladny jednoduchy upload je hotovy, dalsie drobnosti sa budu ladit podla testu
