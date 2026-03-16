@@ -252,6 +252,40 @@ Najnovsie upratanie:
   - ci je hotovy klik do obchodu
 - pod tym je uz len jedna veta `Co spravit dalej`, aby nebolo treba rozmyslat medzi viacerymi castami stranky
 
+Najnovsie jazykove upratanie:
+- v admine sa dalej obmedzili technicke a anglicke nazvy
+- `Affiliate odkazy` su v texte a tlacidlach pomenovane zrozumitelnejsie ako `Odkazy do obchodov`
+- v clankoch uz tlacidla hovoria:
+  - `Upravit produkt`
+  - `Upravit odkaz do obchodu`
+
+Najnovsie zjednodusenie pre clanky a produkty:
+- v `Clanky` pri produktoch uz nie su na ociach dva samostatne checkboxy pre odporucane produkty a porovnanie
+- nahradilo ich jedno jednoduchsie pole:
+  - `Kde sa ma ukazat`
+  - moznosti:
+    - len medzi odporucanymi produktmi
+    - len v porovnani
+    - v odporucanych aj v porovnani
+    - zatial nikde
+- `Typ odporucania` bol premenovany na zrozumitelnejsie `Ako ho oznacit`
+- v `Produkty` sa este viac zdoraznila hlavna cesta:
+  - vlozit link produktu alebo Dognet link
+  - ulozit produkt
+  - nacitat udaje z obchodu
+  - ulozit obrazok z e-shopu
+- texty pri produkte uz nehovoria len o priamej adrese produktu, ale aj o Dognet linku ako beznej moznosti
+  - `Doplnit obrazok produktu`
+- v produktoch uz blok hovori jednoducho:
+  - `Ako na produkt bez chaosu`
+  - `Otvorit odkazy do obchodu`
+  - `Vlozit link produktu`
+- v casti odkazov do obchodov su jednoduchsie nazvy:
+  - `Sem vloz finalny odkaz do obchodu`
+  - `Interny kod odkazu`
+  - `Finalny odkaz do obchodu`
+- rucne vytvaranie odkazu je schovane do rozbalovacieho bloku, aby nezavadzalo pri beznej praci
+
 ## 6. Co potrebuje web vlakno
 
 ### Handoff pre web vlakno - aktualny stav

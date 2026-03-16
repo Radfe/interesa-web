@@ -442,6 +442,7 @@ function interessa_admin_collect_article_product_plan(): array {
     $enabled = $_POST['article_product_enabled'] ?? [];
     $orders = $_POST['article_product_order'] ?? [];
     $roles = $_POST['article_product_role'] ?? [];
+    $placement = $_POST['article_product_placement'] ?? [];
     $top = $_POST['article_product_top'] ?? [];
     $comparison = $_POST['article_product_comparison'] ?? [];
 
@@ -461,12 +462,20 @@ function interessa_admin_collect_article_product_plan(): array {
             $role = 'standard';
         }
 
+        $placementValue = interessa_admin_slugify((string) ($placement[$productSlug] ?? ''));
+        $showInTop = isset($top[$productSlug]);
+        $showInComparison = isset($comparison[$productSlug]);
+        if (in_array($placementValue, ['recommended', 'comparison', 'both', 'hidden'], true)) {
+            $showInTop = in_array($placementValue, ['recommended', 'both'], true);
+            $showInComparison = in_array($placementValue, ['comparison', 'both'], true);
+        }
+
         $rows[] = [
             'product_slug' => $productSlug,
             'order' => max(1, (int) ($orders[$productSlug] ?? 1)),
             'role' => $role,
-            'show_in_top' => isset($top[$productSlug]),
-            'show_in_comparison' => isset($comparison[$productSlug]),
+            'show_in_top' => $showInTop,
+            'show_in_comparison' => $showInComparison,
         ];
     }
 
@@ -2387,7 +2396,7 @@ require dirname(__DIR__) . '/inc/head.php';
           <?php elseif ($section === 'products'): ?>
             <ol class="admin-quickstart-list">
               <li>Tu riesis produkt na webe: nazov, obrazok a URL produktu.</li>
-              <li>Najprv dopln alebo skontroluj URL produktu v obchode.</li>
+              <li>Najprv vloz link produktu alebo Dognet link.</li>
               <li>Potom nacitaj data z e-shopu a uloz obrazok.</li>
             </ol>
           <?php elseif ($section === 'affiliates'): ?>
@@ -2623,7 +2632,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <h3>Produkty v tomto clanku</h3>
                 </div>
-                <p class="admin-note">Tu robis len toto: oznac produkty, nastav ich poradie a povedz, kde sa maju ukazat. Produkt s poradiom 1 bude hlavny tip.</p>
+                <p class="admin-note">Tu robis len toto: zapni produkt, nastav poradie, vyber ako ho oznacit a vyber kde sa ma ukazat. Produkt s poradiom 1 bude hlavny tip.</p>
                 <div class="admin-check-grid">
                   <?php foreach ($catalog as $productSlug => $productRow): ?>
                     <?php
@@ -2655,13 +2664,20 @@ require dirname(__DIR__) . '/inc/head.php';
                         <input type="checkbox" name="article_product_enabled[<?= esc((string) $productSlug) ?>]" value="1" <?= isset($articleProductPlanMap[(string) $productSlug]) || in_array((string) $productSlug, $articleEditorProductSlugs, true) ? 'checked' : '' ?> />
                         <span><strong><?= esc((string) ($productRow['name'] ?? $productSlug)) ?></strong><small><?= esc((string) $productSlug) ?></small></span>
                       </label>
+                      <?php
+                        $placementValue = !empty($planState['show_in_top']) && !empty($planState['show_in_comparison'])
+                            ? 'both'
+                            : (!empty($planState['show_in_top'])
+                                ? 'recommended'
+                                : (!empty($planState['show_in_comparison']) ? 'comparison' : 'hidden'));
+                      ?>
                       <div class="admin-grid two-up">
                         <label>
                           <span>Poradie</span>
                           <input type="number" name="article_product_order[<?= esc((string) $productSlug) ?>]" min="1" step="1" value="<?= esc((string) ($planState['order'] ?? 99)) ?>" />
                         </label>
                         <label>
-                          <span>Typ odporucania</span>
+                          <span>Ako ho oznacit</span>
                           <select name="article_product_role[<?= esc((string) $productSlug) ?>]">
                             <?php foreach (['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'] as $roleOption): ?>
                               <option value="<?= esc($roleOption) ?>" <?= (string) ($planState['role'] ?? 'standard') === $roleOption ? 'selected' : '' ?>><?= esc(interessa_admin_role_label($roleOption)) ?></option>
@@ -2669,10 +2685,15 @@ require dirname(__DIR__) . '/inc/head.php';
                           </select>
                         </label>
                       </div>
-                      <div class="admin-inline-actions">
-                        <label><input type="checkbox" name="article_product_top[<?= esc((string) $productSlug) ?>]" <?= !empty($planState['show_in_top']) ? 'checked' : '' ?> /> Ukazat medzi odporucanymi produktmi</label>
-                        <label><input type="checkbox" name="article_product_comparison[<?= esc((string) $productSlug) ?>]" <?= !empty($planState['show_in_comparison']) ? 'checked' : '' ?> /> Ukazat v porovnani</label>
-                      </div>
+                      <label>
+                        <span>Kde sa ma ukazat</span>
+                        <select name="article_product_placement[<?= esc((string) $productSlug) ?>]">
+                          <option value="recommended" <?= $placementValue === 'recommended' ? 'selected' : '' ?>>Len medzi odporucanymi produktmi</option>
+                          <option value="comparison" <?= $placementValue === 'comparison' ? 'selected' : '' ?>>Len v porovnani</option>
+                          <option value="both" <?= $placementValue === 'both' ? 'selected' : '' ?>>V odporucanych aj v porovnani</option>
+                          <option value="hidden" <?= $placementValue === 'hidden' ? 'selected' : '' ?>>Zatial nikde</option>
+                        </select>
+                      </label>
                       <div class="admin-status-pills">
                         <span class="admin-status-pill<?= $productAffiliateReady ? ' is-good' : ' is-warning' ?>"><?= $productAffiliateReady ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
                         <span class="admin-status-pill<?= $productPackshotReady ? ' is-good' : ' is-warning' ?>"><?= $productPackshotReady ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
@@ -3225,12 +3246,12 @@ require dirname(__DIR__) . '/inc/head.php';
                   <label><span>Kategoria</span><input type="text" name="new_product_category" value="<?= esc($prefillNewProductCategory) ?>" placeholder="mineraly" /></label>
                 </div>
                 <div class="admin-grid two-up">
-                  <label><span>URL produktu v obchode</span><input type="url" name="new_product_fallback_url" value="<?= esc($prefillNewProductFallbackUrl) ?>" placeholder="https://merchant.example.com/produkt" /></label>
+                  <label><span>Link produktu alebo priamy link na produkt</span><input type="url" name="new_product_fallback_url" value="<?= esc($prefillNewProductFallbackUrl) ?>" placeholder="https://merchant.example.com/produkt alebo Dognet link" /></label>
                   <label><span>Najdeny obrazok z obchodu (pokrocile)</span><input type="url" name="new_product_image_remote_src" value="<?= esc($prefillNewProductImageRemoteSrc) ?>" placeholder="https://merchant.example.com/image.webp" /></label>
                 </div>
                 <label><span>Kratky popis</span><textarea name="new_product_summary" rows="3" placeholder="Strucne zhrnutie produktu pre karty a odporucania"><?= esc($prefillNewProductSummary) ?></textarea></label>
                 <label><span>Affiliate code (volitelne)</span><input type="text" name="new_product_affiliate_code" value="<?= esc($prefillNewProductAffiliateCode) ?>" placeholder="horcik-ktory-je-najlepsi-a-preco-gymbeam" /></label>
-                <small class="admin-note">Toto pouzi len vtedy, ked produkt este v admine neexistuje. Pole URL produktu v obchode ma byt konkretna stranka produktu, nie hlavna stranka e-shopu.</small>
+                  <small class="admin-note">Toto pouzi len vtedy, ked produkt este v admine neexistuje. Sem patri bud konkretna stranka produktu, alebo Dognet link pre ten produkt.</small>
                 <div class="admin-actions">
                   <button class="btn btn-secondary" type="submit">Vytvorit produkt</button>
                 </div>
@@ -3579,11 +3600,11 @@ require dirname(__DIR__) . '/inc/head.php';
               <div id="product-edit-form" class="admin-subsection is-compact<?= $focusPanel === 'product_edit' ? ' is-focused' : '' ?>">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>Tu doplnis stranku produktu a obrazok</h3>
-                    <p class="admin-meta">Sem ta posielaju tlacidla vyssie. Najprv sem doplnis adresu konkretneho produktu v obchode, potom ulozis produkt a az potom nacitas udaje z obchodu.</p>
+                    <h3>Tu doplnis produkt</h3>
+                    <p class="admin-meta">Sem ta posielaju tlacidla vyssie. Najprv sem vlozis link produktu alebo Dognet link. Admin sa potom pokusi sam doplnit zvysok.</p>
                   </div>
                 </div>
-                <div class="admin-flash is-success" style="margin-bottom:16px;">Bezny postup: 1. dopln adresu produktu v obchode alebo najprv uloz klikaci odkaz -> 2. klikni Ulozit produkt -> 3. klikni Nacitat udaje z obchodu -> 4. klikni Ulozit obrazok z e-shopu.</div>
+                <div class="admin-flash is-success" style="margin-bottom:16px;">Bezny postup: 1. vloz link produktu alebo Dognet link -> 2. klikni Ulozit produkt -> 3. klikni Nacitat udaje z obchodu -> 4. klikni Ulozit obrazok z e-shopu.</div>
                 <input type="hidden" name="product_slug" value="<?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?>" />
                 <input type="hidden" name="merchant_slug" value="<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>" />
                 <p class="admin-note"><strong>Kod produktu:</strong> <?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?><?php if (trim((string) ($selectedProduct['merchant_slug'] ?? '')) !== ''): ?> / <strong>Kod obchodu:</strong> <?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?><?php endif; ?></p>
@@ -3593,9 +3614,9 @@ require dirname(__DIR__) . '/inc/head.php';
                   <label><span>Obchod</span><input type="text" name="merchant" value="<?= esc((string) ($selectedProduct['merchant'] ?? '')) ?>" /></label>
                 </div>
                 <div class="admin-grid one-up">
-                  <label><span>Priama adresa produktu v obchode</span><input type="url" name="fallback_url" value="<?= esc((string) ($selectedProduct['fallback_url'] ?? '')) ?>" placeholder="https://obchod.sk/konkretny-produkt" /></label>
+                  <label><span>Link produktu alebo priamy link na produkt</span><input type="url" name="fallback_url" value="<?= esc((string) ($selectedProduct['fallback_url'] ?? '')) ?>" placeholder="https://obchod.sk/konkretny-produkt alebo Dognet link" /></label>
                 </div>
-                <p class="admin-note">Sem patri priamo stranka jedneho konkretneho produktu v obchode. Ak uz ma produkt klikaci /go/ odkaz, admin si ju casto doplni sam. Ty ju dopln len vtedy, ked ju admin este nepozna.</p>
+                <p class="admin-note">Sem mozes vlozit bud priamu stranku produktu v obchode, alebo Dognet link pre tento produkt. Ak admin link uz pozna, doplnit ho netreba.</p>
                 <details class="admin-subsection is-compact">
                   <summary><strong>Dalsie nastavenia produktu</strong> - otvor len ked ich naozaj potrebujes</summary>
                   <div class="admin-grid three-up">
@@ -4593,21 +4614,21 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p class="admin-note">Pri produktoch najprv skus obrazok z e-shopu. Vlastny upload pouzi az ked nic ine nie je.</p>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($selectedProductSlug) ?>&amp;product_image_filter=missing">Otvorit Produkty</a>
-                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Workflow clanku</a>
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Obrazky clanku</a>
                   </div>
                 </article>
                 <article class="admin-help-card">
-                  <h3>Doplnit Dognet link</h3>
-                  <p class="admin-note">Finalny deeplink patri do centralnej affiliate sekcie.</p>
+                  <h3>Doplnit odkaz do obchodu</h3>
+                  <p class="admin-note">Finalny Dognet link alebo iny finalny odkaz do obchodu patri sem.</p>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($selectedAffiliateCode) ?>">Odkazy do obchodov</a>
-                    <?php if ($selectedAffiliateCode !== ''): ?><a class="btn btn-secondary btn-small" href="/go/<?= rawurlencode($selectedAffiliateCode) ?>" target="_blank" rel="noopener">Otvorit /go/</a><?php endif; ?>
+                    <?php if ($selectedAffiliateCode !== ''): ?><a class="btn btn-secondary btn-small" href="/go/<?= rawurlencode($selectedAffiliateCode) ?>" target="_blank" rel="noopener">Otvorit /go/ odkaz</a><?php endif; ?>
                   </div>
                 </article>
                 <?php if ($productAffiliateQueue !== []): ?>
                   <article class="admin-help-card">
-                    <h3>Dognet linky, ktore treba doplnit</h3>
-                    <p class="admin-note">Tu zacni, ked chces len dobehnut chybajuce affiliate napojenia.</p>
+                    <h3>Odkazy do obchodov, ktore este chyba doplnit</h3>
+                    <p class="admin-note">Tu zacni, ked chces len dobehnut chybajuce odkazy do obchodov.</p>
                     <div class="admin-queue-list">
                       <?php foreach (array_slice($productAffiliateQueue, 0, 4) as $queueRow): ?>
                         <article class="admin-queue-item">
@@ -4618,9 +4639,9 @@ require dirname(__DIR__) . '/inc/head.php';
                           </div>
                           <div class="admin-queue-actions">
                             <?php if (trim((string) ($queueRow['affiliate_code'] ?? '')) !== ''): ?>
-                              <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($queueRow['affiliate_code'] ?? '')) ?>">Affiliate</a>
+                              <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($queueRow['affiliate_code'] ?? '')) ?>">Upravit odkaz</a>
                             <?php else: ?>
-                              <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($queueRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($queueRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc((string) ($queueRow['slug'] ?? '')) ?>">Vytvorit affiliate</a>
+                              <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($queueRow['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($queueRow['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc(interessa_admin_slugify((string) ($queueRow['merchant'] ?? ''))) ?>&amp;prefill_product_slug=<?= esc((string) ($queueRow['slug'] ?? '')) ?>">Vytvorit odkaz</a>
                             <?php endif; ?>
                             <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) ($queueRow['slug'] ?? '')) ?>">Upravit produkt</a>
                           </div>

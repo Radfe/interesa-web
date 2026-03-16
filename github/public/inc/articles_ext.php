@@ -922,4 +922,264 @@ $ART += [
     'Ako si pri zinku nastavit co najjednoduchsie fungovanie, aby nebral dalsiu pozornost a mentalnu kapacitu navyse.',
     'mineraly',
   ],
+  'multivitamin-na-vikend-mimo-rezimu-ako-ho-udrzat' => [
+    'Multivitamin na vikend mimo rezimu - ako ho udrzat',
+    'Ako si pri multivitamine udrzat jednoduchu rutinu aj cez vikend, ked den vyzera inak nez bezny pracovny rezim.',
+    'vyziva',
+  ],
+  'multivitamin-v-tyzdni-s-cestami-ako-ho-nezamotat' => [
+    'Multivitamin v tyzdni s cestami - ako ho nezamotat',
+    'Ako si pri multivitamine zjednodusit tyzden s cestami tak, aby suplementacia nebola dalsia organizacna starost navyse.',
+    'vyziva',
+  ],
+  'multivitamin-ako-jedna-velmi-jednoducha-rutina' => [
+    'Multivitamin ako jedna velmi jednoducha rutina',
+    'Preco pri multivitamine casto najlepiej funguje jedna jednoducha a nudna rutina, ktoru vies opakovat bez velkeho odporu.',
+    'vyziva',
+  ],
+  'vitamin-c-na-vikend-mimo-rezimu-ako-ho-udrzat' => [
+    'Vitamin C na vikend mimo rezimu - ako ho udrzat',
+    'Ako si pri vitamine C zachovat jednoduchu rutinu aj cez vikend, ked sa ti meni bezny den a casy jedla.',
+    'mineraly',
+  ],
+  'vitamin-c-v-tyzdni-s-cestami-ako-ho-zjednodusit' => [
+    'Vitamin C v tyzdni s cestami - ako ho zjednodusit',
+    'Ako si pri vitamine C zjednodusit tyzden s cestami tak, aby nebol dalsou komplikaciou navyse.',
+    'mineraly',
+  ],
+  'vitamin-c-ako-jedna-velmi-jednoducha-rutina' => [
+    'Vitamin C ako jedna velmi jednoducha rutina',
+    'Preco pri vitamine C casto vyhrava jedna velmi jednoducha rutina nad zbytocne komplikovanym planom.',
+    'mineraly',
+  ],
+  'beta-glukan-na-vikend-mimo-rezimu-ako-ho-udrzat' => [
+    'Beta glukan na vikend mimo rezimu - ako ho udrzat',
+    'Ako si pri beta glukane zachovat jednoduchu rutinu aj cez vikend, ked den nebezi podla bezneho tyzdnoveho rezimu.',
+    'imunita',
+  ],
+  'beta-glukan-v-tyzdni-s-cestami-ako-ho-zjednodusit' => [
+    'Beta glukan v tyzdni s cestami - ako ho zjednodusit',
+    'Ako si pri beta glukane zjednodusit rozhadzany tyzden s presunmi bez dalsich zbytocnych pravidiel navyse.',
+    'imunita',
+  ],
+  'beta-glukan-ako-jedna-velmi-jednoducha-rutina' => [
+    'Beta glukan ako jedna velmi jednoducha rutina',
+    'Preco pri beta glukane casto funguje najlepsie jedna mala rutina, ktoru vies opakovat bez velkej mentalnej zataze.',
+    'imunita',
+  ],
+  'kolagen-na-vikend-mimo-rezimu-ako-ho-udrzat' => [
+    'Kolagen na vikend mimo rezimu - ako ho udrzat',
+    'Ako si pri kolagene zachovat jednoduchu rutinu aj cez vikend, ked sa rano aj cely den odlisuje od bezneho pracovneho rezimu.',
+    'klby-koza',
+  ],
+  'protein-ako-mala-zaloha-na-cesty' => [
+    'Protein ako mala zaloha na cesty',
+    'Ako mat protein na cestach ako jednoduchu poistku bez zbytocneho komplikovania a dalsich pravidiel navyse.',
+    'proteiny',
+  ],
+  'protein-jeden-fixny-zvyk-namiesto-vela-pravidiel' => [
+    'Protein - jeden fixny zvyk namiesto vela pravidiel',
+    'Preco pri proteine casto funguje najlepiej jeden jednoduchy zvyk namiesto viacerych pravidiel a scenarov.',
+    'proteiny',
+  ],
+  'protein-navrat-k-rutine-po-rozhadzanom-vikende' => [
+    'Protein - navrat k rutine po rozhadzanom vikende',
+    'Ako sa po rozhadzanom vikende vratit pri proteine k jednoduchej rutine bez zbytocneho tlaku a dobiehania.',
+    'proteiny',
+  ],
+  'horcik-jedna-mala-zaloha-na-cesty' => [
+    'Horcik - jedna mala zaloha na cesty',
+    'Kedy moze byt pri horciku mala cestovna zaloha uzitocna a ako z nej neurobit dalsi komplikovany system navyse.',
+    'mineraly',
+  ],
+  'horcik-jeden-fixny-zvyk-namiesto-vela-pravidiel' => [
+    'Horcik - jeden fixny zvyk namiesto vela pravidiel',
+    'Preco pri horciku casto funguje najlepiej jeden jednoduchy zvyk namiesto viacerych pravidiel a idealnych scenarov.',
+    'mineraly',
+  ],
+  'horcik-navrat-k-rutine-po-rozhadzanom-vikende' => [
+    'Horcik - navrat k rutine po rozhadzanom vikende',
+    'Ako sa po rozhadzanom vikende vratit pri horciku k jednoduchej rutine bez zbytocneho tlaku a dramatizovania.',
+    'mineraly',
+  ],
+  'omega-3-jedna-mala-zaloha-na-cesty' => [
+    'Omega-3 - jedna mala zaloha na cesty',
+    'Kedy moze byt pri omega-3 mala cestovna zaloha uzitocna a ako ju udrzat co najjednoduchsou.',
+    'vyziva',
+  ],
+  'omega-3-jeden-fixny-zvyk-namiesto-vela-pravidiel' => [
+    'Omega-3 - jeden fixny zvyk namiesto vela pravidiel',
+    'Preco pri omega-3 casto funguje najlepiej jeden jednoduchy zvyk namiesto viacerych pravidiel a staleho rozhodovania.',
+    'vyziva',
+  ],
+  'omega-3-navrat-k-rutine-po-rozhadzanom-vikende' => [
+    'Omega-3 - navrat k rutine po rozhadzanom vikende',
+    'Ako sa po rozhadzanom vikende vratit pri omega-3 k jednoduchej rutine bez zbytocneho restartovania celeho systemu.',
+    'vyziva',
+  ],
+  'probiotika-jedna-mala-zaloha-na-cesty' => [
+    'Probiotika - jedna mala zaloha na cesty',
+    'Kedy moze byt pri probiotikach mala cestovna zaloha uzitocna a ako z nej neurobit dalsiu komplikaciu navyse.',
+    'imunita',
+  ],
+  'probiotika-jeden-fixny-zvyk-namiesto-vela-pravidiel' => [
+    'Probiotika - jeden fixny zvyk namiesto vela pravidiel',
+    'Preco pri probiotikach casto funguje najlepiej jeden jednoduchy zvyk namiesto prilis vela pravidiel a scenarov.',
+    'imunita',
+  ],
+  'probiotika-navrat-k-rutine-po-rozhadzanom-vikende' => [
+    'Probiotika - navrat k rutine po rozhadzanom vikende',
+    'Ako sa po rozhadzanom vikende vratit pri probiotikach k jednoduchej rutine bez zbytocneho tlaku a dramatizovania.',
+    'imunita',
+  ],
+  'vitamin-d3-jedna-mala-zaloha-na-cesty' => [
+    'Vitamin D3 - jedna mala zaloha na cesty',
+    'Kedy moze byt pri D3 mala cestovna zaloha uzitocna a ako ju udrzat co najjednoduchsiu.',
+    'mineraly',
+  ],
+  'vitamin-d3-jeden-fixny-zvyk-namiesto-vela-pravidiel' => [
+    'Vitamin D3 - jeden fixny zvyk namiesto vela pravidiel',
+    'Preco pri D3 casto funguje najlepiej jeden jednoduchy zvyk namiesto viacerych pravidiel a idealnych scenarov.',
+    'mineraly',
+  ],
+  'vitamin-d3-navrat-k-rutine-po-rozhadzanom-vikende' => [
+    'Vitamin D3 - navrat k rutine po rozhadzanom vikende',
+    'Ako sa po rozhadzanom vikende vratit pri D3 k jednoduchej rutine bez zbytocneho tlaku a restartovania celeho systemu.',
+    'mineraly',
+  ],
+  'zinok-jedna-mala-zaloha-na-cesty' => [
+    'Zinok - jedna mala zaloha na cesty',
+    'Kedy moze byt pri zinku mala cestovna zaloha uzitocna a ako z nej neurobit dalsiu komplikaciu navyse.',
+    'mineraly',
+  ],
+  'zinok-jeden-fixny-zvyk-namiesto-vela-pravidiel' => [
+    'Zinok - jeden fixny zvyk namiesto vela pravidiel',
+    'Preco pri zinku casto funguje najlepiej jeden jednoduchy zvyk namiesto viacerych pravidiel a idealnych scenarov.',
+    'mineraly',
+  ],
+  'zinok-navrat-k-rutine-po-rozhadzanom-vikende' => [
+    'Zinok - navrat k rutine po rozhadzanom vikende',
+    'Ako sa po rozhadzanom vikende vratit pri zinku k jednoduchej rutine bez zbytocneho restartovania a tlaku navyse.',
+    'mineraly',
+  ],
+  'multivitamin-jedna-mala-zaloha-na-cesty' => [
+    'Multivitamin - jedna mala zaloha na cesty',
+    'Kedy moze byt pri multivitamine mala cestovna zaloha uzitocna a ako z nej neurobit dalsi komplikovany system.',
+    'vyziva',
+  ],
+  'multivitamin-jeden-fixny-zvyk-namiesto-vela-pravidiel' => [
+    'Multivitamin - jeden fixny zvyk namiesto vela pravidiel',
+    'Preco pri multivitamine casto funguje najlepiej jeden jednoduchy zvyk namiesto viacerych pravidiel a scenarov.',
+    'vyziva',
+  ],
+  'multivitamin-navrat-k-rutine-po-rozhadzanom-vikende' => [
+    'Multivitamin - navrat k rutine po rozhadzanom vikende',
+    'Ako sa po rozhadzanom vikende vratit pri multivitamine k jednoduchej rutine bez zbytocneho restartovania.',
+    'vyziva',
+  ],
+  'vitamin-c-jedna-mala-zaloha-na-cesty' => [
+    'Vitamin C - jedna mala zaloha na cesty',
+    'Kedy moze byt pri vitamine C mala cestovna zaloha uzitocna a ako ju udrzat co najjednoduchsiu.',
+    'mineraly',
+  ],
+  'vitamin-c-jeden-fixny-zvyk-namiesto-vela-pravidiel' => [
+    'Vitamin C - jeden fixny zvyk namiesto vela pravidiel',
+    'Preco pri vitamine C casto funguje najlepiej jeden jednoduchy zvyk namiesto viacerych pravidiel a idealnych scenarov.',
+    'mineraly',
+  ],
+  'vitamin-c-navrat-k-rutine-po-rozhadzanom-vikende' => [
+    'Vitamin C - navrat k rutine po rozhadzanom vikende',
+    'Ako sa po rozhadzanom vikende vratit pri vitamine C k jednoduchej rutine bez zbytocneho restartovania a tlaku.',
+    'mineraly',
+  ],
+  'beta-glukan-jedna-mala-zaloha-na-cesty' => [
+    'Beta glukan - jedna mala zaloha na cesty',
+    'Kedy moze byt pri beta glukane mala cestovna zaloha uzitocna a ako ju udrzat jednoduchou a praktickou.',
+    'imunita',
+  ],
+  'beta-glukan-jeden-fixny-zvyk-namiesto-vela-pravidiel' => [
+    'Beta glukan - jeden fixny zvyk namiesto vela pravidiel',
+    'Preco pri beta glukane casto funguje najlepiej jeden jednoduchy zvyk namiesto viacerych pravidiel a vynimiek.',
+    'imunita',
+  ],
+  'beta-glukan-navrat-k-rutine-po-rozhadzanom-vikende' => [
+    'Beta glukan - navrat k rutine po rozhadzanom vikende',
+    'Ako sa po rozhadzanom vikende vratit pri beta glukane k jednoduchej rutine bez zbytocneho restartovania celeho systemu.',
+    'imunita',
+  ],
+  'kolagen-jedna-mala-zaloha-na-cesty' => [
+    'Kolagen - jedna mala zaloha na cesty',
+    'Kedy moze byt pri kolagene mala cestovna zaloha uzitocna a ako ju udrzat praktickou bez zbytocneho komplikovania.',
+    'klby-koza',
+  ],
+  'kolagen-jeden-fixny-zvyk-namiesto-vela-pravidiel' => [
+    'Kolagen - jeden fixny zvyk namiesto vela pravidiel',
+    'Preco pri kolagene casto funguje najlepiej jeden jednoduchy zvyk namiesto viacerych pravidiel a komplikovaneho planu.',
+    'klby-koza',
+  ],
+  'kolagen-navrat-k-rutine-po-rozhadzanom-vikende' => [
+    'Kolagen - navrat k rutine po rozhadzanom vikende',
+    'Ako sa po rozhadzanom vikende vratit pri kolagene k jednoduchej rutine bez zbytocneho dobiehania a restartov.',
+    'klby-koza',
+  ],
+  'protein-ked-nestihas-obed-co-je-najpraktickejsie' => [
+    'Protein ked nestihas obed - co je najpraktickejsie',
+    'Kedy moze byt protein praktickou pomocou, ked nestihas obed, a ako z neho neurobit dalsiu komplikaciu navyse.',
+    'proteiny',
+  ],
+  'protein-pri-dlhom-pracovnom-tyzdni-ako-ho-zjednodusit' => [
+    'Protein pri dlhom pracovnom tyzdni - ako ho zjednodusit',
+    'Ako si pri proteine zjednodusit dlhy pracovny tyzden tak, aby ti setril trenie a nepridaval dalsie rozhodovanie.',
+    'proteiny',
+  ],
+  'protein-co-najmenej-rozhodovania-v-beznom-dni' => [
+    'Protein - co najmenej rozhodovania v beznom dni',
+    'Preco pri proteine casto funguje najlepsie jedna jednoducha verzia na par jasnych situacii namiesto staleho rozhodovania.',
+    'proteiny',
+  ],
+  'horcik-ked-nestihas-obed-ako-nekomplikovat-den' => [
+    'Horcik ked nestihas obed - ako nekomplikovat den',
+    'Ako pri horciku nekomplikovat rozhadzany den dalsimi pravidlami a radsej si udrzat jednoduchu vecernu kotvu.',
+    'mineraly',
+  ],
+  'horcik-pri-dlhom-pracovnom-tyzdni-ako-ho-udrzat' => [
+    'Horcik pri dlhom pracovnom tyzdni - ako ho udrzat',
+    'Ako si pri horciku udrzat jednoduchu a odolnu rutinu aj v dlhom pracovnom tyzdni bez zbytocneho mikromanazmentu.',
+    'mineraly',
+  ],
+  'horcik-co-najmenej-rozhodovania-v-beznom-dni' => [
+    'Horcik - co najmenej rozhodovania v beznom dni',
+    'Preco pri horciku casto funguje najlepiej jedno miesto a jeden zvyk namiesto staleho upravovania planu.',
+    'mineraly',
+  ],
+  'omega-3-ked-nestihas-obed-ako-to-nekomplikovat' => [
+    'Omega-3 ked nestihas obed - ako to nekomplikovat',
+    'Ako si pri omega-3 nekomplikovat den dalsim ritualom, ked nestihas obed a bezny plan sa rozpada.',
+    'vyziva',
+  ],
+  'omega-3-pri-dlhom-pracovnom-tyzdni-ako-ju-udrzat' => [
+    'Omega-3 pri dlhom pracovnom tyzdni - ako ju udrzat',
+    'Ako si pri omega-3 udrzat jednoduchsie fungovanie aj v dlhom pracovnom tyzdni bez zbytocneho tlaku na idealny plan.',
+    'vyziva',
+  ],
+  'omega-3-co-najmenej-rozhodovania-v-beznom-dni' => [
+    'Omega-3 - co najmenej rozhodovania v beznom dni',
+    'Preco pri omega-3 casto funguje najlepsie minimum rozhodovania a jedna jednoducha kotva v dni.',
+    'vyziva',
+  ],
+  'probiotika-ked-nestihas-obed-ako-ich-nekomplikovat' => [
+    'Probiotika ked nestihas obed - ako ich nekomplikovat',
+    'Ako si pri probiotikach nekomplikovat rozhadzany den, ked nestihas obed a nechces pridavat dalsi tlak navyse.',
+    'imunita',
+  ],
+  'probiotika-pri-dlhom-pracovnom-tyzdni-ako-ich-udrzat' => [
+    'Probiotika pri dlhom pracovnom tyzdni - ako ich udrzat',
+    'Ako si pri probiotikach udrzat jednoduchu rutinu aj v dlhom pracovnom tyzdni bez zbytocneho mikromanazmentu.',
+    'imunita',
+  ],
+  'probiotika-co-najmenej-rozhodovania-v-beznom-dni' => [
+    'Probiotika - co najmenej rozhodovania v beznom dni',
+    'Preco pri probiotikach casto funguje najlepsie minimum rozhodovania a jeden jednoduchy opakovany zvyk.',
+    'imunita',
+  ],
 ];
