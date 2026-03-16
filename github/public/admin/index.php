@@ -10,7 +10,7 @@ require_once dirname(__DIR__) . '/inc/article-commerce.php';
 
 function interessa_admin_selected_section(): string {
     $section = strtolower(trim((string) ($_GET['section'] ?? 'articles')));
-    return in_array($section, ['articles', 'products', 'images', 'affiliates', 'tools', 'help'], true) ? $section : 'articles';
+    return in_array($section, ['articles', 'products', 'images', 'affiliates', 'brand', 'tools', 'help'], true) ? $section : 'articles';
 }
 
 function interessa_admin_redirect(string $section, array $query = []): never {
@@ -1551,6 +1551,20 @@ if ($isAuthed) {
                 interessa_admin_redirect('products', ['product' => $slug, 'saved' => 'product']);
             }
 
+            if ($action === 'save_brand_logo') {
+                if (empty($_FILES['brand_logo_file']['tmp_name'])) {
+                    throw new RuntimeException('Najprv vyber subor s logom.');
+                }
+
+                interessa_admin_store_uploaded_brand_file('logo-full', $_FILES['brand_logo_file'], ['svg', 'png', 'jpg', 'jpeg', 'webp'], 'svg');
+                interessa_admin_redirect('brand', ['saved' => 'logo']);
+            }
+
+            if ($action === 'save_brand_icon_bundle') {
+                interessa_admin_store_brand_icon_bundle($_FILES);
+                interessa_admin_redirect('brand', ['saved' => 'icon']);
+            }
+
             if ($action === 'prepare_product_from_link') {
                 $slug = trim((string) ($_POST['product_slug'] ?? ''));
                 $returnSection = trim((string) ($_POST['return_section'] ?? ''));
@@ -1915,6 +1929,20 @@ $selectedThemeThumbLocalAsset = $selectedThemeSlug !== '' && function_exists('in
     : '';
 $selectedThemeImageSource = $selectedThemeLocalAsset !== '' ? 'vlastny obrazok temy' : 'docasny fallback';
 $selectedThemeThumbImageSource = $selectedThemeThumbLocalAsset !== '' ? 'vlastny mensi obrazok temy' : 'docasny fallback';
+$brandLogoImage = interessa_brand_image_meta('logo-full', true);
+$brandIconImage = interessa_brand_image_meta('logo-icon', true);
+$brandFaviconAsset = is_file(dirname(__DIR__) . '/assets/img/brand/favicon-32.png') ? 'img/brand/favicon-32.png' : '';
+$brandAppleTouchAsset = is_file(dirname(__DIR__) . '/assets/img/brand/apple-touch-icon.png') ? 'img/brand/apple-touch-icon.png' : '';
+$brandPromptLibrary = [
+    'logo' => [
+        'title' => 'Hlavne logo',
+        'note' => 'Vytvor ciste, doveryhodne a lahko citatelne logo pre Interesa.sk. Ma fungovat na svetlom pozadi, bez zbytocnych detailov.',
+    ],
+    'icon' => [
+        'title' => 'Maly symbol a ikonka stranky',
+        'note' => 'Vytvor jednoduchy symbol pre Interesa.sk. Musi byt citatelny aj v malom rozmere 32x32 a bez textu.',
+    ],
+];
 $selectedArticleOverride = $selectedArticleSlug !== '' ? interessa_admin_article_content($selectedArticleSlug) : interessa_admin_normalize_article_override('', []);
 $articlePrompt = $selectedArticleSlug !== '' ? interessa_hero_prompt_meta($selectedArticleSlug) : [];
 $selectedArticleHero = $selectedArticleSlug !== '' ? interessa_article_image_meta($selectedArticleSlug, 'hero', true) : null;
@@ -2256,7 +2284,7 @@ require dirname(__DIR__) . '/inc/head.php';
         <div class="admin-sidebar-head">
           <div>
             <h1>Admin</h1>
-            <p class="admin-meta">Interny panel na spravu clankov, produktov, obrazkov a odkazov.</p>
+            <p class="admin-meta">Jednoducha sprava clankov, produktov, obrazkov a odkazu.</p>
           </div>
           <form method="post">
             <input type="hidden" name="action" value="logout" />
@@ -2267,13 +2295,14 @@ require dirname(__DIR__) . '/inc/head.php';
           <a class="<?= $section === 'articles' ? 'is-active' : '' ?>" href="/admin?section=articles&slug=<?= esc($selectedArticleSlug) ?>">Clanky</a>
           <a class="<?= $section === 'products' ? 'is-active' : '' ?>" href="/admin?section=products&product=<?= esc($selectedProductSlug) ?>">Produkty</a>
           <a class="<?= $section === 'images' ? 'is-active' : '' ?>" href="/admin?section=images&slug=<?= esc($selectedArticleSlug) ?>">Obrazky</a>
-          <a class="<?= $section === 'affiliates' ? 'is-active' : '' ?>" href="/admin?section=affiliates&code=<?= esc($selectedAffiliateCode) ?>">Affiliate odkazy</a>
+          <a class="<?= $section === 'affiliates' ? 'is-active' : '' ?>" href="/admin?section=affiliates&code=<?= esc($selectedAffiliateCode) ?>">Odkazy do obchodu</a>
+          <a class="<?= $section === 'brand' ? 'is-active' : '' ?>" href="/admin?section=brand">Logo a ikonka</a>
           <a class="<?= $section === 'tools' ? 'is-active' : '' ?>" href="/admin?section=tools">Import / export</a>
           <a class="<?= $section === 'help' ? 'is-active' : '' ?>" href="/admin?section=help">Pomoc / quickstart</a>
           <a href="/admin/ai-status">AI status</a>
         </nav>
         <div class="admin-note">
-          Tu spravujes texty, obrazky a klikacie odkazy. Stranka ta ma viest krok po kroku.
+          Tu spravujes obsah webu. V kazdej casti mas len tie kroky, ktore teraz naozaj potrebujes.
         </div>
         <section class="admin-quickstart">
           <h2>Rychly start</h2>
@@ -2300,6 +2329,12 @@ require dirname(__DIR__) . '/inc/head.php';
               <li>Tu riesis kam clovek po kliknuti odide.</li>
               <li>Vyber alebo vytvor interny /go/ odkaz.</li>
               <li>Vloz finalnu cielovu URL a potom skontroluj klik na webe.</li>
+            </ol>
+          <?php elseif ($section === 'brand'): ?>
+            <ol class="admin-quickstart-list">
+              <li>Nahraj hlavne logo, ak chces zmenit logo v hlavicke webu.</li>
+              <li>Nahraj zdrojovy obrazok pre ikonku stranky.</li>
+              <li>Admin z nej pripravi male verzie pre prehliadac a mobil.</li>
             </ol>
           <?php elseif ($section === 'help'): ?>
             <ol class="admin-quickstart-list">

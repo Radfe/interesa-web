@@ -127,6 +127,11 @@ $ART += [
     'Kedy je multivitamin praktickou poistkou, kedy je to len pohodlna skratka a co sledovat na etikete.',
     'vyziva',
   ],
+  'multivitamin-rano-alebo-vecer-zalezi-na-tom' => [
+    'Multivitamin rano alebo vecer - zalezi na tom',
+    'Kedy je pri multivitamine dolezitejsia pravidelnost a jednoducha rutina nez presna hodina a preco netreba z jednej kapsuly robit dalsi kazdodenny projekt.',
+    'vyziva',
+  ],
   'magnezium-bisglycinat-vs-citrat-aky-je-rozdiel' => [
     'Magnezium bisglycinat vs citrat - aky je rozdiel',
     'Kedy dava vacsi zmysel bisglycinat, kedy citrat a preco netreba automaticky kupovat najdrahsiu formu len preto, ze znie lepsie.',
@@ -262,6 +267,21 @@ $ART += [
     'Kedy dava kolagen po tridsiatke prakticky zmysel, preco sa tato tema tak casto spomina a preco netreba z jednej vekovej hranice robit automaticke pravidlo pre kazdeho.',
     'klby-koza',
   ],
+  'kolagen-v-prasku-vs-kapsuly-co-je-praktickejsie' => [
+    'Kolagen v prasku vs kapsuly - co je praktickejsie',
+    'Kedy dava vacsi zmysel kolagen v prasku, kedy kapsuly a preco pri vybere casto viac zavazi pohodlie a dlhodoba pouzitelnost nez forma sama o sebe.',
+    'klby-koza',
+  ],
+  'kolagen-v-tabletach-vs-prasok-co-si-vybrat' => [
+    'Kolagen v tabletkach vs prasok - co si vybrat',
+    'Kedy mozu byt prakticke tablety, kedy prasok a preco pri kolagene casto viac zavazi pohodlie a pravidelnost nez forma sama o sebe.',
+    'klby-koza',
+  ],
+  'kolagen-v-kapse-vs-prasok-na-cesty-co-je-praktickejsie' => [
+    'Kolagen v kapse vs prasok na cesty - co je praktickejsie',
+    'Kedy je pri kolagene praktickejsia forma do kapsy, kedy prasok a preco pri cestovani casto viac zavazi pohodlie a pravidelnost nez teoria okolo idealnej formy.',
+    'klby-koza',
+  ],
   'vitamin-c' => [
     'Vitamin C - davky, zdroje a kedy ho doplnat',
     'Kedy vitamin C staci zo stravy, kedy dava zmysel doplnok a preco viac nie je vzdy lepsie.',
@@ -282,6 +302,16 @@ $ART += [
     'Kedy je pri zinku dolezitejsia jednoduchost a pravidelnost nez presna hodina a preco netreba z neho robit zlozity ritual.',
     'mineraly',
   ],
+  'zinok-s-jedlom-alebo-nalacno-zalezi-na-tom' => [
+    'Zinok s jedlom alebo nalacno - zalezi na tom',
+    'Kedy je pri zinku dolezitejsia jednoduchost a tolerancia nez jedna spravna teoria a preco netreba z bezneho doplnku robit dalsi kazdodenny experiment.',
+    'mineraly',
+  ],
+  'horcik-s-jedlom-alebo-nalacno-zalezi-na-tom' => [
+    'Horcik s jedlom alebo nalacno - zalezi na tom',
+    'Kedy je pri horciku dolezitejsia jednoduchost a tolerancia nez internetove pravidla a preco netreba z bezneho doplnku robit dalsi kazdodenny experiment.',
+    'mineraly',
+  ],
   'veganske-proteiny-top-vyber-2025' => [
     'Veganske proteiny - top vyber 2026',
     'Najlepsie rastlinne proteiny (hrach, ryza, soja, zmesi). Otestovane podla chuti, zlozenia a ceny.',
@@ -300,6 +330,21 @@ $ART += [
   'protein-ked-necvicis-oplati-sa-alebo-nie' => [
     'Protein ked necvicis - oplati sa alebo nie',
     'Kedy dava protein zmysel aj mimo cvicenia, kedy je to len pohodlna forma bielkovin a preco netreba tento doplnok automaticky spajat len s fitkom.',
+    'proteiny',
+  ],
+  'protein-do-kavy-oplati-sa-alebo-nie' => [
+    'Protein do kavy - oplati sa alebo nie',
+    'Kedy moze byt protein v kave praktickym sposobom, ako si ulahcit den, a kedy z toho netreba robit povinnu fit rutinu pre kazdeho.',
+    'proteiny',
+  ],
+  'protein-pred-spankom-oplati-sa-alebo-nie' => [
+    'Protein pred spankom - oplati sa alebo nie',
+    'Kedy moze byt protein pred spankom prakticky, kedy je to zbytocne riesenie navyse a preco netreba z vecernej rutiny robit povinne fit pravidlo.',
+    'proteiny',
+  ],
+  'protein-v-necviciaci-den-oplati-sa-alebo-nie' => [
+    'Protein v necviciaci den - oplati sa alebo nie',
+    'Kedy ma protein zmysel aj v den bez treningu, kedy je to len pohodlna forma bielkovin a preco netreba tento doplnok vnimat len cez dni, ked cvicis.',
     'proteiny',
   ],
 ];

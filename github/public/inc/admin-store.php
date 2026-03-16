@@ -17,6 +17,124 @@ if (!function_exists('interessa_admin_ensure_dir')) {
     }
 }
 
+if (!function_exists('interessa_admin_brand_dir')) {
+    function interessa_admin_brand_dir(): string {
+        return dirname(__DIR__) . '/assets/img/brand';
+    }
+}
+
+if (!function_exists('interessa_admin_delete_asset_variants')) {
+    function interessa_admin_delete_asset_variants(string $basePathWithoutExtension): void {
+        foreach (['svg', 'png', 'jpg', 'jpeg', 'webp'] as $ext) {
+            $candidate = $basePathWithoutExtension . '.' . $ext;
+            if (is_file($candidate)) {
+                @unlink($candidate);
+            }
+        }
+    }
+}
+
+if (!function_exists('interessa_admin_brand_uploaded_extension')) {
+    function interessa_admin_brand_uploaded_extension(array $file, array $allowed = ['svg', 'png', 'jpg', 'jpeg', 'webp'], string $default = 'png'): string {
+        $default = strtolower(trim($default)) ?: 'png';
+        $allowed = array_values(array_unique(array_map(static fn(string $ext): string => strtolower(trim($ext)), $allowed)));
+        $tmp = (string) ($file['tmp_name'] ?? '');
+        $name = strtolower((string) ($file['name'] ?? ''));
+
+        if ($name !== '') {
+            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            if ($ext === 'jpeg') {
+                $ext = 'jpg';
+            }
+            if (in_array($ext, $allowed, true)) {
+                return $ext;
+            }
+        }
+
+        if ($tmp !== '' && is_file($tmp)) {
+            $prefix = @file_get_contents($tmp, false, null, 0, 256);
+            if (is_string($prefix) && preg_match('~<svg[\s>]~i', $prefix)) {
+                if (in_array('svg', $allowed, true)) {
+                    return 'svg';
+                }
+            }
+        }
+
+        $ext = interessa_admin_uploaded_image_extension($file, $default);
+        if (in_array($ext, $allowed, true)) {
+            return $ext;
+        }
+
+        return $default;
+    }
+}
+
+if (!function_exists('interessa_admin_store_uploaded_brand_file')) {
+    function interessa_admin_store_uploaded_brand_file(string $baseName, array $file, array $allowed = ['svg', 'png', 'jpg', 'jpeg', 'webp'], string $default = 'png'): string {
+        $baseName = interessa_admin_slugify($baseName);
+        if ($baseName === '') {
+            throw new RuntimeException('Chyba nazov suboru pre logo alebo ikonku.');
+        }
+
+        $tmp = (string) ($file['tmp_name'] ?? '');
+        if ($tmp === '' || !is_uploaded_file($tmp)) {
+            throw new RuntimeException('Subor pre logo alebo ikonku nebol korektne nahraty.');
+        }
+
+        $ext = interessa_admin_brand_uploaded_extension($file, $allowed, $default);
+        $targetBase = interessa_admin_brand_dir() . '/' . $baseName;
+        interessa_admin_ensure_dir(dirname($targetBase));
+        interessa_admin_delete_asset_variants($targetBase);
+        $target = $targetBase . '.' . $ext;
+
+        if (!move_uploaded_file($tmp, $target)) {
+            throw new RuntimeException('Nepodarilo sa ulozit logo alebo ikonku.');
+        }
+
+        return 'img/brand/' . $baseName . '.' . $ext;
+    }
+}
+
+if (!function_exists('interessa_admin_store_brand_icon_bundle')) {
+    function interessa_admin_store_brand_icon_bundle(array $files): array {
+        $expected = [
+            'logo_icon' => 'logo-icon.png',
+            'favicon_32' => 'favicon-32.png',
+            'favicon_48' => 'favicon-48.png',
+            'apple_touch_icon' => 'apple-touch-icon.png',
+        ];
+
+        $saved = [];
+        interessa_admin_ensure_dir(interessa_admin_brand_dir());
+        interessa_admin_delete_asset_variants(interessa_admin_brand_dir() . '/logo-icon');
+
+        foreach ($expected as $field => $fileName) {
+            $file = $files[$field] ?? null;
+            if (!is_array($file)) {
+                throw new RuntimeException('Chyba pripravena verzia ikonky: ' . $field . '.');
+            }
+
+            $tmp = (string) ($file['tmp_name'] ?? '');
+            if ($tmp === '' || !is_uploaded_file($tmp)) {
+                throw new RuntimeException('Ikonka nebola korektne pripravena: ' . $field . '.');
+            }
+
+            $ext = interessa_admin_brand_uploaded_extension($file, ['png'], 'png');
+            if ($ext !== 'png') {
+                throw new RuntimeException('Ikonka stranky musi byt pripravena ako PNG.');
+            }
+
+            $target = interessa_admin_brand_dir() . '/' . $fileName;
+            if (!move_uploaded_file($tmp, $target)) {
+                throw new RuntimeException('Nepodarilo sa ulozit subor ' . $fileName . '.');
+            }
+            $saved[$field] = 'img/brand/' . $fileName;
+        }
+
+        return $saved;
+    }
+}
+
 if (!function_exists('interessa_admin_read_json')) {
     function interessa_admin_read_json(string $path, array $default = []): array {
         if (!is_file($path)) {
