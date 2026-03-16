@@ -413,6 +413,131 @@ function interessa_admin_article_default_products(string $slug, array $catalog):
     return array_values(array_unique(array_filter(array_map('strval', $slugs))));
 }
 
+function interessa_admin_article_default_product_plan(string $slug, array $catalog): array {
+    $defaults = interessa_admin_article_default_products($slug, $catalog);
+    if ($defaults === []) {
+        return [];
+    }
+
+    $whitelist = function_exists('interessa_article_comparison_table_whitelist')
+        ? interessa_article_comparison_table_whitelist()
+        : [];
+    $comparisonAllowed = in_array(canonical_article_slug($slug), $whitelist, true);
+
+    $rows = [];
+    foreach ($defaults as $index => $productSlug) {
+        $rows[] = [
+            'product_slug' => (string) $productSlug,
+            'order' => $index + 1,
+            'role' => $index === 0 ? 'featured' : 'standard',
+            'show_in_top' => true,
+            'show_in_comparison' => $comparisonAllowed,
+        ];
+    }
+
+    return $rows;
+}
+
+function interessa_admin_collect_article_product_plan(): array {
+    $enabled = $_POST['article_product_enabled'] ?? [];
+    $orders = $_POST['article_product_order'] ?? [];
+    $roles = $_POST['article_product_role'] ?? [];
+    $top = $_POST['article_product_top'] ?? [];
+    $comparison = $_POST['article_product_comparison'] ?? [];
+
+    if (!is_array($enabled)) {
+        return [];
+    }
+
+    $rows = [];
+    foreach ($enabled as $productSlug => $value) {
+        $productSlug = interessa_admin_slugify((string) $productSlug);
+        if ($productSlug === '' || (string) $value !== '1') {
+            continue;
+        }
+
+        $role = interessa_admin_slugify((string) ($roles[$productSlug] ?? 'standard'));
+        if (!in_array($role, ['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'], true)) {
+            $role = 'standard';
+        }
+
+        $rows[] = [
+            'product_slug' => $productSlug,
+            'order' => max(1, (int) ($orders[$productSlug] ?? 1)),
+            'role' => $role,
+            'show_in_top' => isset($top[$productSlug]),
+            'show_in_comparison' => isset($comparison[$productSlug]),
+        ];
+    }
+
+    usort($rows, static function (array $left, array $right): int {
+        $orderCompare = ((int) ($left['order'] ?? 999)) <=> ((int) ($right['order'] ?? 999));
+        if ($orderCompare !== 0) {
+            return $orderCompare;
+        }
+
+        return strcmp((string) ($left['product_slug'] ?? ''), (string) ($right['product_slug'] ?? ''));
+    });
+
+    return array_values($rows);
+}
+
+function interessa_admin_product_plan_recommended_slugs(array $plan): array {
+    $slugs = [];
+    foreach ($plan as $row) {
+        if (!is_array($row) || empty($row['show_in_top'])) {
+            continue;
+        }
+        $slug = interessa_admin_slugify((string) ($row['product_slug'] ?? ''));
+        if ($slug !== '') {
+            $slugs[] = $slug;
+        }
+    }
+
+    return array_values(array_unique($slugs));
+}
+
+function interessa_admin_product_plan_comparison_rows(array $plan): array {
+    $rows = [];
+    foreach ($plan as $row) {
+        if (!is_array($row) || empty($row['show_in_comparison'])) {
+            continue;
+        }
+
+        $slug = interessa_admin_slugify((string) ($row['product_slug'] ?? ''));
+        if ($slug === '') {
+            continue;
+        }
+
+        $rows[] = [
+            'product_slug' => $slug,
+            'best_for' => interessa_admin_role_label((string) ($row['role'] ?? 'standard')),
+        ];
+    }
+
+    return $rows;
+}
+
+function interessa_admin_default_comparison_columns(): array {
+    return [
+        ['key' => 'name', 'label' => 'Produkt', 'type' => 'product'],
+        ['key' => 'best_for', 'label' => 'Najlepsie pre', 'type' => 'text'],
+        ['key' => 'rating', 'label' => 'Hodnotenie', 'type' => 'text'],
+        ['key' => 'code', 'label' => 'Odkaz', 'type' => 'cta'],
+    ];
+}
+
+function interessa_admin_role_label(string $role): string {
+    return match ($role) {
+        'featured' => 'Hlavna odporucana',
+        'value' => 'Value volba',
+        'alternative' => 'Alternativa',
+        'vegan' => 'Veganska volba',
+        'clean' => 'Cista volba',
+        default => 'Bezna volba',
+    };
+}
+
 function interessa_admin_clean_label(string $value): string {
     $value = trim($value);
     if ($value === '') {
@@ -1307,6 +1432,7 @@ if ($isAuthed) {
 
             if ($action === 'save_article') {
                 $slug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
+                $productPlan = interessa_admin_collect_article_product_plan();
                 $visualComparison = interessa_admin_collect_comparison_visual();
                 $comparisonColumns = $visualComparison['columns'] !== []
                     ? $visualComparison['columns']
@@ -1314,7 +1440,15 @@ if ($isAuthed) {
                 $comparisonRows = $visualComparison['rows'] !== []
                     ? $visualComparison['rows']
                     : interessa_admin_decode_json_textarea((string) ($_POST['comparison_rows_json'] ?? ''), 'Riadky porovnania');
-                $recommended = interessa_admin_recommended_selection();
+                $recommended = $productPlan !== []
+                    ? interessa_admin_product_plan_recommended_slugs($productPlan)
+                    : interessa_admin_recommended_selection();
+                if ($productPlan !== []) {
+                    $comparisonRows = interessa_admin_product_plan_comparison_rows($productPlan);
+                    if ($comparisonRows !== [] && $comparisonColumns === []) {
+                        $comparisonColumns = interessa_admin_default_comparison_columns();
+                    }
+                }
                 $payload = [
                     'title' => (string) ($_POST['title'] ?? ''),
                     'intro' => (string) ($_POST['intro'] ?? ''),
@@ -1330,6 +1464,7 @@ if ($isAuthed) {
                         'rows' => $comparisonRows,
                     ],
                     'recommended_products' => $recommended,
+                    'product_plan' => $productPlan,
                 ];
 
                 if (!empty($_FILES['hero_image']['tmp_name'])) {
@@ -1995,6 +2130,26 @@ $articleEditorProductSlugs = is_array($selectedArticleOverride['recommended_prod
 if ($articleEditorProductSlugs === []) {
     $articleEditorProductSlugs = interessa_admin_article_default_products($selectedArticleSlug, $catalog);
 }
+$articleProductPlan = is_array($selectedArticleOverride['product_plan'] ?? null) ? array_values($selectedArticleOverride['product_plan']) : [];
+if ($articleProductPlan === []) {
+    $articleProductPlan = interessa_admin_article_default_product_plan($selectedArticleSlug, $catalog);
+}
+$articleProductPlanMap = [];
+foreach ($articleProductPlan as $planRow) {
+    if (!is_array($planRow)) {
+        continue;
+    }
+    $planSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
+    if ($planSlug === '') {
+        continue;
+    }
+    $articleProductPlanMap[$planSlug] = [
+        'order' => max(1, (int) ($planRow['order'] ?? 1)),
+        'role' => interessa_admin_slugify((string) ($planRow['role'] ?? 'standard')) ?: 'standard',
+        'show_in_top' => !empty($planRow['show_in_top']),
+        'show_in_comparison' => !empty($planRow['show_in_comparison']),
+    ];
+}
 $articleEditorInjectedProduct = trim((string) ($_GET['add_product'] ?? ''));
 if ($articleEditorInjectedProduct !== '' && interessa_product($articleEditorInjectedProduct) !== null && !in_array($articleEditorInjectedProduct, $articleEditorProductSlugs, true)) {
     $articleEditorProductSlugs[] = $articleEditorInjectedProduct;
@@ -2326,6 +2481,63 @@ require dirname(__DIR__) . '/inc/head.php';
 
               <div class="admin-subsection">
                 <div class="admin-subsection-head">
+                  <h3>Produkty v tomto clanku</h3>
+                </div>
+                <p class="admin-note">Tu nastav poradie produktov a kde sa maju ukazovat. Prvy produkt v poradi bude hlavna odporucana volba.</p>
+                <div class="admin-check-grid">
+                  <?php foreach ($catalog as $productSlug => $productRow): ?>
+                    <?php
+                      $planState = $articleProductPlanMap[(string) $productSlug] ?? [
+                          'order' => in_array((string) $productSlug, $articleEditorProductSlugs, true) ? (array_search((string) $productSlug, $articleEditorProductSlugs, true) + 1) : 99,
+                          'role' => in_array((string) $productSlug, $articleEditorProductSlugs, true) && array_search((string) $productSlug, $articleEditorProductSlugs, true) === 0 ? 'featured' : 'standard',
+                          'show_in_top' => in_array((string) $productSlug, $articleEditorProductSlugs, true),
+                          'show_in_comparison' => in_array((string) $productSlug, $articleEditorProductSlugs, true),
+                      ];
+                      $productNormalized = interessa_normalize_product(is_array($productRow) ? $productRow : []);
+                      $productPackshotReady = !empty($productNormalized['has_local_image']);
+                      $productAffiliateCode = trim((string) ($productNormalized['affiliate_code'] ?? ''));
+                      $productAffiliateReady = $productAffiliateCode !== '' && aff_resolve($productAffiliateCode) !== null;
+                    ?>
+                    <div class="admin-check-card-wrap">
+                      <label class="admin-check-card">
+                        <input type="checkbox" name="article_product_enabled[<?= esc((string) $productSlug) ?>]" value="1" <?= isset($articleProductPlanMap[(string) $productSlug]) || in_array((string) $productSlug, $articleEditorProductSlugs, true) ? 'checked' : '' ?> />
+                        <span><strong><?= esc((string) ($productRow['name'] ?? $productSlug)) ?></strong><small><?= esc((string) $productSlug) ?></small></span>
+                      </label>
+                      <div class="admin-grid two-up">
+                        <label>
+                          <span>Poradie</span>
+                          <input type="number" name="article_product_order[<?= esc((string) $productSlug) ?>]" min="1" step="1" value="<?= esc((string) ($planState['order'] ?? 99)) ?>" />
+                        </label>
+                        <label>
+                          <span>Rola vo vybere</span>
+                          <select name="article_product_role[<?= esc((string) $productSlug) ?>]">
+                            <?php foreach (['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'] as $roleOption): ?>
+                              <option value="<?= esc($roleOption) ?>" <?= (string) ($planState['role'] ?? 'standard') === $roleOption ? 'selected' : '' ?>><?= esc(interessa_admin_role_label($roleOption)) ?></option>
+                            <?php endforeach; ?>
+                          </select>
+                        </label>
+                      </div>
+                      <div class="admin-inline-actions">
+                        <label><input type="checkbox" name="article_product_top[<?= esc((string) $productSlug) ?>]" <?= !empty($planState['show_in_top']) ? 'checked' : '' ?> /> Ukazat v odporucanych produktoch</label>
+                        <label><input type="checkbox" name="article_product_comparison[<?= esc((string) $productSlug) ?>]" <?= !empty($planState['show_in_comparison']) ? 'checked' : '' ?> /> Ukazat v porovnani</label>
+                      </div>
+                      <div class="admin-status-pills">
+                        <span class="admin-status-pill<?= $productAffiliateReady ? ' is-good' : ' is-warning' ?>"><?= $productAffiliateReady ? 'Klik hotovy' : 'Klik chyba' ?></span>
+                        <span class="admin-status-pill<?= $productPackshotReady ? ' is-good' : ' is-warning' ?>"><?= $productPackshotReady ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
+                      </div>
+                      <div class="admin-inline-actions admin-check-card__actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $productSlug) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Produkt</a>
+                        <?php if ($productAffiliateCode !== ''): ?>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc($productAffiliateCode) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Klikaci odkaz</a>
+                        <?php endif; ?>
+                      </div>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+
+              <div class="admin-subsection">
+                <div class="admin-subsection-head">
                   <h3>Porovnanie</h3>
                   <div class="admin-inline-actions">
                     <button class="btn btn-secondary btn-small" type="button" data-add-column>Pridej stlpec</button>
@@ -2398,9 +2610,9 @@ require dirname(__DIR__) . '/inc/head.php';
 
               <div class="admin-grid two-up">
                 <label>
-                  <span>Odporucane produkty (slug na riadok)</span>
+                  <span>Odporucane produkty (pokrocile)</span>
                   <textarea name="recommended_products" rows="6"><?= esc($recommendedProductsText) ?></textarea>
-                  <span>Vyber z existujucich produktov</span>
+                  <span>Bezny workflow je vyssie v bloku Produkty v tomto clanku. Toto nechaj len ako pokrocily fallback.</span>
                   <div class="admin-inline-actions">
                     <button class="btn btn-secondary btn-small" type="button" data-select-card-ready-products>Oznacit karty ready</button>
                     <button class="btn btn-secondary btn-small" type="button" data-select-money-ready-products>Oznacit money-page ready</button>

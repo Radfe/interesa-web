@@ -37,6 +37,11 @@ $ART += [
     'Jednoduchy prehlad obav pri kreatine: voda, oblicky, cyklovanie a co je realita a co len internetovy mytus.',
     'sila',
   ],
+  'je-lacny-protein-zly-ako-citat-zlozenie' => [
+    'Je lacny protein zly? Ako citat zlozenie',
+    'Nizsia cena nemusi byt automaticky problem. Dolezitejsie je vediet, co je bezny kompromis a co uz znamena slabe zlozenie.',
+    'proteiny',
+  ],
   'horcik-ktory-je-najlepsi-a-preco' => [
     'Horcik - ktory je najlepsi a preco?',
     'Porovnali sme rozne formy Mg a ich vstrebatelnost: bisglycinat, citrat, malat a oxid.',
@@ -122,6 +127,11 @@ $ART += [
     'Kedy je multivitamin praktickou poistkou, kedy je to len pohodlna skratka a co sledovat na etikete.',
     'vyziva',
   ],
+  'magnezium-bisglycinat-vs-citrat-aky-je-rozdiel' => [
+    'Magnezium bisglycinat vs citrat - aky je rozdiel',
+    'Kedy dava vacsi zmysel bisglycinat, kedy citrat a preco netreba automaticky kupovat najdrahsiu formu len preto, ze znie lepsie.',
+    'mineraly',
+  ],
   'najlepsie-probiotika-po-antibiotikach' => [
     'Najlepsie probiotika po antibiotikach - co sledovat',
     'Na co sa pozerat pri probiotikach po antibiotikach, ako nad nimi rozmyslat a preco nestaci len nahodny napis na obale.',
@@ -140,6 +150,56 @@ $ART += [
   'najlepsie-doplnky-na-klby-okrem-kolagenu' => [
     'Najlepsie doplnky na klby okrem kolagenu',
     'Kolagen nie je jedina moznost. Kedy pri klboch riesit skor komplexnu klbovu vyzivu alebo sirsi regeneracny pristup.',
+    'klby-koza',
+  ],
+  'omega-3-kedy-ma-zmysel-a-co-sledovat' => [
+    'Omega-3 - kedy ma zmysel a co sledovat',
+    'Kedy omega-3 dava rozumny zmysel, preco ju ludia riesia pri sirsom zdravi a na co sa pozerat prakticky bez zbytocneho chaosu.',
+    'vyziva',
+  ],
+  'clear-protein-pre-koho-dava-zmysel' => [
+    'Clear protein - pre koho dava zmysel',
+    'Kedy je clear protein praktickejsi nez klasicky husty shake, komu ulahci pravidelne pitie proteinu a kedy je to len drahsia zaujimavost.',
+    'proteiny',
+  ],
+  'protein-do-kase-alebo-do-jedla-oplati-sa' => [
+    'Protein do kase alebo do jedla - oplati sa',
+    'Kedy dava pridavanie proteinu do jedla zmysel, kedy je to len zbytocne komplikovanie a preco nie je nutne pit shake pri kazdej prilezitosti.',
+    'proteiny',
+  ],
+  'protein-na-ranajky-oplati-sa-alebo-nie' => [
+    'Protein na ranajky - oplati sa alebo nie',
+    'Kedy dava protein na ranajky prakticky zmysel, kedy je to len pohodlna forma bielkovin a preco to netreba brat ako povinny ritual.',
+    'proteiny',
+  ],
+  'probiotika-pri-naduvani-co-realne-sledovat' => [
+    'Probiotika pri naduvani - co realne sledovat',
+    'Kedy maju pri nafukovani probiotika zmysel, preco nie su okamzite riesenie na kazdy problem a ako nad nimi premyslat rozumne.',
+    'imunita',
+  ],
+  'vitamin-d3-k2-spolu-alebo-osobitne' => [
+    'Vitamin D3 a K2 - spolu alebo osobitne',
+    'Kedy dava zmysel kombinacia D3 + K2, kedy netreba zbytocne komplikovat suplementaciu a preco nie je vzdy nutne riesit dva samostatne doplnky.',
+    'mineraly',
+  ],
+  'vitamin-b-komplex-kedy-dava-zmysel' => [
+    'Vitamin B komplex - kedy dava zmysel',
+    'Kedy ma B-komplex prakticky zmysel, kedy je to len dalsi doplnok navyse a preco netreba automaticky kupovat co najvyssie davky.',
+    'mineraly',
+  ],
+  'vitamin-b12-kedy-ho-riesit' => [
+    'Vitamin B12 - kedy ho riesit',
+    'Kedy ma vitamin B12 prakticky zmysel, preco ho niektori ludia riesia cielenejsie a preco netreba robit paniku len preto, ze je casto spominany online.',
+    'mineraly',
+  ],
+  'kolagen-typ-1-2-3-co-znamenaju' => [
+    'Kolagen typ 1 2 3 - co znamenaju',
+    'Jednoduche vysvetlenie, preco sa pri kolagene spominaju typy I, II a III a preco je dolezitejsi ciel nez samotne cislo na obale.',
+    'klby-koza',
+  ],
+  'hydrolyzovany-kolagen-vs-klasicky-kolagen' => [
+    'Hydrolyzovany kolagen vs klasicky kolagen',
+    'Kedy dava hydrolyzovany kolagen prakticky zmysel, preco sa casto spomina pri doplnkoch a preco samotny nazov este neznamena automaticky lepsi produkt.',
     'klby-koza',
   ],
   'vitamin-c' => [

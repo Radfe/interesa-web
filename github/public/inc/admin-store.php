@@ -204,6 +204,32 @@ if (!function_exists('interessa_admin_normalize_article_override')) {
                 'interessa_admin_slugify',
                 is_array($data['recommended_products'] ?? null) ? $data['recommended_products'] : []
             ))),
+            'product_plan' => array_values(array_filter(array_map(
+                static function (mixed $row): ?array {
+                    if (!is_array($row)) {
+                        return null;
+                    }
+
+                    $slug = interessa_admin_slugify((string) ($row['product_slug'] ?? $row['slug'] ?? ''));
+                    if ($slug === '') {
+                        return null;
+                    }
+
+                    $role = interessa_admin_slugify((string) ($row['role'] ?? ''));
+                    if (!in_array($role, ['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'], true)) {
+                        $role = 'standard';
+                    }
+
+                    return [
+                        'product_slug' => $slug,
+                        'order' => max(1, (int) ($row['order'] ?? 1)),
+                        'role' => $role,
+                        'show_in_top' => !empty($row['show_in_top']),
+                        'show_in_comparison' => !empty($row['show_in_comparison']),
+                    ];
+                },
+                is_array($data['product_plan'] ?? null) ? $data['product_plan'] : []
+            ))),
             'updated_at' => date('c'),
         ];
     }

@@ -100,6 +100,18 @@ Vysledok tohto kroku:
   - alebo existujuci klikaci odkaz
 - queue pri produktoch uz nehovori len `doplni URL`, ale smeruje na vlozenie linku
 
+Najnovsi krok:
+- v editore clanku pribudol jednoduchy blok `Produkty v tomto clanku`
+- pri kazdom produkte sa da nastavit:
+  - poradie
+  - rola vo vybere
+  - ci sa ma ukazat v odporucanych produktoch
+  - ci sa ma ukazat v porovnani
+- admin z tohto bloku vie pripravit:
+  - `recommended_products`
+  - `comparison.rows`
+- pokrocile povodne polia ostavaju ako fallback, ale bezny tok ma ist cez tento novy blok
+
 ## 4. Co este chyba
 
 ### Produkty a klikacie odkazy
@@ -113,6 +125,7 @@ Chyba najma:
   - produkt -> clanok
   - produkt -> merchant
   - produkt -> typ boxu
+- treba este dotiahnut, aby verejny web cital tieto admin data ako prvu volbu
 - este treba dotiahnut:
   - skrytie dalsich menej dolezitych poli
   - este jasnejsie kroky pri produktoch bez klikacieho odkazu
@@ -162,17 +175,12 @@ Zatial nerobit:
 
 ### Handoff pre web vlakno - aktualny stav
 
-Zatial nie je nutny novy zasah do verejneho webu len kvoli tomuto dokumentu.
+Je pripraveny handoff:
+- [ADMIN_WEB_HANDOFF_PRODUCT_BINDING_SK.md](C:/data/praca/webova_stranka/github/ADMIN_WEB_HANDOFF_PRODUCT_BINDING_SK.md)
 
-Ak bude admin dalej rozsireny o:
-- nove typy produktovych vazieb na clanky
-- nove stavy odporucana volba / value volba / veganska volba
-- samostatne male a velke obrazky produktov alebo tem
-
-potom treba pripravit handoff vo forme:
-- co zmenit
-- v ktorych suboroch
-- preco
+Dovod:
+- admin uz vie ukladat poradie a miesto produktu v clanku
+- ale verejny web este stale pri money clankoch cita hlavne stary pevny zoznam produktov
 
 ## 7. Co sledovat pri dalsom kroku
 
