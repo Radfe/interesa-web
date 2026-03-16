@@ -71,6 +71,128 @@ if (!function_exists('interessa_admin_parse_feed_file')) {
     }
 }
 
+if (!function_exists('interessa_admin_fetch_remote_feed_body_via_curl_exe')) {
+    function interessa_admin_fetch_remote_feed_body_via_curl_exe(string $url): string {
+        if (!function_exists('exec')) {
+            throw new RuntimeException('Systemove stiahnutie feedu nie je dostupne.');
+        }
+
+        $systemRoot = rtrim((string) getenv('SystemRoot'), '\\/');
+        $curlExecutable = 'curl.exe';
+        foreach (array_filter([
+            $systemRoot !== '' ? $systemRoot . '\\System32\\curl.exe' : '',
+            $systemRoot !== '' ? $systemRoot . '\\Sysnative\\curl.exe' : '',
+            'curl.exe',
+        ]) as $candidate) {
+            if (str_ends_with(strtolower((string) $candidate), 'curl.exe') && is_file((string) $candidate)) {
+                $curlExecutable = (string) $candidate;
+                break;
+            }
+        }
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'interessa-feed-');
+        if ($tempFile === false) {
+            throw new RuntimeException('Nepodarilo sa pripravit docasny subor pre feed.');
+        }
+
+        $command = escapeshellarg($curlExecutable) . ' -L --fail --silent --show-error '
+            . '--output ' . escapeshellarg($tempFile) . ' '
+            . escapeshellarg($url) . ' 2>&1';
+
+        $output = [];
+        $exitCode = 0;
+        exec($command, $output, $exitCode);
+        if ($exitCode !== 0) {
+            @unlink($tempFile);
+            $message = trim((string) implode("\n", $output));
+            throw new RuntimeException('Nepodarilo sa stiahnut feed: ' . ($message !== '' ? $message : 'systemove stiahnutie zlyhalo.'));
+        }
+
+        $body = @file_get_contents($tempFile);
+        @unlink($tempFile);
+        if (!is_string($body) || trim($body) === '') {
+            throw new RuntimeException('Stiahnuty feed je prazdny.');
+        }
+
+        return $body;
+    }
+}
+
+if (!function_exists('interessa_admin_fetch_remote_feed_body')) {
+    function interessa_admin_fetch_remote_feed_body(string $url): string {
+        $url = trim($url);
+        if ($url === '' || !preg_match('~^https?://~i', $url)) {
+            throw new RuntimeException('URL feedu nie je validna.');
+        }
+
+        $body = false;
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_CONNECTTIMEOUT => 10,
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_USERAGENT => 'InteresaAdmin/1.0',
+                CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_SSL_VERIFYHOST => 2,
+                CURLOPT_HTTPHEADER => [
+                    'Accept: application/xml,text/xml,text/csv,application/json,text/plain,*/*',
+                ],
+            ]);
+            $body = curl_exec($ch);
+            if ($body === false) {
+                $error = (string) curl_error($ch);
+                curl_close($ch);
+                throw new RuntimeException('Nepodarilo sa stiahnut feed: ' . $error);
+            }
+            $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if ($status >= 400) {
+                throw new RuntimeException('Feed vratil HTTP ' . $status . '.');
+            }
+        } else {
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'GET',
+                    'timeout' => 30,
+                    'follow_location' => 1,
+                    'user_agent' => 'InteresaAdmin/1.0',
+                    'header' => "Accept: application/xml,text/xml,text/csv,application/json,text/plain,*/*\r\n",
+                ],
+            ]);
+            $body = @file_get_contents($url, false, $context);
+        }
+
+        if ((!is_string($body) || trim($body) === '') && strtoupper(substr(PHP_OS_FAMILY, 0, 7)) === 'WINDOWS') {
+            return interessa_admin_fetch_remote_feed_body_via_curl_exe($url);
+        }
+
+        if (!is_string($body) || trim($body) === '') {
+            throw new RuntimeException('Feed je prazdny.');
+        }
+
+        return $body;
+    }
+}
+
+if (!function_exists('interessa_admin_parse_feed_url')) {
+    function interessa_admin_parse_feed_url(string $url, string $merchantSlug, int $limit = 0): array {
+        $body = interessa_admin_fetch_remote_feed_body($url);
+        $tempFile = tempnam(sys_get_temp_dir(), 'interessa-feed-src-');
+        if ($tempFile === false) {
+            throw new RuntimeException('Nepodarilo sa pripravit docasny subor pre feed.');
+        }
+
+        file_put_contents($tempFile, $body);
+        try {
+            return interessa_admin_parse_feed_file($tempFile, $merchantSlug, $limit);
+        } finally {
+            @unlink($tempFile);
+        }
+    }
+}
+
 if (!function_exists('interessa_admin_parse_xml_feed')) {
     function interessa_admin_parse_xml_feed(string $path, string $merchantSlug, int $limit = 0): array {
         $reader = new XMLReader();

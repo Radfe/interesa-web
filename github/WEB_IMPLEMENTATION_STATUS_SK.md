@@ -92,11 +92,15 @@ Aktualny kvalitativny standard pre dolezite clanky:
 ## 5. Najblizsi webovy krok
 
 Najblizsi odporucany krok vo web vlakne:
-- pockat na prve realne kandidatske produkty z adminu
-- potom urobit finalny shortlist produktov pre:
+- pripravit presny shortlist slotov a rol pre prve 3 clanky
+- dat adminu jasny rozsah kandidatov pre:
   - `najlepsie-proteiny-2026`
   - `kreatin-porovnanie`
   - `doplnky-vyzivy`
+- po dodani kandidatov urobit finalny vyber kus po kuse
+
+K tomu uz je pripraveny aj:
+- [FIRST_3_ARTICLES_PRODUCT_SHORTLIST_SK.md](C:/data/praca/webova_stranka/github/FIRST_3_ARTICLES_PRODUCT_SHORTLIST_SK.md)
 
 Do toho momentu web vrstva:
 - dalej jemne dorovnava kvalitu top stranok
