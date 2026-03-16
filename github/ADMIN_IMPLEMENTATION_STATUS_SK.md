@@ -357,5 +357,10 @@ Stav:
 - produkty: prva faza je zamerana len na 3 hlavne clanky, aby bola praca prehladna
 - pri jednom nacitanom produkte v 4-krokovej ceste je teraz na ociach uz len blok `Co kliknut teraz`
 - starsie jednotlive kroky a rucne nastavenia su skryte do podrobneho bloku, aby bezny pouzivatel nevidel viac tlacidiel naraz
+- jazyk v hlavnej produktovej ceste je opat o trochu jednoduchsi:
+  - menej zbytocneho cislovania v textoch
+  - `klik do obchodu` je na hlavnych miestach premenovany na zrozumitelnejsi `odkaz do obchodu`
+  - `Krok 2 az 4` je premenovany na prirodzenejsie `Vyber jeden produkt a dokonci ho`
+  - hlavny blok pri jednom produkte hovori `Co spravit teraz`
 - affiliate workflow: funkcny len ciastocne, treba dalej zjednodusit
 - logo a ikonka: zakladny jednoduchy upload je hotovy, dalsie drobnosti sa budu ladit podla testu

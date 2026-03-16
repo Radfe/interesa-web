@@ -3382,7 +3382,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div>
                 <p class="admin-kicker">Jednoduche doplnenie produktov</p>
                 <h2>Tu to robis bez chaosu</h2>
-                <p class="admin-note">Toto je hlavna cesta pre produkty. Najprv nahraj zoznam produktov, potom priprav klik do obchodu, prirad produkt ku clanku a az nakoniec ho pustis na web. Zatial je to nastavene len pre prve 3 hlavne clanky. Stare rucne nastavenia su az nizsie a bezne ich netreba otvarat.</p>
+                <p class="admin-note">Toto je hlavna cesta pre produkty. Najprv sem nahras zoznam produktov z obchodu. Potom vyberies jeden produkt, pripravi sa odkaz do obchodu, priradi sa ku clanku a az nakoniec sa pusti na web. Stare rucne nastavenia su az nizsie a bezne ich netreba otvarat.</p>
               </div>
             </div>
             <div class="admin-status-grid">
@@ -3407,7 +3407,7 @@ require dirname(__DIR__) . '/inc/head.php';
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
-                  <h3>Krok 1: Nahraj zoznam produktov</h3>
+                  <h3>1. Nahraj zoznam produktov</h3>
                   <p class="admin-meta">Sem vloz subor z obchodu alebo export. Produkty sa najprv len nacitaju do pripravy. Este sa nezverejnia na webe.</p>
                 </div>
               </div>
@@ -3433,7 +3433,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
                 <p class="admin-note">Podporene su XML, CSV aj JSON. Admin si z nich vezme nazov produktu, link produktu, obrazok, typ a pripadne cenu.</p>
                 <div class="admin-actions">
-                  <button class="btn btn-cta" type="submit">Krok 1: Nahraj zoznam produktov</button>
+                  <button class="btn btn-cta" type="submit">Nahraj zoznam produktov</button>
                 </div>
               </form>
             </section>
@@ -3441,8 +3441,8 @@ require dirname(__DIR__) . '/inc/head.php';
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
-                  <h3>Krok 2 az 4: Dokoncenie jedneho produktu</h3>
-                  <p class="admin-meta">Vyber jeden nacitany produkt. Potom mas uz len tri dalsie kroky. Clanok vyberas z prvej fazy.</p>
+                  <h3>2. Vyber jeden produkt a dokonci ho</h3>
+                  <p class="admin-meta">Tu uz robis len s jednym produktom. Admin ti pri nom ukaze stav a povie, co treba kliknut dalej.</p>
                 </div>
                 <form method="get" action="/admin" class="admin-inline-form">
                   <input type="hidden" name="section" value="products" />
@@ -3492,36 +3492,36 @@ require dirname(__DIR__) . '/inc/head.php';
                   <div class="admin-brief-card">
                     <h3>Co je dalsi krok</h3>
                     <?php if (!$selectedCandidateHasClick): ?>
-                      <p>Teraz priprav klik do obchodu. Admin si z ulozeneho linku pripravi zaznam a ak to bude mozne, predvyplni aj Dognet pomocnika.</p>
+                    <p>Teraz priprav odkaz do obchodu. Admin si z ulozeneho linku pripravi zaznam a ak to bude mozne, predvyplni aj Dognet pomocnika.</p>
                     <?php elseif (!$selectedCandidateHasArticle): ?>
-                      <p>Klik do obchodu uz je pripraveny. Teraz vyber clanok, poradie a miesto, kde sa ma produkt ukazat.</p>
+                      <p>Odkaz do obchodu je pripraveny. Teraz vyber clanok, poradie a miesto, kde sa ma produkt ukazat.</p>
                     <?php elseif (!$selectedCandidateApproved): ?>
                       <p>Produkt uz ma klik aj clanok. Posledny krok je schvalit ho pre web.</p>
                     <?php else: ?>
                       <p>Tento produkt je uz schvaleny. Ak treba, mozes ho este zmenit alebo otvorit nizsie v pokrocilej casti.</p>
                     <?php endif; ?>
-                    <p><strong>Stav kliku:</strong> <?= esc($selectedCandidateClickStatusLabel) ?></p>
+                    <p><strong>Stav odkazu do obchodu:</strong> <?= esc($selectedCandidateClickStatusLabel) ?></p>
                   </div>
                 </div>
 
                 <section class="admin-subsection is-compact">
                   <div class="admin-subsection-head">
                     <div>
-                      <h3>Co kliknut teraz</h3>
+                      <h3>Co spravit teraz</h3>
                       <p class="admin-meta">Tu mas len jeden dalsi krok. Klikni toto tlacidlo a potom sa vrat sem.</p>
                     </div>
                   </div>
                   <?php if (!$selectedCandidateHasClick): ?>
-                    <p class="admin-note">Najprv treba pripravit klik do obchodu z ulozeneho linku produktu.</p>
+                    <p class="admin-note">Najprv treba pripravit odkaz do obchodu z ulozeneho linku produktu.</p>
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="prepare_candidate_click" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <div class="admin-actions">
-                        <button class="btn btn-cta" type="submit">Krok 2: Pripravit klik do obchodu</button>
+                        <button class="btn btn-cta" type="submit">Pripravit odkaz do obchodu</button>
                       </div>
                     </form>
                   <?php elseif (!$selectedCandidateHasArticle): ?>
-                    <p class="admin-note">Klik do obchodu je hotovy. Teraz uz len vyber clanok, poradie a miesto vo vybere.</p>
+                    <p class="admin-note">Odkaz do obchodu je hotovy. Teraz uz len vyber clanok, poradie a miesto vo vybere.</p>
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="save_candidate_assignment" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
@@ -3547,7 +3547,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <label><input type="checkbox" name="candidate_show_in_top" value="1" <?= !empty($selectedCandidate['show_in_top']) ? 'checked' : '' ?> /> Ukazat medzi top produktmi</label>
                       <label><input type="checkbox" name="candidate_show_in_comparison" value="1" <?= !empty($selectedCandidate['show_in_comparison']) ? 'checked' : '' ?> /> Ukazat v porovnani</label>
                       <div class="admin-actions">
-                        <button class="btn btn-cta" type="submit">Krok 3: Priradit ku clanku</button>
+                        <button class="btn btn-cta" type="submit">Priradit ku clanku</button>
                       </div>
                     </form>
                   <?php elseif (!$selectedCandidateApproved): ?>
@@ -3556,7 +3556,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <input type="hidden" name="action" value="approve_candidate_for_web" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <div class="admin-actions">
-                        <button class="btn btn-cta" type="submit">Krok 4: Schvalit pre web</button>
+                        <button class="btn btn-cta" type="submit">Schvalit pre web</button>
                       </div>
                     </form>
                   <?php else: ?>
@@ -3573,16 +3573,16 @@ require dirname(__DIR__) . '/inc/head.php';
                 </section>
 
                 <details class="admin-subsection is-compact">
-                  <summary><strong>Podrobne nastavenia tohto produktu</strong> - otvor len ked chces menit jednotlive volby rucne</summary>
+                  <summary><strong>Podrobne nastavenia tohto produktu</strong> - otvor len ked chces menit jednotlive veci rucne</summary>
                   <div class="admin-grid two-up">
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="prepare_candidate_click" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <div class="admin-subsection is-compact">
-                        <div class="admin-subsection-head"><h3>Krok 2: Pripravit klik do obchodu</h3></div>
+                        <div class="admin-subsection-head"><h3>Pripravit odkaz do obchodu</h3></div>
                         <p class="admin-note">Admin pouzije ulozeny link produktu a pripravi odkaz, na ktory bude clovek klikat na webe.</p>
                         <div class="admin-actions">
-                          <button class="btn btn-secondary" type="submit">Znovu pripravit klik</button>
+                          <button class="btn btn-secondary" type="submit">Znovu pripravit odkaz</button>
                         </div>
                       </div>
                     </form>
@@ -3591,7 +3591,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <input type="hidden" name="action" value="approve_candidate_for_web" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <div class="admin-subsection is-compact">
-                        <div class="admin-subsection-head"><h3>Krok 4: Schvalit pre web</h3></div>
+                        <div class="admin-subsection-head"><h3>Schvalit pre web</h3></div>
                         <p class="admin-note">Toto pouzi len ked chces znovu zapisat tento produkt do hlavneho systemu.</p>
                         <div class="admin-actions">
                           <button class="btn btn-secondary" type="submit">Znovu schvalit pre web</button>
