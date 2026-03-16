@@ -9,6 +9,13 @@ Zdroj pravdy pre obsahovu a produktovu prioritu:
 - [CAMPAIGN_ARTICLE_MAP_SK.md](C:/data/praca/webova_stranka/github/CAMPAIGN_ARTICLE_MAP_SK.md)
 - [FINAL_CAMPAIGN_SHORTLIST_SK.md](C:/data/praca/webova_stranka/github/FINAL_CAMPAIGN_SHORTLIST_SK.md)
 - [ADMIN_PRODUCT_IMPORT_BRIEF_SK.md](C:/data/praca/webova_stranka/github/ADMIN_PRODUCT_IMPORT_BRIEF_SK.md)
+- [WEB_IMPLEMENTATION_STATUS_SK.md](C:/data/praca/webova_stranka/github/WEB_IMPLEMENTATION_STATUS_SK.md)
+- [COLLABORATION_PROTOCOL_SK.md](C:/data/praca/webova_stranka/github/COLLABORATION_PROTOCOL_SK.md)
+
+Povinna synchronizacia pred vacsim admin krokom:
+- precitat `ADMIN_IMPLEMENTATION_STATUS_SK.md`
+- precitat `WEB_IMPLEMENTATION_STATUS_SK.md`
+- riadit sa `COLLABORATION_PROTOCOL_SK.md`
 
 ## 1. Pravidlo prace
 
