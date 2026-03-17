@@ -218,6 +218,13 @@ Najnovsie doladenie kandidatov:
 - ciel je, aby po importe bolo hned jasne:
   - co sa nacitalo
   - s ktorym produktom teraz robis
+
+Najnovsia oprava rozlozenia pri kandidatoch:
+- blok `Vyber jeden produkt a dokonci ho` je teraz hlavny a je vyssie
+- blok `Produkty z posledneho importu` je presunuty nizsie a po otvoreni jedneho produktu je zatvoreny
+- po importe sa ma otvorit priamo prvy produkt v kroku 2, nie pomocny zoznam
+- po priprave odkazu a po priradeni sa ma stranka vratit rovno na dalsi spravny krok pri tom istom produkte
+- ciel je, aby sa uz nevytvaral pocit rozbiteho laveho a praveho panelu
   - co je dalsi krok
 
 ## 4. Co este chyba
@@ -559,3 +566,24 @@ Preco:
 Co este treba doriesit:
 - zjednodusit samotny zoznam kandidatov tak, aby bol pre prvy batch este citatelnejsi
 - pri prvych troch clankoch casom predvyplnit clanok uz pri importe alebo pri bezpecnom prvom nastaveni
+
+## 14. Posledny import drzi pokope
+
+Menene subory:
+- [public/admin/index.php](C:/data/praca/webova_stranka/github/public/admin/index.php)
+
+Co sa upravilo:
+- po importe kandidatov sa admin uz nesnazí otvorit bocny zoznam ako hlavny ciel, ale rovno krok s otvorenym produktom
+- pri priprave odkazu do obchodu, priradeni ku clanku a ulozeni do systemu sa zachova `batch` posledneho importu
+- v druhom kroku sa pri poslednom importe vybera len z kandidatov z tohto jedneho batchu
+- horne pocty v produktoch sa pri poslednom importe prepnu na cisla len z posledneho batchu, nie zo vsetkych starsich kandidatov
+- zoznam `Prave nacitane produkty` je uz len pomocny prehlad, nie hlavny ciel navratu
+
+Preco:
+- po importe a dalsich krokoch to posobilo, akoby admin skakal na nahodne miesto
+- miesali sa nove a starsie kandidaty naraz
+- pouzivatel nevidel jasne, s ktorym importom a s ktorym produktom prave pracuje
+
+Co este treba doriesit:
+- este viac skratit texty pri samotnom jednom kandidátovi
+- pri prvych troch clankoch casom opatrne predvyplnit clanok len vtedy, ked je obsahovy fit jasny

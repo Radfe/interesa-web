@@ -10,7 +10,20 @@ require_once dirname(__DIR__) . '/inc/article-commerce.php';
 require_once dirname(__DIR__) . '/inc/dognet-helper.php';
 
 function interessa_admin_selected_section(): string {
-    $section = strtolower(trim((string) ($_GET['section'] ?? 'articles')));
+    $section = strtolower(trim((string) ($_GET['section'] ?? '')));
+    if ($section === '') {
+        foreach (['candidate', 'batch', 'product', 'product_filter', 'product_image_filter'] as $productKey) {
+            if (trim((string) ($_GET[$productKey] ?? '')) !== '') {
+                return 'products';
+            }
+        }
+        $saved = strtolower(trim((string) ($_GET['saved'] ?? '')));
+        if (str_starts_with($saved, 'candidate-') || str_starts_with($saved, 'product-')) {
+            return 'products';
+        }
+        return 'articles';
+    }
+
     return in_array($section, ['articles', 'products', 'images', 'affiliates', 'brand', 'tools', 'help'], true) ? $section : 'articles';
 }
 
@@ -649,7 +662,7 @@ function interessa_admin_guess_candidate_article(array $candidate): array {
     $rules = [
         'najlepsie-proteiny-2026' => [
             'keywords' => ['whey', 'protein', 'isolate', 'clear', 'vegan'],
-            'blocked' => ['gainer', 'bcaa', 'eaa', 'kolagen', 'collagen', 'pre-workout', 'caffeine', 'kofein'],
+            'blocked' => ['gainer', 'bcaa', 'eaa', 'kolagen', 'collagen', 'pre-workout', 'caffeine', 'kofein', 'bar', 'tycinka', 'cookie', 'snack', 'brownie', 'pudding'],
             'reason' => 'vyzera ako proteinovy kandidat',
         ],
         'kreatin-porovnanie' => [
@@ -704,6 +717,49 @@ function interessa_admin_guess_candidate_article(array $candidate): array {
         'slug' => $bestSlug,
         'reason' => $bestReason,
         'hits' => $bestHits,
+    ];
+}
+
+function interessa_admin_candidate_phase_one_fit(array $candidate): array {
+    $guess = interessa_admin_guess_candidate_article($candidate);
+    if (trim((string) ($guess['slug'] ?? '')) !== '') {
+        return [
+            'status' => 'fit',
+            'slug' => (string) ($guess['slug'] ?? ''),
+            'reason' => (string) ($guess['reason'] ?? ''),
+            'hits' => (array) ($guess['hits'] ?? []),
+            'blocked' => [],
+        ];
+    }
+
+    $text = strtolower(trim(implode(' ', array_filter([
+        (string) ($candidate['name'] ?? ''),
+        (string) ($candidate['category'] ?? ''),
+        (string) ($candidate['url'] ?? ''),
+    ]))));
+    $blocked = interessa_admin_text_keyword_hits($text, [
+        'bar',
+        'tycinka',
+        'cookie',
+        'snack',
+        'brownie',
+        'pudding',
+        'caffeine',
+        'kofein',
+        'pre-workout',
+        'bcaa',
+        'eaa',
+        'gainer',
+    ]);
+
+    return [
+        'status' => 'no-fit',
+        'slug' => '',
+        'reason' => $blocked !== []
+            ? 'vyzera skor ako iny typ produktu: ' . implode(', ', $blocked)
+            : 'admin ho nevie bezpecne zaradit do prvych troch clankov',
+        'hits' => [],
+        'blocked' => $blocked,
     ];
 }
 
@@ -2054,16 +2110,18 @@ if ($isAuthed) {
                     'candidate' => $firstCandidate,
                     'saved' => 'candidate-imported',
                     'batch' => $batchId,
-                ], 'products-imported-list');
+                ], 'products-current-candidate');
             }
 
             if ($action === 'prepare_candidate_click') {
                 $candidateId = trim((string) ($_POST['candidate_id'] ?? ''));
                 $result = interessa_admin_prepare_candidate_click($candidateId);
+                $candidateRow = interessa_admin_product_candidate_record((string) ($result['id'] ?? $candidateId));
                 interessa_admin_redirect_fragment('products', [
                     'candidate' => (string) ($result['id'] ?? $candidateId),
                     'saved' => 'candidate-click',
-                ], 'products-candidate-steps');
+                    'batch' => interessa_admin_slugify((string) ($candidateRow['batch_id'] ?? $_POST['batch'] ?? '')),
+                ], 'products-current-candidate');
             }
 
             if ($action === 'save_candidate_assignment') {
@@ -2075,21 +2133,25 @@ if ($isAuthed) {
                     'show_in_top' => !empty($_POST['candidate_show_in_top']),
                     'show_in_comparison' => !empty($_POST['candidate_show_in_comparison']),
                 ]);
+                $candidateRow = interessa_admin_product_candidate_record((string) ($result['id'] ?? $candidateId));
                 interessa_admin_redirect_fragment('products', [
                     'candidate' => (string) ($result['id'] ?? $candidateId),
                     'saved' => 'candidate-assignment',
-                ], 'products-candidate-steps');
+                    'batch' => interessa_admin_slugify((string) ($candidateRow['batch_id'] ?? $_POST['batch'] ?? '')),
+                ], 'products-current-candidate');
             }
 
             if ($action === 'approve_candidate_for_web') {
                 $candidateId = trim((string) ($_POST['candidate_id'] ?? ''));
                 $result = interessa_admin_approve_candidate_for_web($candidateId);
+                $candidateRow = interessa_admin_product_candidate_record((string) ($result['id'] ?? $candidateId));
                 interessa_admin_redirect_fragment('products', [
                     'candidate' => (string) ($result['id'] ?? $candidateId),
                     'product' => (string) ($result['product_slug'] ?? ''),
                     'article_product_slug' => (string) ($result['article_slug'] ?? ''),
                     'saved' => 'candidate-approved',
-                ], 'products-candidate-steps');
+                    'batch' => interessa_admin_slugify((string) ($candidateRow['batch_id'] ?? $_POST['batch'] ?? '')),
+                ], 'products-current-candidate');
             }
 
             if ($action === 'export_image_backlog_csv') {
@@ -2142,6 +2204,10 @@ if ($isAuthed) {
             }
             if ($candidateId !== '') {
                 $query['candidate'] = $candidateId;
+            }
+            $batchId = interessa_admin_slugify((string) ($_POST['batch'] ?? ''));
+            if ($batchId !== '') {
+                $query['batch'] = $batchId;
             }
             if ($returnSection !== '' && $returnSlug !== '') {
                 $query['return_section'] = $returnSection;
@@ -2428,9 +2494,9 @@ $flashMessages = [
     'product-enriched' => 'Produkt bol doplneny z referencnej produktovej stranky.',
     'product-autofill' => 'Produkt bol automaticky doplneny a obrazok sa pokusil zrkadlit.',
     'product-remote-ready' => 'Produkt ma najdeny obrazok z e-shopu. Teraz klikni 2. Ulozit obrazok z e-shopu a vznikne lokalny WebP.',
-    'candidate-imported' => 'Kandidati produktov boli nacitani. Pozri nizsie blok Prave nacitane produkty, vyber jeden produkt a pokracuj dalej.',
-    'candidate-click' => 'Odkaz do obchodu je pripraveny. Pozri nizsie ten isty produkt a prirad ho ku clanku.',
-    'candidate-assignment' => 'Produkt je priradeny ku clanku. Pozri nizsie ten isty produkt a uloz ho do systemu.',
+    'candidate-imported' => 'Kandidati produktov su nacitani. Pokracuj na jednom otvorenom produkte.',
+    'candidate-click' => 'Odkaz do obchodu je pripraveny. Pokracuj na tom istom produkte.',
+    'candidate-assignment' => 'Produkt je priradeny ku clanku. Pokracuj na tom istom produkte a uloz ho do systemu.',
     'candidate-approved' => 'Produkt je schvaleny pre web a bol zapisany do systemu.',
 ];
 $flashMessage = $importSummary !== '' ? $importSummary : ($flashMessages[$flash] ?? '');
@@ -2763,6 +2829,28 @@ if ($recentCandidateBatchId !== '') {
         }
     }
 }
+$candidateSelectorRows = $recentImportedRows !== [] ? $recentImportedRows : $candidateListRows;
+$candidateImportedDisplayCount = $candidateImportedCount;
+$candidateClickReadyDisplayCount = $candidateClickReadyCount;
+$candidateAssignedDisplayCount = $candidateAssignedCount;
+$candidateApprovedDisplayCount = $candidateApprovedCount;
+if ($recentImportedRows !== []) {
+    $candidateImportedDisplayCount = count($recentImportedRows);
+    $candidateClickReadyDisplayCount = 0;
+    $candidateAssignedDisplayCount = 0;
+    $candidateApprovedDisplayCount = 0;
+    foreach ($recentImportedRows as $recentImportedRow) {
+        if (!empty($recentImportedRow['has_click'])) {
+            $candidateClickReadyDisplayCount++;
+        }
+        if (!empty($recentImportedRow['has_article'])) {
+            $candidateAssignedDisplayCount++;
+        }
+        if (!empty($recentImportedRow['approved'])) {
+            $candidateApprovedDisplayCount++;
+        }
+    }
+}
 
 $selectedCandidateHasClick = is_array($selectedCandidate) && trim((string) ($selectedCandidate['click_code'] ?? '')) !== '';
 $selectedCandidateHasArticle = is_array($selectedCandidate) && trim((string) ($selectedCandidate['article_slug'] ?? '')) !== '';
@@ -2771,16 +2859,16 @@ $selectedCandidateHasImage = is_array($selectedCandidate) && trim((string) ($sel
 $selectedCandidateClickStatusLabel = !$selectedCandidateHasClick
     ? 'Chyba'
     : ((string) ($selectedCandidate['click_status'] ?? '') === 'dognet' ? 'Dognet' : 'Priamy klik');
-$selectedCandidateArticleGuess = is_array($selectedCandidate)
-    ? interessa_admin_guess_candidate_article($selectedCandidate)
-    : ['slug' => '', 'reason' => '', 'hits' => []];
+$selectedCandidateArticleFit = is_array($selectedCandidate)
+    ? interessa_admin_candidate_phase_one_fit($selectedCandidate)
+    : ['status' => 'no-fit', 'slug' => '', 'reason' => '', 'hits' => [], 'blocked' => []];
 $selectedCandidateArticleSlug = is_array($selectedCandidate) ? canonical_article_slug(trim((string) ($selectedCandidate['article_slug'] ?? ''))) : '';
 if ($selectedCandidateArticleSlug !== '' && !in_array($selectedCandidateArticleSlug, $productArticleOptionSlugs, true)) {
     $selectedCandidateArticleSlug = '';
 }
 if ($selectedCandidateArticleSlug === '') {
-    $guessedArticleSlug = canonical_article_slug((string) ($selectedCandidateArticleGuess['slug'] ?? ''));
-    if ($guessedArticleSlug !== '' && in_array($guessedArticleSlug, $productArticleOptionSlugs, true)) {
+    $guessedArticleSlug = canonical_article_slug((string) ($selectedCandidateArticleFit['slug'] ?? ''));
+    if (($selectedCandidateArticleFit['status'] ?? 'no-fit') === 'fit' && $guessedArticleSlug !== '' && in_array($guessedArticleSlug, $productArticleOptionSlugs, true)) {
         $selectedCandidateArticleSlug = $guessedArticleSlug;
     }
 }
@@ -3608,19 +3696,19 @@ require dirname(__DIR__) . '/inc/head.php';
             </div>
             <div class="admin-status-grid">
               <article class="admin-status-card">
-                <strong><?= esc((string) $candidateImportedCount) ?></strong>
-                <span>Nacitane produkty</span>
+                <strong><?= esc((string) $candidateImportedDisplayCount) ?></strong>
+                <span><?= $recentImportedRows !== [] ? 'Produkty z posledneho importu' : 'Nacitane produkty' ?></span>
               </article>
               <article class="admin-status-card">
-                <strong><?= esc((string) $candidateClickReadyCount) ?></strong>
+                <strong><?= esc((string) $candidateClickReadyDisplayCount) ?></strong>
                 <span>Klik do obchodu hotovy</span>
               </article>
               <article class="admin-status-card">
-                <strong><?= esc((string) $candidateAssignedCount) ?></strong>
+                <strong><?= esc((string) $candidateAssignedDisplayCount) ?></strong>
                 <span>Priradene ku clanku</span>
               </article>
               <article class="admin-status-card">
-                <strong><?= esc((string) $candidateApprovedCount) ?></strong>
+                <strong><?= esc((string) $candidateApprovedDisplayCount) ?></strong>
                 <span>Schvalene pre web</span>
               </article>
             </div>
@@ -3673,53 +3761,7 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </section>
 
-            <?php if ($recentImportedRows !== []): ?>
-              <section class="admin-subsection is-compact" id="products-imported-list">
-                <div class="admin-subsection-head">
-                  <div>
-                    <h3>Prave nacitane produkty</h3>
-                    <p class="admin-meta">Tu vidis len produkty z posledneho importu. Nacitalo sa ich: <strong><?= esc((string) count($recentImportedRows)) ?></strong>. Klikni na jeden produkt a potom pokracuj nizsie na tom istom produkte.</p>
-                  </div>
-                </div>
-                <p class="admin-note"><strong>Pri prvom importe teraz neriesis finalny top produkt ani porovnanie.</strong> Najprv len vyber spravny clanok, nechaj male oznacenie na <strong>Bez oznacenia</strong> a volby pre horny vyber aj porovnavaciu tabulku nechaj vypnute.</p>
-                <p class="admin-note"><strong>Co urobis teraz:</strong> 1. klikni na jeden produkt v tomto zozname, 2. nizsie sa ten isty produkt otvori, 3. tam dokonci dalsi krok.</p>
-                <div class="admin-queue-list">
-                  <?php foreach ($recentImportedRows as $recentImportedIndex => $recentImportedRow): ?>
-                    <article class="admin-queue-item">
-                      <div>
-                        <strong><?= esc((string) ($recentImportedIndex + 1)) ?>. <?= esc((string) $recentImportedRow['name']) ?></strong>
-                        <p><?= esc((string) ($recentImportedRow['merchant'] ?? '')) ?></p>
-                        <?php
-                          $recentImportedDetails = [];
-                          if (trim((string) ($recentImportedRow['category'] ?? '')) !== '') {
-                              $recentImportedDetails[] = 'Typ: ' . trim((string) ($recentImportedRow['category'] ?? ''));
-                          }
-                          if (trim((string) ($recentImportedRow['price'] ?? '')) !== '') {
-                              $recentImportedDetails[] = 'Cena: ' . trim((string) ($recentImportedRow['price'] ?? ''));
-                          }
-                        ?>
-                        <?php if ($recentImportedDetails !== []): ?>
-                          <p class="admin-meta"><?= esc(implode(' / ', $recentImportedDetails)) ?></p>
-                        <?php endif; ?>
-                        <div class="admin-status-pills">
-                          <span class="admin-status-pill is-good">Nacitany</span>
-                          <span class="admin-status-pill<?= !empty($recentImportedRow['has_image']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_image']) ? 'Obrazok sa nasiel' : 'Obrazok chyba' ?></span>
-                          <span class="admin-status-pill<?= !empty($recentImportedRow['has_click']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_click']) ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
-                          <?php if ((string) ($recentImportedRow['id'] ?? '') === $selectedCandidateId): ?>
-                            <span class="admin-status-pill is-good">Prave otvoreny</span>
-                          <?php endif; ?>
-                        </div>
-                      </div>
-                      <div class="admin-inline-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;candidate=<?= esc((string) $recentImportedRow['id']) ?>#products-candidate-steps"><?= (string) ($recentImportedRow['id'] ?? '') === $selectedCandidateId ? 'Tento produkt je otvoreny nizsie' : 'Vybrat tento produkt' ?></a>
-                      </div>
-                    </article>
-                  <?php endforeach; ?>
-                </div>
-              </section>
-            <?php endif; ?>
-
-            <section class="admin-subsection is-compact">
+            <section class="admin-subsection is-compact" id="products-current-candidate">
               <div class="admin-subsection-head">
                   <div>
                   <h3>2. Vyber jeden produkt a dokonci ho</h3>
@@ -3730,11 +3772,14 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
                 <form method="get" action="/admin" class="admin-inline-form">
                   <input type="hidden" name="section" value="products" />
+                  <?php if ($recentCandidateBatchId !== ''): ?>
+                    <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
+                  <?php endif; ?>
                   <select name="candidate" onchange="this.form.submit()">
                     <?php if ($candidateRows === []): ?>
                       <option value="">Najprv nahraj zoznam produktov</option>
                     <?php else: ?>
-                      <?php foreach ($candidateListRows as $candidateListRow): ?>
+                      <?php foreach ($candidateSelectorRows as $candidateListRow): ?>
                         <option value="<?= esc((string) $candidateListRow['id']) ?>" <?= (string) $candidateListRow['id'] === $selectedCandidateId ? 'selected' : '' ?>>
                           <?= esc((string) $candidateListRow['name']) ?><?= trim((string) ($candidateListRow['merchant'] ?? '')) !== '' ? ' / ' . esc((string) $candidateListRow['merchant']) : '' ?><?= trim((string) ($candidateListRow['category'] ?? '')) !== '' ? ' / ' . esc((string) ($candidateListRow['category'] ?? '')) : '' ?>
                         </option>
@@ -3743,6 +3788,9 @@ require dirname(__DIR__) . '/inc/head.php';
                   </select>
                 </form>
               </div>
+              <?php if ($recentImportedRows !== []): ?>
+                <p class="admin-note"><strong>Teraz vyberas len z posledneho importu.</strong> Ked budes chciet iny produkt z tohto isteho importu, otvor nizsie blok <strong>Produkty z posledneho importu</strong>.</p>
+              <?php endif; ?>
 
               <?php if (!is_array($selectedCandidate)): ?>
                 <p class="admin-note">Zatial tu nie je ziadny nacitany produkt. Najprv pouzi Krok 1.</p>
@@ -3793,7 +3841,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
                 </div>
 
-                <section class="admin-subsection is-compact">
+                <section class="admin-subsection is-compact" id="products-next-step">
                   <div class="admin-subsection-head">
                     <div>
                       <h3>Co spravit teraz</h3>
@@ -3805,6 +3853,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="prepare_candidate_click" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
+                      <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
                       <div class="admin-actions">
                         <button class="btn btn-cta" type="submit">Pripravit odkaz do obchodu</button>
                       </div>
@@ -3822,6 +3871,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <form method="post" class="admin-form admin-form-stack">
                         <input type="hidden" name="action" value="save_candidate_assignment" />
                         <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
+                        <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
                         <input type="hidden" name="candidate_article_slug" value="<?= esc($selectedCandidateArticleSlug) ?>" />
                         <input type="hidden" name="candidate_order" value="10" />
                         <input type="hidden" name="candidate_role" value="standard" />
@@ -3837,6 +3887,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="save_candidate_assignment" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
+                      <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
                       <label>
                         <span>Clanok</span>
                         <select name="candidate_article_slug">
@@ -3869,6 +3920,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="approve_candidate_for_web" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
+                      <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
                       <div class="admin-actions">
                         <button class="btn btn-cta" type="submit">Ulozit do systemu</button>
                       </div>
@@ -3892,6 +3944,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="prepare_candidate_click" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
+                      <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
                       <div class="admin-subsection is-compact">
                         <div class="admin-subsection-head"><h3>Pripravit odkaz do obchodu</h3></div>
                         <p class="admin-note">Admin pouzije ulozeny link produktu a pripravi odkaz, na ktory bude clovek klikat na webe.</p>
@@ -3904,6 +3957,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="approve_candidate_for_web" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
+                      <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
                       <div class="admin-subsection is-compact">
                         <div class="admin-subsection-head"><h3>Schvalit pre web</h3></div>
                         <p class="admin-note">Toto pouzi len ked chces znovu zapisat tento produkt do hlavneho systemu.</p>
@@ -3916,6 +3970,52 @@ require dirname(__DIR__) . '/inc/head.php';
                 </details>
               <?php endif; ?>
             </section>
+
+            <?php if ($recentImportedRows !== []): ?>
+              <details class="admin-subsection is-compact" id="products-imported-list" <?= is_array($selectedCandidate) ? '' : 'open' ?>>
+                <summary><strong>Produkty z posledneho importu</strong> - otvor len ked chces vybrat iny produkt z toho isteho importu</summary>
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Posledny import: <?= esc((string) count($recentImportedRows)) ?> produktov</h3>
+                    <p class="admin-meta">Tu len vidis, co sa prave natiahlo. Hlavna praca prebieha vyssie na jednom otvorenom produkte.</p>
+                  </div>
+                </div>
+                <p class="admin-note"><strong>Pri prvom importe teraz neriesis finalny top produkt ani porovnanie.</strong> Najprv len vyber spravny clanok, nechaj male oznacenie na <strong>Bez oznacenia</strong> a volby pre horny vyber aj porovnavaciu tabulku nechaj vypnute.</p>
+                <div class="admin-queue-list">
+                  <?php foreach ($recentImportedRows as $recentImportedIndex => $recentImportedRow): ?>
+                    <article class="admin-queue-item">
+                      <div>
+                        <strong><?= esc((string) ($recentImportedIndex + 1)) ?>. <?= esc((string) $recentImportedRow['name']) ?></strong>
+                        <p><?= esc((string) ($recentImportedRow['merchant'] ?? '')) ?></p>
+                        <?php
+                          $recentImportedDetails = [];
+                          if (trim((string) ($recentImportedRow['category'] ?? '')) !== '') {
+                              $recentImportedDetails[] = 'Typ: ' . trim((string) ($recentImportedRow['category'] ?? ''));
+                          }
+                          if (trim((string) ($recentImportedRow['price'] ?? '')) !== '') {
+                              $recentImportedDetails[] = 'Cena: ' . trim((string) ($recentImportedRow['price'] ?? ''));
+                          }
+                        ?>
+                        <?php if ($recentImportedDetails !== []): ?>
+                          <p class="admin-meta"><?= esc(implode(' / ', $recentImportedDetails)) ?></p>
+                        <?php endif; ?>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill is-good">Nacitany</span>
+                          <span class="admin-status-pill<?= !empty($recentImportedRow['has_image']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_image']) ? 'Obrazok sa nasiel' : 'Obrazok chyba' ?></span>
+                          <span class="admin-status-pill<?= !empty($recentImportedRow['has_click']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_click']) ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
+                          <?php if ((string) ($recentImportedRow['id'] ?? '') === $selectedCandidateId): ?>
+                            <span class="admin-status-pill is-good">Prave otvoreny</span>
+                          <?php endif; ?>
+                        </div>
+                      </div>
+                      <div class="admin-inline-actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;batch=<?= esc($recentCandidateBatchId) ?>&amp;candidate=<?= esc((string) $recentImportedRow['id']) ?>#products-current-candidate"><?= (string) ($recentImportedRow['id'] ?? '') === $selectedCandidateId ? 'Tento produkt je otvoreny vyssie' : 'Vybrat tento produkt' ?></a>
+                      </div>
+                    </article>
+                  <?php endforeach; ?>
+                </div>
+              </details>
+            <?php endif; ?>
 
             <?php if ($candidateRows !== []): ?>
               <details class="admin-subsection is-compact">
@@ -6886,10 +6986,10 @@ require dirname(__DIR__) . '/inc/head.php';
     const params = new URLSearchParams(window.location.search);
     const savedState = params.get('saved') || '';
     const savedTargetMap = {
-      'candidate-imported': 'products-imported-list',
-      'candidate-click': 'products-candidate-steps',
-      'candidate-assignment': 'products-candidate-steps',
-      'candidate-approved': 'products-candidate-steps'
+      'candidate-imported': 'products-current-candidate',
+      'candidate-click': 'products-next-step',
+      'candidate-assignment': 'products-next-step',
+      'candidate-approved': 'products-current-candidate'
     };
     const savedTargetId = savedTargetMap[savedState] || '';
     if (savedTargetId !== '') {
