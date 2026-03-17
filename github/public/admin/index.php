@@ -615,6 +615,98 @@ function interessa_admin_article_product_help(string $articleSlug): array {
     };
 }
 
+function interessa_admin_text_keyword_hits(string $text, array $keywords): array {
+    $hits = [];
+    $normalizedText = strtolower(trim($text));
+    if ($normalizedText === '') {
+        return $hits;
+    }
+
+    foreach ($keywords as $keyword) {
+        $needle = strtolower(trim((string) $keyword));
+        if ($needle === '') {
+            continue;
+        }
+        if (str_contains($normalizedText, $needle)) {
+            $hits[] = $needle;
+        }
+    }
+
+    return array_values(array_unique($hits));
+}
+
+function interessa_admin_guess_candidate_article(array $candidate): array {
+    $text = strtolower(trim(implode(' ', array_filter([
+        (string) ($candidate['name'] ?? ''),
+        (string) ($candidate['category'] ?? ''),
+        (string) ($candidate['url'] ?? ''),
+    ]))));
+
+    if ($text === '') {
+        return ['slug' => '', 'reason' => '', 'hits' => []];
+    }
+
+    $rules = [
+        'najlepsie-proteiny-2026' => [
+            'keywords' => ['whey', 'protein', 'isolate', 'clear', 'vegan'],
+            'blocked' => ['gainer', 'bcaa', 'eaa', 'kolagen', 'collagen', 'pre-workout', 'caffeine', 'kofein'],
+            'reason' => 'vyzera ako proteinovy kandidat',
+        ],
+        'kreatin-porovnanie' => [
+            'keywords' => ['creatine', 'kreatin', 'monohydrate', 'monohydrat', 'creapure', 'hcl'],
+            'blocked' => ['caffeine', 'kofein', 'pre-workout', 'bcaa', 'eaa', 'burner', 'spalovac', 'stim'],
+            'reason' => 'vyzera ako kreatinovy kandidat',
+        ],
+        'doplnky-vyzivy' => [
+            'keywords' => ['magnesium', 'horcik', 'd3', 'vitamin c', 'zinok', 'zinc', 'multivitamin', 'probiotic', 'probiotik', 'k2'],
+            'blocked' => ['pre-workout', 'caffeine', 'kofein', 'gainer', 'bcaa', 'eaa'],
+            'reason' => 'vyzera ako zakladny doplnok vyzivy',
+        ],
+    ];
+
+    $bestSlug = '';
+    $bestHits = [];
+    $bestReason = '';
+    $bestScore = 0;
+    $scoreTie = false;
+
+    foreach ($rules as $slug => $rule) {
+        $blockedHits = interessa_admin_text_keyword_hits($text, (array) ($rule['blocked'] ?? []));
+        if ($blockedHits !== []) {
+            continue;
+        }
+
+        $hits = interessa_admin_text_keyword_hits($text, (array) ($rule['keywords'] ?? []));
+        $score = count($hits);
+        if ($score === 0) {
+            continue;
+        }
+
+        if ($score > $bestScore) {
+            $bestSlug = $slug;
+            $bestHits = $hits;
+            $bestReason = (string) ($rule['reason'] ?? '');
+            $bestScore = $score;
+            $scoreTie = false;
+            continue;
+        }
+
+        if ($score === $bestScore) {
+            $scoreTie = true;
+        }
+    }
+
+    if ($bestSlug === '' || $scoreTie) {
+        return ['slug' => '', 'reason' => '', 'hits' => []];
+    }
+
+    return [
+        'slug' => $bestSlug,
+        'reason' => $bestReason,
+        'hits' => $bestHits,
+    ];
+}
+
 function interessa_admin_clean_label(string $value): string {
     $value = trim($value);
     if ($value === '') {
@@ -2677,9 +2769,18 @@ $selectedCandidateHasImage = is_array($selectedCandidate) && trim((string) ($sel
 $selectedCandidateClickStatusLabel = !$selectedCandidateHasClick
     ? 'Chyba'
     : ((string) ($selectedCandidate['click_status'] ?? '') === 'dognet' ? 'Dognet' : 'Priamy klik');
+$selectedCandidateArticleGuess = is_array($selectedCandidate)
+    ? interessa_admin_guess_candidate_article($selectedCandidate)
+    : ['slug' => '', 'reason' => '', 'hits' => []];
 $selectedCandidateArticleSlug = is_array($selectedCandidate) ? canonical_article_slug(trim((string) ($selectedCandidate['article_slug'] ?? ''))) : '';
-if ($selectedCandidateArticleSlug === '' || !in_array($selectedCandidateArticleSlug, $productArticleOptionSlugs, true)) {
-    $selectedCandidateArticleSlug = (string) ($productArticleOptionSlugs[0] ?? '');
+if ($selectedCandidateArticleSlug !== '' && !in_array($selectedCandidateArticleSlug, $productArticleOptionSlugs, true)) {
+    $selectedCandidateArticleSlug = '';
+}
+if ($selectedCandidateArticleSlug === '') {
+    $guessedArticleSlug = canonical_article_slug((string) ($selectedCandidateArticleGuess['slug'] ?? ''));
+    if ($guessedArticleSlug !== '' && in_array($guessedArticleSlug, $productArticleOptionSlugs, true)) {
+        $selectedCandidateArticleSlug = $guessedArticleSlug;
+    }
 }
 $selectedCandidateArticleHelp = interessa_admin_article_product_help($selectedCandidateArticleSlug);
 $candidateRoleOptions = ['standard', 'vegan', 'clean'];
@@ -3691,25 +3792,35 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php elseif (!$selectedCandidateHasArticle): ?>
                     <p class="admin-note">Odkaz do obchodu je hotovy. Teraz produkt len prirad ku spravnemu clanku ako kandidata.</p>
                     <p class="admin-note"><strong>Co tu nastavujes:</strong> Clanok = kde sa produkt ma neskor posudzovat. Poradie = docasne technicke cislo, pouzi 10, 20, 30. Maly stitok = pri prvom importe nechaj Bez oznacenia, iba ak je uplne jasne, ze ide o vegansku alebo cistu moznost.</p>
-                    <p class="admin-note"><strong>Pre vybrany clanok:</strong> <?= esc((string) ($selectedCandidateArticleHelp['summary'] ?? '')) ?></p>
-                    <p class="admin-note"><strong>Bezpecne prve nastavenie:</strong> Poradie 10, maly stitok Bez oznacenia, horny vyber vypnuty, porovnavacia tabulka vypnuta.</p>
-                    <form method="post" class="admin-form admin-form-stack">
-                      <input type="hidden" name="action" value="save_candidate_assignment" />
-                      <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
-                      <input type="hidden" name="candidate_article_slug" value="<?= esc($selectedCandidateArticleSlug) ?>" />
-                      <input type="hidden" name="candidate_order" value="10" />
-                      <input type="hidden" name="candidate_role" value="standard" />
-                      <div class="admin-actions">
-                        <button class="btn btn-cta" type="submit">Pouzit bezpecne prve nastavenie</button>
-                      </div>
-                    </form>
-                    <p class="admin-meta">Ak toto tlacidlo stlacis, admin pouzije: clanok z vyberu, poradie 10, Bez oznacenia, horny vyber vypnuty a porovnavaciu tabulku vypnutu.</p>
+                    <?php if ($selectedCandidateArticleSlug !== ''): ?>
+                      <p class="admin-note"><strong>Navrhnuty clanok:</strong> <?= esc((string) ($articleOptions[$selectedCandidateArticleSlug]['title'] ?? $selectedCandidateArticleSlug)) ?></p>
+                      <?php if (!empty($selectedCandidateArticleGuess['reason'])): ?>
+                        <p class="admin-meta">Admin ho predvyplnil, lebo <?= esc((string) $selectedCandidateArticleGuess['reason']) ?><?= !empty($selectedCandidateArticleGuess['hits']) ? ': ' . esc(implode(', ', (array) $selectedCandidateArticleGuess['hits'])) : '' ?>.</p>
+                      <?php endif; ?>
+                      <p class="admin-note"><strong>Pre vybrany clanok:</strong> <?= esc((string) ($selectedCandidateArticleHelp['summary'] ?? '')) ?></p>
+                      <p class="admin-note"><strong>Bezpecne prve nastavenie:</strong> Poradie 10, maly stitok Bez oznacenia, horny vyber vypnuty, porovnavacia tabulka vypnuta.</p>
+                      <form method="post" class="admin-form admin-form-stack">
+                        <input type="hidden" name="action" value="save_candidate_assignment" />
+                        <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
+                        <input type="hidden" name="candidate_article_slug" value="<?= esc($selectedCandidateArticleSlug) ?>" />
+                        <input type="hidden" name="candidate_order" value="10" />
+                        <input type="hidden" name="candidate_role" value="standard" />
+                        <div class="admin-actions">
+                          <button class="btn btn-cta" type="submit">Pouzit bezpecne prve nastavenie</button>
+                        </div>
+                      </form>
+                      <p class="admin-meta">Ak toto tlacidlo stlacis, admin pouzije: clanok z vyberu, poradie 10, Bez oznacenia, horny vyber vypnuty a porovnavaciu tabulku vypnutu.</p>
+                    <?php else: ?>
+                      <p class="admin-note"><strong>Admin si nie je isty spravnym clankom.</strong> Tento kandidat nepredvyplnil automaticky, aby sa nedostal do nespravneho clanku.</p>
+                      <p class="admin-meta">Vyber clanok rucne. Ak produkt obsahovo nepatri do ziadneho z prvych troch clankov, zatial ho nepriraduj.</p>
+                    <?php endif; ?>
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="save_candidate_assignment" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <label>
                         <span>Clanok</span>
                         <select name="candidate_article_slug">
+                          <option value="" <?= $selectedCandidateArticleSlug === '' ? 'selected' : '' ?>>Vyber clanok</option>
                           <?php foreach ($productArticleOptionSlugs as $articleSlug): ?>
                             <option value="<?= esc($articleSlug) ?>" <?= $articleSlug === $selectedCandidateArticleSlug ? 'selected' : '' ?>><?= esc((string) ($articleOptions[$articleSlug]['title'] ?? $articleSlug)) ?></option>
                           <?php endforeach; ?>

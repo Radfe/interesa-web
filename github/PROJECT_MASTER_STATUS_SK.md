@@ -52,6 +52,7 @@ Ciel je:
 Najprv citat:
 - [AGENTS.md](C:/data/praca/webova_stranka/github/AGENTS.md)
 - [PROJECT_MASTER_STATUS_SK.md](C:/data/praca/webova_stranka/github/PROJECT_MASTER_STATUS_SK.md)
+- [NEW_CODEX_QUICKSTART_SK.md](C:/data/praca/webova_stranka/github/NEW_CODEX_QUICKSTART_SK.md)
 - [COLLABORATION_PROTOCOL_SK.md](C:/data/praca/webova_stranka/github/COLLABORATION_PROTOCOL_SK.md)
 - [WEB_IMPLEMENTATION_STATUS_SK.md](C:/data/praca/webova_stranka/github/WEB_IMPLEMENTATION_STATUS_SK.md)
 - [ADMIN_IMPLEMENTATION_STATUS_SK.md](C:/data/praca/webova_stranka/github/ADMIN_IMPLEMENTATION_STATUS_SK.md)

@@ -10,9 +10,10 @@ Ak sa novy Codex alebo nova AI relacia nacita od nuly, ma sa najprv zorientovat 
 
 Precitaj v tomto poradi:
 1. [PROJECT_MASTER_STATUS_SK.md](C:/data/praca/webova_stranka/github/PROJECT_MASTER_STATUS_SK.md)
-2. [COLLABORATION_PROTOCOL_SK.md](C:/data/praca/webova_stranka/github/COLLABORATION_PROTOCOL_SK.md)
-3. [WEB_IMPLEMENTATION_STATUS_SK.md](C:/data/praca/webova_stranka/github/WEB_IMPLEMENTATION_STATUS_SK.md)
-4. [ADMIN_IMPLEMENTATION_STATUS_SK.md](C:/data/praca/webova_stranka/github/ADMIN_IMPLEMENTATION_STATUS_SK.md)
+2. [NEW_CODEX_QUICKSTART_SK.md](C:/data/praca/webova_stranka/github/NEW_CODEX_QUICKSTART_SK.md)
+3. [COLLABORATION_PROTOCOL_SK.md](C:/data/praca/webova_stranka/github/COLLABORATION_PROTOCOL_SK.md)
+4. [WEB_IMPLEMENTATION_STATUS_SK.md](C:/data/praca/webova_stranka/github/WEB_IMPLEMENTATION_STATUS_SK.md)
+5. [ADMIN_IMPLEMENTATION_STATUS_SK.md](C:/data/praca/webova_stranka/github/ADMIN_IMPLEMENTATION_STATUS_SK.md)
 
 Potom otvor len tie strategicke dokumenty, ktore su potrebne pre aktualnu ulohu.
 
@@ -80,5 +81,5 @@ Pravidla pre ne su v:
 
 Prvy import = kandidati.
 
-Neznamená to finalny vyber pre web.
-Pri prvom importe sa nemaju robit finálne redakcne rozhodnutia, ak to nie je vyslovene potvrdene vo web dokumentoch.
+Neznamena to finalny vyber pre web.
+Pri prvom importe sa nemaju robit finalne redakcne rozhodnutia, ak to nie je vyslovene potvrdene vo web dokumentoch.
