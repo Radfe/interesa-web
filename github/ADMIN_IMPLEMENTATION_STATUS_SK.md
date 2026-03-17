@@ -203,6 +203,23 @@ Najnovsi import krok:
   - `probiotic`
 - ciel je netahat cely feed naraz, ale len mensi prvy balik kandidatov
 
+Najnovsie doladenie kandidatov:
+- po importe sa ma admin vratit rovno na blok `Prave nacitane produkty`
+- po priprave odkazu, priradeni alebo schvaleni sa ma vratit rovno na blok `Vyber jeden produkt a dokonci ho`
+- pri prave nacitanych produktoch je teraz jasnejsie vidno:
+  - poradie v zozname
+  - typ produktu
+  - cenu, ak vo feede prisla
+- pri jednom otvorenom kandidatovi je zretelnejsie vidno:
+  - obchod
+  - typ
+  - cenu
+  - link produktu
+- ciel je, aby po importe bolo hned jasne:
+  - co sa nacitalo
+  - s ktorym produktom teraz robis
+  - co je dalsi krok
+
 ## 4. Co este chyba
 
 ### Produkty a klikacie odkazy

@@ -2745,6 +2745,8 @@ foreach ($candidateRows as $candidateRow) {
         'name' => (string) ($candidateRow['name'] ?? $candidateId),
         'merchant' => (string) ($candidateRow['merchant'] ?? ''),
         'batch_id' => (string) ($candidateRow['batch_id'] ?? ''),
+        'category' => (string) ($candidateRow['category'] ?? ''),
+        'price' => (string) ($candidateRow['price'] ?? ''),
         'has_click' => $candidateHasClick,
         'has_article' => $candidateHasArticle,
         'approved' => $candidateApproved,
@@ -3682,11 +3684,23 @@ require dirname(__DIR__) . '/inc/head.php';
                 <p class="admin-note"><strong>Pri prvom importe teraz neriesis finalny top produkt ani porovnanie.</strong> Najprv len vyber spravny clanok, nechaj male oznacenie na <strong>Bez oznacenia</strong> a volby pre horny vyber aj porovnavaciu tabulku nechaj vypnute.</p>
                 <p class="admin-note"><strong>Co urobis teraz:</strong> 1. klikni na jeden produkt v tomto zozname, 2. nizsie sa ten isty produkt otvori, 3. tam dokonci dalsi krok.</p>
                 <div class="admin-queue-list">
-                  <?php foreach ($recentImportedRows as $recentImportedRow): ?>
+                  <?php foreach ($recentImportedRows as $recentImportedIndex => $recentImportedRow): ?>
                     <article class="admin-queue-item">
                       <div>
-                        <strong><?= esc((string) $recentImportedRow['name']) ?></strong>
+                        <strong><?= esc((string) ($recentImportedIndex + 1)) ?>. <?= esc((string) $recentImportedRow['name']) ?></strong>
                         <p><?= esc((string) ($recentImportedRow['merchant'] ?? '')) ?></p>
+                        <?php
+                          $recentImportedDetails = [];
+                          if (trim((string) ($recentImportedRow['category'] ?? '')) !== '') {
+                              $recentImportedDetails[] = 'Typ: ' . trim((string) ($recentImportedRow['category'] ?? ''));
+                          }
+                          if (trim((string) ($recentImportedRow['price'] ?? '')) !== '') {
+                              $recentImportedDetails[] = 'Cena: ' . trim((string) ($recentImportedRow['price'] ?? ''));
+                          }
+                        ?>
+                        <?php if ($recentImportedDetails !== []): ?>
+                          <p class="admin-meta"><?= esc(implode(' / ', $recentImportedDetails)) ?></p>
+                        <?php endif; ?>
                         <div class="admin-status-pills">
                           <span class="admin-status-pill is-good">Nacitany</span>
                           <span class="admin-status-pill<?= !empty($recentImportedRow['has_image']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_image']) ? 'Obrazok sa nasiel' : 'Obrazok chyba' ?></span>
@@ -3722,7 +3736,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php else: ?>
                       <?php foreach ($candidateListRows as $candidateListRow): ?>
                         <option value="<?= esc((string) $candidateListRow['id']) ?>" <?= (string) $candidateListRow['id'] === $selectedCandidateId ? 'selected' : '' ?>>
-                          <?= esc((string) $candidateListRow['name']) ?><?= trim((string) ($candidateListRow['merchant'] ?? '')) !== '' ? ' / ' . esc((string) $candidateListRow['merchant']) : '' ?>
+                          <?= esc((string) $candidateListRow['name']) ?><?= trim((string) ($candidateListRow['merchant'] ?? '')) !== '' ? ' / ' . esc((string) $candidateListRow['merchant']) : '' ?><?= trim((string) ($candidateListRow['category'] ?? '')) !== '' ? ' / ' . esc((string) ($candidateListRow['category'] ?? '')) : '' ?>
                         </option>
                       <?php endforeach; ?>
                     <?php endif; ?>
@@ -3755,6 +3769,12 @@ require dirname(__DIR__) . '/inc/head.php';
                   <div class="admin-brief-card">
                     <h3><?= esc((string) ($selectedCandidate['name'] ?? 'Produkt')) ?></h3>
                     <p><strong>Obchod:</strong> <?= esc((string) ($selectedCandidate['merchant'] ?? '')) ?></p>
+                    <?php if (trim((string) ($selectedCandidate['category'] ?? '')) !== ''): ?>
+                      <p><strong>Typ:</strong> <?= esc((string) ($selectedCandidate['category'] ?? '')) ?></p>
+                    <?php endif; ?>
+                    <?php if (trim((string) ($selectedCandidate['price'] ?? '')) !== ''): ?>
+                      <p><strong>Cena:</strong> <?= esc((string) ($selectedCandidate['price'] ?? '')) ?></p>
+                    <?php endif; ?>
                     <p><strong>Link produktu:</strong><br><code><?= esc((string) ($selectedCandidate['url'] ?? '')) ?></code></p>
                     <p><strong>Obrazok z obchodu:</strong> <?= $selectedCandidateHasImage ? 'nasiel sa' : 'zatial chyba' ?></p>
                   </div>
@@ -6861,6 +6881,24 @@ require dirname(__DIR__) . '/inc/head.php';
       window.setTimeout(function () {
         focusedProductEdit.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 80);
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const savedState = params.get('saved') || '';
+    const savedTargetMap = {
+      'candidate-imported': 'products-imported-list',
+      'candidate-click': 'products-candidate-steps',
+      'candidate-assignment': 'products-candidate-steps',
+      'candidate-approved': 'products-candidate-steps'
+    };
+    const savedTargetId = savedTargetMap[savedState] || '';
+    if (savedTargetId !== '') {
+      const savedTarget = document.getElementById(savedTargetId);
+      if (savedTarget instanceof HTMLElement) {
+        window.setTimeout(function () {
+          savedTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 120);
+      }
     }
 
     document.addEventListener('click', async function (event) {
