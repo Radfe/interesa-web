@@ -3861,10 +3861,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php elseif (!$selectedCandidateHasArticle): ?>
                     <p class="admin-note">Odkaz do obchodu je hotovy. Teraz produkt len prirad ku spravnemu clanku ako kandidata.</p>
                     <p class="admin-note"><strong>Co tu nastavujes:</strong> Clanok = kde sa produkt ma neskor posudzovat. Poradie = docasne technicke cislo, pouzi 10, 20, 30. Maly stitok = pri prvom importe nechaj Bez oznacenia, iba ak je uplne jasne, ze ide o vegansku alebo cistu moznost.</p>
-                    <?php if ($selectedCandidateArticleSlug !== ''): ?>
+                    <?php if (($selectedCandidateArticleFit['status'] ?? 'no-fit') === 'fit' && $selectedCandidateArticleSlug !== ''): ?>
                       <p class="admin-note"><strong>Navrhnuty clanok:</strong> <?= esc((string) ($articleOptions[$selectedCandidateArticleSlug]['title'] ?? $selectedCandidateArticleSlug)) ?></p>
-                      <?php if (!empty($selectedCandidateArticleGuess['reason'])): ?>
-                        <p class="admin-meta">Admin ho predvyplnil, lebo <?= esc((string) $selectedCandidateArticleGuess['reason']) ?><?= !empty($selectedCandidateArticleGuess['hits']) ? ': ' . esc(implode(', ', (array) $selectedCandidateArticleGuess['hits'])) : '' ?>.</p>
+                      <?php if (!empty($selectedCandidateArticleFit['reason'])): ?>
+                        <p class="admin-meta">Admin ho predvyplnil, lebo <?= esc((string) $selectedCandidateArticleFit['reason']) ?><?= !empty($selectedCandidateArticleFit['hits']) ? ': ' . esc(implode(', ', (array) $selectedCandidateArticleFit['hits'])) : '' ?>.</p>
                       <?php endif; ?>
                       <p class="admin-note"><strong>Pre vybrany clanok:</strong> <?= esc((string) ($selectedCandidateArticleHelp['summary'] ?? '')) ?></p>
                       <p class="admin-note"><strong>Bezpecne prve nastavenie:</strong> Poradie 10, maly stitok Bez oznacenia, horny vyber vypnuty, porovnavacia tabulka vypnuta.</p>
@@ -3880,10 +3880,17 @@ require dirname(__DIR__) . '/inc/head.php';
                         </div>
                       </form>
                       <p class="admin-meta">Ak toto tlacidlo stlacis, admin pouzije: clanok z vyberu, poradie 10, Bez oznacenia, horny vyber vypnuty a porovnavaciu tabulku vypnutu.</p>
+                    <?php elseif (($selectedCandidateArticleFit['status'] ?? 'no-fit') !== 'fit'): ?>
+                      <p class="admin-note"><strong>Tento produkt zatial nepatri do prvych troch clankov.</strong> Nepriraduj ho, kym ho web vlakno nepotvrdi.</p>
+                      <?php if (!empty($selectedCandidateArticleFit['reason'])): ?>
+                        <p class="admin-meta"><?= esc((string) $selectedCandidateArticleFit['reason']) ?><?= !empty($selectedCandidateArticleFit['blocked']) ? ': ' . esc(implode(', ', (array) $selectedCandidateArticleFit['blocked'])) : '' ?>.</p>
+                      <?php endif; ?>
+                      <p class="admin-meta">Vyber iny produkt z posledneho importu. Tento kandidat ma zatial ostat len v zozname kandidatov.</p>
                     <?php else: ?>
                       <p class="admin-note"><strong>Admin si nie je isty spravnym clankom.</strong> Tento kandidat nepredvyplnil automaticky, aby sa nedostal do nespravneho clanku.</p>
                       <p class="admin-meta">Vyber clanok rucne. Ak produkt obsahovo nepatri do ziadneho z prvych troch clankov, zatial ho nepriraduj.</p>
                     <?php endif; ?>
+                    <?php if (($selectedCandidateArticleFit['status'] ?? 'no-fit') === 'fit' || trim((string) ($selectedCandidate['article_slug'] ?? '')) !== ''): ?>
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="save_candidate_assignment" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
@@ -3915,6 +3922,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <button class="btn btn-cta" type="submit">Priradit ako kandidata</button>
                       </div>
                     </form>
+                    <?php endif; ?>
                   <?php elseif (!$selectedCandidateApproved): ?>
                     <p class="admin-note">Produkt uz ma klik aj clanok. Posledny krok je ulozit ho do systemu pre web vlakno. Finalny vyber na webe sa bude robit az potom.</p>
                     <form method="post" class="admin-form admin-form-stack">
@@ -6987,8 +6995,8 @@ require dirname(__DIR__) . '/inc/head.php';
     const savedState = params.get('saved') || '';
     const savedTargetMap = {
       'candidate-imported': 'products-current-candidate',
-      'candidate-click': 'products-next-step',
-      'candidate-assignment': 'products-next-step',
+      'candidate-click': 'products-current-candidate',
+      'candidate-assignment': 'products-current-candidate',
       'candidate-approved': 'products-current-candidate'
     };
     const savedTargetId = savedTargetMap[savedState] || '';

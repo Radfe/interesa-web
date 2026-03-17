@@ -225,7 +225,17 @@ Najnovsia oprava rozlozenia pri kandidatoch:
 - po importe sa ma otvorit priamo prvy produkt v kroku 2, nie pomocny zoznam
 - po priprave odkazu a po priradeni sa ma stranka vratit rovno na dalsi spravny krok pri tom istom produkte
 - ciel je, aby sa uz nevytvaral pocit rozbiteho laveho a praveho panelu
-  - co je dalsi krok
+- pri `candidate-click` a `candidate-assignment` sa uz scrolluje spat na ten isty otvoreny produkt, nie na vedlajsi pomocny blok
+
+Najnovsie posilnenie logiky prvych 3 clankov:
+- admin uz prisnejsie rozlisuje, ci kandidat patri do prvych troch clankov
+- ak kandidat zjavne nepatri do:
+  - `najlepsie-proteiny-2026`
+  - `kreatin-porovnanie`
+  - `doplnky-vyzivy`
+  tak sa formular na priradenie vobec nezobrazi
+- namiesto toho admin jasne povie, ze produkt zatial nepatri do prvych troch clankov a nema sa priradovat
+- tym sa znizuje riziko, ze sa do clanku dostane obsahovo nespravny kandidat, napr. tycinka alebo kofeinove tablety
 
 ## 4. Co este chyba
 
