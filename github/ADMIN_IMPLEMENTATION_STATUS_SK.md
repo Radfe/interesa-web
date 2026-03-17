@@ -4,6 +4,10 @@ Tento dokument je spolocny stavovy prehlad pre:
 - admin vlakno
 - web vlakno
 
+Rychly onboarding pre novu AI relaciu:
+- [PROJECT_MASTER_STATUS_SK.md](C:/data/praca/webova_stranka/github/PROJECT_MASTER_STATUS_SK.md)
+- [AGENTS.md](C:/data/praca/webova_stranka/github/AGENTS.md)
+
 Zdroj pravdy pre obsahovu a produktovu prioritu:
 - [WEB_CONTENT_PRODUCT_MAP_SK.md](C:/data/praca/webova_stranka/github/WEB_CONTENT_PRODUCT_MAP_SK.md)
 - [CAMPAIGN_ARTICLE_MAP_SK.md](C:/data/praca/webova_stranka/github/CAMPAIGN_ARTICLE_MAP_SK.md)
@@ -513,3 +517,28 @@ Preco:
 Co este treba doriesit:
 - este viac zjednodusit samotny vyber jedneho kandidata po importe
 - ak bude treba, predvyplnit clanok pri prvych troch clankoch podla fazy importu
+
+## 13. Jasnejsi navrat po importe a vybere kandidata
+
+Menene subory:
+- [public/admin/index.php](C:/data/praca/webova_stranka/github/public/admin/index.php)
+
+Co sa upravilo:
+- po importe je blok `Prave nacitane produkty` zrozumitelnejsi
+- pri zozname posledneho importu je teraz jasna veta, co ma pouzivatel urobit:
+  - kliknut na jeden produkt
+  - potom pokracovat nizsie na tom istom produkte
+- pri prave otvorenom produkte v zozname sa ukaze stav `Prave otvoreny`
+- tlacidlo pri otvorenom produkte sa zmeni na `Tento produkt je otvoreny nizsie`
+- v kroku `2. Vyber jeden produkt a dokonci ho` sa teraz explicitne zobrazi:
+  - `Prave otvoreny produkt: nazov / obchod`
+- po importe a po dalsich krokoch tak uz stranka nevyzera ako nahodny navrat na iny kus adminu
+
+Preco:
+- po importe sice kandidati vznikli, ale navrat na stranku stale posobil nejasne
+- pouzivatel nevedel, co sa vlastne nacitalo a s ktorym produktom prave pracuje
+- tento krok zlepsuje orientaciu bez zavedenia noveho paralelneho systemu
+
+Co este treba doriesit:
+- zjednodusit samotny zoznam kandidatov tak, aby bol pre prvy batch este citatelnejsi
+- pri prvych troch clankoch casom predvyplnit clanok uz pri importe alebo pri bezpecnom prvom nastaveni

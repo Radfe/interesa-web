@@ -4,6 +4,10 @@ Tento dokument je spolocny stavovy prehlad pre:
 - web vlakno
 - admin vlakno
 
+Rychly onboarding pre novu AI relaciu:
+- [PROJECT_MASTER_STATUS_SK.md](C:/data/praca/webova_stranka/github/PROJECT_MASTER_STATUS_SK.md)
+- [AGENTS.md](C:/data/praca/webova_stranka/github/AGENTS.md)
+
 Zdroj pravdy pre obsahovu a produktovu prioritu:
 - [WEB_CONTENT_PRODUCT_MAP_SK.md](C:/data/praca/webova_stranka/github/WEB_CONTENT_PRODUCT_MAP_SK.md)
 - [CAMPAIGN_ARTICLE_MAP_SK.md](C:/data/praca/webova_stranka/github/CAMPAIGN_ARTICLE_MAP_SK.md)

@@ -2336,9 +2336,9 @@ $flashMessages = [
     'product-enriched' => 'Produkt bol doplneny z referencnej produktovej stranky.',
     'product-autofill' => 'Produkt bol automaticky doplneny a obrazok sa pokusil zrkadlit.',
     'product-remote-ready' => 'Produkt ma najdeny obrazok z e-shopu. Teraz klikni 2. Ulozit obrazok z e-shopu a vznikne lokalny WebP.',
-    'candidate-imported' => 'Kandidati produktov boli nacitani. Nizsie vidis prave nacitane produkty. Vyber jeden a pokracuj dalej.',
-    'candidate-click' => 'Klik do obchodu je pripraveny. Teraz produkt prirad ku clanku.',
-    'candidate-assignment' => 'Produkt je priradeny ku clanku. Posledny krok je schvalit ho pre web.',
+    'candidate-imported' => 'Kandidati produktov boli nacitani. Pozri nizsie blok Prave nacitane produkty, vyber jeden produkt a pokracuj dalej.',
+    'candidate-click' => 'Odkaz do obchodu je pripraveny. Pozri nizsie ten isty produkt a prirad ho ku clanku.',
+    'candidate-assignment' => 'Produkt je priradeny ku clanku. Pozri nizsie ten isty produkt a uloz ho do systemu.',
     'candidate-approved' => 'Produkt je schvaleny pre web a bol zapisany do systemu.',
 ];
 $flashMessage = $importSummary !== '' ? $importSummary : ($flashMessages[$flash] ?? '');
@@ -3575,10 +3575,11 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Prave nacitane produkty</h3>
-                    <p class="admin-meta">Tu vidis len produkty z posledneho importu. Nacitalo sa ich: <strong><?= esc((string) count($recentImportedRows)) ?></strong>. Vyber jeden a pokracuj dalej.</p>
+                    <p class="admin-meta">Tu vidis len produkty z posledneho importu. Nacitalo sa ich: <strong><?= esc((string) count($recentImportedRows)) ?></strong>. Klikni na jeden produkt a potom pokracuj nizsie na tom istom produkte.</p>
                   </div>
                 </div>
                 <p class="admin-note"><strong>Pri prvom importe teraz neriesis finalny top produkt ani porovnanie.</strong> Najprv len vyber spravny clanok, nechaj male oznacenie na <strong>Bez oznacenia</strong> a volby pre horny vyber aj porovnavaciu tabulku nechaj vypnute.</p>
+                <p class="admin-note"><strong>Co urobis teraz:</strong> 1. klikni na jeden produkt v tomto zozname, 2. nizsie sa ten isty produkt otvori, 3. tam dokonci dalsi krok.</p>
                 <div class="admin-queue-list">
                   <?php foreach ($recentImportedRows as $recentImportedRow): ?>
                     <article class="admin-queue-item">
@@ -3589,10 +3590,13 @@ require dirname(__DIR__) . '/inc/head.php';
                           <span class="admin-status-pill is-good">Nacitany</span>
                           <span class="admin-status-pill<?= !empty($recentImportedRow['has_image']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_image']) ? 'Obrazok sa nasiel' : 'Obrazok chyba' ?></span>
                           <span class="admin-status-pill<?= !empty($recentImportedRow['has_click']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_click']) ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
+                          <?php if ((string) ($recentImportedRow['id'] ?? '') === $selectedCandidateId): ?>
+                            <span class="admin-status-pill is-good">Prave otvoreny</span>
+                          <?php endif; ?>
                         </div>
                       </div>
                       <div class="admin-inline-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;candidate=<?= esc((string) $recentImportedRow['id']) ?>#products-candidate-steps">Vybrat tento produkt</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;candidate=<?= esc((string) $recentImportedRow['id']) ?>#products-candidate-steps"><?= (string) ($recentImportedRow['id'] ?? '') === $selectedCandidateId ? 'Tento produkt je otvoreny nizsie' : 'Vybrat tento produkt' ?></a>
                       </div>
                     </article>
                   <?php endforeach; ?>
@@ -3602,10 +3606,13 @@ require dirname(__DIR__) . '/inc/head.php';
 
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
-                <div>
+                  <div>
                   <h3>2. Vyber jeden produkt a dokonci ho</h3>
                   <p class="admin-meta">Tu uz robis len s jednym produktom. Admin ti pri nom ukaze stav a povie, co treba kliknut dalej.</p>
-                </div>
+                  <?php if (is_array($selectedCandidate)): ?>
+                    <p class="admin-note"><strong>Prave otvoreny produkt:</strong> <?= esc((string) ($selectedCandidate['name'] ?? 'Produkt')) ?><?= trim((string) ($selectedCandidate['merchant'] ?? '')) !== '' ? ' / ' . esc((string) ($selectedCandidate['merchant'] ?? '')) : '' ?></p>
+                  <?php endif; ?>
+                  </div>
                 <form method="get" action="/admin" class="admin-inline-form">
                   <input type="hidden" name="section" value="products" />
                   <select name="candidate" onchange="this.form.submit()">

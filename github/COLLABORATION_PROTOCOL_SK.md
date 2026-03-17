@@ -30,6 +30,10 @@ To znamena:
 
 ## 3. Hlavne spolocne dokumenty
 
+Rychly onboarding pre novu AI relaciu:
+- [PROJECT_MASTER_STATUS_SK.md](C:/data/praca/webova_stranka/github/PROJECT_MASTER_STATUS_SK.md)
+- [AGENTS.md](C:/data/praca/webova_stranka/github/AGENTS.md)
+
 Obsahova a obchodna priorita:
 - [WEB_CONTENT_PRODUCT_MAP_SK.md](C:/data/praca/webova_stranka/github/WEB_CONTENT_PRODUCT_MAP_SK.md)
 - [CAMPAIGN_ARTICLE_MAP_SK.md](C:/data/praca/webova_stranka/github/CAMPAIGN_ARTICLE_MAP_SK.md)
@@ -87,3 +91,4 @@ Ciel nie je, aby sa vlakna rozpravali "automaticky".
 Ciel je:
 - aby obe vlakna po otvoreni repozitara okamzite videli ten isty aktualny stav
 - a aby sa nemuselo vsetko vysvetlovat znova od nuly
+- a aby sa novy Codex vedel zorientovat aj bez starej chat historie
