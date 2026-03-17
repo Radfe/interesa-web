@@ -1891,18 +1891,19 @@ if ($isAuthed) {
                     ? interessa_admin_candidate_import_limit()
                     : 40;
                 $candidateFeedUrl = trim((string) ($_POST['candidate_feed_url'] ?? ''));
+                $candidateFilterText = trim((string) ($_POST['candidate_filter_text'] ?? ''));
                 $candidateSourceName = '';
                 if ($candidateFeedUrl !== '') {
-                    $rows = interessa_admin_parse_feed_url($candidateFeedUrl, $merchantSlug, $candidateImportLimit);
+                    $rows = interessa_admin_parse_feed_url($candidateFeedUrl, $merchantSlug, $candidateImportLimit, $candidateFilterText);
                     $candidateSourceName = $candidateFeedUrl;
                 } elseif (!empty($_FILES['candidate_file']['tmp_name']) && is_uploaded_file($_FILES['candidate_file']['tmp_name'])) {
-                    $rows = interessa_admin_parse_feed_file((string) $_FILES['candidate_file']['tmp_name'], $merchantSlug, $candidateImportLimit);
+                    $rows = interessa_admin_parse_feed_file((string) $_FILES['candidate_file']['tmp_name'], $merchantSlug, $candidateImportLimit, $candidateFilterText);
                     $candidateSourceName = (string) ($_FILES['candidate_file']['name'] ?? '');
                 } else {
                     throw new RuntimeException('Vloz URL feedu alebo vyber subor s produktmi.');
                 }
                 if ($rows === []) {
-                    throw new RuntimeException('V tomto zdroji sa nenasli ziadne produkty.');
+                    throw new RuntimeException($candidateFilterText !== '' ? 'Pre tento filter sa nenasli ziadne produkty.' : 'V tomto zdroji sa nenasli ziadne produkty.');
                 }
                 $imported = interessa_admin_import_product_candidates(
                     $rows,
@@ -3449,37 +3450,44 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p class="admin-meta">Sem vloz subor z obchodu alebo export. Produkty sa najprv len nacitaju do pripravy. Este sa nezverejnia na webe.</p>
                 </div>
               </div>
-              <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
-                <input type="hidden" name="action" value="import_product_candidates" />
-                <div class="admin-grid two-up">
-                  <label>
-                    <span>Obchod</span>
+                <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
+                  <input type="hidden" name="action" value="import_product_candidates" />
+                  <div class="admin-grid two-up">
+                    <label>
+                      <span>Obchod</span>
                     <select name="candidate_merchant_slug">
                       <?php foreach ($candidateMerchantOptions as $candidateMerchantSlug => $candidateMerchantName): ?>
                         <option value="<?= esc($candidateMerchantSlug) ?>"><?= esc($candidateMerchantName) ?></option>
                       <?php endforeach; ?>
                     </select>
                   </label>
-                  <label>
-                    <span>URL feedu z Dognetu</span>
-                    <input type="url" name="candidate_feed_url" placeholder="Sem vloz URL feedu z tlacidla Kopirovat URL" />
-                  </label>
-                </div>
-                <div class="admin-grid two-up">
-                  <label>
-                    <span>Subor s produktmi</span>
-                    <input type="file" name="candidate_file" accept=".xml,.csv,.json,.txt" />
+                    <label>
+                      <span>URL feedu z Dognetu</span>
+                      <input type="url" name="candidate_feed_url" placeholder="Sem vloz URL feedu z tlacidla Kopirovat URL" />
+                    </label>
+                  </div>
+                  <div class="admin-grid one-up">
+                    <label>
+                      <span>Volitelny filter produktov</span>
+                      <input type="text" name="candidate_filter_text" placeholder="Napriklad: whey, protein, creatine, magnesium" />
+                    </label>
+                  </div>
+                  <div class="admin-grid two-up">
+                    <label>
+                      <span>Subor s produktmi</span>
+                      <input type="file" name="candidate_file" accept=".xml,.csv,.json,.txt" />
                   </label>
                   <label>
                     <span>Poznamka</span>
                     <input type="text" value="Staci jedno: bud URL feedu, alebo subor." readonly />
                   </label>
-                </div>
-                <p class="admin-note">Podporene su XML, CSV aj JSON. V Dognete chod do <strong>Produktove feedy</strong>, klikni <strong>Kopirovat URL</strong> a vloz ten link sem. Admin si z feedu vezme nazov produktu, link produktu, obrazok, typ a pripadne cenu.</p>
-                <p class="admin-note">Pre istotu sa teraz z jedneho feedu nacita len prvy mensi balik kandidatov: <strong><?= esc((string) $candidateImportLimit) ?> produktov</strong>. Ciel je stabilny prvy vyber, nie natiahnut cely feed naraz.</p>
-                <div class="admin-actions">
-                  <button class="btn btn-cta" type="submit">Nahraj zoznam produktov</button>
-                </div>
+                  </div>
+                  <p class="admin-note">Podporene su XML, CSV aj JSON. V Dognete chod do <strong>Produktove feedy</strong>, klikni <strong>Kopirovat URL</strong> a vloz ten link sem. Admin si z feedu vezme nazov produktu, link produktu, obrazok, typ a pripadne cenu.</p>
+                  <p class="admin-note">Ak nechces tahat cely feed naraz, do filtra napis napriklad <strong>whey</strong>, <strong>protein</strong>, <strong>creatine</strong>, <strong>magnesium</strong> alebo <strong>probiotic</strong>. Admin zoberie len produkty, kde sa toto slovo objavi v nazve alebo kategorii.</p>
+                  <p class="admin-note">Pre istotu sa teraz z jedneho feedu nacita len prvy mensi balik kandidatov: <strong><?= esc((string) $candidateImportLimit) ?> produktov</strong>. Ciel je stabilny prvy vyber, nie natiahnut cely feed naraz.</p>
+                  <div class="admin-actions">
+                    <button class="btn btn-cta" type="submit">Nahraj zoznam produktov</button>
+                  </div>
               </form>
             </section>
 

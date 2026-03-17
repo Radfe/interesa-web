@@ -185,6 +185,20 @@ Najnovsi upratovaci krok:
 - produkty sa tak uz daju doplnat po clankoch, nie cez chaoticky velky katalog
 - blok `Stav tohto produktu` je oznaceny ako miesto, kam ta maju priviest tlacidla zhora
 
+Najnovsi import krok:
+- `Krok 1: Nahraj zoznam produktov` uz vie brat aj priamu `URL feedu z Dognetu`
+- feed sa uz pri importe nestahuje cely do pamate ako jeden velky text
+- admin ho najprv ulozi do docasneho suboru a potom ho cita po castiach
+- tym sa znizilo riziko padu pri vacsich XML feedoch
+- pribudol aj jednoduchy `Volitelny filter produktov`
+- filter hlada slova v nazve a kategorii produktu, napr:
+  - `whey`
+  - `protein`
+  - `creatine`
+  - `magnesium`
+  - `probiotic`
+- ciel je netahat cely feed naraz, ale len mensi prvy balik kandidatov
+
 ## 4. Co este chyba
 
 ### Produkty a klikacie odkazy
