@@ -13,6 +13,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "gymbeam-activlab-caffeine-power-60-tab-bez-pr-ichute-gymbeam",
         "click_url": "https://gymbeam.sk/caffeine-power-60-tab-activlab.html?utm_term=dognet",
         "click_status": "dognet",
@@ -24,7 +25,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:01:59+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-activlab-prote-inov-a-tycinka-high-whey-vanilka": {
         "id": "gymbeam-activlab-prote-inov-a-tycinka-high-whey-vanilka",
@@ -40,6 +41,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -51,7 +53,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-activlab-tribu-stallion-60-tab-bez-pr-ichute": {
         "id": "gymbeam-activlab-tribu-stallion-60-tab-bez-pr-ichute",
@@ -67,6 +69,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -78,7 +81,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-bsn-syntha-6-cokol-ada": {
         "id": "gymbeam-bsn-syntha-6-cokol-ada",
@@ -94,6 +97,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -105,7 +109,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-bsn-syntha-6-jahoda": {
         "id": "gymbeam-bsn-syntha-6-jahoda",
@@ -121,6 +125,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -132,7 +137,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-daa-stin-megabol-bez-pr-ichute": {
         "id": "gymbeam-daa-stin-megabol-bez-pr-ichute",
@@ -148,6 +153,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -159,7 +165,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-goldfield-turbo-protostrol": {
         "id": "gymbeam-goldfield-turbo-protostrol",
@@ -175,6 +181,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -186,7 +193,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-gymbeam-arginine-a-k-g-120-tab-bez-pr-ichute": {
         "id": "gymbeam-gymbeam-arginine-a-k-g-120-tab-bez-pr-ichute",
@@ -202,6 +209,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -213,7 +221,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-gymbeam-bcaa-1500-lysine-300-tab-bez-pr-ichute": {
         "id": "gymbeam-gymbeam-bcaa-1500-lysine-300-tab-bez-pr-ichute",
@@ -229,6 +237,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -240,7 +249,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-gymbeam-carnitine-tabs-bez-pr-ichute": {
         "id": "gymbeam-gymbeam-carnitine-tabs-bez-pr-ichute",
@@ -256,6 +265,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -267,7 +277,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-gymbeam-kofe-in-90-tab-bez-pr-ichute": {
         "id": "gymbeam-gymbeam-kofe-in-90-tab-bez-pr-ichute",
@@ -283,6 +293,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -294,7 +305,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-gymbeam-l-karnit-in-pomaranc": {
         "id": "gymbeam-gymbeam-l-karnit-in-pomaranc",
@@ -310,6 +321,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -321,7 +333,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-gymbeam-tribulus-terrestris-120-tab": {
         "id": "gymbeam-gymbeam-tribulus-terrestris-120-tab",
@@ -337,6 +349,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -348,7 +361,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-lipo-6-black-120-kaps-nutrex-bez-pr-ichute": {
         "id": "gymbeam-lipo-6-black-120-kaps-nutrex-bez-pr-ichute",
@@ -364,6 +377,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -375,7 +389,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-megabol-biosterol": {
         "id": "gymbeam-megabol-biosterol",
@@ -391,6 +405,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -402,7 +417,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-megabol-gainer-737-cappucino": {
         "id": "gymbeam-megabol-gainer-737-cappucino",
@@ -418,6 +433,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -429,7 +445,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-megabol-gainer-737-cookies-cream": {
         "id": "gymbeam-megabol-gainer-737-cookies-cream",
@@ -445,6 +461,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -456,7 +473,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-megabol-gainer-737-jahoda": {
         "id": "gymbeam-megabol-gainer-737-jahoda",
@@ -472,6 +489,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -483,7 +501,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-megabol-gainer-737-karamel": {
         "id": "gymbeam-megabol-gainer-737-karamel",
@@ -499,6 +517,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -510,7 +529,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-megabol-gainer-737-malina": {
         "id": "gymbeam-megabol-gainer-737-malina",
@@ -526,6 +545,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -537,7 +557,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-megabol-kreat-in-alkal-in-15000-bez-pr-ichute": {
         "id": "gymbeam-megabol-kreat-in-alkal-in-15000-bez-pr-ichute",
@@ -553,6 +573,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -564,7 +585,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-megabol-whey-mass-gain-jahoda": {
         "id": "gymbeam-megabol-whey-mass-gain-jahoda",
@@ -580,6 +601,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -591,7 +613,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-megabol-whey-mass-gain-karamel": {
         "id": "gymbeam-megabol-whey-mass-gain-karamel",
@@ -607,6 +629,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -618,7 +641,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-megabol-whey-mass-gain-vanilka": {
         "id": "gymbeam-megabol-whey-mass-gain-vanilka",
@@ -634,6 +657,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -645,7 +669,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-nutrend-deluxe-protein-bar-cokol-adov-e-brownie": {
         "id": "gymbeam-nutrend-deluxe-protein-bar-cokol-adov-e-brownie",
@@ -661,6 +685,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -672,7 +697,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-nutrend-deluxe-protein-bar-cokol-adov-y-sacher": {
         "id": "gymbeam-nutrend-deluxe-protein-bar-cokol-adov-y-sacher",
@@ -688,6 +713,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -699,7 +725,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-nutrend-deluxe-protein-bar-jahodov-y-cheesecake": {
         "id": "gymbeam-nutrend-deluxe-protein-bar-jahodov-y-cheesecake",
@@ -715,6 +741,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -726,7 +753,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-nutrend-excelent-protein-bar-limetka-pap-aja": {
         "id": "gymbeam-nutrend-excelent-protein-bar-limetka-pap-aja",
@@ -742,6 +769,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -753,7 +781,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-nutrend-excelent-protein-bar-vanilka-anan-as": {
         "id": "gymbeam-nutrend-excelent-protein-bar-vanilka-anan-as",
@@ -769,6 +797,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -780,7 +809,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-nutrend-flexit-drink-pomaranc": {
         "id": "gymbeam-nutrend-flexit-drink-pomaranc",
@@ -796,6 +825,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -807,7 +837,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-nutrex-lipo-6-black-60-tabliet-bez-pr-ichute": {
         "id": "gymbeam-nutrex-lipo-6-black-60-tabliet-bez-pr-ichute",
@@ -823,6 +853,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -834,7 +865,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-testosterol-250-megabol": {
         "id": "gymbeam-testosterol-250-megabol",
@@ -850,6 +881,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -861,7 +893,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-universal-nutrition-animal-flex-44-bal-ickov-bez-pr-ichute": {
         "id": "gymbeam-universal-nutrition-animal-flex-44-bal-ickov-bez-pr-ichute",
@@ -877,6 +909,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -888,7 +921,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-universal-nutrition-animal-pak-44-bal-ickov-bez-pr-ichute": {
         "id": "gymbeam-universal-nutrition-animal-pak-44-bal-ickov-bez-pr-ichute",
@@ -904,6 +937,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -915,7 +949,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-universal-nutrition-animal-pump-30-bal-ickov-bez-pr-ichute": {
         "id": "gymbeam-universal-nutrition-animal-pump-30-bal-ickov-bez-pr-ichute",
@@ -931,6 +965,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -942,7 +977,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-universal-nutrition-animal-stak-21-bal-ickov-bez-pr-ichute": {
         "id": "gymbeam-universal-nutrition-animal-stak-21-bal-ickov-bez-pr-ichute",
@@ -958,6 +993,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -969,7 +1005,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-universal-nutrition-cal-mag-zinc-100-tab-bez-pr-ichute": {
         "id": "gymbeam-universal-nutrition-cal-mag-zinc-100-tab-bez-pr-ichute",
@@ -985,6 +1021,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -996,7 +1033,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-universal-nutrition-daily-formula-100-tab-bez-pr-ichute": {
         "id": "gymbeam-universal-nutrition-daily-formula-100-tab-bez-pr-ichute",
@@ -1012,6 +1049,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -1023,7 +1061,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-universal-nutrition-gh-max-180-tab-bez-pr-ichute": {
         "id": "gymbeam-universal-nutrition-gh-max-180-tab-bez-pr-ichute",
@@ -1039,6 +1077,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -1050,7 +1089,7 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     },
     "gymbeam-universal-nutrition-tribulus-pro-100-tabliet-bez-pr-ichute": {
         "id": "gymbeam-universal-nutrition-tribulus-pro-100-tabliet-bez-pr-ichute",
@@ -1066,6 +1105,7 @@
         "source_type": "feed",
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
+        "batch_id": "import-20260317-085639",
         "click_code": "",
         "click_url": "",
         "click_status": "missing",
@@ -1077,6 +1117,6 @@
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T07:00:38+00:00",
-        "updated_at": "2026-03-17T07:00:38+00:00"
+        "updated_at": "2026-03-17T08:56:39+00:00"
     }
 }
