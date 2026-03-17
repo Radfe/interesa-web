@@ -3689,6 +3689,17 @@ require dirname(__DIR__) . '/inc/head.php';
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="save_candidate_assignment" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
+                      <input type="hidden" name="candidate_article_slug" value="<?= esc($selectedCandidateArticleSlug) ?>" />
+                      <input type="hidden" name="candidate_order" value="10" />
+                      <input type="hidden" name="candidate_role" value="standard" />
+                      <div class="admin-actions">
+                        <button class="btn btn-cta" type="submit">Pouzit bezpecne prve nastavenie</button>
+                      </div>
+                    </form>
+                    <p class="admin-meta">Ak toto tlacidlo stlacis, admin pouzije: clanok z vyberu, poradie 10, Bez oznacenia, horny vyber vypnuty a porovnavaciu tabulku vypnutu.</p>
+                    <form method="post" class="admin-form admin-form-stack">
+                      <input type="hidden" name="action" value="save_candidate_assignment" />
+                      <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <label>
                         <span>Clanok</span>
                         <select name="candidate_article_slug">

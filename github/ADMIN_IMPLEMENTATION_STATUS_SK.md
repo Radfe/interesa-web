@@ -274,6 +274,15 @@ Zmysel:
 - najprv dostat do systemu spravnych kandidatov
 - az potom nechat web vlakno urobit finalny vyber
 
+Prakticka pomocka:
+- pri kandidatovi je nove tlacidlo `Pouzit bezpecne prve nastavenie`
+- to jedným klikom ulozi:
+  - aktualne vybrany clanok
+  - poradie `10`
+  - `Bez oznacenia`
+  - horny vyber vypnuty
+  - porovnavaciu tabulku vypnutu
+
 Zatial nerobit:
 - velky hromadny XML importer pre vsetko
 - komplikovane feed mapovanie bez kontroly
