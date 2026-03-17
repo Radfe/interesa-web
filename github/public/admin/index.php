@@ -579,6 +579,42 @@ function interessa_admin_role_label(string $role): string {
     };
 }
 
+function interessa_admin_role_hint(string $role): string {
+    return match ($role) {
+        'featured' => 'Pouzi, ked je to hlavna odporucana volba pre vacsinu ludi.',
+        'value' => 'Pouzi, ked ma produkt dobry pomer cena a vykon.',
+        'alternative' => 'Pouzi, ked je to rozumna druha alebo tretia moznost.',
+        'vegan' => 'Pouzi, ked je produkt vhodny pre veganov.',
+        'clean' => 'Pouzi, ked ma jednoduche alebo ciste zlozenie.',
+        default => 'Pouzi, ked nechces pri produkte ziadny maly stitok.',
+    };
+}
+
+function interessa_admin_article_product_help(string $articleSlug): array {
+    return match ($articleSlug) {
+        'najlepsie-proteiny-2026' => [
+            'summary' => 'Pri tomto clanku vyberaj hlavne proteiny. Jeden produkt by mal byt hlavny tip, dalsie mozu ist do horneho vyberu a do porovnavacej tabulky.',
+            'top_label' => 'Ukazat v hornom vybere',
+            'comparison_label' => 'Ukazat v porovnavacej tabulke',
+        ],
+        'kreatin-porovnanie' => [
+            'summary' => 'Pri tomto clanku vyberaj len kreatiny. Jeden produkt by mal byt hlavny tip a dalsie 2 az 4 patria hlavne do porovnavacej tabulky.',
+            'top_label' => 'Ukazat v hornom vybere',
+            'comparison_label' => 'Ukazat v porovnavacej tabulke',
+        ],
+        'doplnky-vyzivy' => [
+            'summary' => 'Pri tomto clanku vyberaj zakladne doplnky ako multivitamin, kreatin, vitamin D3, horcik alebo probiotika. Do porovnania davaj len produkty, ktore sa maju medzi sebou priamo porovnat.',
+            'top_label' => 'Ukazat v hornom vybere',
+            'comparison_label' => 'Ukazat v porovnavacej tabulke',
+        ],
+        default => [
+            'summary' => 'Tu vyberas, v ktorom clanku sa produkt ukaze, v akom poradi bude a ci patri do horneho vyberu alebo do porovnavacej tabulky.',
+            'top_label' => 'Ukazat v hornom vybere',
+            'comparison_label' => 'Ukazat v porovnavacej tabulke',
+        ],
+    };
+}
+
 function interessa_admin_clean_label(string $value): string {
     $value = trim($value);
     if ($value === '') {
@@ -2441,6 +2477,7 @@ $selectedProductArticleSlug = canonical_article_slug(trim((string) ($_GET['artic
 if ($selectedProductArticleSlug === '' || !in_array($selectedProductArticleSlug, $productArticleOptionSlugs, true)) {
     $selectedProductArticleSlug = (string) ($productArticleOptionSlugs[0] ?? '');
 }
+$selectedProductArticleHelp = interessa_admin_article_product_help($selectedProductArticleSlug);
 $selectedProductArticleOverride = $selectedProductArticleSlug !== '' ? interessa_admin_article_content($selectedProductArticleSlug) : interessa_admin_normalize_article_override('', []);
 $productPageArticleProductSlugs = is_array($selectedProductArticleOverride['recommended_products'] ?? null)
     ? array_values(array_unique(array_map('strval', $selectedProductArticleOverride['recommended_products'])))
@@ -2644,6 +2681,7 @@ $selectedCandidateArticleSlug = is_array($selectedCandidate) ? canonical_article
 if ($selectedCandidateArticleSlug === '' || !in_array($selectedCandidateArticleSlug, $productArticleOptionSlugs, true)) {
     $selectedCandidateArticleSlug = (string) ($productArticleOptionSlugs[0] ?? '');
 }
+$selectedCandidateArticleHelp = interessa_admin_article_product_help($selectedCandidateArticleSlug);
 $selectedCandidateRole = is_array($selectedCandidate)
     ? interessa_admin_slugify((string) ($selectedCandidate['role'] ?? 'standard'))
     : 'standard';
@@ -2984,7 +3022,8 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <h3>Produkty v tomto clanku</h3>
                 </div>
-                <p class="admin-note">Tu robis len toto: zapni produkt, nastav poradie, vyber ako ho oznacit a vyber kde sa ma ukazat. Produkt s poradiom 1 bude hlavny tip.</p>
+                <p class="admin-note">Tu robis len toto: zapni produkt, nastav poradie, vyber maly stitok pri produkte a povedz, ci sa ma ukazat v hornom vybere alebo v porovnavacej tabulke. Produkt s poradiom 1 bude hlavny tip.</p>
+                <p class="admin-note"><strong>Pre tento clanok:</strong> <?= esc((string) ($selectedProductArticleHelp['summary'] ?? '')) ?></p>
                 <div class="admin-check-grid">
                   <?php foreach ($catalog as $productSlug => $productRow): ?>
                     <?php
@@ -3029,11 +3068,11 @@ require dirname(__DIR__) . '/inc/head.php';
                       ?>
                       <div class="admin-grid two-up">
                         <label>
-                          <span>Poradie</span>
+                          <span>Poradie v zozname (1 je prve)</span>
                           <input type="number" name="article_product_order[<?= esc((string) $productSlug) ?>]" min="1" step="1" value="<?= esc((string) ($planState['order'] ?? 99)) ?>" />
                         </label>
                         <label>
-                          <span>Ako ho oznacit</span>
+                          <span>Maly stitok pri produkte</span>
                           <select name="article_product_role[<?= esc((string) $productSlug) ?>]">
                             <?php foreach (['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'] as $roleOption): ?>
                               <option value="<?= esc($roleOption) ?>" <?= (string) ($planState['role'] ?? 'standard') === $roleOption ? 'selected' : '' ?>><?= esc(interessa_admin_role_label($roleOption)) ?></option>
@@ -3041,12 +3080,13 @@ require dirname(__DIR__) . '/inc/head.php';
                           </select>
                         </label>
                       </div>
+                      <p class="admin-meta">Hlavny tip = hlavna odporucana volba. Vyhodna volba = dobry pomer cena a vykon. Ina moznost = druha alternativa. Bez oznacenia = bez maleho stitku.</p>
                       <label>
                         <span>Kde sa ma ukazat</span>
                         <select name="article_product_placement[<?= esc((string) $productSlug) ?>]">
-                          <option value="recommended" <?= $placementValue === 'recommended' ? 'selected' : '' ?>>Len medzi odporucanymi produktmi</option>
-                          <option value="comparison" <?= $placementValue === 'comparison' ? 'selected' : '' ?>>Len v porovnani</option>
-                          <option value="both" <?= $placementValue === 'both' ? 'selected' : '' ?>>V odporucanych aj v porovnani</option>
+                          <option value="recommended" <?= $placementValue === 'recommended' ? 'selected' : '' ?>>Len v hornom vybere</option>
+                          <option value="comparison" <?= $placementValue === 'comparison' ? 'selected' : '' ?>>Len v porovnavacej tabulke</option>
+                          <option value="both" <?= $placementValue === 'both' ? 'selected' : '' ?>>V hornom vybere aj v porovnavacej tabulke</option>
                           <option value="hidden" <?= $placementValue === 'hidden' ? 'selected' : '' ?>>Zatial nikde</option>
                         </select>
                       </label>
@@ -3528,7 +3568,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Prave nacitane produkty</h3>
-                    <p class="admin-meta">Tu vidis len produkty z posledneho importu. Vyber jeden a pokracuj dalej.</p>
+                    <p class="admin-meta">Tu vidis len produkty z posledneho importu. Nacitalo sa ich: <strong><?= esc((string) count($recentImportedRows)) ?></strong>. Vyber jeden a pokracuj dalej.</p>
                   </div>
                 </div>
                 <div class="admin-queue-list">
@@ -3634,7 +3674,9 @@ require dirname(__DIR__) . '/inc/head.php';
                       </div>
                     </form>
                   <?php elseif (!$selectedCandidateHasArticle): ?>
-                    <p class="admin-note">Odkaz do obchodu je hotovy. Teraz uz len vyber clanok, poradie a miesto vo vybere.</p>
+                    <p class="admin-note">Odkaz do obchodu je hotovy. Teraz uz len vyber clanok, poradie a miesto, kde sa ma produkt ukazat.</p>
+                    <p class="admin-note"><strong>Co tu nastavujes:</strong> Clanok = kde sa produkt ukaze. Poradie = 1 je prve miesto. Maly stitok = kratky napis pri produkte. Horny vyber = rychly vyber hore v clanku. Porovnavacia tabulka = cast, kde sa porovnavaju viaceré produkty medzi sebou.</p>
+                    <p class="admin-note"><strong>Pre vybrany clanok:</strong> <?= esc((string) ($selectedCandidateArticleHelp['summary'] ?? '')) ?></p>
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="save_candidate_assignment" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
@@ -3647,9 +3689,9 @@ require dirname(__DIR__) . '/inc/head.php';
                         </select>
                       </label>
                       <div class="admin-grid two-up">
-                        <label><span>Poradie</span><input type="number" name="candidate_order" min="1" step="1" value="<?= esc((string) ($selectedCandidate['order'] ?? 1)) ?>" /></label>
+                        <label><span>Poradie v zozname (1 je prve)</span><input type="number" name="candidate_order" min="1" step="1" value="<?= esc((string) ($selectedCandidate['order'] ?? 1)) ?>" /></label>
                         <label>
-                          <span>Ako ho oznacit</span>
+                          <span>Maly stitok pri produkte</span>
                           <select name="candidate_role">
                             <?php foreach (['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'] as $candidateRoleOption): ?>
                               <option value="<?= esc($candidateRoleOption) ?>" <?= $selectedCandidateRole === $candidateRoleOption ? 'selected' : '' ?>><?= esc(interessa_admin_role_label($candidateRoleOption)) ?></option>
@@ -3657,8 +3699,9 @@ require dirname(__DIR__) . '/inc/head.php';
                           </select>
                         </label>
                       </div>
-                      <label><input type="checkbox" name="candidate_show_in_top" value="1" <?= !empty($selectedCandidate['show_in_top']) ? 'checked' : '' ?> /> Ukazat medzi top produktmi</label>
-                      <label><input type="checkbox" name="candidate_show_in_comparison" value="1" <?= !empty($selectedCandidate['show_in_comparison']) ? 'checked' : '' ?> /> Ukazat v porovnani</label>
+                      <p class="admin-meta">Hlavny tip = hlavna odporucana volba. Vyhodna volba = dobry pomer cena a vykon. Ina moznost = druha alternativa. Bez oznacenia = bez maleho stitku.</p>
+                      <label><input type="checkbox" name="candidate_show_in_top" value="1" <?= !empty($selectedCandidate['show_in_top']) ? 'checked' : '' ?> /> <?= esc((string) ($selectedCandidateArticleHelp['top_label'] ?? 'Ukazat v hornom vybere')) ?></label>
+                      <label><input type="checkbox" name="candidate_show_in_comparison" value="1" <?= !empty($selectedCandidate['show_in_comparison']) ? 'checked' : '' ?> /> <?= esc((string) ($selectedCandidateArticleHelp['comparison_label'] ?? 'Ukazat v porovnavacej tabulke')) ?></label>
                       <div class="admin-actions">
                         <button class="btn btn-cta" type="submit">Priradit ku clanku</button>
                       </div>

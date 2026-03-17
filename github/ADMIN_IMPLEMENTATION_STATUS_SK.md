@@ -459,3 +459,30 @@ Preco:
 Co este treba doriesit:
 - este viac zjednodusit samotne priradenie ku clanku
 - pripadne predvyplnit clanok pri kandidatoch importovanych pre prvu fazu
+
+## 12. Ludske vysvetlenie pri priradeni produktu
+
+Menene subory:
+- [public/admin/index.php](C:/data/praca/webova_stranka/github/public/admin/index.php)
+
+Co sa upravilo:
+- pri produktoch v clanku aj pri kandidatoch po importe su teraz zrozumitelnejsie texty
+- `Ako ho oznacit` je premenovane na `Maly stitok pri produkte`
+- `Poradie` je premenovane na `Poradie v zozname (1 je prve)`
+- `Ukazat medzi top produktmi` je premenovane na `Ukazat v hornom vybere`
+- `Ukazat v porovnani` je premenovane na `Ukazat v porovnavacej tabulke`
+- admin priamo pri produkte vysvetluje:
+  - co znamena clanok
+  - co znamena poradie
+  - co znamena maly stitok
+  - co znamena horny vyber
+  - co znamena porovnavacia tabulka
+- pre prve tri clanky admin ukazuje aj kratku vetu, co sa v tom clanku bezne nastavuje
+
+Preco:
+- pouzivatel nerozumel, co presne rozhoduje pri produkte
+- web vlakno uz rozhodlo obsahovu politiku, admin ma uz len vysvetlit technicke nastavenie ludsky a bez chaosu
+
+Co este treba doriesit:
+- este viac zjednodusit samotny vyber jedneho kandidata po importe
+- ak bude treba, predvyplnit clanok pri prvych troch clankoch podla fazy importu
