@@ -8,7 +8,8 @@ require_once __DIR__ . '/../inc/article-commerce.php';
 $page_title = 'Kategorie doplnkov vyzivy, porovnani a navodov | Interesa';
 $page_description = 'Temy, cez ktore sa rychlo dostanes od zakladnej orientacie k najlepsim clankom, porovnaniam a odporucaniam.';
 $page_canonical = '/kategorie';
-$page_image = asset('img/brand/og-default.svg');
+$brandOgImage = interessa_brand_image_meta('og-default', true);
+$page_image = (string) ($brandOgImage['src'] ?? asset('img/brand/og-default.svg'));
 $page_og_type = 'website';
 $hubs = interessa_category_hubs();
 

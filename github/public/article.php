@@ -74,6 +74,8 @@ $articleLead = trim((string) ($adminArticle['intro'] ?? '')) !== ''
 $page_canonical = article_url($slug);
 $page_image = $articleHero['src'] ?? article_img($slug);
 $page_og_type = 'article';
+$brandLogoImage = interessa_brand_image_meta('logo-full', true);
+$brandLogoUrl = (string) ($brandLogoImage['src'] ?? absolute_url(asset('img/brand/logo-full.png')));
 
 $breadcrumbs = [
     ['name' => 'Domov', 'url' => '/'],
@@ -98,7 +100,7 @@ $articleSchema = [
         'name' => 'Interesa',
         'logo' => [
             '@type' => 'ImageObject',
-            'url' => absolute_url(asset('img/brand/logo-full.svg')),
+            'url' => $brandLogoUrl,
         ],
     ],
 ];

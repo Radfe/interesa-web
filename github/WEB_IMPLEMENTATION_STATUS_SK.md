@@ -84,6 +84,13 @@ Najnovsi obrazkovy zaver:
 - handoff zapisany do:
   - [WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md)
 
+Najnovsi brand/Canva zaver:
+- admin uz ma sekciu `Logo a ikonka`, prompty pre Canvu aj automaticku pripravu icon bundle
+- netreba novy brand system od nuly
+- treba len preverit a opravit, preco realny upload loga nefunguje v pouzivatelskom toku
+- handoff zapisany do:
+  - [WEB_TO_ADMIN_BRAND_CANVA_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_BRAND_CANVA_HANDOFF_2026-03-17_SK.md)
+
 Dotiahnute temy:
 - kreatin
 - proteiny
@@ -137,6 +144,7 @@ K tomu uz je pripraveny aj:
 - [WEB_ADMIN_PRODUCT_PIPELINE_SK.md](C:/data/praca/webova_stranka/github/WEB_ADMIN_PRODUCT_PIPELINE_SK.md)
 - [WEB_TO_ADMIN_BUG_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_BUG_HANDOFF_2026-03-17_SK.md)
 - [WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md)
+- [WEB_TO_ADMIN_BRAND_CANVA_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_BRAND_CANVA_HANDOFF_2026-03-17_SK.md)
 - [SIMPLE_PRODUCT_TEST_FLOW_SK.md](C:/data/praca/webova_stranka/github/SIMPLE_PRODUCT_TEST_FLOW_SK.md)
 
 Do toho momentu web vrstva:

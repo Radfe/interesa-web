@@ -9,6 +9,12 @@ if ($interessaIsLocalDev && !headers_sent()) {
     header('Pragma: no-cache');
     header('Expires: 0');
 }
+$brandIconImage = interessa_brand_image_meta('logo-icon', true);
+$brandIconSrc = (string) ($brandIconImage['src'] ?? asset('img/brand/logo-icon.svg'));
+$brandIconExt = strtolower((string) pathinfo((string) (parse_url($brandIconSrc, PHP_URL_PATH) ?? ''), PATHINFO_EXTENSION));
+$brandIconType = $brandIconExt === 'svg' ? 'image/svg+xml' : 'image/png';
+$brandFaviconHref = is_file(dirname(__DIR__) . '/assets/img/brand/favicon-32.png') ? asset('img/brand/favicon-32.png') : $brandIconSrc;
+$brandAppleTouchHref = is_file(dirname(__DIR__) . '/assets/img/brand/apple-touch-icon.png') ? asset('img/brand/apple-touch-icon.png') : $brandIconSrc;
 ?>
 <?php require_once __DIR__ . '/navigation.php'; ?>
 <!doctype html>
@@ -38,10 +44,10 @@ if ($interessaIsLocalDev && !headers_sent()) {
   <meta name="twitter:image" content="<?= esc(page_image_url()) ?>" />
   <meta name="twitter:image:alt" content="<?= page_title() ?>" />
 
-  <link rel="shortcut icon" href="<?= asset('img/brand/favicon-32.png') ?>" type="image/png" />
-  <link rel="icon" href="<?= asset('img/brand/logo-icon.svg') ?>" type="image/svg+xml" />
-  <link rel="icon" href="<?= asset('img/brand/favicon-32.png') ?>" type="image/png" sizes="32x32" />
-  <link rel="apple-touch-icon" href="<?= asset('img/brand/apple-touch-icon.png') ?>" />
+  <link rel="shortcut icon" href="<?= esc($brandFaviconHref) ?>" type="image/png" />
+  <link rel="icon" href="<?= esc($brandIconSrc) ?>" type="<?= esc($brandIconType) ?>" />
+  <link rel="icon" href="<?= esc($brandFaviconHref) ?>" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="<?= esc($brandAppleTouchHref) ?>" />
   <link rel="stylesheet" href="<?= asset('css/main.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/compat.css') ?>" />
   <link rel="stylesheet" href="<?= asset('css/sidebar.css') ?>" />
@@ -55,7 +61,7 @@ if ($interessaIsLocalDev && !headers_sent()) {
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="/" aria-label="Domov">
-        <?= interessa_render_image(interessa_brand_image_meta('logo-icon'), ['alt' => 'Interesa symbol', 'width' => '28', 'height' => '28', 'class' => 'brand-mark']) ?>
+        <?= interessa_render_image($brandIconImage, ['alt' => 'Interesa symbol', 'width' => '28', 'height' => '28', 'class' => 'brand-mark']) ?>
         <span class="brand-copy">
           <strong>Interesa.sk</strong>
           <span>Prakticke porovnania a navody pre vyzivu</span>
