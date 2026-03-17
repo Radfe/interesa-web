@@ -259,6 +259,10 @@ Najnovsi krok:
   - `Doplnit odkaz`
   - `Hotovo`
 
+Najnovsia stabilizacia:
+- v `Produkty` uz detail produktu nesmie spadnut len preto, ze sa otvoril slug, ktory este nie je plnohodnotne pripraveny v katalogu
+- admin si pri takom stave vytvori bezpecny prazdny medzistav a pouzivatela vrati do jednoducheho toku namiesto chyby 500
+
 Najnovsie doplnenie:
 - `Krok 1: Nahraj zoznam produktov` uz nevyzaduje len rucne nahraty subor
 - admin uz vie zobrat aj priamu URL feedu z Dognetu
@@ -394,3 +398,28 @@ Co sa upravilo:
 Co este treba doriesit:
 - bezchybne dotiahnut import prveho realneho Dognet feedu pre prvych 6 kampani
 - dotiahnut `Krok 2`, aby co najviac produktov vedel pripravit odkaz do obchodu bez dalsieho chaosu
+
+## 10. Stabilizacia Krok 1 - kandidati z Dognet feedu
+
+Menene subory:
+- [public/inc/admin-feed-import.php](C:/data/praca/webova_stranka/github/public/inc/admin-feed-import.php)
+- [public/admin/index.php](C:/data/praca/webova_stranka/github/public/admin/index.php)
+
+Co sa upravilo:
+- `Krok 1` uz netaha cely feed naraz
+- z jedneho feedu sa teraz nacita len prvy bezpecny balik kandidatov:
+  - 40 produktov
+- plati to pre:
+  - Dognet feed URL
+  - aj rucny XML/CSV/JSON subor
+- ciel je, aby import nespadol na velkom feede a aby admin najprv pripravil len mensi vyber kandidatov
+- priamo na obrazovke `Produkty` je teraz jasna veta, ze ide len o prvy mensi balik kandidatov, nie o cely feed
+
+Preco:
+- podla zadania nechceme velky chaos ani import vsetkeho naraz
+- chceme kandidatov pre prvu fazu
+- web vlakno potom spravi konecny vyber
+
+Co este treba doriesit:
+- overit prvy realny Dognet import po tomto obmedzeni
+- potom dotiahnut `Krok 2: Pripravit odkaz do obchodu`

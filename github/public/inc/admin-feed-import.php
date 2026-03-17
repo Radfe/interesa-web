@@ -49,6 +49,13 @@ if (!function_exists('interessa_admin_feed_is_json')) {
     }
 }
 
+if (!function_exists('interessa_admin_candidate_import_limit')) {
+    function interessa_admin_candidate_import_limit(): int {
+        // Prvy batch kandidatov ma byt maly a stabilny, nie cely feed naraz.
+        return 40;
+    }
+}
+
 if (!function_exists('interessa_admin_feed_xml_value')) {
     function interessa_admin_feed_xml_value(SimpleXMLElement $item, string $tag): string {
         return trim((string) ($item->{$tag} ?? ''));

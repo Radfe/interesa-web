@@ -414,6 +414,29 @@ function interessa_admin_article_default_products(string $slug, array $catalog):
     return array_values(array_unique(array_filter(array_map('strval', $slugs))));
 }
 
+function interessa_admin_empty_product_stub(string $slug): array {
+    return [
+        'slug' => $slug,
+        'name' => '',
+        'brand' => '',
+        'merchant' => '',
+        'merchant_slug' => '',
+        'category' => '',
+        'affiliate_code' => '',
+        'fallback_url' => '',
+        'summary' => '',
+        'rating' => '',
+        'pros' => [],
+        'cons' => [],
+        'image_remote_src' => '',
+        'image_mode' => 'missing',
+        'image_local_asset' => '',
+        'image_target_asset' => '',
+        'has_local_image' => false,
+        'image' => null,
+    ];
+}
+
 function interessa_admin_article_default_product_plan(string $slug, array $catalog): array {
     $defaults = interessa_admin_article_default_products($slug, $catalog);
     if ($defaults === []) {
@@ -1864,13 +1887,16 @@ if ($isAuthed) {
                 if ($merchantSlug === '') {
                     throw new RuntimeException('Vyber obchod, z ktoreho idu produkty.');
                 }
+                $candidateImportLimit = function_exists('interessa_admin_candidate_import_limit')
+                    ? interessa_admin_candidate_import_limit()
+                    : 40;
                 $candidateFeedUrl = trim((string) ($_POST['candidate_feed_url'] ?? ''));
                 $candidateSourceName = '';
                 if ($candidateFeedUrl !== '') {
-                    $rows = interessa_admin_parse_feed_url($candidateFeedUrl, $merchantSlug, 0);
+                    $rows = interessa_admin_parse_feed_url($candidateFeedUrl, $merchantSlug, $candidateImportLimit);
                     $candidateSourceName = $candidateFeedUrl;
                 } elseif (!empty($_FILES['candidate_file']['tmp_name']) && is_uploaded_file($_FILES['candidate_file']['tmp_name'])) {
-                    $rows = interessa_admin_parse_feed_file((string) $_FILES['candidate_file']['tmp_name'], $merchantSlug, 0);
+                    $rows = interessa_admin_parse_feed_file((string) $_FILES['candidate_file']['tmp_name'], $merchantSlug, $candidateImportLimit);
                     $candidateSourceName = (string) ($_FILES['candidate_file']['name'] ?? '');
                 } else {
                     throw new RuntimeException('Vloz URL feedu alebo vyber subor s produktmi.');
@@ -2077,7 +2103,9 @@ $productSlugs = array_keys($catalog);
 sort($productSlugs);
 $selectedProductSlug = trim((string) ($_GET['product'] ?? ($productSlugs[0] ?? '')));
 $selectedProduct = $selectedProductSlug !== '' ? interessa_product($selectedProductSlug) : null;
-$selectedProduct = is_array($selectedProduct) ? interessa_normalize_product($selectedProduct) : null;
+$selectedProduct = is_array($selectedProduct)
+    ? interessa_normalize_product($selectedProduct)
+    : ($selectedProductSlug !== '' ? interessa_admin_empty_product_stub($selectedProductSlug) : null);
 $selectedProductImage = is_array($selectedProduct) ? ($selectedProduct['image'] ?? null) : null;
 $selectedProductImageSource = is_array($selectedProduct) ? (string) ($selectedProduct['image_mode'] ?? 'placeholder') : 'missing';
 $selectedProductImageSourceLabel = match ($selectedProductImageSource) {
@@ -2511,6 +2539,9 @@ $candidateMerchantOptions = [
     'imunoklub' => 'Imunoklub.sk',
     'kloubus' => 'Kloubus.sk',
 ];
+$candidateImportLimit = function_exists('interessa_admin_candidate_import_limit')
+    ? interessa_admin_candidate_import_limit()
+    : 40;
 $candidateRowsById = interessa_admin_product_candidates();
 uasort($candidateRowsById, static function (array $a, array $b): int {
     return strcmp((string) ($b['updated_at'] ?? ''), (string) ($a['updated_at'] ?? ''));
@@ -3445,6 +3476,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   </label>
                 </div>
                 <p class="admin-note">Podporene su XML, CSV aj JSON. V Dognete chod do <strong>Produktove feedy</strong>, klikni <strong>Kopirovat URL</strong> a vloz ten link sem. Admin si z feedu vezme nazov produktu, link produktu, obrazok, typ a pripadne cenu.</p>
+                <p class="admin-note">Pre istotu sa teraz z jedneho feedu nacita len prvy mensi balik kandidatov: <strong><?= esc((string) $candidateImportLimit) ?> produktov</strong>. Ciel je stabilny prvy vyber, nie natiahnut cely feed naraz.</p>
                 <div class="admin-actions">
                   <button class="btn btn-cta" type="submit">Nahraj zoznam produktov</button>
                 </div>
