@@ -129,3 +129,12 @@ Vie sa vsak velmi rychlo zorientovat, ak:
 Prakticky ciel je:
 - nie automaticky prenos chatu
 - ale automaticky onboarding zo suborov v repozitari
+
+Najkratsia prakticka pomocka pre novy start:
+- otvor repo
+- vytvor `web vlakno`
+- vytvor `admin vlakno`
+- do web vlakna vloz `WEB_THREAD_BOOT_PROMPT_SK.md`
+- do admin vlakna vloz `ADMIN_THREAD_BOOT_PROMPT_SK.md`
+- ak sa agent strati, staci veta:
+  - `Pracuj podla AGENTS.md a PROJECT_MASTER_STATUS_SK.md.`

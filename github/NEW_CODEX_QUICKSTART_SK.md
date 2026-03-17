@@ -5,6 +5,19 @@ Tento navod je pre pripad, ked:
 - otvoris novu AI relaciu
 - znovu pripojis GitHub repo
 
+## Uplne kratky checklist
+
+1. Pripoj repo Interesa.sk.
+2. Vytvor 2 vlakna:
+- `web vlakno`
+- `admin vlakno`
+3. Do web vlakna vloz obsah z:
+- [WEB_THREAD_BOOT_PROMPT_SK.md](C:/data/praca/webova_stranka/github/WEB_THREAD_BOOT_PROMPT_SK.md)
+4. Do admin vlakna vloz obsah z:
+- [ADMIN_THREAD_BOOT_PROMPT_SK.md](C:/data/praca/webova_stranka/github/ADMIN_THREAD_BOOT_PROMPT_SK.md)
+5. Ak sa agent strati, povedz mu len:
+- `Pracuj podla AGENTS.md a PROJECT_MASTER_STATUS_SK.md.`
+
 ## Dolezite obmedzenie
 
 Codex si automaticky neprenesie stare chat vlakna.
@@ -45,6 +58,6 @@ Najblizsie k automatizacii je:
 
 ## Minimalna verzia
 
-Ak nechces hladat subory, pouzi len tuto jednu vetu:
+Ak chces uplne minimalnu verziu do poznamok, pouzi:
 
-`Pracuj podla AGENTS.md a PROJECT_MASTER_STATUS_SK.md a spravaj sa bud ako web vlakno, alebo ako admin vlakno podla tejto konverzacie.`
+`Novy Codex: 1. otvor repo 2. vytvor web vlakno 3. vytvor admin vlakno 4. do web vlakna vloz WEB_THREAD_BOOT_PROMPT_SK.md 5. do admin vlakna vloz ADMIN_THREAD_BOOT_PROMPT_SK.md 6. ak sa strati, odkaz na AGENTS.md a PROJECT_MASTER_STATUS_SK.md`
