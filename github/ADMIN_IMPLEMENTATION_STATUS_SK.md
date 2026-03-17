@@ -620,3 +620,23 @@ Preco:
 Co este treba doriesit:
 - ak bude treba, este viac potlacit pomocny zoznam posledneho importu
 - dotiahnut opatrne predvyplnenie clanku len pri jasnom obsahovom fite pre prve tri clanky
+
+## 16. Jeden otvoreny kandidat bez horneho chaosu
+
+Menene subory:
+- [public/admin/index.php](C:/data/praca/webova_stranka/github/public/admin/index.php)
+- [public/assets/css/admin.css](C:/data/praca/webova_stranka/github/public/assets/css/admin.css)
+
+Co sa upravilo:
+- ak je v URL otvoreny konkretny kandidat, admin sa prepne do rezimu jedneho produktu aj vtedy, ked sa pouzivatel vratil po medzikroku
+- v tomto rezime sa uz neschovava len bocny panel, ale aj horny import a horne pocitadla
+- pri otvorenom kandidatovi zostava na obrazovke len krok `2. Vyber jeden produkt a dokonci ho`
+- tym padom pouzivatel po `Pripravit odkaz do obchodu` a po `Priradit ako kandidata` nema vidiet zmiesany import hore a produkt dole
+
+Preco:
+- screenshoty ukazali, ze navrat po krokoch stale posobil ako rozbity panel: vlavo kandidat, vpravo prazdny admin shell
+- skutocny problem bol, ze pri otvorenom kandidatovi zostaval na obrazovke aj horny import a vizualne to rozbijalo tok
+
+Co este treba doriesit:
+- urobit import clanok-first, nie feed-first
+- pri importe ponuknut len odporucane filtre pre prve 3 clanky

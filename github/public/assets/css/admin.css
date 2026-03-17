@@ -10,7 +10,7 @@
 }
 
 .admin-shell.is-product-candidate-focus {
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) !important;
 }
 
 .admin-sidebar,
@@ -29,7 +29,7 @@
 }
 
 .admin-shell.is-product-candidate-focus .admin-sidebar {
-  display: none;
+  display: none !important;
 }
 
 .admin-sidebar h1,
@@ -76,6 +76,11 @@
 .admin-shell.is-product-candidate-focus .admin-main {
   max-width: 1080px;
   width: 100%;
+  margin-inline: auto;
+}
+
+.admin-card.is-candidate-focus-root {
+  max-width: 1080px;
   margin-inline: auto;
 }
 

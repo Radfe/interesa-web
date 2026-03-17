@@ -388,6 +388,39 @@ if (!function_exists('interessa_article_image_meta')) {
     }
 }
 
+if (!function_exists('interessa_article_image_state')) {
+    function interessa_article_image_state(string $slug, string $variant = 'hero'): array {
+        $canonicalSlug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : $slug;
+        $articleMeta = interessa_article_image_meta($canonicalSlug, $variant, false);
+        if (is_array($articleMeta)) {
+            return [
+                'status' => 'article',
+                'label' => 'vlastny obrazok clanku',
+                'meta' => $articleMeta,
+            ];
+        }
+
+        $meta = article_meta($canonicalSlug);
+        $categorySlug = trim((string) ($meta['category'] ?? ''));
+        if ($categorySlug !== '') {
+            $fallbackMeta = interessa_category_image_meta($categorySlug, 'hero', true);
+            if (is_array($fallbackMeta) && (string) ($fallbackMeta['source_type'] ?? '') === 'category') {
+                return [
+                    'status' => 'theme-fallback',
+                    'label' => 'len fallback temy',
+                    'meta' => $fallbackMeta,
+                ];
+            }
+        }
+
+        return [
+            'status' => 'missing',
+            'label' => 'naozaj chyba',
+            'meta' => null,
+        ];
+    }
+}
+
 if (!function_exists('interessa_category_image_meta')) {
     function interessa_category_image_meta(string $slug, string $variant = 'hero', bool $allowFallback = true): ?array {
         $slug = normalize_category_slug($slug);

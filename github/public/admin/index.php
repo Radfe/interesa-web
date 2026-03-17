@@ -1064,9 +1064,11 @@ function interessa_admin_category_asset_manifest(array $categoryOptions): array 
 function interessa_admin_image_queue(array $articleOptions, string $filter = 'missing', int $limit = 12): array {
     $rows = [];
     foreach ($articleOptions as $slug => $item) {
-        $meta = interessa_article_image_meta((string) $slug, 'hero', true);
+        $imageState = function_exists('interessa_article_image_state')
+            ? interessa_article_image_state((string) $slug, 'hero')
+            : ['status' => 'missing', 'label' => 'naozaj chyba', 'meta' => null];
+        $meta = is_array($imageState['meta'] ?? null) ? $imageState['meta'] : null;
         $src = (string) ($meta['src'] ?? '');
-        $isFinalWebp = str_ends_with(strtolower($src), '.webp');
         $promptMeta = interessa_hero_prompt_meta((string) $slug);
         $rows[] = [
             'slug' => (string) $slug,
@@ -1076,20 +1078,34 @@ function interessa_admin_image_queue(array $articleOptions, string $filter = 'mi
             'alt_text' => (string) ($promptMeta['alt_text'] ?? ''),
             'dimensions' => (string) ($promptMeta['dimensions'] ?? '1200x800'),
             'prompt' => (string) ($promptMeta['prompt'] ?? ''),
-            'has_final_webp' => $isFinalWebp,
+            'has_article_image' => ($imageState['status'] ?? 'missing') === 'article',
+            'has_theme_fallback' => ($imageState['status'] ?? 'missing') === 'theme-fallback',
+            'image_state' => (string) ($imageState['status'] ?? 'missing'),
+            'image_state_label' => (string) ($imageState['label'] ?? 'naozaj chyba'),
             'source_type' => (string) ($meta['source_type'] ?? 'placeholder'),
+            'src' => $src,
             'article_url' => article_url((string) $slug),
         ];
     }
 
     if ($filter === 'missing') {
-        $rows = array_values(array_filter($rows, static fn(array $row): bool => empty($row['has_final_webp'])));
-    } elseif ($filter === 'ready') {
-        $rows = array_values(array_filter($rows, static fn(array $row): bool => !empty($row['has_final_webp'])));
+        $rows = array_values(array_filter($rows, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'missing'));
+    } elseif ($filter === 'theme-fallback') {
+        $rows = array_values(array_filter($rows, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'theme-fallback'));
+    } elseif ($filter === 'article') {
+        $rows = array_values(array_filter($rows, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'article'));
     }
 
     usort($rows, static function (array $left, array $right): int {
-        $statusSort = ((int) $left['has_final_webp']) <=> ((int) $right['has_final_webp']);
+        $statusWeight = static function (string $status): int {
+            return match ($status) {
+                'missing' => 0,
+                'theme-fallback' => 1,
+                'article' => 2,
+                default => 3,
+            };
+        };
+        $statusSort = $statusWeight((string) ($left['image_state'] ?? 'missing')) <=> $statusWeight((string) ($right['image_state'] ?? 'missing'));
         if ($statusSort !== 0) {
             return $statusSort;
         }
@@ -2431,8 +2447,10 @@ $imageQueue = interessa_admin_image_queue($articleOptions, $imageFilter, $imageF
 $productImageQueue = interessa_admin_product_image_queue($catalog, $productImageFilter, $productImageFilter === 'all' ? max(count($catalog), 1) : 16);
 $imageQueueCounts = [
     'all' => count($allImageQueue),
-    'missing' => count(array_filter($allImageQueue, static fn(array $row): bool => empty($row['has_final_webp']))),
-    'ready' => count(array_filter($allImageQueue, static fn(array $row): bool => !empty($row['has_final_webp']))),
+    'article' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'article')),
+    'theme_fallback' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'theme-fallback')),
+    'missing' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'missing')),
+    'needs_article' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article')),
 ];
 $productImageQueueCounts = [
     'all' => count($allProductImageQueue),
@@ -2441,10 +2459,10 @@ $productImageQueueCounts = [
     'remote' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'remote')),
     'placeholder' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'placeholder')),
 ];
-$helpPriorityHeroes = array_slice(array_values(array_filter($allImageQueue, static fn(array $row): bool => empty($row['has_final_webp']))), 0, 5);
+$helpPriorityHeroes = array_slice(array_values(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article')), 0, 5);
 $helpPriorityProductImages = array_slice(array_values(array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot']) && trim((string) ($row['remote_src'] ?? '')) !== '')), 0, 5);
 
-$missingHeroSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allImageQueue, static fn(array $row): bool => empty($row['has_final_webp'])))));
+$missingHeroSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article'))));
 $selectedHeroQueueIndex = array_search($selectedArticleSlug, $missingHeroSlugs, true);
 $prevMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex > 0 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex - 1] : '';
 $nextMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex < count($missingHeroSlugs) - 1 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex + 1] : '';
@@ -2772,7 +2790,8 @@ if ($selectedCandidateId === '' || !isset($candidateRowsById[$selectedCandidateI
 $selectedCandidate = $selectedCandidateId !== '' && isset($candidateRowsById[$selectedCandidateId])
     ? $candidateRowsById[$selectedCandidateId]
     : null;
-$productCandidateFocusMode = $section === 'products' && is_array($selectedCandidate);
+$candidateFocusRequested = $section === 'products' && trim((string) ($_GET['candidate'] ?? '')) !== '';
+$productCandidateFocusMode = $section === 'products' && ($candidateFocusRequested || is_array($selectedCandidate));
 $candidateImportedCount = count($candidateRows);
 $candidateClickReadyCount = 0;
 $candidateAssignedCount = 0;
@@ -3044,24 +3063,6 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($error !== ''): ?>
 
           <div class="admin-flash is-error"><?= esc($error) ?></div>
-        <?php endif; ?>
-
-        <?php if ($productCandidateFocusMode && is_array($selectedCandidate)): ?>
-          <section class="admin-card">
-            <div class="admin-card-head">
-              <div>
-                <p class="admin-kicker">Otvoreny kandidat</p>
-                <h2><?= esc((string) ($selectedCandidate['name'] ?? 'Produkt')) ?></h2>
-                <p class="admin-note">Teraz pracuj len s tymto jednym produktom. Pomocne zoznamy su nizsie schovane, aby ta nic nemylilo.</p>
-              </div>
-              <div class="admin-inline-actions">
-                <?php if ($recentCandidateBatchId !== ''): ?>
-                  <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;batch=<?= esc($recentCandidateBatchId) ?>#products-imported-list">Spat na posledny import</a>
-                <?php endif; ?>
-                <a class="btn btn-secondary btn-small" href="/admin?section=products">Spat na produkty</a>
-              </div>
-            </div>
-          </section>
         <?php endif; ?>
 
         <?php if (!$productCandidateFocusMode): ?>
@@ -3715,7 +3716,7 @@ require dirname(__DIR__) . '/inc/head.php';
               $selectedProductNextStepNote = 'Produkt uz ma obrazok aj klik do obchodu. Tu uz netreba nic robit.';
             }
           ?>
-          <section class="admin-card" id="products-candidate-steps">
+          <section class="admin-card<?= $productCandidateFocusMode ? ' is-candidate-focus-root' : '' ?>" id="products-candidate-steps">
             <div class="admin-card-head">
               <div>
                 <p class="admin-kicker">Jednoduche doplnenie produktov</p>
@@ -3723,6 +3724,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <p class="admin-note">Toto je hlavna cesta pre produkty. Najprv sem nahras zoznam produktov z obchodu. Potom vyberies jeden produkt, pripravi sa odkaz do obchodu, priradi sa ku clanku a az nakoniec sa pusti na web. Stare rucne nastavenia su az nizsie a bezne ich netreba otvarat.</p>
               </div>
             </div>
+            <?php if (!$productCandidateFocusMode): ?>
             <div class="admin-status-grid">
               <article class="admin-status-card">
                 <strong><?= esc((string) $candidateImportedDisplayCount) ?></strong>
@@ -3741,7 +3743,9 @@ require dirname(__DIR__) . '/inc/head.php';
                 <span>Schvalene pre web</span>
               </article>
             </div>
+            <?php endif; ?>
 
+            <?php if (!$productCandidateFocusMode): ?>
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
@@ -3789,6 +3793,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
               </form>
             </section>
+            <?php endif; ?>
 
             <section class="admin-subsection is-compact" id="products-current-candidate">
               <div class="admin-subsection-head">
@@ -3799,25 +3804,32 @@ require dirname(__DIR__) . '/inc/head.php';
                     <p class="admin-note"><strong>Prave otvoreny produkt:</strong> <?= esc((string) ($selectedCandidate['name'] ?? 'Produkt')) ?><?= trim((string) ($selectedCandidate['merchant'] ?? '')) !== '' ? ' / ' . esc((string) ($selectedCandidate['merchant'] ?? '')) : '' ?></p>
                   <?php endif; ?>
                   </div>
-                <form method="get" action="/admin" class="admin-inline-form">
-                  <input type="hidden" name="section" value="products" />
-                  <?php if ($recentCandidateBatchId !== ''): ?>
-                    <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
-                  <?php endif; ?>
-                  <select name="candidate" onchange="this.form.submit()">
-                    <?php if ($candidateRows === []): ?>
-                      <option value="">Najprv nahraj zoznam produktov</option>
-                    <?php else: ?>
-                      <?php foreach ($candidateSelectorRows as $candidateListRow): ?>
-                        <option value="<?= esc((string) $candidateListRow['id']) ?>" <?= (string) $candidateListRow['id'] === $selectedCandidateId ? 'selected' : '' ?>>
-                          <?= esc((string) $candidateListRow['name']) ?><?= trim((string) ($candidateListRow['merchant'] ?? '')) !== '' ? ' / ' . esc((string) $candidateListRow['merchant']) : '' ?><?= trim((string) ($candidateListRow['category'] ?? '')) !== '' ? ' / ' . esc((string) ($candidateListRow['category'] ?? '')) : '' ?>
-                        </option>
-                      <?php endforeach; ?>
+                  <div class="admin-inline-actions">
+                    <?php if ($productCandidateFocusMode && $recentCandidateBatchId !== ''): ?>
+                      <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;batch=<?= esc($recentCandidateBatchId) ?>#products-imported-list">Spat na posledny import</a>
                     <?php endif; ?>
-                  </select>
-                </form>
+                    <?php if (!$productCandidateFocusMode): ?>
+                    <form method="get" action="/admin" class="admin-inline-form">
+                      <input type="hidden" name="section" value="products" />
+                      <?php if ($recentCandidateBatchId !== ''): ?>
+                        <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
+                      <?php endif; ?>
+                      <select name="candidate" onchange="this.form.submit()">
+                        <?php if ($candidateRows === []): ?>
+                          <option value="">Najprv nahraj zoznam produktov</option>
+                        <?php else: ?>
+                          <?php foreach ($candidateSelectorRows as $candidateListRow): ?>
+                            <option value="<?= esc((string) $candidateListRow['id']) ?>" <?= (string) $candidateListRow['id'] === $selectedCandidateId ? 'selected' : '' ?>>
+                              <?= esc((string) $candidateListRow['name']) ?><?= trim((string) ($candidateListRow['merchant'] ?? '')) !== '' ? ' / ' . esc((string) $candidateListRow['merchant']) : '' ?><?= trim((string) ($candidateListRow['category'] ?? '')) !== '' ? ' / ' . esc((string) ($candidateListRow['category'] ?? '')) : '' ?>
+                            </option>
+                          <?php endforeach; ?>
+                        <?php endif; ?>
+                      </select>
+                    </form>
+                    <?php endif; ?>
+                  </div>
               </div>
-              <?php if ($recentImportedRows !== []): ?>
+              <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
                 <p class="admin-note"><strong>Teraz vyberas len z posledneho importu.</strong> Ked budes chciet iny produkt z tohto isteho importu, otvor nizsie blok <strong>Produkty z posledneho importu</strong>.</p>
               <?php endif; ?>
 
@@ -4008,7 +4020,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <?php endif; ?>
             </section>
 
-            <?php if ($recentImportedRows !== []): ?>
+            <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
               <details class="admin-subsection is-compact" id="products-imported-list" <?= $productCandidateFocusMode ? '' : 'open' ?>>
                 <summary><strong>Produkty z posledneho importu</strong> - otvor len ked chces vybrat iny produkt z toho isteho importu</summary>
                 <div class="admin-subsection-head">
@@ -4054,7 +4066,7 @@ require dirname(__DIR__) . '/inc/head.php';
               </details>
             <?php endif; ?>
 
-            <?php if ($candidateRows !== []): ?>
+            <?php if ($candidateRows !== [] && !$productCandidateFocusMode): ?>
               <details class="admin-subsection is-compact" <?= $productCandidateFocusMode ? '' : 'open' ?>>
                 <summary><strong>Zoznam kandidatov</strong> - otvor len ked chces rychlo skontrolovat stav viacerych produktov</summary>
                 <div class="admin-queue-list">
@@ -5222,21 +5234,22 @@ require dirname(__DIR__) . '/inc/head.php';
             <div class="admin-card-head">
               <div>
                 <p class="admin-kicker">Hlavne obrazky clankov</p>
-                <h2>Clanky bez hlavneho obrazka</h2>
-                <p class="admin-note">Ak chces spravit obrazok pre jeden clanok, klikni <strong>Otvorit tento clanok</strong>. Potom hore na stranke klikni <strong>Kopirovat text pre Canvu</strong> a nakoniec <strong>Nahraj hlavny obrazok clanku</strong>.</p>
+                <h2>Clanky bez vlastneho hlavneho obrazka</h2>
+                <p class="admin-note">Tu riesis len clanky, ktore este nemaju vlastny obrazok clanku. Fallback temy sa pocita zvlast, nie ako hotovy obrazok clanku.</p>
               </div>
               <div class="admin-filter-pills">
-                <a class="admin-filter-pill<?= $imageFilter === 'missing' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=missing">Chyba obrazok (<?= esc((string) $imageQueueCounts['missing']) ?>)</a>
-                <a class="admin-filter-pill<?= $imageFilter === 'ready' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=ready">Hotovo (<?= esc((string) $imageQueueCounts['ready']) ?>)</a>
+                <a class="admin-filter-pill<?= $imageFilter === 'missing' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=missing">Naozaj chyba (<?= esc((string) $imageQueueCounts['missing']) ?>)</a>
+                <a class="admin-filter-pill<?= $imageFilter === 'theme-fallback' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=theme-fallback">Len fallback temy (<?= esc((string) $imageQueueCounts['theme_fallback']) ?>)</a>
+                <a class="admin-filter-pill<?= $imageFilter === 'article' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=article">Vlastny obrazok (<?= esc((string) $imageQueueCounts['article']) ?>)</a>
                 <a class="admin-filter-pill<?= $imageFilter === 'all' ? ' is-active' : '' ?>" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=all">Vsetko (<?= esc((string) $imageQueueCounts['all']) ?>)</a>
               </div>
             </div>
             <div class="admin-queue-list">
               <?php foreach ($imageQueue as $queueRow): ?>
-                <article class="admin-queue-item<?= !empty($queueRow['has_final_webp']) ? ' is-done' : '' ?>">
+                <article class="admin-queue-item<?= !empty($queueRow['has_article_image']) ? ' is-done' : '' ?>">
                   <div>
                     <strong><?= esc((string) $queueRow['title']) ?></strong>
-                    <p><?= esc((string) $queueRow['slug']) ?> / <?= esc((string) ($queueRow['source_type'] ?? 'placeholder')) ?></p>
+                    <p><?= esc((string) $queueRow['slug']) ?> / <?= esc((string) ($queueRow['image_state_label'] ?? 'naozaj chyba')) ?></p>
                     <code><?= esc((string) $queueRow['asset_path']) ?></code>
                     <small class="admin-note"><?= esc((string) ($queueRow['file_name'] ?? '')) ?> / <?= esc((string) ($queueRow['dimensions'] ?? '1200x800')) ?></small>
                     <?php if (trim((string) ($queueRow['alt_text'] ?? '')) !== ''): ?>
@@ -5637,8 +5650,8 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
               <div class="admin-status-grid">
                 <article class="admin-status-card">
-                  <strong><?= esc((string) $imageQueueCounts['missing']) ?></strong>
-                  <span>Hero obrazky este chyba</span>
+                  <strong><?= esc((string) $imageQueueCounts['needs_article']) ?></strong>
+                  <span>Clanky bez vlastneho obrazka</span>
                   <small><a href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;image_filter=missing">Otvorit Images</a></small>
                 </article>
                 <article class="admin-status-card">
