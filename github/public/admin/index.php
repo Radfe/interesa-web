@@ -2772,6 +2772,7 @@ if ($selectedCandidateId === '' || !isset($candidateRowsById[$selectedCandidateI
 $selectedCandidate = $selectedCandidateId !== '' && isset($candidateRowsById[$selectedCandidateId])
     ? $candidateRowsById[$selectedCandidateId]
     : null;
+$productCandidateFocusMode = $section === 'products' && is_array($selectedCandidate);
 $candidateImportedCount = count($candidateRows);
 $candidateClickReadyCount = 0;
 $candidateAssignedCount = 0;
@@ -2918,7 +2919,7 @@ require dirname(__DIR__) . '/inc/head.php';
       </section>
     </div>
   <?php else: ?>
-    <div class="admin-shell">
+    <div class="admin-shell<?= $productCandidateFocusMode ? ' is-product-candidate-focus' : '' ?>">
       <?php if ($flashMessage !== ''): ?>
         <div class="admin-flash is-success">
           <div><?= esc($flashMessage) ?></div>

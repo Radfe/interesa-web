@@ -597,3 +597,26 @@ Preco:
 Co este treba doriesit:
 - este viac skratit texty pri samotnom jednom kandidátovi
 - pri prvych troch clankoch casom opatrne predvyplnit clanok len vtedy, ked je obsahovy fit jasny
+
+## 15. Sustredeny rezim pri otvorenom kandidatovi
+
+Menene subory:
+- [public/admin/index.php](C:/data/praca/webova_stranka/github/public/admin/index.php)
+- [public/assets/css/admin.css](C:/data/praca/webova_stranka/github/public/assets/css/admin.css)
+
+Co sa upravilo:
+- ked je v produktoch otvoreny jeden kandidat, admin sa prepne do sustredeneho rezimu
+- v tomto rezime sa schova bocny panel, aby nerusil pri dokoncovani jedneho produktu
+- hlavna cast sa vycentruje a zostane v sirke jedneho normalneho pracovneho panela
+- dlhe linky produktu sa zalamuju a uz nerozbijaju rozlozenie
+- karty so stavom, detailom produktu a dalsim krokom maju nastavene `min-width: 0`, aby sa nezužovali do uzkych stlpcov
+- pri otvorenom kandidatovi sa dvojstlpcovy prehlad zmeni na jeden stlpec, aby bol citatelnejsi
+
+Preco:
+- po importe a po klikoch to posobilo, ako keby bol pravy panel zablokovany a admin rozbity
+- v skutocnosti vizualne rusil bocny panel a dlhe URL rozbijali sirku kandidatnych kariet
+- cielom je, aby pri jednom otvorenom produkte zostalo na ociach len to, co treba spravit dalej
+
+Co este treba doriesit:
+- ak bude treba, este viac potlacit pomocny zoznam posledneho importu
+- dotiahnut opatrne predvyplnenie clanku len pri jasnom obsahovom fite pre prve tri clanky

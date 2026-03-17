@@ -9,6 +9,10 @@
   align-items: start;
 }
 
+.admin-shell.is-product-candidate-focus {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .admin-sidebar,
 .admin-card,
 .admin-brief-card {
@@ -22,6 +26,10 @@
   padding: 1.25rem;
   position: sticky;
   top: 1.5rem;
+}
+
+.admin-shell.is-product-candidate-focus .admin-sidebar {
+  display: none;
 }
 
 .admin-sidebar h1,
@@ -65,9 +73,16 @@
   gap: 1rem;
 }
 
+.admin-shell.is-product-candidate-focus .admin-main {
+  max-width: 1080px;
+  width: 100%;
+  margin-inline: auto;
+}
+
 .admin-card,
 .admin-brief-card {
   padding: 1.25rem;
+  min-width: 0;
 }
 
 .admin-card-head {
@@ -169,6 +184,16 @@
 .admin-brief-card p {
   margin: 0 0 1rem;
   line-height: 1.6;
+}
+
+.admin-brief-card code,
+.admin-queue-item code,
+.admin-note code,
+.admin-meta code {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .admin-workflow-list {
@@ -368,6 +393,7 @@
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 16px;
   background: #fff;
+  min-width: 0;
 }
 
 .admin-queue-item.is-done {
@@ -377,6 +403,10 @@
 .admin-queue-item p,
 .admin-queue-item code {
   margin: 0.2rem 0 0;
+}
+
+.admin-queue-item > div {
+  min-width: 0;
 }
 
 @media (max-width: 980px) {
@@ -678,6 +708,7 @@
   border-radius: 16px;
   background: #fff;
   border: 1px solid rgba(15, 23, 42, 0.08);
+  min-width: 0;
 }
 
 .admin-status-card strong {
@@ -688,6 +719,10 @@
 .admin-status-card span {
   color: #516072;
   font-size: 0.92rem;
+}
+
+.admin-shell.is-product-candidate-focus .admin-brief-grid {
+  grid-template-columns: 1fr;
 }
 
 .admin-status-pills {
