@@ -17,6 +17,15 @@
         "link_type": "affiliate",
         "source": "candidate-product"
     },
+    "gymbeam-nutrend-excelent-protein-bar-limetka-pap-aja-gymbeam": {
+        "code": "gymbeam-nutrend-excelent-protein-bar-limetka-pap-aja-gymbeam",
+        "url": "https://gymbeam.sk/592-proteinova-tycinka-excelent-85-g-nutrend.html?utm_term=dognet",
+        "merchant": "Gymbeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-nutrend-excelent-protein-bar-limetka-pap-aja",
+        "link_type": "affiliate",
+        "source": "candidate-product"
+    },
     "protein-na-chudnutie-gymbeam": {
         "code": "protein-na-chudnutie-gymbeam",
         "url": "https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Ftrue-whey-gymbeam.html",

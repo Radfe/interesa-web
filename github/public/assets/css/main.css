@@ -845,6 +845,31 @@ a:hover{color:#0954aa}
 .article-teaser-card{height:100%}
 .article-teaser-card .hub-card-body{height:100%}
 .article-teaser-card .card-link{margin-top:auto}
+.hub-card-visual-fallback{
+  display:grid;
+  place-items:center;
+  gap:.75rem;
+  min-height:170px;
+  padding:1rem;
+  border-radius:12px;
+  text-align:center;
+  text-decoration:none;
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,.85), rgba(255,255,255,0) 36%),
+    linear-gradient(135deg,#eef7f3 0%,#ffffff 100%);
+  border:1px solid #dbe8e2;
+}
+.hub-card-fallback-copy{
+  display:grid;
+  gap:.35rem;
+  justify-items:center;
+  color:#42525d;
+}
+.hub-card-fallback-copy strong{
+  color:#10202d;
+  font-size:.95rem;
+  line-height:1.4;
+}
 @media (max-width:640px){
   .hub-stats-inline,.archive-stats{grid-template-columns:1fr}
   .latest-card{grid-template-columns:72px 1fr}
@@ -875,6 +900,7 @@ a:hover{color:#0954aa}
   .stats-card strong{font-size:1.05rem}
   .hub-heading-row{align-items:flex-start}
   .hub-icon-badge,.hub-card-icon{width:42px;height:42px}
+  .hub-card-visual-fallback{min-height:136px}
   .article-hero-caption{gap:.35rem}
   .comparison-product-copy span{font-size:.86rem}
   .latest-card{grid-template-columns:64px 1fr;gap:.7rem}

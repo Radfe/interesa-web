@@ -66,6 +66,14 @@ Posledny technicky webovy krok:
 - audit zapisany do:
   - [WEB_AUDIT_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_AUDIT_2026-03-17_SK.md)
 
+Najnovsi UX krok:
+- audit kategorii a listingov po realnej kontrole dojmu rozbiteho webu
+- opravene:
+  - [public/inc/category-landing.php](C:/data/praca/webova_stranka/github/public/inc/category-landing.php)
+  - [public/assets/css/main.css](C:/data/praca/webova_stranka/github/public/assets/css/main.css)
+- audit zapisany do:
+  - [CATEGORY_ARCHIVE_AUDIT_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/CATEGORY_ARCHIVE_AUDIT_2026-03-17_SK.md)
+
 Dotiahnute temy:
 - kreatin
 - proteiny
@@ -116,6 +124,8 @@ K tomu uz je pripraveny aj:
 - [WEB_TO_ADMIN_IMPORT_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_IMPORT_HANDOFF_2026-03-17_SK.md)
 - [WEB_TO_ADMIN_IMPORT_UI_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_IMPORT_UI_HANDOFF_2026-03-17_SK.md)
 - [WEB_ADMIN_PRODUCT_PIPELINE_SK.md](C:/data/praca/webova_stranka/github/WEB_ADMIN_PRODUCT_PIPELINE_SK.md)
+- [WEB_TO_ADMIN_BUG_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_BUG_HANDOFF_2026-03-17_SK.md)
+- [SIMPLE_PRODUCT_TEST_FLOW_SK.md](C:/data/praca/webova_stranka/github/SIMPLE_PRODUCT_TEST_FLOW_SK.md)
 
 Do toho momentu web vrstva:
 - dalej jemne dorovnava kvalitu top stranok

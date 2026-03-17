@@ -80,6 +80,78 @@ $topFormats = array_slice($formatCounts, 0, 4, true);
 $extraArticles = array_values(array_filter($categoryArticles, static function (array $item) use ($featuredSlugs): bool {
     return !in_array((string) ($item['slug'] ?? ''), $featuredSlugs, true);
 }));
+$articleTopicKey = static function (array $item): string {
+    $slugValue = strtolower((string) ($item['slug'] ?? ''));
+    $descriptionValue = strtolower((string) ($item['description'] ?? ''));
+    $haystack = $slugValue . ' ' . $descriptionValue;
+    $map = [
+        'horcik' => ['horcik', 'magnezium', 'magnesium'],
+        'vitamin-d' => ['vitamin-d', 'vitamin d', ' d3', 'd3 ', 'd3+', 'k2'],
+        'vitamin-c' => ['vitamin-c', 'vitamin c'],
+        'zinok' => ['zinok', 'zinek', 'zinc'],
+        'multivitamin' => ['multivitamin'],
+        'omega-3' => ['omega-3', 'omega 3'],
+        'beta-glukan' => ['beta-glukan', 'beta glukan'],
+        'probiotika' => ['probiotika', 'probiotic'],
+        'kolagen' => ['kolagen', 'collagen'],
+        'kreatin' => ['kreatin', 'creatine', 'creapure', 'monohydrate', 'hcl'],
+        'proteiny' => ['protein', 'whey', 'isolate', 'clear', 'vegan'],
+    ];
+
+    foreach ($map as $topicKey => $needles) {
+        foreach ($needles as $needle) {
+            if ($needle !== '' && str_contains($haystack, $needle)) {
+                return $topicKey;
+            }
+        }
+    }
+
+    $firstChunk = strtok($slugValue, '-');
+    return is_string($firstChunk) ? trim($firstChunk) : '';
+};
+$extraArticlesTotal = count($extraArticles);
+$maxExtraArticles = $articleCount > 24 ? 12 : 18;
+$topicLimit = $articleCount > 36 ? 1 : 2;
+$extraArticlePreview = [];
+$extraPreviewTopicCounts = [];
+$extraPreviewSeen = [];
+foreach ($extraArticles as $item) {
+    $itemSlug = (string) ($item['slug'] ?? '');
+    if ($itemSlug === '') {
+        continue;
+    }
+
+    $topicKey = $articleTopicKey($item);
+    if ($topicKey !== '' && (($extraPreviewTopicCounts[$topicKey] ?? 0) >= $topicLimit)) {
+        continue;
+    }
+
+    $extraArticlePreview[] = $item;
+    $extraPreviewSeen[$itemSlug] = true;
+    if ($topicKey !== '') {
+        $extraPreviewTopicCounts[$topicKey] = ($extraPreviewTopicCounts[$topicKey] ?? 0) + 1;
+    }
+
+    if (count($extraArticlePreview) >= $maxExtraArticles) {
+        break;
+    }
+}
+if (count($extraArticlePreview) < min($extraArticlesTotal, $maxExtraArticles)) {
+    foreach ($extraArticles as $item) {
+        $itemSlug = (string) ($item['slug'] ?? '');
+        if ($itemSlug === '' || isset($extraPreviewSeen[$itemSlug])) {
+            continue;
+        }
+
+        $extraArticlePreview[] = $item;
+        $extraPreviewSeen[$itemSlug] = true;
+        if (count($extraArticlePreview) >= $maxExtraArticles) {
+            break;
+        }
+    }
+}
+$extraArticles = $extraArticlePreview;
+$hiddenExtraArticles = max(0, $extraArticlesTotal - count($extraArticles));
 $readyArticles = [];
 foreach ($categoryArticles as $item) {
     $itemSlug = (string) ($item['slug'] ?? '');
@@ -388,7 +460,12 @@ include dirname(__DIR__) . '/inc/head.php';
       <section class="card">
         <div class="section-head">
           <h2>Dalsie clanky v teme</h2>
-          <p class="meta">Doplnujuce clanky pre hlbsie prestudovanie temy.</p>
+          <p class="meta">
+            Doplnujuce clanky pre hlbsie prestudovanie temy.
+            <?php if ($hiddenExtraArticles > 0): ?>
+              Zobrazujeme len vyber <strong><?= esc((string) count($extraArticles)) ?></strong> z <strong><?= esc((string) $extraArticlesTotal) ?></strong>, aby listing nebol zahlteny opakujucimi sa variaciami.
+            <?php endif; ?>
+          </p>
         </div>
         <div class="hub-grid article-related-grid">
           <?php foreach ($extraArticles as $item): ?>
@@ -400,11 +477,25 @@ include dirname(__DIR__) . '/inc/head.php';
             $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
             $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
             $formatLabel = interessa_article_format_label($itemSlug, $itemTitle);
+            $hasDedicatedImage = is_array($itemImage)
+                && (string) ($itemImage['kind'] ?? '') === 'article'
+                && (string) ($itemImage['entity'] ?? '') === $itemSlug
+                && (string) ($itemImage['source_type'] ?? '') !== 'placeholder';
             ?>
             <article class="hub-card article-teaser-card">
-              <a href="<?= esc(article_url($itemSlug)) ?>">
-                <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
-              </a>
+              <?php if ($hasDedicatedImage): ?>
+                <a href="<?= esc(article_url($itemSlug)) ?>">
+                  <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
+                </a>
+              <?php else: ?>
+                <a class="hub-card-visual-fallback" href="<?= esc(article_url($itemSlug)) ?>">
+                  <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon($slug) ?></span>
+                  <span class="hub-card-fallback-copy">
+                    <span class="hub-card-label">Doplnujuci clanok</span>
+                    <strong><?= esc($formatLabel !== '' ? $formatLabel : 'Prakticky clanok') ?></strong>
+                  </span>
+                </a>
+              <?php endif; ?>
               <div class="hub-card-body article-teaser-body">
                 <div class="article-card-meta">
                   <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
@@ -419,6 +510,9 @@ include dirname(__DIR__) . '/inc/head.php';
             </article>
           <?php endforeach; ?>
         </div>
+        <?php if ($hiddenExtraArticles > 0): ?>
+          <p class="meta" style="margin-top:1rem">Ak chces vidiet vsetky clanky v tejto teme, otvor <a href="/clanky/?category=<?= esc($slug) ?>">kompletny archiv temy</a>.</p>
+        <?php endif; ?>
       </section>
     <?php endif; ?>
 
