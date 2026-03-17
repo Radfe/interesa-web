@@ -2881,9 +2881,15 @@ $selectedCandidateRole = is_array($selectedCandidate)
 if (!in_array($selectedCandidateRole, $candidateRoleOptions, true)) {
     $selectedCandidateRole = 'standard';
 }
-$selectedCandidateOrder = is_array($selectedCandidate)
-    ? max(1, (int) ($selectedCandidate['order'] ?? 10))
-    : 10;
+$selectedCandidateOrderRaw = is_array($selectedCandidate)
+    ? (int) ($selectedCandidate['order'] ?? 0)
+    : 0;
+$selectedCandidateOrder = 10;
+if ($selectedCandidateHasArticle) {
+    $selectedCandidateOrder = max(1, $selectedCandidateOrderRaw);
+} elseif ($selectedCandidateOrderRaw >= 10 && $selectedCandidateOrderRaw % 10 === 0) {
+    $selectedCandidateOrder = $selectedCandidateOrderRaw;
+}
 if ($selectedCandidateOrder <= 0) {
     $selectedCandidateOrder = 10;
 }
@@ -2941,6 +2947,7 @@ require dirname(__DIR__) . '/inc/head.php';
       <?php if ($error !== ''): ?>
         <div class="admin-flash is-error"><?= esc($error) ?></div>
       <?php endif; ?>
+      <?php if (!$productCandidateFocusMode): ?>
       <aside class="admin-sidebar">
         <div class="admin-sidebar-head">
           <div>
@@ -3012,6 +3019,7 @@ require dirname(__DIR__) . '/inc/head.php';
           <?php endif; ?>
         </section>
       </aside>
+      <?php endif; ?>
 
       <div class="admin-main">
         <?php if ($flash !== ''): ?>
@@ -3038,6 +3046,25 @@ require dirname(__DIR__) . '/inc/head.php';
           <div class="admin-flash is-error"><?= esc($error) ?></div>
         <?php endif; ?>
 
+        <?php if ($productCandidateFocusMode && is_array($selectedCandidate)): ?>
+          <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Otvoreny kandidat</p>
+                <h2><?= esc((string) ($selectedCandidate['name'] ?? 'Produkt')) ?></h2>
+                <p class="admin-note">Teraz pracuj len s tymto jednym produktom. Pomocne zoznamy su nizsie schovane, aby ta nic nemylilo.</p>
+              </div>
+              <div class="admin-inline-actions">
+                <?php if ($recentCandidateBatchId !== ''): ?>
+                  <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;batch=<?= esc($recentCandidateBatchId) ?>#products-imported-list">Spat na posledny import</a>
+                <?php endif; ?>
+                <a class="btn btn-secondary btn-small" href="/admin?section=products">Spat na produkty</a>
+              </div>
+            </div>
+          </section>
+        <?php endif; ?>
+
+        <?php if (!$productCandidateFocusMode): ?>
         <details class="admin-subsection is-compact">
           <summary><strong>Zakladny prehlad webu</strong> - bezne netreba otvarat</summary>
           <section class="admin-dashboard-grid">
@@ -3059,6 +3086,7 @@ require dirname(__DIR__) . '/inc/head.php';
             </article>
           </section>
         </details>
+        <?php endif; ?>
 
         <?php if ($section === 'articles'): ?>
           <section class="admin-card">
@@ -3981,7 +4009,7 @@ require dirname(__DIR__) . '/inc/head.php';
             </section>
 
             <?php if ($recentImportedRows !== []): ?>
-              <details class="admin-subsection is-compact" id="products-imported-list" <?= is_array($selectedCandidate) ? '' : 'open' ?>>
+              <details class="admin-subsection is-compact" id="products-imported-list" <?= $productCandidateFocusMode ? '' : 'open' ?>>
                 <summary><strong>Produkty z posledneho importu</strong> - otvor len ked chces vybrat iny produkt z toho isteho importu</summary>
                 <div class="admin-subsection-head">
                   <div>
@@ -4027,7 +4055,7 @@ require dirname(__DIR__) . '/inc/head.php';
             <?php endif; ?>
 
             <?php if ($candidateRows !== []): ?>
-              <details class="admin-subsection is-compact">
+              <details class="admin-subsection is-compact" <?= $productCandidateFocusMode ? '' : 'open' ?>>
                 <summary><strong>Zoznam kandidatov</strong> - otvor len ked chces rychlo skontrolovat stav viacerych produktov</summary>
                 <div class="admin-queue-list">
                   <?php foreach ($candidateListRows as $candidateListRow): ?>
