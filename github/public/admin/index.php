@@ -593,22 +593,22 @@ function interessa_admin_role_hint(string $role): string {
 function interessa_admin_article_product_help(string $articleSlug): array {
     return match ($articleSlug) {
         'najlepsie-proteiny-2026' => [
-            'summary' => 'Pri tomto clanku vyberaj hlavne proteiny. Jeden produkt by mal byt hlavny tip, dalsie mozu ist do horneho vyberu a do porovnavacej tabulky.',
+            'summary' => 'Pri prvom importe sem davaju len proteinovych kandidatov. Zatial nechaj Bez oznacenia, horny vyber vypnuty a porovnavaciu tabulku vypnutu.',
             'top_label' => 'Ukazat v hornom vybere',
             'comparison_label' => 'Ukazat v porovnavacej tabulke',
         ],
         'kreatin-porovnanie' => [
-            'summary' => 'Pri tomto clanku vyberaj len kreatiny. Jeden produkt by mal byt hlavny tip a dalsie 2 az 4 patria hlavne do porovnavacej tabulky.',
+            'summary' => 'Pri prvom importe sem davaju len kreatinovych kandidatov. Kofein, pre-workout alebo ine performance veci sem nepatria. Zatial nechaj Bez oznacenia a obidve volby vypnute.',
             'top_label' => 'Ukazat v hornom vybere',
             'comparison_label' => 'Ukazat v porovnavacej tabulke',
         ],
         'doplnky-vyzivy' => [
-            'summary' => 'Pri tomto clanku vyberaj zakladne doplnky ako multivitamin, kreatin, vitamin D3, horcik alebo probiotika. Do porovnania davaj len produkty, ktore sa maju medzi sebou priamo porovnat.',
+            'summary' => 'Pri prvom importe sem davaju len zakladne doplnky ako multivitamin, vitamin D, horcik, probiotika alebo kreatin. Zatial nechaj Bez oznacenia a obidve volby vypnute.',
             'top_label' => 'Ukazat v hornom vybere',
             'comparison_label' => 'Ukazat v porovnavacej tabulke',
         ],
         default => [
-            'summary' => 'Tu vyberas, v ktorom clanku sa produkt ukaze, v akom poradi bude a ci patri do horneho vyberu alebo do porovnavacej tabulky.',
+            'summary' => 'Pri prvom importe produkt len prirad ku spravnemu clanku ako kandidata. Finalny vyber urobi neskor web vlakno.',
             'top_label' => 'Ukazat v hornom vybere',
             'comparison_label' => 'Ukazat v porovnavacej tabulke',
         ],
@@ -2682,11 +2682,18 @@ if ($selectedCandidateArticleSlug === '' || !in_array($selectedCandidateArticleS
     $selectedCandidateArticleSlug = (string) ($productArticleOptionSlugs[0] ?? '');
 }
 $selectedCandidateArticleHelp = interessa_admin_article_product_help($selectedCandidateArticleSlug);
+$candidateRoleOptions = ['standard', 'vegan', 'clean'];
 $selectedCandidateRole = is_array($selectedCandidate)
     ? interessa_admin_slugify((string) ($selectedCandidate['role'] ?? 'standard'))
     : 'standard';
-if (!in_array($selectedCandidateRole, ['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'], true)) {
+if (!in_array($selectedCandidateRole, $candidateRoleOptions, true)) {
     $selectedCandidateRole = 'standard';
+}
+$selectedCandidateOrder = is_array($selectedCandidate)
+    ? max(1, (int) ($selectedCandidate['order'] ?? 10))
+    : 10;
+if ($selectedCandidateOrder <= 0) {
+    $selectedCandidateOrder = 10;
 }
 
 
@@ -3571,6 +3578,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <p class="admin-meta">Tu vidis len produkty z posledneho importu. Nacitalo sa ich: <strong><?= esc((string) count($recentImportedRows)) ?></strong>. Vyber jeden a pokracuj dalej.</p>
                   </div>
                 </div>
+                <p class="admin-note"><strong>Pri prvom importe teraz neriesis finalny top produkt ani porovnanie.</strong> Najprv len vyber spravny clanok, nechaj male oznacenie na <strong>Bez oznacenia</strong> a volby pre horny vyber aj porovnavaciu tabulku nechaj vypnute.</p>
                 <div class="admin-queue-list">
                   <?php foreach ($recentImportedRows as $recentImportedRow): ?>
                     <article class="admin-queue-item">
@@ -3674,9 +3682,10 @@ require dirname(__DIR__) . '/inc/head.php';
                       </div>
                     </form>
                   <?php elseif (!$selectedCandidateHasArticle): ?>
-                    <p class="admin-note">Odkaz do obchodu je hotovy. Teraz uz len vyber clanok, poradie a miesto, kde sa ma produkt ukazat.</p>
-                    <p class="admin-note"><strong>Co tu nastavujes:</strong> Clanok = kde sa produkt ukaze. Poradie = 1 je prve miesto. Maly stitok = kratky napis pri produkte. Horny vyber = rychly vyber hore v clanku. Porovnavacia tabulka = cast, kde sa porovnavaju viaceré produkty medzi sebou.</p>
+                    <p class="admin-note">Odkaz do obchodu je hotovy. Teraz produkt len prirad ku spravnemu clanku ako kandidata.</p>
+                    <p class="admin-note"><strong>Co tu nastavujes:</strong> Clanok = kde sa produkt ma neskor posudzovat. Poradie = docasne technicke cislo, pouzi 10, 20, 30. Maly stitok = pri prvom importe nechaj Bez oznacenia, iba ak je uplne jasne, ze ide o vegansku alebo cistu moznost.</p>
                     <p class="admin-note"><strong>Pre vybrany clanok:</strong> <?= esc((string) ($selectedCandidateArticleHelp['summary'] ?? '')) ?></p>
+                    <p class="admin-note"><strong>Bezpecne prve nastavenie:</strong> Poradie 10, maly stitok Bez oznacenia, horny vyber vypnuty, porovnavacia tabulka vypnuta.</p>
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="save_candidate_assignment" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
@@ -3689,30 +3698,30 @@ require dirname(__DIR__) . '/inc/head.php';
                         </select>
                       </label>
                       <div class="admin-grid two-up">
-                        <label><span>Poradie v zozname (1 je prve)</span><input type="number" name="candidate_order" min="1" step="1" value="<?= esc((string) ($selectedCandidate['order'] ?? 1)) ?>" /></label>
+                        <label><span>Docasne poradie (10, 20, 30...)</span><input type="number" name="candidate_order" min="1" step="1" value="<?= esc((string) $selectedCandidateOrder) ?>" /></label>
                         <label>
                           <span>Maly stitok pri produkte</span>
                           <select name="candidate_role">
-                            <?php foreach (['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'] as $candidateRoleOption): ?>
+                            <?php foreach ($candidateRoleOptions as $candidateRoleOption): ?>
                               <option value="<?= esc($candidateRoleOption) ?>" <?= $selectedCandidateRole === $candidateRoleOption ? 'selected' : '' ?>><?= esc(interessa_admin_role_label($candidateRoleOption)) ?></option>
                             <?php endforeach; ?>
                           </select>
                         </label>
                       </div>
-                      <p class="admin-meta">Hlavny tip = hlavna odporucana volba. Vyhodna volba = dobry pomer cena a vykon. Ina moznost = druha alternativa. Bez oznacenia = bez maleho stitku.</p>
+                      <p class="admin-meta">Pri prvom importe pouzi len: Bez oznacenia, Veganska moznost alebo Cista moznost. Ostatne volby este teraz nepouzivaj.</p>
                       <label><input type="checkbox" name="candidate_show_in_top" value="1" <?= !empty($selectedCandidate['show_in_top']) ? 'checked' : '' ?> /> <?= esc((string) ($selectedCandidateArticleHelp['top_label'] ?? 'Ukazat v hornom vybere')) ?></label>
                       <label><input type="checkbox" name="candidate_show_in_comparison" value="1" <?= !empty($selectedCandidate['show_in_comparison']) ? 'checked' : '' ?> /> <?= esc((string) ($selectedCandidateArticleHelp['comparison_label'] ?? 'Ukazat v porovnavacej tabulke')) ?></label>
                       <div class="admin-actions">
-                        <button class="btn btn-cta" type="submit">Priradit ku clanku</button>
+                        <button class="btn btn-cta" type="submit">Priradit ako kandidata</button>
                       </div>
                     </form>
                   <?php elseif (!$selectedCandidateApproved): ?>
-                    <p class="admin-note">Produkt uz ma klik aj clanok. Posledny krok je pustit ho na web.</p>
+                    <p class="admin-note">Produkt uz ma klik aj clanok. Posledny krok je ulozit ho do systemu pre web vlakno. Finalny vyber na webe sa bude robit az potom.</p>
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="approve_candidate_for_web" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <div class="admin-actions">
-                        <button class="btn btn-cta" type="submit">Schvalit pre web</button>
+                        <button class="btn btn-cta" type="submit">Ulozit do systemu</button>
                       </div>
                     </form>
                   <?php else: ?>

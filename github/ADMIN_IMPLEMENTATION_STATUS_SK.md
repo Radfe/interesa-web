@@ -256,6 +256,24 @@ Najblizsi odporucany krok v admine:
   - bezny pouzivatel nema hladat technicke polia
   - nema premyslat medzi viacerymi podobnymi tlacidlami
 
+## 12. Bezpecne prve nastavenie pri importe
+
+Pri kandidatovi produktu je teraz admin nastavovany tak, aby pri prvom importe netlacil na finalne editorialne rozhodnutie.
+
+Aktualne pravidla v admine:
+- pri priradeni ku clanku je predvolene docasne poradie `10`
+- maly stitok je predvolene `Bez oznacenia`
+- v rychlom vybere su na ociach len tieto volby:
+  - `Bez oznacenia`
+  - `Veganska moznost`
+  - `Cista moznost`
+- volby pre horny vyber a porovnavaciu tabulku ostavaju pri prvom importe vypnute, pokial ich clovek vyslovene nezaskrtne
+- posledny krok sa nevola `Schvalit pre web`, ale zrozumitelnejsie `Ulozit do systemu`
+
+Zmysel:
+- najprv dostat do systemu spravnych kandidatov
+- az potom nechat web vlakno urobit finalny vyber
+
 Zatial nerobit:
 - velky hromadny XML importer pre vsetko
 - komplikovane feed mapovanie bez kontroly

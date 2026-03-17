@@ -841,7 +841,7 @@ if (!function_exists('interessa_admin_save_candidate_assignment')) {
         }
 
         $candidate['article_slug'] = canonical_article_slug(trim((string) ($assignment['article_slug'] ?? '')));
-        $candidate['order'] = max(1, (int) ($assignment['order'] ?? 1));
+        $candidate['order'] = max(1, (int) ($assignment['order'] ?? 10));
         $candidate['role'] = interessa_admin_normalize_candidate_role($assignment['role'] ?? '');
         $candidate['show_in_top'] = !empty($assignment['show_in_top']);
         $candidate['show_in_comparison'] = !empty($assignment['show_in_comparison']);

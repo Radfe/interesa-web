@@ -109,6 +109,7 @@ Najblizsi odporucany krok vo web vlakne:
 
 K tomu uz je pripraveny aj:
 - [FIRST_3_ARTICLES_PRODUCT_SHORTLIST_SK.md](C:/data/praca/webova_stranka/github/FIRST_3_ARTICLES_PRODUCT_SHORTLIST_SK.md)
+- [WEB_TO_ADMIN_IMPORT_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_IMPORT_HANDOFF_2026-03-17_SK.md)
 
 Do toho momentu web vrstva:
 - dalej jemne dorovnava kvalitu top stranok
