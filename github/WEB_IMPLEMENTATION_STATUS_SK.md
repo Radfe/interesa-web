@@ -74,6 +74,16 @@ Najnovsi UX krok:
 - audit zapisany do:
   - [CATEGORY_ARCHIVE_AUDIT_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/CATEGORY_ARCHIVE_AUDIT_2026-03-17_SK.md)
 
+Najnovsi obrazkovy zaver:
+- admin workflow pre obrazky clankov existuje, ale jeho pocty su zatial zavadzajuce
+- admin dnes miesa:
+  - vlastne article obrazky
+  - fallback obrazky temy
+  - placeholder logiku
+- preto mohol pouzivatel nadobudnut dojem, ze obrazky su hotove, hoci vacsina clankov stale nema vlastny article hero obrazok
+- handoff zapisany do:
+  - [WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md)
+
 Dotiahnute temy:
 - kreatin
 - proteiny
@@ -103,6 +113,7 @@ Aktualny kvalitativny standard pre dolezite clanky:
 - logo este nie je finalne
 - favicon este nie je finalna
 - OG assety este nie su finalne
+- vacsina clankov stale nema vlastny article obrazok a treba to jasnejsie odlisit od fallbackov temy v admine
 
 ### Launch dokoncenie
 - posledny pass na top 10 az 20 strankach po napojeni produktov
@@ -125,6 +136,7 @@ K tomu uz je pripraveny aj:
 - [WEB_TO_ADMIN_IMPORT_UI_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_IMPORT_UI_HANDOFF_2026-03-17_SK.md)
 - [WEB_ADMIN_PRODUCT_PIPELINE_SK.md](C:/data/praca/webova_stranka/github/WEB_ADMIN_PRODUCT_PIPELINE_SK.md)
 - [WEB_TO_ADMIN_BUG_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_BUG_HANDOFF_2026-03-17_SK.md)
+- [WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md)
 - [SIMPLE_PRODUCT_TEST_FLOW_SK.md](C:/data/praca/webova_stranka/github/SIMPLE_PRODUCT_TEST_FLOW_SK.md)
 
 Do toho momentu web vrstva:

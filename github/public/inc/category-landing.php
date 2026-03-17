@@ -152,6 +152,24 @@ if (count($extraArticlePreview) < min($extraArticlesTotal, $maxExtraArticles)) {
 }
 $extraArticles = $extraArticlePreview;
 $hiddenExtraArticles = max(0, $extraArticlesTotal - count($extraArticles));
+$hasDedicatedArticleImage = static function (?array $image, string $slug): bool {
+    return is_array($image)
+        && (string) ($image['kind'] ?? '') === 'article'
+        && (string) ($image['entity'] ?? '') === $slug
+        && (string) ($image['source_type'] ?? '') !== 'placeholder';
+};
+$renderArticleFallbackMedia = static function (string $href, string $slug, string $formatLabel, string $tagLabel): string {
+    $visualLabel = trim($tagLabel) !== '' ? $tagLabel : 'Clanok';
+    $secondary = trim($formatLabel) !== '' ? $formatLabel : 'Prakticky clanok';
+
+    return '<a class="hub-card-visual-fallback" href="' . esc($href) . '">'
+        . '<span class="hub-card-icon" aria-hidden="true">' . interessa_category_icon($slug) . '</span>'
+        . '<span class="hub-card-fallback-copy">'
+        . '<span class="hub-card-label">' . esc($visualLabel) . '</span>'
+        . '<strong>' . esc($secondary) . '</strong>'
+        . '</span>'
+        . '</a>';
+};
 $readyArticles = [];
 foreach ($categoryArticles as $item) {
     $itemSlug = (string) ($item['slug'] ?? '');
@@ -350,11 +368,16 @@ include dirname(__DIR__) . '/inc/head.php';
             $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
             $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
             $formatLabel = interessa_article_format_label($itemSlug, $itemTitle);
+            $hasDedicatedImage = $hasDedicatedArticleImage($itemImage, $itemSlug);
             ?>
             <article class="hub-card article-teaser-card">
-              <a href="<?= esc(article_url($itemSlug)) ?>">
-                <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
-              </a>
+              <?php if ($hasDedicatedImage): ?>
+                <a href="<?= esc(article_url($itemSlug)) ?>">
+                  <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
+                </a>
+              <?php else: ?>
+                <?= $renderArticleFallbackMedia(article_url($itemSlug), $slug, $formatLabel, 'Porovnanie') ?>
+              <?php endif; ?>
               <div class="hub-card-body article-teaser-body">
                 <div class="article-card-meta">
                   <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
@@ -391,11 +414,16 @@ include dirname(__DIR__) . '/inc/head.php';
             $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
             $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
             $formatLabel = interessa_article_format_label($itemSlug, $itemTitle);
+            $hasDedicatedImage = $hasDedicatedArticleImage($itemImage, $itemSlug);
             ?>
             <article class="hub-card article-teaser-card">
-              <a href="<?= esc(article_url($itemSlug)) ?>">
-                <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
-              </a>
+              <?php if ($hasDedicatedImage): ?>
+                <a href="<?= esc(article_url($itemSlug)) ?>">
+                  <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
+                </a>
+              <?php else: ?>
+                <?= $renderArticleFallbackMedia(article_url($itemSlug), $slug, $formatLabel, 'Odporucany vyber') ?>
+              <?php endif; ?>
               <div class="hub-card-body article-teaser-body">
                 <div class="article-card-meta">
                   <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
@@ -429,14 +457,19 @@ include dirname(__DIR__) . '/inc/head.php';
             $meta = article_meta($guideSlug);
             $title = trim((string) ($guide['title'] ?? $meta['title']));
             $description = interessa_article_card_description($guideSlug, trim((string) ($guide['description'] ?? $meta['description'])), 20);
-            $label = trim((string) ($guide['label'] ?? 'Sprievodca'));
+            $label = trim((string) ($guide['label'] ?? 'Start'));
             $guideImage = interessa_article_image_meta($guideSlug, 'thumb', true);
             $guideFile = dirname(__DIR__) . '/content/articles/' . $guideSlug . '.html';
             $guideDate = is_file($guideFile) ? date('d.m.Y', (int) @filemtime($guideFile)) : '';
             $formatLabel = interessa_article_format_label($guideSlug, $title);
+            $hasDedicatedImage = $hasDedicatedArticleImage($guideImage, $guideSlug);
             ?>
             <article class="hub-card">
-              <?= interessa_render_image($guideImage, ['class' => 'hub-card-image', 'alt' => $title]) ?>
+              <?php if ($hasDedicatedImage): ?>
+                <?= interessa_render_image($guideImage, ['class' => 'hub-card-image', 'alt' => $title]) ?>
+              <?php else: ?>
+                <?= $renderArticleFallbackMedia(article_url($guideSlug), $slug, $formatLabel, $label) ?>
+              <?php endif; ?>
               <div class="hub-card-body">
                 <div class="article-card-meta">
                   <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
@@ -477,10 +510,7 @@ include dirname(__DIR__) . '/inc/head.php';
             $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
             $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
             $formatLabel = interessa_article_format_label($itemSlug, $itemTitle);
-            $hasDedicatedImage = is_array($itemImage)
-                && (string) ($itemImage['kind'] ?? '') === 'article'
-                && (string) ($itemImage['entity'] ?? '') === $itemSlug
-                && (string) ($itemImage['source_type'] ?? '') !== 'placeholder';
+            $hasDedicatedImage = $hasDedicatedArticleImage($itemImage, $itemSlug);
             ?>
             <article class="hub-card article-teaser-card">
               <?php if ($hasDedicatedImage): ?>
@@ -488,13 +518,7 @@ include dirname(__DIR__) . '/inc/head.php';
                   <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
                 </a>
               <?php else: ?>
-                <a class="hub-card-visual-fallback" href="<?= esc(article_url($itemSlug)) ?>">
-                  <span class="hub-card-icon" aria-hidden="true"><?= interessa_category_icon($slug) ?></span>
-                  <span class="hub-card-fallback-copy">
-                    <span class="hub-card-label">Doplnujuci clanok</span>
-                    <strong><?= esc($formatLabel !== '' ? $formatLabel : 'Prakticky clanok') ?></strong>
-                  </span>
-                </a>
+                <?= $renderArticleFallbackMedia(article_url($itemSlug), $slug, $formatLabel, 'Doplnujuci clanok') ?>
               <?php endif; ?>
               <div class="hub-card-body article-teaser-body">
                 <div class="article-card-meta">
