@@ -39,6 +39,7 @@ a:hover{color:#0954aa}
 .site-header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);box-shadow:0 1px 0 rgba(16,24,40,.02)}
 .header-inner{display:flex;align-items:center;gap:1rem;min-height:68px;padding-block:.45rem}
 .brand{display:flex;align-items:center;gap:.75rem;color:inherit}
+.brand-logo{display:block;height:40px;width:auto;max-width:min(260px,38vw);object-fit:contain}
 .brand-mark{width:28px;height:28px;flex:0 0 auto}
 .brand-copy{display:grid;gap:.1rem;line-height:1.1}
 .brand-copy strong{font-size:1rem;letter-spacing:-.01em;color:#10202d}
@@ -230,11 +231,13 @@ a:hover{color:#0954aa}
 .site-footer nav a:hover{color:#111}
 @media (max-width:1280px){
   .header-inner{gap:.7rem}
+  .brand-logo{height:36px;max-width:min(220px,34vw)}
   .brand-copy span{max-width:180px}
   .menu-root{gap:.15rem}
   .main-nav__link{padding:.7rem .75rem;font-size:.95rem}
 }
 @media (max-width:1180px){
+  .brand-logo{height:34px;max-width:min(190px,30vw)}
   .brand-copy span{display:none}
   .brand-copy strong{font-size:.96rem}
   .main-nav__link{padding:.68rem .66rem;font-size:.92rem}
@@ -251,6 +254,7 @@ a:hover{color:#0954aa}
 @media (max-width:860px){
   .mega-tray{display:none!important}
   .nav-toggle-btn{display:grid}
+  .brand-logo{height:32px;max-width:180px}
   .brand-copy{display:none}
   .main-nav{
     position:fixed;inset:66px 0 auto 0;background:#fff;border-bottom:1px solid var(--line);

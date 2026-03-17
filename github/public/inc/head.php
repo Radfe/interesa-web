@@ -10,6 +10,7 @@ if ($interessaIsLocalDev && !headers_sent()) {
     header('Expires: 0');
 }
 $brandIconImage = interessa_brand_image_meta('logo-icon', true);
+$brandLogoImage = interessa_brand_image_meta('logo-full', false);
 $brandIconSrc = (string) ($brandIconImage['src'] ?? asset('img/brand/logo-icon.svg'));
 $brandIconExt = strtolower((string) pathinfo((string) (parse_url($brandIconSrc, PHP_URL_PATH) ?? ''), PATHINFO_EXTENSION));
 $brandIconType = $brandIconExt === 'svg' ? 'image/svg+xml' : 'image/png';
@@ -61,11 +62,15 @@ $brandAppleTouchHref = is_file(dirname(__DIR__) . '/assets/img/brand/apple-touch
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="/" aria-label="Domov">
-        <?= interessa_render_image($brandIconImage, ['alt' => 'Interesa symbol', 'width' => '28', 'height' => '28', 'class' => 'brand-mark']) ?>
-        <span class="brand-copy">
-          <strong>Interesa.sk</strong>
-          <span>Prakticke porovnania a navody pre vyzivu</span>
-        </span>
+        <?php if (is_array($brandLogoImage) && trim((string) ($brandLogoImage['src'] ?? '')) !== ''): ?>
+          <?= interessa_render_image($brandLogoImage, ['alt' => 'Interesa.sk', 'class' => 'brand-logo']) ?>
+        <?php else: ?>
+          <?= interessa_render_image($brandIconImage, ['alt' => 'Interesa symbol', 'width' => '28', 'height' => '28', 'class' => 'brand-mark']) ?>
+          <span class="brand-copy">
+            <strong>Interesa.sk</strong>
+            <span>Prakticke porovnania a navody pre vyzivu</span>
+          </span>
+        <?php endif; ?>
       </a>
 
       <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
