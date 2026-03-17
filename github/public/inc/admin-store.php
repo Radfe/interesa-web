@@ -92,7 +92,251 @@ if (!function_exists('interessa_admin_store_uploaded_brand_file')) {
             throw new RuntimeException('Nepodarilo sa ulozit logo alebo ikonku.');
         }
 
+        if ($baseName === 'logo-full') {
+            interessa_admin_delete_asset_variants(interessa_admin_brand_dir() . '/logo-full-web');
+            $generated = null;
+            if ($ext === 'svg') {
+                $generated = interessa_admin_generate_brand_logo_web_svg_derivative($target, 'logo-full-web');
+            }
+            if ($generated === null) {
+                interessa_admin_generate_brand_logo_web_derivative($target, $ext, 'logo-full-web');
+            }
+        }
+
         return 'img/brand/' . $baseName . '.' . $ext;
+    }
+}
+
+if (!function_exists('interessa_admin_extract_canva_svg_bounds')) {
+    function interessa_admin_extract_canva_svg_bounds(string $svg): ?array {
+        $patterns = [
+            '~<clipPath[^>]*>\s*<path[^>]+d="M\s*([0-9.\-]+)\s+([0-9.\-]+)\s+L\s*([0-9.\-]+)\s+[0-9.\-]+\s+L\s*[0-9.\-]+\s+([0-9.\-]+)\s+L\s*([0-9.\-]+)\s+([0-9.\-]+)\s+Z~i',
+            '~<clipPath[^>]*>\s*<rect[^>]+x="([0-9.\-]+)"[^>]+y="([0-9.\-]+)"[^>]+width="([0-9.\-]+)"[^>]+height="([0-9.\-]+)"~i',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $svg, $match) !== 1) {
+                continue;
+            }
+
+            if (count($match) >= 7) {
+                $left = (float) $match[1];
+                $top = (float) $match[2];
+                $right = (float) $match[3];
+                $bottom = (float) $match[4];
+                $leftCheck = (float) $match[5];
+                $bottomCheck = (float) $match[6];
+                if (abs($left - $leftCheck) > 1 || abs($bottom - $bottomCheck) > 1) {
+                    continue;
+                }
+                return [
+                    'x' => $left,
+                    'y' => $top,
+                    'width' => max(1.0, $right - $left),
+                    'height' => max(1.0, $bottom - $top),
+                ];
+            }
+
+            if (count($match) >= 5) {
+                return [
+                    'x' => (float) $match[1],
+                    'y' => (float) $match[2],
+                    'width' => max(1.0, (float) $match[3]),
+                    'height' => max(1.0, (float) $match[4]),
+                ];
+            }
+        }
+
+        return null;
+    }
+}
+
+if (!function_exists('interessa_admin_generate_brand_logo_web_svg_derivative')) {
+    function interessa_admin_generate_brand_logo_web_svg_derivative(string $sourcePath, string $derivativeBaseName = 'logo-full-web'): ?string {
+        if (!is_file($sourcePath)) {
+            return null;
+        }
+
+        $svg = @file_get_contents($sourcePath);
+        if (!is_string($svg) || $svg === '') {
+            return null;
+        }
+
+        $bounds = interessa_admin_extract_canva_svg_bounds($svg);
+        if ($bounds === null) {
+            return null;
+        }
+
+        $x = rtrim(rtrim(number_format($bounds['x'], 6, '.', ''), '0'), '.');
+        $y = rtrim(rtrim(number_format($bounds['y'], 6, '.', ''), '0'), '.');
+        $width = rtrim(rtrim(number_format($bounds['width'], 6, '.', ''), '0'), '.');
+        $height = rtrim(rtrim(number_format($bounds['height'], 6, '.', ''), '0'), '.');
+        $viewBox = $x . ' ' . $y . ' ' . $width . ' ' . $height;
+
+        $svg = preg_replace('~\sviewBox="[^"]+"~i', ' viewBox="' . $viewBox . '"', $svg, 1) ?? $svg;
+        $svg = preg_replace('~\swidth="[^"]+"~i', ' width="' . $width . '"', $svg, 1) ?? $svg;
+        $svg = preg_replace('~\sheight="[^"]+"~i', ' height="' . $height . '"', $svg, 1) ?? $svg;
+
+        $target = interessa_admin_brand_dir() . '/' . interessa_admin_slugify($derivativeBaseName) . '.svg';
+        $written = @file_put_contents($target, $svg);
+        if (!is_int($written) || $written <= 0) {
+            return null;
+        }
+
+        return 'img/brand/' . interessa_admin_slugify($derivativeBaseName) . '.svg';
+    }
+}
+
+if (!function_exists('interessa_admin_extract_embedded_svg_raster_bytes')) {
+    function interessa_admin_extract_embedded_svg_raster_bytes(string $svg): ?string {
+        if ($svg === '') {
+            return null;
+        }
+
+        if (preg_match('~data:image/(?:png|jpe?g|webp);base64,([^"\']+)~is', $svg, $match) !== 1) {
+            return null;
+        }
+
+        $payload = preg_replace('~\s+~', '', (string) ($match[1] ?? '')) ?? '';
+        if ($payload === '') {
+            return null;
+        }
+
+        $decoded = base64_decode($payload, true);
+        return is_string($decoded) && $decoded !== '' ? $decoded : null;
+    }
+}
+
+if (!function_exists('interessa_admin_load_brand_image_resource')) {
+    function interessa_admin_load_brand_image_resource(string $sourcePath, string $ext) {
+        if (!function_exists('imagecreatefromstring')) {
+            return null;
+        }
+
+        $ext = strtolower(trim($ext));
+        $bytes = @file_get_contents($sourcePath);
+        if (!is_string($bytes) || $bytes === '') {
+            return null;
+        }
+
+        if ($ext === 'svg') {
+            $bytes = interessa_admin_extract_embedded_svg_raster_bytes($bytes) ?? '';
+            if ($bytes === '') {
+                return null;
+            }
+        }
+
+        $image = @imagecreatefromstring($bytes);
+        return $image !== false ? $image : null;
+    }
+}
+
+if (!function_exists('interessa_admin_brand_pixel_is_visible')) {
+    function interessa_admin_brand_pixel_is_visible(int $rgba): bool {
+        $alpha = ($rgba >> 24) & 0x7F;
+        if ($alpha >= 120) {
+            return false;
+        }
+
+        $red = ($rgba >> 16) & 0xFF;
+        $green = ($rgba >> 8) & 0xFF;
+        $blue = $rgba & 0xFF;
+
+        return !($red >= 247 && $green >= 247 && $blue >= 247);
+    }
+}
+
+if (!function_exists('interessa_admin_brand_visible_bounds')) {
+    function interessa_admin_brand_visible_bounds($image): ?array {
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $left = $width;
+        $top = $height;
+        $right = -1;
+        $bottom = -1;
+
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                if (!interessa_admin_brand_pixel_is_visible((int) imagecolorat($image, $x, $y))) {
+                    continue;
+                }
+
+                if ($x < $left) {
+                    $left = $x;
+                }
+                if ($y < $top) {
+                    $top = $y;
+                }
+                if ($x > $right) {
+                    $right = $x;
+                }
+                if ($y > $bottom) {
+                    $bottom = $y;
+                }
+            }
+        }
+
+        if ($right < 0 || $bottom < 0) {
+            return null;
+        }
+
+        return [
+            'left' => $left,
+            'top' => $top,
+            'right' => $right,
+            'bottom' => $bottom,
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_generate_brand_logo_web_derivative')) {
+    function interessa_admin_generate_brand_logo_web_derivative(string $sourcePath, string $ext, string $derivativeBaseName = 'logo-full-web'): ?string {
+        if (!is_file($sourcePath) || !function_exists('imagepng') || !function_exists('imagecreatetruecolor')) {
+            return null;
+        }
+
+        $image = interessa_admin_load_brand_image_resource($sourcePath, $ext);
+        if ($image === null) {
+            return null;
+        }
+
+        $bounds = interessa_admin_brand_visible_bounds($image);
+        if ($bounds === null) {
+            imagedestroy($image);
+            return null;
+        }
+
+        $contentWidth = max(1, $bounds['right'] - $bounds['left'] + 1);
+        $contentHeight = max(1, $bounds['bottom'] - $bounds['top'] + 1);
+        $padX = max(18, (int) round($contentWidth * 0.04));
+        $padY = max(12, (int) round($contentHeight * 0.08));
+
+        $cropLeft = max(0, $bounds['left'] - $padX);
+        $cropTop = max(0, $bounds['top'] - $padY);
+        $cropRight = min(imagesx($image) - 1, $bounds['right'] + $padX);
+        $cropBottom = min(imagesy($image) - 1, $bounds['bottom'] + $padY);
+        $cropWidth = max(1, $cropRight - $cropLeft + 1);
+        $cropHeight = max(1, $cropBottom - $cropTop + 1);
+
+        $cropped = imagecreatetruecolor($cropWidth, $cropHeight);
+        if ($cropped === false) {
+            imagedestroy($image);
+            return null;
+        }
+
+        imagealphablending($cropped, false);
+        imagesavealpha($cropped, true);
+        $transparent = imagecolorallocatealpha($cropped, 255, 255, 255, 127);
+        imagefilledrectangle($cropped, 0, 0, $cropWidth, $cropHeight, $transparent);
+        imagecopy($cropped, $image, 0, 0, $cropLeft, $cropTop, $cropWidth, $cropHeight);
+
+        $target = interessa_admin_brand_dir() . '/' . interessa_admin_slugify($derivativeBaseName) . '.png';
+        imagepng($cropped, $target, 9);
+
+        imagedestroy($cropped);
+        imagedestroy($image);
+
+        return 'img/brand/' . interessa_admin_slugify($derivativeBaseName) . '.png';
     }
 }
 

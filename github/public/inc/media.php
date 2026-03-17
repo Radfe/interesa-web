@@ -545,9 +545,22 @@ if (!function_exists('interessa_brand_image_meta')) {
             $name = 'logo-full';
         }
 
-        $variants = interessa_collect_asset_candidates([
-            'img/brand/' . $name,
-        ]);
+        if ($name === 'logo-full') {
+            $webVariants = interessa_collect_asset_candidates([
+                'img/brand/logo-full-web',
+            ]);
+            if ($webVariants !== []) {
+                $variants = $webVariants;
+            } else {
+                $variants = interessa_collect_asset_candidates([
+                    'img/brand/' . $name,
+                ]);
+            }
+        } else {
+            $variants = interessa_collect_asset_candidates([
+                'img/brand/' . $name,
+            ]);
+        }
 
         return interessa_build_image_meta($variants, [
             'alt' => interessa_media_clean_text('Interesa'),
