@@ -54,6 +54,14 @@ Web vrstva neriesi:
 Posledny vacsi webovy krok:
 - velky kvalitativny pass na starsich jadrovych clankoch, aby boli na rovnakej urovni ako top money pages
 
+Posledny technicky webovy krok:
+- web audit pre launch
+- opravene:
+  - [robots.txt](C:/data/praca/webova_stranka/github/public/robots.txt)
+  - [sitemap.xml](C:/data/praca/webova_stranka/github/public/sitemap.xml)
+- audit zapisany do:
+  - [WEB_AUDIT_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_AUDIT_2026-03-17_SK.md)
+
 Dotiahnute temy:
 - kreatin
 - proteiny

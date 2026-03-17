@@ -11,6 +11,15 @@ return array (
     'link_type' => 'affiliate',
     'source' => 'dognet-helper',
   ),
+  'gymbeam-activlab-caffeine-power-60-tab-bez-pr-ichute-gymbeam' => 
+  array (
+    'url' => 'https://gymbeam.sk/caffeine-power-60-tab-activlab.html?utm_term=dognet',
+    'merchant' => 'Gymbeam',
+    'merchant_slug' => 'gymbeam',
+    'product_slug' => 'gymbeam-activlab-caffeine-power-60-tab-bez-pr-ichute',
+    'link_type' => 'affiliate',
+    'source' => 'dognet-helper',
+  ),
   'horcik-ktory-je-najlepsi-a-preco-gymbeam' => 
   array (
     'url' => 'https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Fmagnezium-citrat-caps-gymbeam.html',

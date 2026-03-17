@@ -21,6 +21,14 @@ function interessa_admin_redirect(string $section, array $query = []): never {
     exit;
 }
 
+function interessa_admin_redirect_fragment(string $section, array $query = [], string $fragment = ''): never {
+    $query = array_filter($query, static fn(mixed $value): bool => (string) $value !== '');
+    $query['section'] = $section;
+    $suffix = trim($fragment) !== '' ? '#' . ltrim(trim($fragment), '#') : '';
+    header('Location: /admin?' . http_build_query($query) . $suffix, true, 303);
+    exit;
+}
+
 function interessa_admin_product_image_redirect_query(string $slug, string $saved, string $returnSection = '', string $returnSlug = ''): array {
     $query = [
         'product' => $slug,
@@ -1905,26 +1913,29 @@ if ($isAuthed) {
                 if ($rows === []) {
                     throw new RuntimeException($candidateFilterText !== '' ? 'Pre tento filter sa nenasli ziadne produkty.' : 'V tomto zdroji sa nenasli ziadne produkty.');
                 }
-                $imported = interessa_admin_import_product_candidates(
+                $importResult = interessa_admin_import_product_candidates(
                     $rows,
                     'feed',
                     (string) ($candidateMerchantOptions[$merchantSlug] ?? $merchantSlug),
                     $candidateSourceName
                 );
+                $imported = is_array($importResult['ids'] ?? null) ? $importResult['ids'] : [];
                 $firstCandidate = (string) ($imported[0] ?? '');
-                interessa_admin_redirect('products', [
+                $batchId = (string) ($importResult['batch_id'] ?? '');
+                interessa_admin_redirect_fragment('products', [
                     'candidate' => $firstCandidate,
                     'saved' => 'candidate-imported',
-                ]);
+                    'batch' => $batchId,
+                ], 'products-imported-list');
             }
 
             if ($action === 'prepare_candidate_click') {
                 $candidateId = trim((string) ($_POST['candidate_id'] ?? ''));
                 $result = interessa_admin_prepare_candidate_click($candidateId);
-                interessa_admin_redirect('products', [
+                interessa_admin_redirect_fragment('products', [
                     'candidate' => (string) ($result['id'] ?? $candidateId),
                     'saved' => 'candidate-click',
-                ]);
+                ], 'products-candidate-steps');
             }
 
             if ($action === 'save_candidate_assignment') {
@@ -1936,21 +1947,21 @@ if ($isAuthed) {
                     'show_in_top' => !empty($_POST['candidate_show_in_top']),
                     'show_in_comparison' => !empty($_POST['candidate_show_in_comparison']),
                 ]);
-                interessa_admin_redirect('products', [
+                interessa_admin_redirect_fragment('products', [
                     'candidate' => (string) ($result['id'] ?? $candidateId),
                     'saved' => 'candidate-assignment',
-                ]);
+                ], 'products-candidate-steps');
             }
 
             if ($action === 'approve_candidate_for_web') {
                 $candidateId = trim((string) ($_POST['candidate_id'] ?? ''));
                 $result = interessa_admin_approve_candidate_for_web($candidateId);
-                interessa_admin_redirect('products', [
+                interessa_admin_redirect_fragment('products', [
                     'candidate' => (string) ($result['id'] ?? $candidateId),
                     'product' => (string) ($result['product_slug'] ?? ''),
                     'article_product_slug' => (string) ($result['article_slug'] ?? ''),
                     'saved' => 'candidate-approved',
-                ]);
+                ], 'products-candidate-steps');
             }
 
             if ($action === 'export_image_backlog_csv') {
@@ -2289,7 +2300,7 @@ $flashMessages = [
     'product-enriched' => 'Produkt bol doplneny z referencnej produktovej stranky.',
     'product-autofill' => 'Produkt bol automaticky doplneny a obrazok sa pokusil zrkadlit.',
     'product-remote-ready' => 'Produkt ma najdeny obrazok z e-shopu. Teraz klikni 2. Ulozit obrazok z e-shopu a vznikne lokalny WebP.',
-    'candidate-imported' => 'Kandidati produktov boli nacitani. Vyber jeden produkt a priprav klik do obchodu.',
+    'candidate-imported' => 'Kandidati produktov boli nacitani. Nizsie vidis prave nacitane produkty. Vyber jeden a pokracuj dalej.',
     'candidate-click' => 'Klik do obchodu je pripraveny. Teraz produkt prirad ku clanku.',
     'candidate-assignment' => 'Produkt je priradeny ku clanku. Posledny krok je schvalit ho pre web.',
     'candidate-approved' => 'Produkt je schvaleny pre web a bol zapisany do systemu.',
@@ -2548,7 +2559,18 @@ uasort($candidateRowsById, static function (array $a, array $b): int {
     return strcmp((string) ($b['updated_at'] ?? ''), (string) ($a['updated_at'] ?? ''));
 });
 $candidateRows = array_values($candidateRowsById);
+$recentCandidateBatchId = interessa_admin_slugify((string) ($_GET['batch'] ?? ''));
 $selectedCandidateId = interessa_admin_slugify((string) ($_GET['candidate'] ?? ''));
+if ($selectedCandidateId === '' || !isset($candidateRowsById[$selectedCandidateId])) {
+    if ($recentCandidateBatchId !== '') {
+        foreach ($candidateRows as $candidateRow) {
+            if (interessa_admin_slugify((string) ($candidateRow['batch_id'] ?? '')) === $recentCandidateBatchId) {
+                $selectedCandidateId = (string) ($candidateRow['id'] ?? '');
+                break;
+            }
+        }
+    }
+}
 if ($selectedCandidateId === '' || !isset($candidateRowsById[$selectedCandidateId])) {
     $selectedCandidateId = (string) (array_key_first($candidateRowsById) ?? '');
 }
@@ -2593,12 +2615,22 @@ foreach ($candidateRows as $candidateRow) {
         'id' => $candidateId,
         'name' => (string) ($candidateRow['name'] ?? $candidateId),
         'merchant' => (string) ($candidateRow['merchant'] ?? ''),
+        'batch_id' => (string) ($candidateRow['batch_id'] ?? ''),
         'has_click' => $candidateHasClick,
         'has_article' => $candidateHasArticle,
         'approved' => $candidateApproved,
         'has_image' => $candidateHasImage,
         'next_label' => $candidateNextLabel,
     ];
+}
+
+$recentImportedRows = [];
+if ($recentCandidateBatchId !== '') {
+    foreach ($candidateListRows as $candidateListRow) {
+        if (interessa_admin_slugify((string) ($candidateListRow['batch_id'] ?? '')) === $recentCandidateBatchId) {
+            $recentImportedRows[] = $candidateListRow;
+        }
+    }
 }
 
 $selectedCandidateHasClick = is_array($selectedCandidate) && trim((string) ($selectedCandidate['click_code'] ?? '')) !== '';
@@ -3490,6 +3522,35 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
               </form>
             </section>
+
+            <?php if ($recentImportedRows !== []): ?>
+              <section class="admin-subsection is-compact" id="products-imported-list">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Prave nacitane produkty</h3>
+                    <p class="admin-meta">Tu vidis len produkty z posledneho importu. Vyber jeden a pokracuj dalej.</p>
+                  </div>
+                </div>
+                <div class="admin-queue-list">
+                  <?php foreach ($recentImportedRows as $recentImportedRow): ?>
+                    <article class="admin-queue-item">
+                      <div>
+                        <strong><?= esc((string) $recentImportedRow['name']) ?></strong>
+                        <p><?= esc((string) ($recentImportedRow['merchant'] ?? '')) ?></p>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill is-good">Nacitany</span>
+                          <span class="admin-status-pill<?= !empty($recentImportedRow['has_image']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_image']) ? 'Obrazok sa nasiel' : 'Obrazok chyba' ?></span>
+                          <span class="admin-status-pill<?= !empty($recentImportedRow['has_click']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_click']) ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
+                        </div>
+                      </div>
+                      <div class="admin-inline-actions">
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;candidate=<?= esc((string) $recentImportedRow['id']) ?>#products-candidate-steps">Vybrat tento produkt</a>
+                      </div>
+                    </article>
+                  <?php endforeach; ?>
+                </div>
+              </section>
+            <?php endif; ?>
 
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">

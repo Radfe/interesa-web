@@ -594,6 +594,7 @@ if (!function_exists('interessa_admin_normalize_product_candidate_record')) {
             'source_type' => $sourceType,
             'source_name' => interessa_admin_normalize_text($row['source_name'] ?? ''),
             'source_file' => interessa_admin_normalize_text($row['source_file'] ?? ''),
+            'batch_id' => interessa_admin_slugify((string) ($row['batch_id'] ?? '')),
             'click_code' => interessa_admin_slugify((string) ($row['click_code'] ?? '')),
             'click_url' => trim((string) ($row['click_url'] ?? '')),
             'click_status' => $clickStatus,
@@ -666,6 +667,7 @@ if (!function_exists('interessa_admin_import_product_candidates')) {
     function interessa_admin_import_product_candidates(array $rows, string $sourceType, string $sourceName = '', string $sourceFile = ''): array {
         $existing = interessa_admin_product_candidates();
         $imported = [];
+        $batchId = interessa_admin_slugify('import-' . date('Ymd-His'));
 
         foreach ($rows as $row) {
             if (!is_array($row)) {
@@ -688,6 +690,7 @@ if (!function_exists('interessa_admin_import_product_candidates')) {
                     'source_type' => $sourceType,
                     'source_name' => $sourceName,
                     'source_file' => $sourceFile,
+                    'batch_id' => $batchId,
                 ]
             ));
             $imported[] = $id;
@@ -697,7 +700,10 @@ if (!function_exists('interessa_admin_import_product_candidates')) {
             interessa_admin_save_product_candidates($existing);
         }
 
-        return $imported;
+        return [
+            'ids' => $imported,
+            'batch_id' => $batchId,
+        ];
     }
 }
 

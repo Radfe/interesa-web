@@ -437,3 +437,25 @@ Preco:
 Co este treba doriesit:
 - overit prvy realny Dognet import po tomto obmedzeni
 - potom dotiahnut `Krok 2: Pripravit odkaz do obchodu`
+
+## 11. Prehlad po importe kandidatov
+
+Menene subory:
+- [public/admin/index.php](C:/data/praca/webova_stranka/github/public/admin/index.php)
+- [public/inc/admin-store.php](C:/data/praca/webova_stranka/github/public/inc/admin-store.php)
+
+Co sa upravilo:
+- po importe kandidatov sa admin vracia rovno na blok s prave nacitanymi produktmi
+- pri importe sa zapisuje `batch_id`, aby bolo jasne, co patrilo do posledneho importu
+- pribudol blok `Prave nacitane produkty`
+- pri kazdom prave nacitanom produkte je hned tlacidlo `Vybrat tento produkt`
+- po priprave odkazu, priradeni ku clanku a schvaleni sa admin vracia rovno na krok s vybranym produktom, nie na vrch stranky
+
+Preco:
+- po importe to predtym posobilo ako nezmyselny navrat na prazdnu cast adminu
+- nebolo jasne, co sa vlastne nacitalo
+- teraz je hned vidiet posledny import a dalsi krok
+
+Co este treba doriesit:
+- este viac zjednodusit samotne priradenie ku clanku
+- pripadne predvyplnit clanok pri kandidatoch importovanych pre prvu fazu
