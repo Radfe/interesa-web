@@ -91,6 +91,18 @@ Najnovsi brand/Canva zaver:
 - handoff zapisany do:
   - [WEB_TO_ADMIN_BRAND_CANVA_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_BRAND_CANVA_HANDOFF_2026-03-17_SK.md)
 
+Najnovsi admin audit z web vlakna:
+- admin uz ma viacero technickych stavebnych blokov pre kandidatov, obrazky a kliky
+- hlavny problem uz nie je len rozbity formular, ale strategia:
+  - importer sa pokusa byt univerzalny priskoro
+  - feed filtracia je stale prilis volna
+  - Dognet deeplink krok nie je dostatocne jasne oddeleny od samotneho importu
+- webovy zaver je preto jednoznacny:
+  - najprv treba dokazat jeden funkcny `article-first` pilot
+  - az potom rozsirovat workflow na dalsie clanky
+- pilotny handoff zapisany do:
+  - [WEB_TO_ADMIN_ONE_ARTICLE_PILOT_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_ONE_ARTICLE_PILOT_SK.md)
+
 Dotiahnute temy:
 - kreatin
 - proteiny

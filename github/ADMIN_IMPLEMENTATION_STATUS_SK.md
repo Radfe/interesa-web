@@ -71,6 +71,22 @@ Admin vrstva riesi:
 ## 3. Co sa menilo naposledy
 
 Najnovsi produktovy krok:
+- `Produkty` maju teraz dva striktne oddelene rezimy:
+  - `section=products` = import pre pilotny clanok
+  - `candidate=...` = jeden otvoreny produkt
+- po importe sa uz neotvara prvy produkt automaticky
+- po importe sa otvori len zoznam posledneho batchu a dalsi krok je:
+  - `Otvorit tento produkt`
+- stary rucny blok sa uz nema zobrazit v beznom pilotnom toku, len pri explicitne otvorenom rucnom produkte
+- v hlavnej ceste pre pilot nezostali manualne editorialne polia
+- hlavny pilot teraz drzi logiku:
+  - import pre clanok
+  - otvorit jeden produkt
+  - pripravit odkaz do obchodu
+  - ak obsahovo patri, pridat k clanku
+  - ulozit do systemu
+
+Najnovsi produktovy krok predtym:
 - hlavna cesta v `Produkty` je viac article-first
 - bezny pouzivatel uz nema v hlavnej ceste vidiet:
   - docasne poradie

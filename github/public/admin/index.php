@@ -661,7 +661,7 @@ function interessa_admin_guess_candidate_article(array $candidate): array {
 
     $rules = [
         'najlepsie-proteiny-2026' => [
-            'keywords' => ['whey', 'isolate', 'clear', 'vegan'],
+            'keywords' => ['whey', 'concentrate', 'isolate', 'clear', 'vegan'],
             'blocked' => ['gainer', 'bcaa', 'eaa', 'kolagen', 'collagen', 'pre-workout', 'caffeine', 'kofein', 'bar', 'tycinka', 'cookie', 'snack', 'brownie', 'pudding', 'porridge', 'oatmeal', 'kasa'],
             'reason' => 'vyzera ako proteinovy kandidat',
         ],
@@ -767,10 +767,10 @@ function interessa_admin_candidate_import_presets(): array {
     return [
         'najlepsie-proteiny-2026' => [
             'title' => 'Najlepsie proteiny 2026',
-            'merchant_defaults' => ['gymbeam', 'protein-sk', 'ironaesthetics'],
-            'recommended_filters' => ['whey', 'isolate', 'clear', 'vegan'],
+            'merchant_defaults' => ['gymbeam', 'protein-sk'],
+            'recommended_filters' => ['whey', 'concentrate', 'isolate', 'clear', 'vegan'],
             'exclude_terms' => ['bar', 'tycinka', 'cookie', 'snack', 'brownie', 'pudding', 'porridge', 'oatmeal', 'kasa', 'gainer', 'bcaa', 'eaa', 'kolagen', 'collagen', 'pre-workout', 'caffeine', 'kofein'],
-            'what_belongs' => 'whey, isolate, clear protein, vegan protein',
+            'what_belongs' => 'whey, concentrate, isolate, clear protein, vegan blend',
             'what_not' => 'tycinky, snacky, gainery, BCAA, EAA, kolagen, pre-workout',
             'warning' => 'Nepouzivaj siroky filter protein. Taha aj tycinky a iny balast.',
         ],
@@ -2214,14 +2214,12 @@ if ($isAuthed) {
                     ]
                 );
                 $imported = is_array($importResult['ids'] ?? null) ? $importResult['ids'] : [];
-                $firstCandidate = (string) ($imported[0] ?? '');
                 $batchId = (string) ($importResult['batch_id'] ?? '');
                 interessa_admin_redirect_fragment('products', [
-                    'candidate' => $firstCandidate,
                     'saved' => 'candidate-imported',
                     'batch' => $batchId,
                     'import_article' => $candidateTargetArticleSlug,
-                ], 'products-current-candidate');
+                ], 'products-imported-list');
             }
 
             if ($action === 'prepare_candidate_click') {
@@ -2418,7 +2416,8 @@ $selectedArticleHeroSource = is_array($selectedArticleHero) ? (string) ($selecte
 $catalog = interessa_product_catalog();
 $productSlugs = array_keys($catalog);
 sort($productSlugs);
-$selectedProductSlug = trim((string) ($_GET['product'] ?? ($productSlugs[0] ?? '')));
+$manualProductRequested = trim((string) ($_GET['product'] ?? '')) !== '';
+$selectedProductSlug = trim((string) ($_GET['product'] ?? ''));
 $selectedProduct = $selectedProductSlug !== '' ? interessa_product($selectedProductSlug) : null;
 $selectedProduct = is_array($selectedProduct)
     ? interessa_normalize_product($selectedProduct)
@@ -2607,7 +2606,7 @@ $flashMessages = [
     'product-enriched' => 'Produkt bol doplneny z referencnej produktovej stranky.',
     'product-autofill' => 'Produkt bol automaticky doplneny a obrazok sa pokusil zrkadlit.',
     'product-remote-ready' => 'Produkt ma najdeny obrazok z e-shopu. Teraz klikni 2. Ulozit obrazok z e-shopu a vznikne lokalny WebP.',
-    'candidate-imported' => 'Produkty su nacitane. Pokracuj na jednom otvorenom produkte.',
+    'candidate-imported' => 'Produkty su nacitane. Dalsi krok je otvorit jeden produkt z posledneho importu.',
     'candidate-click' => 'Odkaz do obchodu je pripraveny. Pokracuj na tom istom produkte.',
     'candidate-assignment' => 'Produkt je pridany k clanku. Pokracuj na tom istom produkte a uloz ho do systemu.',
     'candidate-approved' => 'Produkt je ulozeny v systeme a caka na finalny vyber vo web vlakne.',
@@ -2860,11 +2859,22 @@ $candidateMerchantOptions = [
     'kloubus' => 'Kloubus.sk',
 ];
 $candidateImportPresets = interessa_admin_candidate_import_presets();
-$candidateImportArticleSlug = canonical_article_slug(trim((string) ($_GET['import_article'] ?? '')));
-if ($candidateImportArticleSlug === '' || !isset($candidateImportPresets[$candidateImportArticleSlug])) {
-    $candidateImportArticleSlug = 'najlepsie-proteiny-2026';
-}
+$candidatePilotArticleSlug = 'najlepsie-proteiny-2026';
+$candidateImportArticleSlug = $candidatePilotArticleSlug;
 $candidateImportPreset = interessa_admin_candidate_import_preset($candidateImportArticleSlug);
+$candidatePilotMerchantOptions = [];
+foreach ((array) ($candidateImportPreset['merchant_defaults'] ?? []) as $presetMerchantSlug) {
+    $presetMerchantSlug = interessa_admin_slugify((string) $presetMerchantSlug);
+    if ($presetMerchantSlug !== '' && isset($candidateMerchantOptions[$presetMerchantSlug])) {
+        $candidatePilotMerchantOptions[$presetMerchantSlug] = $candidateMerchantOptions[$presetMerchantSlug];
+    }
+}
+if ($candidatePilotMerchantOptions === []) {
+    $candidatePilotMerchantOptions = [
+        'gymbeam' => 'GymBeam.sk',
+        'protein-sk' => 'Protein.sk',
+    ];
+}
 $candidateImportLimit = function_exists('interessa_admin_candidate_import_limit')
     ? interessa_admin_candidate_import_limit()
     : 40;
@@ -2874,19 +2884,12 @@ uasort($candidateRowsById, static function (array $a, array $b): int {
 });
 $candidateRows = array_values($candidateRowsById);
 $recentCandidateBatchId = interessa_admin_slugify((string) ($_GET['batch'] ?? ''));
-$selectedCandidateId = interessa_admin_slugify((string) ($_GET['candidate'] ?? ''));
-if ($selectedCandidateId === '' || !isset($candidateRowsById[$selectedCandidateId])) {
-    if ($recentCandidateBatchId !== '') {
-        foreach ($candidateRows as $candidateRow) {
-            if (interessa_admin_slugify((string) ($candidateRow['batch_id'] ?? '')) === $recentCandidateBatchId) {
-                $selectedCandidateId = (string) ($candidateRow['id'] ?? '');
-                break;
-            }
-        }
-    }
+if ($recentCandidateBatchId === '' && $candidateRows !== []) {
+    $recentCandidateBatchId = interessa_admin_slugify((string) ($candidateRows[0]['batch_id'] ?? ''));
 }
-if ($selectedCandidateId === '' || !isset($candidateRowsById[$selectedCandidateId])) {
-    $selectedCandidateId = (string) (array_key_first($candidateRowsById) ?? '');
+$selectedCandidateId = interessa_admin_slugify((string) ($_GET['candidate'] ?? ''));
+if ($selectedCandidateId !== '' && !isset($candidateRowsById[$selectedCandidateId])) {
+    $selectedCandidateId = '';
 }
 $selectedCandidate = $selectedCandidateId !== '' && isset($candidateRowsById[$selectedCandidateId])
     ? $candidateRowsById[$selectedCandidateId]
@@ -2977,11 +2980,10 @@ $selectedCandidateHasClick = is_array($selectedCandidate) && trim((string) ($sel
 $selectedCandidateHasArticle = is_array($selectedCandidate) && trim((string) ($selectedCandidate['article_slug'] ?? '')) !== '';
 $selectedCandidateApproved = is_array($selectedCandidate) && !empty($selectedCandidate['approved']);
 $selectedCandidateHasImage = is_array($selectedCandidate) && trim((string) ($selectedCandidate['image_remote_src'] ?? '')) !== '';
-$selectedCandidateClickStatusLabel = !$selectedCandidateHasClick
-    ? 'Klik do obchodu este nie je pripraveny'
-    : ((string) ($selectedCandidate['click_status'] ?? '') === 'dognet'
-        ? 'Klik do obchodu je pripraveny cez Dognet'
-        : 'Klik do obchodu je pripraveny');
+$selectedCandidateClickStatus = !$selectedCandidateHasClick
+    ? 'missing'
+    : (((string) ($selectedCandidate['click_status'] ?? '') === 'dognet') ? 'dognet' : 'direct');
+$selectedCandidateClickStatusLabel = $selectedCandidateClickStatus;
 $selectedCandidateArticleFit = is_array($selectedCandidate)
     ? interessa_admin_candidate_phase_one_fit($selectedCandidate)
     : ['status' => 'no-fit', 'slug' => '', 'reason' => '', 'hits' => [], 'blocked' => []];
@@ -3838,15 +3840,16 @@ require dirname(__DIR__) . '/inc/head.php';
             <?php if (!$productCandidateFocusMode): ?>
             <div class="admin-card-head">
               <div>
-                <p class="admin-kicker">Import produktov pre clanok</p>
-                <h2>1. Vyber clanok a nacitaj produkty</h2>
-                <p class="admin-note">Tu zacina produktovy import. Najprv vyber clanok, pre ktory ides tahat produkty. Az potom vloz Dognet feed a admin natiahne len prvy cisty balik vhodnych produktov.</p>
+                <p class="admin-kicker">Pilot pre jeden clanok</p>
+                <h2>1. Nacitaj produkty pre clanok Najlepsie proteiny 2026</h2>
+                <p class="admin-note">Toto je jeden pilot, nie univerzalny importer. Tu sa nacitaju len prve vhodne proteiny pre clanok <strong>Najlepsie proteiny 2026</strong>.</p>
               </div>
             </div>
+            <?php if ($recentImportedRows !== []): ?>
             <div class="admin-status-grid">
               <article class="admin-status-card">
                 <strong><?= esc((string) $candidateImportedDisplayCount) ?></strong>
-                <span><?= $recentImportedRows !== [] ? 'Produkty z posledneho importu' : 'Nacitane produkty' ?></span>
+                <span>Produkty z posledneho importu</span>
               </article>
               <article class="admin-status-card">
                 <strong><?= esc((string) $candidateClickReadyDisplayCount) ?></strong>
@@ -3862,34 +3865,42 @@ require dirname(__DIR__) . '/inc/head.php';
               </article>
             </div>
             <?php endif; ?>
+            <?php endif; ?>
 
             <?php if (!$productCandidateFocusMode): ?>
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
-                  <h3>Import pre vybrany clanok</h3>
-                  <p class="admin-meta">Najprv vyber clanok. Potom vloz Dognet feed URL. Admin pouzije odporucane filtre pre ten clanok a natiahne len prvy mensi balik produktov na dalsie spracovanie.</p>
+                  <h3>Import pre tento clanok</h3>
+                  <p class="admin-meta">Najprv vyber obchod. Potom zvol presny typ proteinu. Az potom vloz Dognet feed URL a admin natiahne len uzsi batch.</p>
                 </div>
               </div>
                 <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
                   <input type="hidden" name="action" value="import_product_candidates" />
-                  <div class="admin-grid two-up">
+                  <input type="hidden" name="candidate_target_article_slug" value="<?= esc($candidatePilotArticleSlug) ?>" />
+                  <div class="admin-grid one-up">
                     <label>
-                      <span>Pre ktory clanok importujes?</span>
-                      <select name="candidate_target_article_slug">
-                        <?php foreach ($candidateImportPresets as $importArticleSlug => $importPreset): ?>
-                          <option value="<?= esc($importArticleSlug) ?>" <?= $candidateImportArticleSlug === $importArticleSlug ? 'selected' : '' ?>><?= esc((string) ($articleOptions[$importArticleSlug]['title'] ?? $importArticleSlug)) ?></option>
-                        <?php endforeach; ?>
-                      </select>
+                      <span>Clanok</span>
+                      <input type="text" value="<?= esc((string) ($articleOptions[$candidatePilotArticleSlug]['title'] ?? 'Najlepsie proteiny 2026')) ?>" readonly />
                     </label>
+                  </div>
+                  <div class="admin-grid two-up">
                     <label>
                       <span>Obchod</span>
                     <select name="candidate_merchant_slug">
-                      <?php foreach ($candidateMerchantOptions as $candidateMerchantSlug => $candidateMerchantName): ?>
+                      <?php foreach ($candidatePilotMerchantOptions as $candidateMerchantSlug => $candidateMerchantName): ?>
                         <option value="<?= esc($candidateMerchantSlug) ?>"><?= esc($candidateMerchantName) ?></option>
                       <?php endforeach; ?>
                     </select>
                   </label>
+                    <label>
+                      <span>Typ produktu, ktory chces nacitat</span>
+                      <select name="candidate_filter_text">
+                        <?php foreach ((array) ($candidateImportPreset['recommended_filters'] ?? []) as $recommendedFilter): ?>
+                          <option value="<?= esc((string) $recommendedFilter) ?>"><?= esc((string) $recommendedFilter) ?></option>
+                        <?php endforeach; ?>
+                      </select>
+                    </label>
                   </div>
                   <div class="admin-grid one-up">
                     <label>
@@ -3897,20 +3908,14 @@ require dirname(__DIR__) . '/inc/head.php';
                       <input type="url" name="candidate_feed_url" placeholder="Sem vloz URL feedu z tlacidla Kopirovat URL" />
                     </label>
                   </div>
-                  <div class="admin-grid one-up">
-                    <label>
-                      <span>Ak chces, este zuz vyber jednym slovom</span>
-                      <input type="text" name="candidate_filter_text" placeholder="<?= esc(implode(', ', (array) ($candidateImportPreset['filters'] ?? []))) ?>" />
-                    </label>
-                  </div>
                   <div class="admin-grid two-up">
                     <label>
                       <span>Sem patri</span>
-                      <input type="text" value="<?= esc(implode(', ', (array) ($candidateImportPreset['filters'] ?? []))) ?>" readonly />
+                      <input type="text" value="<?= esc(implode(', ', (array) ($candidateImportPreset['recommended_filters'] ?? []))) ?>" readonly />
                     </label>
                     <label>
                       <span>Sem nepatri</span>
-                      <input type="text" value="<?= esc(implode(', ', (array) ($candidateImportPreset['avoid'] ?? []))) ?>" readonly />
+                      <input type="text" value="<?= esc(implode(', ', (array) ($candidateImportPreset['exclude_terms'] ?? []))) ?>" readonly />
                     </label>
                   </div>
                   <div class="admin-grid two-up">
@@ -3927,7 +3932,8 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php if (trim((string) ($candidateImportPreset['warning'] ?? '')) !== ''): ?>
                     <p class="admin-note"><strong>Pozor:</strong> <?= esc((string) ($candidateImportPreset['warning'] ?? '')) ?></p>
                   <?php endif; ?>
-                  <p class="admin-note">Pre istotu sa teraz z jedneho feedu nacita len prvy mensi balik kandidatov: <strong><?= esc((string) $candidateImportLimit) ?> produktov</strong>. Ciel je stabilny prvy vyber, nie natiahnut cely feed naraz.</p>
+                  <p class="admin-note">Povolene su len: <strong>whey, concentrate, isolate, clear, vegan blend</strong>. Zakazane su tycinky, snacky, gainer, kolagen, pre-workout a stimulanty.</p>
+                  <p class="admin-note">Pre istotu sa teraz z jedneho feedu nacita len prvy mensi balik: <strong><?= esc((string) $candidateImportLimit) ?> produktov</strong>.</p>
                   <div class="admin-actions">
                     <button class="btn btn-cta" type="submit">Nacitat produkty pre tento clanok</button>
                   </div>
@@ -3938,8 +3944,8 @@ require dirname(__DIR__) . '/inc/head.php';
             <section class="admin-subsection is-compact" id="products-current-candidate">
               <div class="admin-subsection-head">
                   <div>
-                  <h3><?= $productCandidateFocusMode ? 'Otvoreny produkt' : '2. Vyber jeden produkt a dokonci ho' ?></h3>
-                  <p class="admin-meta"><?= $productCandidateFocusMode ? 'Tu uz robis len s jednym produktom. Dole je len jeho stav a dalsi spravny krok.' : 'Tu uz robis len s jednym produktom. Admin ti pri nom ukaze stav a povie, co treba kliknut dalej.' ?></p>
+                  <h3><?= $productCandidateFocusMode ? 'Otvoreny produkt' : '2. Otvor jeden produkt z posledneho importu' ?></h3>
+                  <p class="admin-meta"><?= $productCandidateFocusMode ? 'Tu uz robis len s jednym produktom. Dole je len jeho stav a dalsi spravny krok.' : 'Po importe uz len otvor jeden produkt z posledneho batchu. Admin ti potom ukaze dalsi spravny krok.' ?></p>
                   <?php if (is_array($selectedCandidate)): ?>
                     <p class="admin-note"><strong>Prave otvoreny produkt:</strong> <?= esc((string) ($selectedCandidate['name'] ?? 'Produkt')) ?><?= trim((string) ($selectedCandidate['merchant'] ?? '')) !== '' ? ' / ' . esc((string) ($selectedCandidate['merchant'] ?? '')) : '' ?></p>
                   <?php endif; ?>
@@ -3948,33 +3954,18 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php if ($productCandidateFocusMode): ?>
                       <a class="btn btn-secondary btn-small" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>">Spat na import produktov</a>
                     <?php endif; ?>
-                    <?php if (!$productCandidateFocusMode && $recentImportedRows === []): ?>
-                    <form method="get" action="/admin" class="admin-inline-form">
-                      <input type="hidden" name="section" value="products" />
-                      <?php if ($recentCandidateBatchId !== ''): ?>
-                        <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
-                      <?php endif; ?>
-                      <select name="candidate" onchange="this.form.submit()">
-                        <?php if ($candidateRows === []): ?>
-                          <option value="">Najprv nahraj zoznam produktov</option>
-                        <?php else: ?>
-                          <?php foreach ($candidateSelectorRows as $candidateListRow): ?>
-                            <option value="<?= esc((string) $candidateListRow['id']) ?>" <?= (string) $candidateListRow['id'] === $selectedCandidateId ? 'selected' : '' ?>>
-                              <?= esc((string) $candidateListRow['name']) ?><?= trim((string) ($candidateListRow['merchant'] ?? '')) !== '' ? ' / ' . esc((string) $candidateListRow['merchant']) : '' ?><?= trim((string) ($candidateListRow['category'] ?? '')) !== '' ? ' / ' . esc((string) ($candidateListRow['category'] ?? '')) : '' ?>
-                            </option>
-                          <?php endforeach; ?>
-                        <?php endif; ?>
-                      </select>
-                    </form>
-                    <?php endif; ?>
                   </div>
               </div>
               <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
-                <p class="admin-note"><strong>Teraz vyberas len z posledneho importu.</strong> Iny produkt z tohto isteho importu vyber nizsie v bloku <strong>Produkty z posledneho importu</strong>.</p>
+                <p class="admin-note"><strong>Import je hotovy.</strong> Dole vidis len produkty z posledneho batchu. Klikni na jeden produkt a otvor ho.</p>
               <?php endif; ?>
 
               <?php if (!is_array($selectedCandidate)): ?>
-                <p class="admin-note">Zatial tu nie je ziadny nacitany produkt. Najprv pouzi Krok 1.</p>
+                <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
+                  <p class="admin-note">Tu sa nic neotvara automaticky. Dalsi krok je nizsie v zozname: <strong>Otvorit tento produkt</strong>.</p>
+                <?php else: ?>
+                  <p class="admin-note">Zatial tu nie je otvoreny ziadny produkt. Najprv pouzi Krok 1.</p>
+                <?php endif; ?>
               <?php else: ?>
                 <div class="admin-status-grid">
                   <article class="admin-status-card">
@@ -4004,21 +3995,21 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php if (trim((string) ($selectedCandidate['price'] ?? '')) !== ''): ?>
                       <p><strong>Cena:</strong> <?= esc((string) ($selectedCandidate['price'] ?? '')) ?></p>
                     <?php endif; ?>
-                    <p><strong>Link produktu:</strong><br><code><?= esc((string) ($selectedCandidate['url'] ?? '')) ?></code></p>
+                    <p><strong>product_url:</strong><br><code><?= esc((string) ($selectedCandidate['url'] ?? '')) ?></code></p>
                     <p><strong>Obrazok z obchodu:</strong> <?= $selectedCandidateHasImage ? 'nasiel sa' : 'zatial chyba' ?></p>
                   </div>
                   <div class="admin-brief-card">
                     <h3>Co je dalsi krok</h3>
                     <?php if (!$selectedCandidateHasClick): ?>
-                    <p>Chyba len technicky odkaz do obchodu. Klikni tlacidlo nizsie a admin ho pripravi.</p>
+                    <p>Chyba len technicky klik do obchodu. Klikni tlacidlo nizsie a admin ho pripravi z product_url.</p>
                     <?php elseif (!$selectedCandidateHasArticle): ?>
-                      <p>Odkaz do obchodu je pripraveny. Dalsi krok je len rozhodnut, ci tento produkt patri do jedneho z prvych troch clankov.</p>
+                      <p>Klik do obchodu je pripraveny. Dalsi krok je uz len technicke pridanie k pilotnemu clanku, ak tam obsahovo patri.</p>
                     <?php elseif (!$selectedCandidateApproved): ?>
-                      <p>Produkt uz ma odkaz aj clanok. Posledny technicky krok je ulozit ho do systemu, aby s nim vedelo dalej robit web vlakno.</p>
+                      <p>Produkt uz ma klik aj clanok. Posledny technicky krok je ulozit ho do systemu, aby ho vedelo posudit web vlakno.</p>
                     <?php else: ?>
                       <p>Tento produkt je technicky pripraveny. Finalny vyber pre web urobi web vlakno.</p>
                     <?php endif; ?>
-                    <p><strong>Stav odkazu do obchodu:</strong> <?= esc($selectedCandidateClickStatusLabel) ?></p>
+                    <p><strong>click_status:</strong> <?= esc($selectedCandidateClickStatusLabel) ?></p>
                   </div>
                 </div>
 
@@ -4042,7 +4033,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php elseif (!$selectedCandidateHasArticle): ?>
                     <?php if ($selectedCandidateCanUseSimpleAssignment): ?>
                       <p class="admin-note">Tento produkt patri do clanku <strong><?= esc($selectedCandidateSuggestedArticleTitle) ?></strong>.</p>
-                      <p class="admin-note">Po kliknuti sa prida ako technicky importovany produkt. Ziadne finalne rozhodnutie o top produkte ani porovnani sa tu este nerobi.</p>
+                      <p class="admin-note">Po kliknuti sa len technicky prida k tomuto clanku. Ziadne finalne redakcne rozhodnutie sa tu este nerobi.</p>
                       <form method="post" class="admin-form admin-form-stack">
                         <input type="hidden" name="action" value="save_candidate_assignment" />
                         <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
@@ -4051,22 +4042,22 @@ require dirname(__DIR__) . '/inc/head.php';
                         <input type="hidden" name="candidate_order" value="10" />
                         <input type="hidden" name="candidate_role" value="standard" />
                         <div class="admin-actions">
-                          <button class="btn btn-cta" type="submit">Pridat produkt do clanku</button>
+                          <button class="btn btn-cta" type="submit">Pridat k clanku</button>
                         </div>
                       </form>
                     <?php elseif (($selectedCandidateArticleFit['status'] ?? 'no-fit') !== 'fit'): ?>
-                      <p class="admin-note"><strong>Tento produkt do prvych troch clankov nepatri.</strong> Zatial ho nepridavaj.</p>
+                      <p class="admin-note"><strong>Tento produkt zatial nepatri do pilotneho clanku Najlepsie proteiny 2026.</strong></p>
                       <?php if (!empty($selectedCandidateArticleFit['reason'])): ?>
                         <p class="admin-meta"><?= esc((string) $selectedCandidateArticleFit['reason']) ?><?= !empty($selectedCandidateArticleFit['blocked']) ? ': ' . esc(implode(', ', (array) $selectedCandidateArticleFit['blocked'])) : '' ?>.</p>
                       <?php endif; ?>
                       <p class="admin-meta">Vyber iny produkt z posledneho importu. Tento produkt zatial len zostane medzi nacitanymi produktmi.</p>
                       <div class="admin-actions">
-                        <a class="btn btn-secondary" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>#products-imported-list">Spat na nacitane produkty</a>
+                        <a class="btn btn-secondary" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>#products-imported-list">Spat na posledny import</a>
                       </div>
                     <?php else: ?>
-                      <p class="admin-note"><strong>Admin si nie je isty, do ktoreho clanku to patri.</strong> Zatial ho nepridavaj. Vrat sa na nacitane produkty a vyber iny produkt, alebo pockaj na potvrdenie z web vlakna.</p>
+                      <p class="admin-note"><strong>Admin si pri tomto produkte nie je isty obsahovym fitom.</strong> Zatial ho nepridavaj. Vrat sa na posledny import a vyber iny produkt.</p>
                       <div class="admin-actions">
-                        <a class="btn btn-secondary" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>#products-imported-list">Spat na nacitane produkty</a>
+                        <a class="btn btn-secondary" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>#products-imported-list">Spat na posledny import</a>
                       </div>
                     <?php endif; ?>
                   <?php elseif (!$selectedCandidateApproved): ?>
@@ -4076,7 +4067,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
                       <div class="admin-actions">
-                        <button class="btn btn-cta" type="submit">Dokoncit technicke pridanie</button>
+                        <button class="btn btn-cta" type="submit">Ulozit do systemu</button>
                       </div>
                     </form>
                   <?php else: ?>
@@ -4127,14 +4118,13 @@ require dirname(__DIR__) . '/inc/head.php';
 
             <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
               <details class="admin-subsection is-compact" id="products-imported-list" <?= $productCandidateFocusMode ? '' : 'open' ?>>
-                <summary><strong>Produkty z posledneho importu</strong> - otvor len ked chces vybrat iny produkt z toho isteho importu</summary>
+                <summary><strong>Produkty z posledneho importu</strong> - tu vyber dalsi produkt z tohto batchu</summary>
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Posledny import: <?= esc((string) count($recentImportedRows)) ?> produktov</h3>
-                    <p class="admin-meta">Tu len vidis, co sa prave natiahlo. Hlavna praca prebieha vyssie na jednom otvorenom produkte.</p>
+                    <p class="admin-meta">Tu vidis len posledny import pre clanok Najlepsie proteiny 2026.</p>
                   </div>
                 </div>
-                <p class="admin-note"><strong>Pri prvom importe teraz neriesis finalny top produkt ani porovnanie.</strong> Najprv len vyber spravny clanok, nechaj male oznacenie na <strong>Bez oznacenia</strong> a volby pre horny vyber aj porovnavaciu tabulku nechaj vypnute.</p>
                 <div class="admin-queue-list">
                   <?php foreach ($recentImportedRows as $recentImportedIndex => $recentImportedRow): ?>
                     <article class="admin-queue-item">
@@ -4163,32 +4153,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         </div>
                       </div>
                       <div class="admin-inline-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;batch=<?= esc($recentCandidateBatchId) ?>&amp;candidate=<?= esc((string) $recentImportedRow['id']) ?>#products-current-candidate"><?= (string) ($recentImportedRow['id'] ?? '') === $selectedCandidateId ? 'Tento produkt je otvoreny vyssie' : 'Vybrat tento produkt' ?></a>
-                      </div>
-                    </article>
-                  <?php endforeach; ?>
-                </div>
-              </details>
-            <?php endif; ?>
-
-            <?php if ($candidateRows !== [] && !$productCandidateFocusMode): ?>
-              <details class="admin-subsection is-compact">
-                <summary><strong>Vsetky nacitane produkty</strong> - otvor len ked potrebujes starsi import alebo iny produkt</summary>
-                <div class="admin-queue-list">
-                  <?php foreach ($candidateListRows as $candidateListRow): ?>
-                    <article class="admin-queue-item<?= !empty($candidateListRow['approved']) ? ' is-done' : '' ?>">
-                      <div>
-                        <strong><?= esc((string) $candidateListRow['name']) ?></strong>
-                        <p><?= esc((string) ($candidateListRow['merchant'] ?? '')) ?></p>
-                        <div class="admin-status-pills">
-                          <span class="admin-status-pill is-good">Nacitany</span>
-                          <span class="admin-status-pill<?= !empty($candidateListRow['has_click']) ? ' is-good' : ' is-warning' ?>"><?= !empty($candidateListRow['has_click']) ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
-                          <span class="admin-status-pill<?= !empty($candidateListRow['has_article']) ? ' is-good' : ' is-warning' ?>"><?= !empty($candidateListRow['has_article']) ? 'Clanok vybrany' : 'Clanok chyba' ?></span>
-                          <span class="admin-status-pill<?= !empty($candidateListRow['approved']) ? ' is-good' : ' is-warning' ?>"><?= !empty($candidateListRow['approved']) ? 'Ulozeny v systeme' : 'Este nie' ?></span>
-                        </div>
-                      </div>
-                      <div class="admin-inline-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;candidate=<?= esc((string) $candidateListRow['id']) ?>#products-current-candidate">Otvorit produkt</a>
+                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;batch=<?= esc($recentCandidateBatchId) ?>&amp;candidate=<?= esc((string) $recentImportedRow['id']) ?>#products-current-candidate"><?= (string) ($recentImportedRow['id'] ?? '') === $selectedCandidateId ? 'Tento produkt je otvoreny vyssie' : 'Otvorit tento produkt' ?></a>
                       </div>
                     </article>
                   <?php endforeach; ?>
@@ -4197,7 +4162,7 @@ require dirname(__DIR__) . '/inc/head.php';
             <?php endif; ?>
           </section>
 
-          <?php if (!$productCandidateFocusMode && $selectedProductSlug !== ''): ?>
+          <?php if (!$productCandidateFocusMode && $manualProductRequested && $selectedProductSlug !== ''): ?>
           <details class="admin-card" id="products-main-page">
             <summary><strong>Rucne opravy a starsie nastavenia</strong> - otvor len vtedy, ked potrebujes opravovat jednotlive produkty po jednom</summary>
             <div class="admin-card-head">
@@ -7143,7 +7108,7 @@ require dirname(__DIR__) . '/inc/head.php';
     const params = new URLSearchParams(window.location.search);
     const savedState = params.get('saved') || '';
     const savedTargetMap = {
-      'candidate-imported': 'products-current-candidate',
+      'candidate-imported': 'products-imported-list',
       'candidate-click': 'products-current-candidate',
       'candidate-assignment': 'products-current-candidate',
       'candidate-approved': 'products-current-candidate'
