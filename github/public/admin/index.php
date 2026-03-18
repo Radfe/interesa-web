@@ -4092,6 +4092,7 @@ require dirname(__DIR__) . '/inc/head.php';
             <?php endif; ?>
           </section>
 
+          <?php if (!$productCandidateFocusMode): ?>
           <details class="admin-card" id="products-main-page">
             <summary><strong>Rucne opravy a starsie nastavenia</strong> - otvor len vtedy, ked potrebujes opravovat jednotlive produkty po jednom</summary>
             <div class="admin-card-head">
@@ -5482,6 +5483,7 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
             </section>
           </details>
+          <?php endif; ?>
         <?php endif; ?>
 
         <?php if ($section === 'affiliates'): ?>

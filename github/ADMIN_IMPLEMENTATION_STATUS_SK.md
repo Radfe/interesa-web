@@ -219,6 +219,11 @@ Najnovsie doladenie kandidatov:
   - co sa nacitalo
   - s ktorym produktom teraz robis
 
+Najnovsia oprava candidate rezimu:
+- ked je otvoreny konkretny kandidat cez `?candidate=...`, stary blok `Rucne opravy a starsie nastavenia` sa uz nema renderovat pod nim
+- candidate rezim ma ukazovat len aktualneho kandidata a jeho dalsi krok
+- tym sa odstranil dojem, ze sa na jednej obrazovke miesaju dva rozdielne admin panely naraz
+
 Najnovsia oprava rozlozenia pri kandidatoch:
 - blok `Vyber jeden produkt a dokonci ho` je teraz hlavny a je vyssie
 - blok `Produkty z posledneho importu` je presunuty nizsie a po otvoreni jedneho produktu je zatvoreny
