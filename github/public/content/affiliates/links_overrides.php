@@ -29,6 +29,15 @@ return array (
     'link_type' => 'affiliate',
     'source' => 'dognet-helper',
   ),
+  'gymbeam-gymbeam-protein-porridge-1000-g-jahoda-gymbeam' => 
+  array (
+    'url' => 'https://gymbeam.sk/protein-porridge-1000-g-gymbeam.html?utm_term=dognet',
+    'merchant' => 'Gymbeam',
+    'merchant_slug' => 'gymbeam',
+    'product_slug' => 'gymbeam-gymbeam-protein-porridge-1000-g-jahoda',
+    'link_type' => 'affiliate',
+    'source' => 'dognet-helper',
+  ),
   'gymbeam-nutrend-excelent-protein-bar-limetka-pap-aja-gymbeam' => 
   array (
     'url' => 'https://gymbeam.sk/592-proteinova-tycinka-excelent-85-g-nutrend.html?utm_term=dognet',

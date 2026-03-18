@@ -938,18 +938,18 @@
         "source_name": "gymbeam",
         "source_file": "https://feeds.mergado.com/gymbeam-sk-heureka-sk-25a5938cc07b86d54c672eb682703196.xml",
         "batch_id": "import-20260317-132141",
-        "click_code": "",
-        "click_url": "",
-        "click_status": "missing",
+        "click_code": "gymbeam-gymbeam-protein-porridge-1000-g-jahoda-gymbeam",
+        "click_url": "https://gymbeam.sk/protein-porridge-1000-g-gymbeam.html?utm_term=dognet",
+        "click_status": "dognet",
         "article_slug": "",
-        "order": 1,
+        "order": 10,
         "role": "standard",
         "show_in_top": false,
         "show_in_comparison": false,
         "approved": false,
         "notes": "",
         "created_at": "2026-03-17T10:53:40+00:00",
-        "updated_at": "2026-03-17T13:21:41+00:00"
+        "updated_at": "2026-03-18T14:08:39+00:00"
     },
     "gymbeam-gymbeam-protein-porridge-1000-g-vanilka": {
         "id": "gymbeam-gymbeam-protein-porridge-1000-g-vanilka",
