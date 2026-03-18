@@ -70,6 +70,27 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsi produktovy krok:
+- hlavna cesta v `Produkty` je viac article-first
+- bezny pouzivatel uz nema v hlavnej ceste vidiet:
+  - docasne poradie
+  - male stitky
+  - horny vyber
+  - porovnavaciu tabulku
+- tieto technicke volby ostali len mimo hlavnej cesty ako rucny fallback
+- pri otvorenom produkte admin teraz ukazuje len:
+  - stav produktu
+  - dalsi technicky krok
+  - alebo jasnu vetu, ze produkt do prvych 3 clankov nepatri
+- ak produkt do prvych 3 clankov nepatri, admin ho uz netlaci do priradenia
+- `Zakladny prehlad webu` sa v sekcii `Produkty` uz bezne nezobrazuje
+- `Rucne opravy a starsie nastavenia` sa bezne zobrazia len vtedy, ked je otvoreny explicitny rucny detail produktu
+- jazyk v produkte je jednoduchsi:
+  - `Produkt je nacitany`
+  - `Odkaz do obchodu`
+  - `Pridany k clanku`
+  - `Ulozeny v systeme`
+
 Posledny vacsi admin krok:
 - oprava a zjednodusenie [public/admin/index.php](C:/data/praca/webova_stranka/github/public/admin/index.php)
 

@@ -838,6 +838,8 @@ if (!function_exists('interessa_admin_normalize_product_candidate_record')) {
             'source_type' => $sourceType,
             'source_name' => interessa_admin_normalize_text($row['source_name'] ?? ''),
             'source_file' => interessa_admin_normalize_text($row['source_file'] ?? ''),
+            'target_article_slug' => canonical_article_slug(trim((string) ($row['target_article_slug'] ?? ''))),
+            'import_filter_text' => interessa_admin_normalize_text($row['import_filter_text'] ?? ''),
             'batch_id' => interessa_admin_slugify((string) ($row['batch_id'] ?? '')),
             'click_code' => interessa_admin_slugify((string) ($row['click_code'] ?? '')),
             'click_url' => trim((string) ($row['click_url'] ?? '')),
@@ -908,10 +910,12 @@ if (!function_exists('interessa_admin_candidate_id_from_row')) {
 }
 
 if (!function_exists('interessa_admin_import_product_candidates')) {
-    function interessa_admin_import_product_candidates(array $rows, string $sourceType, string $sourceName = '', string $sourceFile = ''): array {
+    function interessa_admin_import_product_candidates(array $rows, string $sourceType, string $sourceName = '', string $sourceFile = '', array $meta = []): array {
         $existing = interessa_admin_product_candidates();
         $imported = [];
         $batchId = interessa_admin_slugify('import-' . date('Ymd-His'));
+        $targetArticleSlug = canonical_article_slug(trim((string) ($meta['target_article_slug'] ?? '')));
+        $importFilterText = trim((string) ($meta['import_filter_text'] ?? ''));
 
         foreach ($rows as $row) {
             if (!is_array($row)) {
@@ -934,6 +938,8 @@ if (!function_exists('interessa_admin_import_product_candidates')) {
                     'source_type' => $sourceType,
                     'source_name' => $sourceName,
                     'source_file' => $sourceFile,
+                    'target_article_slug' => $targetArticleSlug,
+                    'import_filter_text' => $importFilterText,
                     'batch_id' => $batchId,
                 ]
             ));
