@@ -2790,8 +2790,8 @@ if ($selectedCandidateId === '' || !isset($candidateRowsById[$selectedCandidateI
 $selectedCandidate = $selectedCandidateId !== '' && isset($candidateRowsById[$selectedCandidateId])
     ? $candidateRowsById[$selectedCandidateId]
     : null;
-$candidateFocusRequested = $section === 'products' && trim((string) ($_GET['candidate'] ?? '')) !== '';
-$productCandidateFocusMode = $section === 'products' && ($candidateFocusRequested || is_array($selectedCandidate));
+$candidateFocusRequested = trim((string) ($_GET['candidate'] ?? '')) !== '';
+$productCandidateFocusMode = $section === 'products' && $candidateFocusRequested;
 $candidateImportedCount = count($candidateRows);
 $candidateClickReadyCount = 0;
 $candidateAssignedCount = 0;
@@ -3805,8 +3805,8 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php endif; ?>
                   </div>
                   <div class="admin-inline-actions">
-                    <?php if ($productCandidateFocusMode && $recentCandidateBatchId !== ''): ?>
-                      <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;batch=<?= esc($recentCandidateBatchId) ?>#products-imported-list">Spat na posledny import</a>
+                    <?php if ($productCandidateFocusMode): ?>
+                      <a class="btn btn-secondary btn-small" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>">Spat na import produktov</a>
                     <?php endif; ?>
                     <?php if (!$productCandidateFocusMode): ?>
                     <form method="get" action="/admin" class="admin-inline-form">

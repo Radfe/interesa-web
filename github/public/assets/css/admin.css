@@ -10,7 +10,9 @@
 }
 
 .admin-shell.is-product-candidate-focus {
-  grid-template-columns: minmax(0, 1fr) !important;
+  display: block;
+  max-width: 1080px;
+  margin-inline: auto;
 }
 
 .admin-sidebar,
@@ -74,9 +76,13 @@
 }
 
 .admin-shell.is-product-candidate-focus .admin-main {
-  max-width: 1080px;
   width: 100%;
+  max-width: 1080px;
   margin-inline: auto;
+}
+
+.admin-shell.is-product-candidate-focus > * + * {
+  margin-top: 1rem;
 }
 
 .admin-card.is-candidate-focus-root {

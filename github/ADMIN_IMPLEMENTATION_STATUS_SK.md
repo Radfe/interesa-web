@@ -640,3 +640,23 @@ Preco:
 Co este treba doriesit:
 - urobit import clanok-first, nie feed-first
 - pri importe ponuknut len odporucane filtre pre prve 3 clanky
+
+## 17. Otvoreny kandidat ma vlastny cisty rezim
+
+Menene subory:
+- [public/admin/index.php](C:/data/praca/webova_stranka/github/public/admin/index.php)
+- [public/assets/css/admin.css](C:/data/praca/webova_stranka/github/public/assets/css/admin.css)
+
+Co sa upravilo:
+- rezim otvoreneho kandidata sa teraz zapina len vtedy, ked je v URL explicitne `candidate=...`
+- pri otvorenom kandidatovi sa zobrazi len jeden sustredeny pracovny panel bez bocneho menu a bez rozbiteho gridu
+- pribudlo jasne tlacidlo `Spat na import produktov`
+- layout otvoreneho kandidata uz nie je grid s prazdnym priestorom, ale jeden normalny blok na sirku
+
+Preco:
+- screenshoty ukazali, ze po importe a po dalsich krokoch sa stale objavoval mätúci vseobecny admin shell
+- pouzivatel potreboval vidiet len jeden otvoreny produkt a jeho dalsi krok, nie cely admin naraz
+
+Co este treba doriesit:
+- zjednodusit clanok-first import tak, aby sa neimportovalo feed + lubovolny filter, ale produkty pre konkretny clanok
+- zretelnejsie oddelit `kandidati z posledneho importu` od `jeden otvoreny kandidat`
