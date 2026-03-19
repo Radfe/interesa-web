@@ -730,3 +730,10 @@ Dalsie zjednodusenie pilotu pre `najlepsie-proteiny-2026`:
 - texty pri produktoch a tlacidlach su priamejsie:
   - `Pridat tento produkt k clanku`
   - `Ulozit tento produkt do systemu`
+
+Aktualna oprava pilotneho importu:
+- presny typ produktu uz nie je prazdny dropdown
+- v pilote je teraz predvoleny rezim `Automaticky pre tento clanok`
+- admin si v tomto rezime sam vezme povolene typy pre clanok `najlepsie-proteiny-2026`
+- chyba `Najprv vyber presny typ produktu` uz pri pilote nema blokovat import
+- manualne volby typu ostali viditelne ako vedlajsia moznost, nie povinny krok

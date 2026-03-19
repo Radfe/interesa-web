@@ -2171,6 +2171,7 @@ if ($isAuthed) {
                 if ($candidateTargetArticleSlug === '') {
                     throw new RuntimeException('Najprv vyber clanok, pre ktory ides importovat produkty.');
                 }
+                $candidatePreset = interessa_admin_candidate_import_preset($candidateTargetArticleSlug);
                 $merchantSlug = interessa_admin_slugify((string) ($_POST['candidate_merchant_slug'] ?? ''));
                 if ($merchantSlug === '') {
                     throw new RuntimeException('Vyber obchod, z ktoreho idu produkty.');
@@ -2181,16 +2182,18 @@ if ($isAuthed) {
                 $candidateFeedUrl = trim((string) ($_POST['candidate_feed_url'] ?? ''));
                 $candidateRecommendedFilters = array_values(array_filter(array_map('strval', (array) ($candidatePreset['recommended_filters'] ?? []))));
                 $candidateFilterText = trim((string) ($_POST['candidate_filter_text'] ?? ''));
-                if ($candidateFilterText === '' && $candidateRecommendedFilters !== []) {
-                    $candidateFilterText = (string) $candidateRecommendedFilters[0];
+                if ($candidateFilterText === '' || $candidateFilterText === '__auto__') {
+                    $candidateFilterText = '__auto__';
                 }
-                if ($candidateFilterText === '') {
+                if ($candidateFilterText === '__auto__' && $candidateRecommendedFilters === []) {
                     throw new RuntimeException('Pre tento clanok chyba nastavena povolena skupina produktov.');
                 }
-                $candidatePreset = interessa_admin_candidate_import_preset($candidateTargetArticleSlug);
                 $effectiveCandidateFilter = $candidateFilterText !== ''
                     ? $candidateFilterText
                     : implode(', ', (array) ($candidatePreset['recommended_filters'] ?? []));
+                if ($candidateFilterText === '__auto__') {
+                    $effectiveCandidateFilter = implode(', ', $candidateRecommendedFilters);
+                }
                 $candidateSourceName = '';
                 if ($candidateFeedUrl !== '') {
                     $rows = interessa_admin_parse_feed_url($candidateFeedUrl, $merchantSlug, 0, $effectiveCandidateFilter);
@@ -2211,7 +2214,7 @@ if ($isAuthed) {
                     $candidateArticleTitle = (string) ($articleOptions[$candidateTargetArticleSlug]['title'] ?? $candidateTargetArticleSlug);
                     $candidateMerchantName = (string) ($candidateMerchantOptions[$merchantSlug] ?? $merchantSlug);
                     throw new RuntimeException(
-                        'Pre clanok "' . $candidateArticleTitle . '" sa v obchode "' . $candidateMerchantName . '" pri type "' . $effectiveCandidateFilter . '" nenasli vhodne produkty. '
+                        'Pre clanok "' . $candidateArticleTitle . '" sa v obchode "' . $candidateMerchantName . '" sa nenasli vhodne produkty pre tento pilot. '
                         . 'Tento pilot pusta len ciste proteiny, nie tycinky, snacky, porridge ani iny balast.'
                     );
                 }
@@ -3924,14 +3927,21 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php endforeach; ?>
                     </select>
                     </label>
-                    <label>
-                      <span>Co chces nacitat</span>
-                      <select name="candidate_filter_text">
+                    <div>
+                      <span class="admin-label-like">Ako to ma admin hladat</span>
+                      <div class="admin-filter-pills is-left admin-choice-pills">
+                        <label class="admin-filter-pill is-active">
+                          <input type="radio" name="candidate_filter_text" value="__auto__" checked />
+                          Automaticky pre tento clanok
+                        </label>
                         <?php foreach ((array) ($candidateImportPreset['recommended_filters'] ?? []) as $recommendedFilter): ?>
-                          <option value="<?= esc((string) $recommendedFilter) ?>"><?= esc((string) $recommendedFilter) ?></option>
+                          <label class="admin-filter-pill">
+                            <input type="radio" name="candidate_filter_text" value="<?= esc((string) $recommendedFilter) ?>" />
+                            <?= esc((string) $recommendedFilter) ?>
+                          </label>
                         <?php endforeach; ?>
-                      </select>
-                    </label>
+                      </div>
+                    </div>
                   </div>
                   <div class="admin-grid one-up">
                     <label>
@@ -3943,6 +3953,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php if (trim((string) ($candidateImportPreset['warning'] ?? '')) !== ''): ?>
                     <p class="admin-note"><strong>Pozor:</strong> <?= esc((string) ($candidateImportPreset['warning'] ?? '')) ?></p>
                   <?php endif; ?>
+                  <p class="admin-note"><strong>Automaticky rezim</strong> skusi pre tento clanok povolene typy v spravnom poradi a vezme len ciste proteinove produkty.</p>
                   <p class="admin-note"><strong>Povolene su len:</strong> whey, concentrate, isolate, clear, vegan blend.</p>
                   <p class="admin-note"><strong>Nepatria sem:</strong> tycinky, snacky, gainer, kolagen, pre-workout, stimulanty.</p>
                   <p class="admin-note">Z jedneho feedu sa teraz nacita len prvy mensi balik: <strong><?= esc((string) $candidateImportLimit) ?> produktov</strong>.</p>
