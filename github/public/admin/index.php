@@ -2167,15 +2167,12 @@ if ($isAuthed) {
             }
 
             if ($action === 'import_product_candidates') {
-                $candidateTargetArticleSlug = canonical_article_slug((string) ($_POST['candidate_target_article_slug'] ?? ''));
-                if ($candidateTargetArticleSlug === '') {
-                    $candidateTargetArticleSlug = 'najlepsie-proteiny-2026';
-                }
+                $candidateTargetArticleSlug = 'najlepsie-proteiny-2026';
                 if ($candidateTargetArticleSlug === '') {
                     throw new RuntimeException('Najprv vyber clanok, pre ktory ides importovat produkty.');
                 }
                 $candidatePreset = interessa_admin_candidate_import_preset($candidateTargetArticleSlug);
-                if (($candidatePreset['recommended_filters'] ?? []) === [] && $candidateTargetArticleSlug === 'najlepsie-proteiny-2026') {
+                if (($candidatePreset['recommended_filters'] ?? []) === []) {
                     $candidatePreset = [
                         'title' => 'Najlepsie proteiny 2026',
                         'merchant_defaults' => ['gymbeam', 'protein-sk'],
@@ -2195,15 +2192,15 @@ if ($isAuthed) {
                     : 40;
                 $candidateFeedUrl = trim((string) ($_POST['candidate_feed_url'] ?? ''));
                 $candidateRecommendedFilters = array_values(array_filter(array_map('strval', (array) ($candidatePreset['recommended_filters'] ?? []))));
+                if ($candidateRecommendedFilters === []) {
+                    $candidateRecommendedFilters = ['whey', 'concentrate', 'isolate', 'clear', 'vegan'];
+                }
                 $candidateFilterText = trim((string) ($_POST['candidate_filter_text'] ?? ''));
                 if ($candidateFilterText === '' || $candidateFilterText === '__auto__') {
                     $candidateFilterText = '__auto__';
                 }
                 if ($candidateFilterText !== '__auto__' && $candidateRecommendedFilters !== [] && !in_array($candidateFilterText, $candidateRecommendedFilters, true)) {
                     $candidateFilterText = '__auto__';
-                }
-                if ($candidateFilterText === '__auto__' && $candidateRecommendedFilters === []) {
-                    throw new RuntimeException('Pre tento clanok chyba nastavena povolena skupina produktov.');
                 }
                 $effectiveCandidateFilter = $candidateFilterText !== ''
                     ? $candidateFilterText

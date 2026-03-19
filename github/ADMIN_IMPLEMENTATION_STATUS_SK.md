@@ -739,3 +739,5 @@ Aktualna oprava pilotneho importu:
 - manualne volby typu ostali viditelne ako vedlajsia moznost, nie povinny krok
 - pilotny import uz nepada ani vtedy, ked sa neodosle skryty slug clanku alebo sa rozbije volba typu
 - pre `najlepsie-proteiny-2026` ma importer bezpecny fallback na pevne povolene skupiny produktov
+- pilotny import je teraz natvrdo viazany na clanok `najlepsie-proteiny-2026`
+- ak by preset zlyhal, importer aj tak pouzije pevny zoznam: whey, concentrate, isolate, clear, vegan
