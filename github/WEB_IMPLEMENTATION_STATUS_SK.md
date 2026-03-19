@@ -163,3 +163,28 @@ Do toho momentu web vrstva:
 - dalej jemne dorovnava kvalitu top stranok
 - nedoplnuje masovo dalsie nove clanky
 - drzi fokus na launch, nie na dalsie nafukovanie poctu textov
+
+## 6. Mimoriadna oprava homepage CSS
+
+Datum:
+- `19.03.2026`
+
+Problem:
+- homepage na lokalnom serveri `127.0.0.1:5001` sa zobrazovala ako takmer neostylovany HTML vystup
+- realny problem nebol v HTML sablone homepage, ale v nacitanych CSS suboroch
+- vo viacerych hlavnych stylesheetoch boli poskodene komentare a rozbite kodovanie, co vedelo narusit parsovanie stylov v prehliadaci
+
+Opravene subory:
+- [public/assets/css/main.css](C:/data/praca/webova_stranka/github/public/assets/css/main.css)
+- [public/assets/css/compat.css](C:/data/praca/webova_stranka/github/public/assets/css/compat.css)
+- [public/assets/css/patch.css](C:/data/praca/webova_stranka/github/public/assets/css/patch.css)
+- [public/assets/css/home-b12.css](C:/data/praca/webova_stranka/github/public/assets/css/home-b12.css)
+
+Co sa spravilo:
+- odstranili sa poskodene komentare
+- subory sa ulozili znova ako ciste UTF-8 bez BOM
+- homepage znova vracia normalne HTML aj ciste stylesheety
+
+Poznamka pre dalsie vlakna:
+- ak sa po tejto oprave stale zobrazi stara rozbita verzia, najprv spravit tvrdy refresh v prehliadaci
+- toto nebola obsahova chyba homepage, ale chyba v nacitanych CSS suboroch

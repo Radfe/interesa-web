@@ -1,5 +1,3 @@
-/* Jemné „B12“ dochutenie: hero, interakcie, focusy */
-
 .hero-copy h1{ letter-spacing: -0.02em; text-wrap: balance; }
 .hero-copy p{ text-wrap: pretty; }
 
@@ -219,12 +217,10 @@ button:focus-visible,
 .card{ transition: transform .12s ease, box-shadow .18s ease, border-color .18s ease; }
 .card:hover{ transform: translateY(-3px); }
 
-/* desktop: jemný „glass“ v tray */
 @media (hover:hover){
   .mega-tray{ backdrop-filter: blur(6px) saturate(112%); }
 }
 
-/* šetrenie na úzkom mobile */
 @media (max-width: 980px){ .home-theme-grid{grid-template-columns:1fr 1fr} }
 @media (max-width: 980px){ .support-theme-grid{grid-template-columns:1fr 1fr} }
 @media (max-width: 980px){ .quickstart-grid{grid-template-columns:1fr} }

@@ -1,4 +1,3 @@
-/* --- drobný styling na dorovnanie B12 štýlu --- */
 .sb-section{position:relative;margin:24px 0;border-radius:16px;background:#fff;box-shadow:0 6px 20px rgba(17,24,39,.08);overflow:hidden}
 .sb-section-opt-dark .sb-title,.sb-section-opt-dark .sb-subtitle{color:#fff}
 .sb-background{position:absolute;inset:0;background-size:cover;background-position:center}
