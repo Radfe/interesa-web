@@ -744,3 +744,8 @@ Aktualna oprava pilotneho importu:
 - pre `najlepsie-proteiny-2026` ma importer bezpecny fallback na pevne povolene skupiny produktov
 - pilotny import je teraz natvrdo viazany na clanok `najlepsie-proteiny-2026`
 - ak by preset zlyhal, importer aj tak pouzije pevny zoznam: whey, concentrate, isolate, clear, vegan
+
+Posledna oprava navratov po importe:
+- po `candidate-imported` sa admin uz vracia na krok `2. Otvor jeden produkt z posledneho importu`
+- stary anchor `products-imported-list` uz nie je hlavny ciel po importe
+- aj tlacidla `Spat na posledny import` vracaju pouzivatela na krok 2, nie na stary spodny helper zoznam

@@ -2248,7 +2248,7 @@ if ($isAuthed) {
                     'saved' => 'candidate-imported',
                     'batch' => $batchId,
                     'import_article' => $candidateTargetArticleSlug,
-                ], 'products-imported-list');
+                ], 'products-current-candidate');
             }
 
             if ($action === 'prepare_candidate_click') {
@@ -4124,12 +4124,12 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php endif; ?>
                       <p class="admin-meta">Vyber iny produkt z posledneho importu. Tento produkt zatial len zostane medzi nacitanymi produktmi.</p>
                       <div class="admin-actions">
-                        <a class="btn btn-secondary" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>#products-imported-list">Spat na posledny import</a>
+                        <a class="btn btn-secondary" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>#products-current-candidate">Spat na posledny import</a>
                       </div>
                     <?php else: ?>
                       <p class="admin-note"><strong>Admin si pri tomto produkte nie je isty obsahovym fitom.</strong> Zatial ho nepridavaj. Vrat sa na posledny import a vyber iny produkt.</p>
                       <div class="admin-actions">
-                        <a class="btn btn-secondary" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>#products-imported-list">Spat na posledny import</a>
+                        <a class="btn btn-secondary" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>#products-current-candidate">Spat na posledny import</a>
                       </div>
                     <?php endif; ?>
                   <?php elseif (!$selectedCandidateApproved): ?>
@@ -7165,7 +7165,7 @@ require dirname(__DIR__) . '/inc/head.php';
     const params = new URLSearchParams(window.location.search);
     const savedState = params.get('saved') || '';
     const savedTargetMap = {
-      'candidate-imported': 'products-imported-list',
+      'candidate-imported': 'products-current-candidate',
       'candidate-click': 'products-current-candidate',
       'candidate-assignment': 'products-current-candidate',
       'candidate-approved': 'products-current-candidate'
