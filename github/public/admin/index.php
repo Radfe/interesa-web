@@ -2169,9 +2169,23 @@ if ($isAuthed) {
             if ($action === 'import_product_candidates') {
                 $candidateTargetArticleSlug = canonical_article_slug((string) ($_POST['candidate_target_article_slug'] ?? ''));
                 if ($candidateTargetArticleSlug === '') {
+                    $candidateTargetArticleSlug = 'najlepsie-proteiny-2026';
+                }
+                if ($candidateTargetArticleSlug === '') {
                     throw new RuntimeException('Najprv vyber clanok, pre ktory ides importovat produkty.');
                 }
                 $candidatePreset = interessa_admin_candidate_import_preset($candidateTargetArticleSlug);
+                if (($candidatePreset['recommended_filters'] ?? []) === [] && $candidateTargetArticleSlug === 'najlepsie-proteiny-2026') {
+                    $candidatePreset = [
+                        'title' => 'Najlepsie proteiny 2026',
+                        'merchant_defaults' => ['gymbeam', 'protein-sk'],
+                        'recommended_filters' => ['whey', 'concentrate', 'isolate', 'clear', 'vegan'],
+                        'exclude_terms' => ['bar', 'tycinka', 'cookie', 'snack', 'brownie', 'pudding', 'porridge', 'oatmeal', 'kasa', 'gainer', 'bcaa', 'eaa', 'kolagen', 'collagen', 'pre-workout', 'caffeine', 'kofein'],
+                        'what_belongs' => 'whey, concentrate, isolate, clear protein, vegan blend',
+                        'what_not' => 'tycinky, snacky, gainery, BCAA, EAA, kolagen, pre-workout',
+                        'warning' => 'Nepouzivaj siroky filter protein. Taha aj tycinky a iny balast.',
+                    ];
+                }
                 $merchantSlug = interessa_admin_slugify((string) ($_POST['candidate_merchant_slug'] ?? ''));
                 if ($merchantSlug === '') {
                     throw new RuntimeException('Vyber obchod, z ktoreho idu produkty.');
@@ -2183,6 +2197,9 @@ if ($isAuthed) {
                 $candidateRecommendedFilters = array_values(array_filter(array_map('strval', (array) ($candidatePreset['recommended_filters'] ?? []))));
                 $candidateFilterText = trim((string) ($_POST['candidate_filter_text'] ?? ''));
                 if ($candidateFilterText === '' || $candidateFilterText === '__auto__') {
+                    $candidateFilterText = '__auto__';
+                }
+                if ($candidateFilterText !== '__auto__' && $candidateRecommendedFilters !== [] && !in_array($candidateFilterText, $candidateRecommendedFilters, true)) {
                     $candidateFilterText = '__auto__';
                 }
                 if ($candidateFilterText === '__auto__' && $candidateRecommendedFilters === []) {

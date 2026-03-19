@@ -737,3 +737,5 @@ Aktualna oprava pilotneho importu:
 - admin si v tomto rezime sam vezme povolene typy pre clanok `najlepsie-proteiny-2026`
 - chyba `Najprv vyber presny typ produktu` uz pri pilote nema blokovat import
 - manualne volby typu ostali viditelne ako vedlajsia moznost, nie povinny krok
+- pilotny import uz nepada ani vtedy, ked sa neodosle skryty slug clanku alebo sa rozbije volba typu
+- pre `najlepsie-proteiny-2026` ma importer bezpecny fallback na pevne povolene skupiny produktov
