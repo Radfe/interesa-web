@@ -5610,7 +5610,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               </div>
             </section>
-          </details>
+          </section>
           <?php endif; ?>
         <?php endif; ?>
 
