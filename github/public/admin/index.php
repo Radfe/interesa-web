@@ -3999,7 +3999,42 @@ require dirname(__DIR__) . '/inc/head.php';
 
               <?php if (!is_array($selectedCandidate)): ?>
                 <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
-                  <p class="admin-note">Tu sa nic neotvara automaticky. Dalsi krok je nizsie v zozname: <strong>Otvorit tento produkt</strong>.</p>
+                  <?php if ($recentImportedVisibleRows === []): ?>
+                    <p class="admin-note"><strong>Import prebehol, ale v tomto batchi nie je ziadny vhodny produkt pre clanok Najlepsie proteiny 2026.</strong></p>
+                    <p class="admin-meta">Skus iny obchod alebo iny feed. Pilot sem pusta len ciste proteinove produkty.</p>
+                  <?php else: ?>
+                    <p class="admin-note"><strong>Import je hotovy.</strong> Dalsi krok je hned tu: otvor jeden produkt z tohto zoznamu.</p>
+                    <div class="admin-queue-list">
+                      <?php foreach ($recentImportedVisibleRows as $recentImportedIndex => $recentImportedRow): ?>
+                        <article class="admin-queue-item">
+                          <div>
+                            <strong><?= esc((string) ($recentImportedIndex + 1)) ?>. <?= esc((string) $recentImportedRow['name']) ?></strong>
+                            <p><?= esc((string) ($recentImportedRow['merchant'] ?? '')) ?></p>
+                            <?php
+                              $recentImportedStepDetails = [];
+                              if (trim((string) ($recentImportedRow['category'] ?? '')) !== '') {
+                                  $recentImportedStepDetails[] = 'Typ: ' . trim((string) ($recentImportedRow['category'] ?? ''));
+                              }
+                              if (trim((string) ($recentImportedRow['price'] ?? '')) !== '') {
+                                  $recentImportedStepDetails[] = 'Cena: ' . trim((string) ($recentImportedRow['price'] ?? ''));
+                              }
+                            ?>
+                            <?php if ($recentImportedStepDetails !== []): ?>
+                              <p class="admin-meta"><?= esc(implode(' / ', $recentImportedStepDetails)) ?></p>
+                            <?php endif; ?>
+                            <div class="admin-status-pills">
+                              <span class="admin-status-pill is-good">Nacitany</span>
+                              <span class="admin-status-pill<?= !empty($recentImportedRow['has_image']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_image']) ? 'Obrazok sa nasiel' : 'Obrazok chyba' ?></span>
+                              <span class="admin-status-pill<?= !empty($recentImportedRow['has_click']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_click']) ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
+                            </div>
+                          </div>
+                          <div class="admin-inline-actions">
+                            <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;batch=<?= esc($recentCandidateBatchId) ?>&amp;candidate=<?= esc((string) $recentImportedRow['id']) ?>#products-current-candidate">Otvorit tento produkt</a>
+                          </div>
+                        </article>
+                      <?php endforeach; ?>
+                    </div>
+                  <?php endif; ?>
                 <?php else: ?>
                   <p class="admin-note">Zatial tu nie je otvoreny ziadny produkt. Najprv pouzi Krok 1.</p>
                 <?php endif; ?>
@@ -4153,57 +4188,35 @@ require dirname(__DIR__) . '/inc/head.php';
               <?php endif; ?>
             </section>
 
-              <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
-                <details class="admin-subsection is-compact" id="products-imported-list" <?= $productCandidateFocusMode ? '' : 'open' ?>>
-                <summary><strong>Vhodne produkty z posledneho importu</strong> - tu vyber dalsi produkt z tohto batchu</summary>
-                <div class="admin-subsection-head">
-                  <div>
-                    <h3>Posledny import: <?= esc((string) count($recentImportedVisibleRows)) ?> vhodnych produktov</h3>
-                    <p class="admin-meta">Tu vidis len produkty, ktore naozaj patria do pilotu pre clanok Najlepsie proteiny 2026.</p>
-                    <?php if ($recentImportedBlockedRows !== []): ?>
-                      <p class="admin-note"><?= esc((string) count($recentImportedBlockedRows)) ?> produktov bolo odlozenych bokom, lebo do tohto clanku nepatria.</p>
-                    <?php endif; ?>
+              <?php if ($recentImportedRows !== [] && $productCandidateFocusMode): ?>
+                <details class="admin-subsection is-compact" id="products-imported-list">
+                  <summary><strong>Dalsie produkty z posledneho importu</strong> - otvor, ked chces prejst na dalsi produkt</summary>
+                  <div class="admin-subsection-head">
+                    <div>
+                      <h3>Posledny import: <?= esc((string) count($recentImportedVisibleRows)) ?> vhodnych produktov</h3>
+                      <p class="admin-meta">Tu vidis dalsie produkty z tohto isteho batchu. Pouzi len ked chces prejst na iny produkt.</p>
+                      <?php if ($recentImportedBlockedRows !== []): ?>
+                        <p class="admin-note"><?= esc((string) count($recentImportedBlockedRows)) ?> produktov ostalo bokom, lebo do tohto clanku nepatria.</p>
+                      <?php endif; ?>
+                    </div>
                   </div>
-                </div>
-                <?php if ($recentImportedVisibleRows === []): ?>
-                  <p class="admin-note">V poslednom importe nie je ziadny cisty produkt pre tento clanok. Skus iny obchod alebo iny presny typ produktu.</p>
-                <?php else: ?>
-                <div class="admin-queue-list">
-                  <?php foreach ($recentImportedVisibleRows as $recentImportedIndex => $recentImportedRow): ?>
-                    <article class="admin-queue-item">
-                      <div>
-                        <strong><?= esc((string) ($recentImportedIndex + 1)) ?>. <?= esc((string) $recentImportedRow['name']) ?></strong>
-                        <p><?= esc((string) ($recentImportedRow['merchant'] ?? '')) ?></p>
-                        <?php
-                          $recentImportedDetails = [];
-                          if (trim((string) ($recentImportedRow['category'] ?? '')) !== '') {
-                              $recentImportedDetails[] = 'Typ: ' . trim((string) ($recentImportedRow['category'] ?? ''));
-                          }
-                          if (trim((string) ($recentImportedRow['price'] ?? '')) !== '') {
-                              $recentImportedDetails[] = 'Cena: ' . trim((string) ($recentImportedRow['price'] ?? ''));
-                          }
-                        ?>
-                        <?php if ($recentImportedDetails !== []): ?>
-                          <p class="admin-meta"><?= esc(implode(' / ', $recentImportedDetails)) ?></p>
-                        <?php endif; ?>
-                        <div class="admin-status-pills">
-                          <span class="admin-status-pill is-good">Nacitany</span>
-                          <span class="admin-status-pill<?= !empty($recentImportedRow['has_image']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_image']) ? 'Obrazok sa nasiel' : 'Obrazok chyba' ?></span>
-                          <span class="admin-status-pill<?= !empty($recentImportedRow['has_click']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_click']) ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
-                          <?php if ((string) ($recentImportedRow['id'] ?? '') === $selectedCandidateId): ?>
-                            <span class="admin-status-pill is-good">Prave otvoreny</span>
-                          <?php endif; ?>
-                        </div>
-                      </div>
-                      <div class="admin-inline-actions">
-                        <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;batch=<?= esc($recentCandidateBatchId) ?>&amp;candidate=<?= esc((string) $recentImportedRow['id']) ?>#products-current-candidate"><?= (string) ($recentImportedRow['id'] ?? '') === $selectedCandidateId ? 'Tento produkt je otvoreny vyssie' : 'Otvorit tento produkt' ?></a>
-                      </div>
-                    </article>
-                  <?php endforeach; ?>
-                </div>
-                <?php endif; ?>
-              </details>
-            <?php endif; ?>
+                  <?php if ($recentImportedVisibleRows !== []): ?>
+                    <div class="admin-queue-list">
+                      <?php foreach ($recentImportedVisibleRows as $recentImportedIndex => $recentImportedRow): ?>
+                        <article class="admin-queue-item">
+                          <div>
+                            <strong><?= esc((string) ($recentImportedIndex + 1)) ?>. <?= esc((string) $recentImportedRow['name']) ?></strong>
+                            <p><?= esc((string) ($recentImportedRow['merchant'] ?? '')) ?></p>
+                          </div>
+                          <div class="admin-inline-actions">
+                            <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;batch=<?= esc($recentCandidateBatchId) ?>&amp;candidate=<?= esc((string) $recentImportedRow['id']) ?>#products-current-candidate"><?= (string) ($recentImportedRow['id'] ?? '') === $selectedCandidateId ? 'Tento produkt je otvoreny' : 'Otvorit tento produkt' ?></a>
+                          </div>
+                        </article>
+                      <?php endforeach; ?>
+                    </div>
+                  <?php endif; ?>
+                </details>
+              <?php endif; ?>
           </section>
 
           <?php if (!$productCandidateFocusMode && $manualProductRequested && $selectedProductSlug !== ''): ?>

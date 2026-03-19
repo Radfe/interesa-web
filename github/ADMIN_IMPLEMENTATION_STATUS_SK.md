@@ -71,6 +71,9 @@ Admin vrstva riesi:
 ## 3. Co sa menilo naposledy
 
 Najnovsi produktovy krok:
+- po pilotnom importe pre `najlepsie-proteiny-2026` sa dalsi krok uz ukazuje priamo v sekcii `2. Otvor jeden produkt z posledneho importu`
+- zoznam na otvorenie sa uz zobrazuje hned v tom istom kroku, nie az nizsie na stranke
+- spodny duplicitny zoznam z hlavneho toku zmizol; pri otvorenom produkte ostal len ako pomocny zoznam dalsich produktov z toho isteho batchu
 - pilot pre `najlepsie-proteiny-2026` uz v zozname po importe ukazuje len vhodne produkty pre tento clanok
 - produkty, ktore do tohto pilotu nepatria, sa uz nemaju miešat do hlavneho zoznamu po importe
 - ak sa v poslednom importe nasli len nevhodne produkty, admin to povie priamo a netlaci pouzivatela do dalsieho kroku
