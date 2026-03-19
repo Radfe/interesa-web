@@ -103,6 +103,22 @@ Najnovsi admin audit z web vlakna:
 - pilotny handoff zapisany do:
   - [WEB_TO_ADMIN_ONE_ARTICLE_PILOT_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_ONE_ARTICLE_PILOT_SK.md)
 
+Najnovsie spresnenie z web vlakna:
+- pre admin bol doplneny novy fulfillment brief, ktory presne oddeluje:
+  - co je technicky hotovy kandidat
+  - co musi mat vyplnene pri jednom clanku
+  - v akom poradi maju ist prve 3 clanky
+- webovy zaver je:
+  - admin ma ist `article-first` a `article-by-article`
+  - nie tri clanky naraz jednym univerzalnym importerom
+  - pri jednom clanku sa za hotovy stav povazuje kandidat az vtedy, ked ma:
+    - `article_slug`
+    - `product_url`
+    - `image_status`
+    - `click_status`
+- brief zapisany do:
+  - [WEB_TO_ADMIN_PRODUCT_FULFILLMENT_BRIEF_2026-03-19_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_PRODUCT_FULFILLMENT_BRIEF_2026-03-19_SK.md)
+
 Dotiahnute temy:
 - kreatin
 - proteiny
@@ -158,6 +174,7 @@ K tomu uz je pripraveny aj:
 - [WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md)
 - [WEB_TO_ADMIN_BRAND_CANVA_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_BRAND_CANVA_HANDOFF_2026-03-17_SK.md)
 - [SIMPLE_PRODUCT_TEST_FLOW_SK.md](C:/data/praca/webova_stranka/github/SIMPLE_PRODUCT_TEST_FLOW_SK.md)
+- [WEB_TO_ADMIN_PRODUCT_FULFILLMENT_BRIEF_2026-03-19_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_PRODUCT_FULFILLMENT_BRIEF_2026-03-19_SK.md)
 
 Do toho momentu web vrstva:
 - dalej jemne dorovnava kvalitu top stranok
