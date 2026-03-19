@@ -43,6 +43,47 @@ if (!function_exists('asset')) {
     }
 }
 
+if (!function_exists('interessa_dev_build_label')) {
+    function interessa_dev_build_label(): string {
+        static $label = null;
+
+        if ($label !== null) {
+            return $label;
+        }
+
+        $publicRoot = dirname(__DIR__);
+        $latestMtime = 0;
+        $allowedExtensions = ['php', 'css', 'js', 'json'];
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($publicRoot, FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $fileInfo) {
+            if (!$fileInfo instanceof SplFileInfo || !$fileInfo->isFile()) {
+                continue;
+            }
+
+            $extension = strtolower($fileInfo->getExtension());
+            if (!in_array($extension, $allowedExtensions, true)) {
+                continue;
+            }
+
+            $mtime = (int) $fileInfo->getMTime();
+            if ($mtime > $latestMtime) {
+                $latestMtime = $mtime;
+            }
+        }
+
+        if ($latestMtime <= 0) {
+            $latestMtime = time();
+        }
+
+        $label = date('Ymd-His', $latestMtime);
+        return $label;
+    }
+}
+
 if (!function_exists('raw_page_title')) {
     function raw_page_title(): string {
         global $page_title, $PAGE_TITLE, $page;

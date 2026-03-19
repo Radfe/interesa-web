@@ -131,6 +131,20 @@ a:hover{color:#0954aa}
   cursor:pointer;
 }
 .dev-reload-fab:hover{background:#f4faf7}
+.dev-build-badge{
+  position:fixed;
+  right:18px;
+  bottom:78px;
+  z-index:69;
+  padding:.45rem .75rem;
+  border-radius:999px;
+  background:rgba(16,24,40,.86);
+  color:#fff;
+  font-size:.78rem;
+  font-weight:700;
+  letter-spacing:.01em;
+  box-shadow:0 10px 28px rgba(16,24,40,.2);
+}
 
 .hero{padding:clamp(1.6rem,3.5vw + 1rem,4.5rem) 0}
 .hero-inner{display:grid;grid-template-columns:1.2fr .8fr;gap:2rem;align-items:center}
@@ -270,6 +284,7 @@ a:hover{color:#0954aa}
   .mega-link{padding:.55rem .6rem}
   .mega-toggle:checked ~ .mega{display:grid}
   .dev-reload-fab{right:14px;bottom:14px;padding:.68rem .92rem}
+  .dev-build-badge{right:14px;bottom:72px;font-size:.74rem}
 }
 
 .svg-hero{display:block;width:100%;height:auto}

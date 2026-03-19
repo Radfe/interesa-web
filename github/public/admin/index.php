@@ -2932,6 +2932,7 @@ $selectedCandidate = $selectedCandidateId !== '' && isset($candidateRowsById[$se
     ? $candidateRowsById[$selectedCandidateId]
     : null;
 $candidateFocusRequested = trim((string) ($_GET['candidate'] ?? '')) !== '';
+$productsPilotMode = $section === 'products';
 $productCandidateFocusMode = $section === 'products' && $candidateFocusRequested && is_array($selectedCandidate);
 $candidateImportedCount = count($candidateRows);
 $candidateClickReadyCount = 0;
@@ -3112,7 +3113,7 @@ require dirname(__DIR__) . '/inc/head.php';
       </section>
     </div>
   <?php else: ?>
-    <div class="admin-shell<?= $productCandidateFocusMode ? ' is-product-candidate-focus' : '' ?>">
+    <div class="admin-shell<?= $productsPilotMode ? ' is-products-pilot' : '' ?><?= $productCandidateFocusMode ? ' is-product-candidate-focus' : '' ?>">
       <?php if ($flashMessage !== ''): ?>
         <div class="admin-flash is-success">
           <div><?= esc($flashMessage) ?></div>
@@ -3134,7 +3135,7 @@ require dirname(__DIR__) . '/inc/head.php';
       <?php if ($error !== ''): ?>
         <div class="admin-flash is-error"><?= esc($error) ?></div>
       <?php endif; ?>
-      <?php if (!$productCandidateFocusMode): ?>
+      <?php if (!$productsPilotMode && !$productCandidateFocusMode): ?>
       <aside class="admin-sidebar">
         <div class="admin-sidebar-head">
           <div>

@@ -71,6 +71,30 @@ Admin vrstva riesi:
 ## 3. Co sa menilo naposledy
 
 Najnovsi produktovy krok:
+- sekcia `Produkty` uz ide cela v jednstlpcovom pilotnom rezime, nielen pri `candidate=...`
+- po importe uz nema ostat viditelny bočný admin panel vedla prazdneho obsahu
+- `section=products` a `candidate=...` teraz pouzivaju rovnaky produktovy shell:
+  - flash hore
+  - pilotny import
+  - krok `2. Otvor jeden produkt z posledneho importu`
+- tym sa ma odstranit stav, kde bola:
+  - zelena hlaska vlavo
+  - prazdny admin panel vpravo
+  - a dalsi krok posunuty mimo viditelnu cast
+
+- predchadzajuci produktovy krok:
+- opravene rozlozenie po importe v `Produkty`
+- zelena alebo cervena hlaska po importe uz v `admin-shell` zabera cely riadok a nerozbija grid rozlozenie
+- tym padom sa uz nema stat, ze po importe skonci:
+  - flash na lavom uzkom stlpci
+  - sidebar vpravo
+  - a hlavny produktovy krok nizsie mimo viditelnu cast
+- ocakavany stav po importe je:
+  - flash hore cez celu sirku
+  - pod nim standardne `Produkty`
+  - a hned viditelny krok `2. Otvor jeden produkt z posledneho importu`
+
+- predchadzajuci produktovy krok:
 - po pilotnom importe pre `najlepsie-proteiny-2026` sa dalsi krok uz ukazuje priamo v sekcii `2. Otvor jeden produkt z posledneho importu`
 - zoznam na otvorenie sa uz zobrazuje hned v tom istom kroku, nie az nizsie na stranke
 - spodny duplicitny zoznam z hlavneho toku zmizol; pri otvorenom produkte ostal len ako pomocny zoznam dalsich produktov z toho isteho batchu
@@ -749,3 +773,8 @@ Posledna oprava navratov po importe:
 - po `candidate-imported` sa admin uz vracia na krok `2. Otvor jeden produkt z posledneho importu`
 - stary anchor `products-imported-list` uz nie je hlavny ciel po importe
 - aj tlacidla `Spat na posledny import` vracaju pouzivatela na krok 2, nie na stary spodny helper zoznam
+
+Viditelna verzia v lokalnom prostredi:
+- tlacidlo `Obnovit verziu` uz ma vedla seba aj citatelnu build verziu
+- build verzia sa rata z poslednej zmeny v lokalnych `php`, `css`, `js` a `json` suboroch v `public`
+- ciel je, aby bolo na prvy pohlad jasne, ktoru verziu webu alebo adminu mas prave otvorenu
