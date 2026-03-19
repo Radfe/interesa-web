@@ -717,3 +717,16 @@ Preco:
 Co este treba doriesit:
 - zjednodusit clanok-first import tak, aby sa neimportovalo feed + lubovolny filter, ale produkty pre konkretny clanok
 - zretelnejsie oddelit `kandidati z posledneho importu` od `jeden otvoreny kandidat`
+
+## 3. Co sa menilo naposledy
+
+Dalsie zjednodusenie pilotu pre `najlepsie-proteiny-2026`:
+- import uz v hlavnej ceste pyta len:
+  - obchod
+  - presny typ proteinu
+  - Dognet feed URL
+- z pilotu zmizli pomocne polia `Sem patri`, `Sem nepatri` a suborovy upload
+- ak pouzivatel nevyberie typ rucne, admin pouzije prvy povoleny typ automaticky
+- texty pri produktoch a tlacidlach su priamejsie:
+  - `Pridat tento produkt k clanku`
+  - `Ulozit tento produkt do systemu`

@@ -2179,9 +2179,13 @@ if ($isAuthed) {
                     ? interessa_admin_candidate_import_limit()
                     : 40;
                 $candidateFeedUrl = trim((string) ($_POST['candidate_feed_url'] ?? ''));
+                $candidateRecommendedFilters = array_values(array_filter(array_map('strval', (array) ($candidatePreset['recommended_filters'] ?? []))));
                 $candidateFilterText = trim((string) ($_POST['candidate_filter_text'] ?? ''));
+                if ($candidateFilterText === '' && $candidateRecommendedFilters !== []) {
+                    $candidateFilterText = (string) $candidateRecommendedFilters[0];
+                }
                 if ($candidateFilterText === '') {
-                    throw new RuntimeException('Najprv vyber presny typ produktu pre tento clanok.');
+                    throw new RuntimeException('Pre tento clanok chyba nastavena povolena skupina produktov.');
                 }
                 $candidatePreset = interessa_admin_candidate_import_preset($candidateTargetArticleSlug);
                 $effectiveCandidateFilter = $candidateFilterText !== ''
@@ -3899,7 +3903,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div class="admin-subsection-head">
                 <div>
                   <h3>Import pre tento clanok</h3>
-                  <p class="admin-meta">Najprv vyber obchod. Potom zvol presny typ proteinu. Az potom vloz Dognet feed URL a admin natiahne len uzsi batch.</p>
+                  <p class="admin-meta">Tu robis len jeden pilot pre clanok Najlepsie proteiny 2026. Vyber obchod, vyber typ proteinu a vloz Dognet feed URL.</p>
                 </div>
               </div>
                 <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
@@ -3919,9 +3923,9 @@ require dirname(__DIR__) . '/inc/head.php';
                         <option value="<?= esc($candidateMerchantSlug) ?>"><?= esc($candidateMerchantName) ?></option>
                       <?php endforeach; ?>
                     </select>
-                  </label>
+                    </label>
                     <label>
-                      <span>Typ produktu, ktory chces nacitat</span>
+                      <span>Co chces nacitat</span>
                       <select name="candidate_filter_text">
                         <?php foreach ((array) ($candidateImportPreset['recommended_filters'] ?? []) as $recommendedFilter): ?>
                           <option value="<?= esc((string) $recommendedFilter) ?>"><?= esc((string) $recommendedFilter) ?></option>
@@ -3935,32 +3939,13 @@ require dirname(__DIR__) . '/inc/head.php';
                       <input type="url" name="candidate_feed_url" placeholder="Sem vloz URL feedu z tlacidla Kopirovat URL" />
                     </label>
                   </div>
-                  <div class="admin-grid two-up">
-                    <label>
-                      <span>Sem patri</span>
-                      <input type="text" value="<?= esc(implode(', ', (array) ($candidateImportPreset['recommended_filters'] ?? []))) ?>" readonly />
-                    </label>
-                    <label>
-                      <span>Sem nepatri</span>
-                      <input type="text" value="<?= esc(implode(', ', (array) ($candidateImportPreset['exclude_terms'] ?? []))) ?>" readonly />
-                    </label>
-                  </div>
-                  <div class="admin-grid two-up">
-                    <label>
-                      <span>Subor s produktmi</span>
-                      <input type="file" name="candidate_file" accept=".xml,.csv,.json,.txt" />
-                  </label>
-                  <label>
-                    <span>Poznamka</span>
-                    <input type="text" value="Staci jedno: bud URL feedu, alebo subor." readonly />
-                  </label>
-                  </div>
-                  <p class="admin-note">Podporene su XML, CSV aj JSON. V Dognete chod do <strong>Produktove feedy</strong>, klikni <strong>Kopirovat URL</strong> a vloz ten link sem.</p>
+                  <p class="admin-note">V Dognete chod do <strong>Produktove feedy</strong>, klikni <strong>Kopirovat URL</strong> a vloz ten link sem.</p>
                   <?php if (trim((string) ($candidateImportPreset['warning'] ?? '')) !== ''): ?>
                     <p class="admin-note"><strong>Pozor:</strong> <?= esc((string) ($candidateImportPreset['warning'] ?? '')) ?></p>
                   <?php endif; ?>
-                  <p class="admin-note">Povolene su len: <strong>whey, concentrate, isolate, clear, vegan blend</strong>. Zakazane su tycinky, snacky, gainer, kolagen, pre-workout a stimulanty.</p>
-                  <p class="admin-note">Pre istotu sa teraz z jedneho feedu nacita len prvy mensi balik: <strong><?= esc((string) $candidateImportLimit) ?> produktov</strong>.</p>
+                  <p class="admin-note"><strong>Povolene su len:</strong> whey, concentrate, isolate, clear, vegan blend.</p>
+                  <p class="admin-note"><strong>Nepatria sem:</strong> tycinky, snacky, gainer, kolagen, pre-workout, stimulanty.</p>
+                  <p class="admin-note">Z jedneho feedu sa teraz nacita len prvy mensi balik: <strong><?= esc((string) $candidateImportLimit) ?> produktov</strong>.</p>
                   <div class="admin-actions">
                     <button class="btn btn-cta" type="submit">Nacitat produkty pre tento clanok</button>
                   </div>
@@ -4032,7 +4017,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php elseif (!$selectedCandidateHasArticle): ?>
                       <p>Klik do obchodu je pripraveny. Dalsi krok je uz len technicke pridanie k pilotnemu clanku, ak tam obsahovo patri.</p>
                     <?php elseif (!$selectedCandidateApproved): ?>
-                      <p>Produkt uz ma klik aj clanok. Posledny technicky krok je ulozit ho do systemu, aby ho vedelo posudit web vlakno.</p>
+                    <p>Produkt uz ma odkaz aj clanok. Posledny krok je ulozit ho do systemu, aby ho potom vedelo posudit web vlakno.</p>
                     <?php else: ?>
                       <p>Tento produkt je technicky pripraveny. Finalny vyber pre web urobi web vlakno.</p>
                     <?php endif; ?>
@@ -4060,7 +4045,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php elseif (!$selectedCandidateHasArticle): ?>
                     <?php if ($selectedCandidateCanUseSimpleAssignment): ?>
                       <p class="admin-note">Tento produkt patri do clanku <strong><?= esc($selectedCandidateSuggestedArticleTitle) ?></strong>.</p>
-                      <p class="admin-note">Po kliknuti sa len technicky prida k tomuto clanku. Ziadne finalne redakcne rozhodnutie sa tu este nerobi.</p>
+                      <p class="admin-note">Po kliknuti sa len prida k tomuto clanku. Finalny vyber sa bude robit az neskor.</p>
                       <form method="post" class="admin-form admin-form-stack">
                         <input type="hidden" name="action" value="save_candidate_assignment" />
                         <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
@@ -4069,7 +4054,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <input type="hidden" name="candidate_order" value="10" />
                         <input type="hidden" name="candidate_role" value="standard" />
                         <div class="admin-actions">
-                          <button class="btn btn-cta" type="submit">Pridat k clanku</button>
+                          <button class="btn btn-cta" type="submit">Pridat tento produkt k clanku</button>
                         </div>
                       </form>
                     <?php elseif (($selectedCandidateArticleFit['status'] ?? 'no-fit') !== 'fit'): ?>
@@ -4088,13 +4073,13 @@ require dirname(__DIR__) . '/inc/head.php';
                       </div>
                     <?php endif; ?>
                   <?php elseif (!$selectedCandidateApproved): ?>
-                    <p class="admin-note">Produkt uz ma odkaz aj clanok. Posledny technicky krok je ulozit ho do systemu. Este to neznamena finalny vyber pre web.</p>
+                    <p class="admin-note">Produkt uz ma odkaz aj clanok. Posledny krok je ulozit ho do systemu. Este to neznamena finalny vyber pre web.</p>
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="approve_candidate_for_web" />
                       <input type="hidden" name="candidate_id" value="<?= esc($selectedCandidateId) ?>" />
                       <input type="hidden" name="batch" value="<?= esc($recentCandidateBatchId) ?>" />
                       <div class="admin-actions">
-                        <button class="btn btn-cta" type="submit">Ulozit do systemu</button>
+                        <button class="btn btn-cta" type="submit">Ulozit tento produkt do systemu</button>
                       </div>
                     </form>
                   <?php else: ?>
