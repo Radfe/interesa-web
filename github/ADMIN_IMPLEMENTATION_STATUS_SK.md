@@ -71,6 +71,21 @@ Admin vrstva riesi:
 ## 3. Co sa menilo naposledy
 
 Najnovsi produktovy krok:
+- pilot pre `najlepsie-proteiny-2026` uz v zozname po importe ukazuje len vhodne produkty pre tento clanok
+- produkty, ktore do tohto pilotu nepatria, sa uz nemaju miešat do hlavneho zoznamu po importe
+- ak sa v poslednom importe nasli len nevhodne produkty, admin to povie priamo a netlaci pouzivatela do dalsieho kroku
+
+- predchadzajuci produktovy krok:
+- pilot pre `najlepsie-proteiny-2026` uz neberie "posledny batch" zo vsetkych kandidatov, ale len batchy, ktore maju ulozeny `target_article_slug = najlepsie-proteiny-2026`
+- tym sa do pilotneho zoznamu prestavaju miesat stare spinate batchy s tycinkami, porrige a meal replacement produktmi
+- import pre pilot teraz vyzaduje aj explicitny typ produktu
+- ked sa pre dany clanok, obchod a typ nic nenajde, chybova hlaska uz hovori presne:
+  - ktory clanok
+  - ktory obchod
+  - ktory typ produktu
+- chybova hlaska uz tiez vysvetluje, ze pilot pusta len ciste proteiny, nie tycinky, snacky, porridge ani iny balast
+
+- predchadzajuci pilotny krok:
 - `Produkty` maju teraz dva striktne oddelene rezimy:
   - `section=products` = import pre pilotny clanok
   - `candidate=...` = jeden otvoreny produkt

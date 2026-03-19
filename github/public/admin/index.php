@@ -2180,6 +2180,9 @@ if ($isAuthed) {
                     : 40;
                 $candidateFeedUrl = trim((string) ($_POST['candidate_feed_url'] ?? ''));
                 $candidateFilterText = trim((string) ($_POST['candidate_filter_text'] ?? ''));
+                if ($candidateFilterText === '') {
+                    throw new RuntimeException('Najprv vyber presny typ produktu pre tento clanok.');
+                }
                 $candidatePreset = interessa_admin_candidate_import_preset($candidateTargetArticleSlug);
                 $effectiveCandidateFilter = $candidateFilterText !== ''
                     ? $candidateFilterText
@@ -2201,7 +2204,12 @@ if ($isAuthed) {
                     $rows = array_slice($rows, 0, $candidateImportLimit);
                 }
                 if ($rows === []) {
-                    throw new RuntimeException('Pre vybrany clanok sa v tomto feede nenasli vhodne produkty. Skus iny obchod alebo uzsi import pre tento clanok.');
+                    $candidateArticleTitle = (string) ($articleOptions[$candidateTargetArticleSlug]['title'] ?? $candidateTargetArticleSlug);
+                    $candidateMerchantName = (string) ($candidateMerchantOptions[$merchantSlug] ?? $merchantSlug);
+                    throw new RuntimeException(
+                        'Pre clanok "' . $candidateArticleTitle . '" sa v obchode "' . $candidateMerchantName . '" pri type "' . $effectiveCandidateFilter . '" nenasli vhodne produkty. '
+                        . 'Tento pilot pusta len ciste proteiny, nie tycinky, snacky, porridge ani iny balast.'
+                    );
                 }
                 $importResult = interessa_admin_import_product_candidates(
                     $rows,
@@ -2878,10 +2886,18 @@ if ($candidatePilotMerchantOptions === []) {
 $candidateImportLimit = function_exists('interessa_admin_candidate_import_limit')
     ? interessa_admin_candidate_import_limit()
     : 40;
-$candidateRowsById = interessa_admin_product_candidates();
-uasort($candidateRowsById, static function (array $a, array $b): int {
+$allCandidateRowsById = interessa_admin_product_candidates();
+uasort($allCandidateRowsById, static function (array $a, array $b): int {
     return strcmp((string) ($b['updated_at'] ?? ''), (string) ($a['updated_at'] ?? ''));
 });
+$candidateRowsById = [];
+foreach ($allCandidateRowsById as $candidateRowId => $candidateRowValue) {
+    $candidateRowTargetArticleSlug = canonical_article_slug((string) ($candidateRowValue['target_article_slug'] ?? ''));
+    if ($candidateRowTargetArticleSlug !== $candidatePilotArticleSlug) {
+        continue;
+    }
+    $candidateRowsById[$candidateRowId] = $candidateRowValue;
+}
 $candidateRows = array_values($candidateRowsById);
 $recentCandidateBatchId = interessa_admin_slugify((string) ($_GET['batch'] ?? ''));
 if ($recentCandidateBatchId === '' && $candidateRows !== []) {
@@ -2908,6 +2924,9 @@ foreach ($candidateRows as $candidateRow) {
     $candidateHasArticle = trim((string) ($candidateRow['article_slug'] ?? '')) !== '';
     $candidateApproved = !empty($candidateRow['approved']);
     $candidateHasImage = trim((string) ($candidateRow['image_remote_src'] ?? '')) !== '';
+    $candidateFit = interessa_admin_candidate_phase_one_fit($candidateRow);
+    $candidateFitSlug = canonical_article_slug((string) ($candidateFit['slug'] ?? ''));
+    $candidateAllowedForPilot = $candidateFitSlug === $candidatePilotArticleSlug;
     if ($candidateHasClick) {
         $candidateClickReadyCount++;
     }
@@ -2942,6 +2961,8 @@ foreach ($candidateRows as $candidateRow) {
         'approved' => $candidateApproved,
         'has_image' => $candidateHasImage,
         'next_label' => $candidateNextLabel,
+        'fit_status' => $candidateAllowedForPilot ? 'allowed' : 'blocked',
+        'fit_reason' => (string) ($candidateFit['reason'] ?? ''),
     ];
 }
 
@@ -2953,17 +2974,23 @@ if ($recentCandidateBatchId !== '') {
         }
     }
 }
-$candidateSelectorRows = $recentImportedRows !== [] ? $recentImportedRows : $candidateListRows;
+$recentImportedVisibleRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
+    return (string) ($row['fit_status'] ?? 'blocked') === 'allowed';
+}));
+$recentImportedBlockedRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
+    return (string) ($row['fit_status'] ?? 'allowed') !== 'allowed';
+}));
+$candidateSelectorRows = $recentImportedVisibleRows !== [] ? $recentImportedVisibleRows : ($recentImportedRows !== [] ? $recentImportedRows : $candidateListRows);
 $candidateImportedDisplayCount = $candidateImportedCount;
 $candidateClickReadyDisplayCount = $candidateClickReadyCount;
 $candidateAssignedDisplayCount = $candidateAssignedCount;
 $candidateApprovedDisplayCount = $candidateApprovedCount;
-if ($recentImportedRows !== []) {
-    $candidateImportedDisplayCount = count($recentImportedRows);
+if ($recentImportedVisibleRows !== []) {
+    $candidateImportedDisplayCount = count($recentImportedVisibleRows);
     $candidateClickReadyDisplayCount = 0;
     $candidateAssignedDisplayCount = 0;
     $candidateApprovedDisplayCount = 0;
-    foreach ($recentImportedRows as $recentImportedRow) {
+    foreach ($recentImportedVisibleRows as $recentImportedRow) {
         if (!empty($recentImportedRow['has_click'])) {
             $candidateClickReadyDisplayCount++;
         }
@@ -3957,7 +3984,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
               </div>
               <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
-                <p class="admin-note"><strong>Import je hotovy.</strong> Dole vidis len produkty z posledneho batchu. Klikni na jeden produkt a otvor ho.</p>
+                <p class="admin-note"><strong>Import je hotovy.</strong> Dole vidis len vhodne produkty z posledneho batchu. Klikni na jeden produkt a otvor ho.</p>
               <?php endif; ?>
 
               <?php if (!is_array($selectedCandidate)): ?>
@@ -4116,17 +4143,23 @@ require dirname(__DIR__) . '/inc/head.php';
               <?php endif; ?>
             </section>
 
-            <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
-              <details class="admin-subsection is-compact" id="products-imported-list" <?= $productCandidateFocusMode ? '' : 'open' ?>>
-                <summary><strong>Produkty z posledneho importu</strong> - tu vyber dalsi produkt z tohto batchu</summary>
+              <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
+                <details class="admin-subsection is-compact" id="products-imported-list" <?= $productCandidateFocusMode ? '' : 'open' ?>>
+                <summary><strong>Vhodne produkty z posledneho importu</strong> - tu vyber dalsi produkt z tohto batchu</summary>
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>Posledny import: <?= esc((string) count($recentImportedRows)) ?> produktov</h3>
-                    <p class="admin-meta">Tu vidis len posledny import pre clanok Najlepsie proteiny 2026.</p>
+                    <h3>Posledny import: <?= esc((string) count($recentImportedVisibleRows)) ?> vhodnych produktov</h3>
+                    <p class="admin-meta">Tu vidis len produkty, ktore naozaj patria do pilotu pre clanok Najlepsie proteiny 2026.</p>
+                    <?php if ($recentImportedBlockedRows !== []): ?>
+                      <p class="admin-note"><?= esc((string) count($recentImportedBlockedRows)) ?> produktov bolo odlozenych bokom, lebo do tohto clanku nepatria.</p>
+                    <?php endif; ?>
                   </div>
                 </div>
+                <?php if ($recentImportedVisibleRows === []): ?>
+                  <p class="admin-note">V poslednom importe nie je ziadny cisty produkt pre tento clanok. Skus iny obchod alebo iny presny typ produktu.</p>
+                <?php else: ?>
                 <div class="admin-queue-list">
-                  <?php foreach ($recentImportedRows as $recentImportedIndex => $recentImportedRow): ?>
+                  <?php foreach ($recentImportedVisibleRows as $recentImportedIndex => $recentImportedRow): ?>
                     <article class="admin-queue-item">
                       <div>
                         <strong><?= esc((string) ($recentImportedIndex + 1)) ?>. <?= esc((string) $recentImportedRow['name']) ?></strong>
@@ -4158,6 +4191,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     </article>
                   <?php endforeach; ?>
                 </div>
+                <?php endif; ?>
               </details>
             <?php endif; ?>
           </section>
