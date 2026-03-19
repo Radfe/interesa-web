@@ -88,8 +88,17 @@ Najnovsi brand/Canva zaver:
 - admin uz ma sekciu `Logo a ikonka`, prompty pre Canvu aj automaticku pripravu icon bundle
 - netreba novy brand system od nuly
 - treba len preverit a opravit, preco realny upload loga nefunguje v pouzivatelskom toku
+- technicke spresnenie upload kontraktu:
+  - `Hlavne logo` prijima `svg/png/jpeg/webp`
+  - `Ikonka stranky` prijima len raster zdroj a generuje z neho male PNG verzie
+  - pre ikonku teda nema ist `logo-icon.svg`, ale `logo-icon.png`
 - handoff zapisany do:
   - [WEB_TO_ADMIN_BRAND_CANVA_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_BRAND_CANVA_HANDOFF_2026-03-17_SK.md)
+
+Najnovsie launch spresnenie:
+- bol doplneny aktualny launch checklist s poradiami a s opravou brand uploadu na prvom mieste, ak je sekcia `Logo a ikonka` pokazena
+- checklist:
+  - [PUBLIC_WEB_LAUNCH_CHECKLIST_SK.md](C:/data/praca/webova_stranka/github/PUBLIC_WEB_LAUNCH_CHECKLIST_SK.md)
 
 Najnovsi admin audit z web vlakna:
 - admin uz ma viacero technickych stavebnych blokov pre kandidatov, obrazky a kliky

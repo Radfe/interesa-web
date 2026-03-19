@@ -258,6 +258,17 @@ Najnovsie zjednodusenie:
 - technicke a menej dolezite casti su schovane do rozbalovacich blokov
 - pri produktoch bez obrazka uz technicka cesta obrazka nezavadzia na ociach
 
+Najnovsie brand spresnenie:
+- sekcia `Logo a ikonka` ma dva odlisne vstupy:
+  - `Hlavne logo` prijima `svg/png/jpeg/webp`
+  - `Ikonka stranky` ocakava stvorcovy raster zdroj a z neho pripravuje:
+    - `logo-icon.png`
+    - `favicon-32.png`
+    - `favicon-48.png`
+    - `apple-touch-icon.png`
+- do ikonky teda nema ist `logo-icon.svg`, ale `logo-icon.png`
+- ak sa po nahrati hlavneho loga nezobrazi zmena na webe, treba overit, ci sa vytvoril aj odvodeny asset `logo-full-web`
+
 Najnovsi upratovaci krok:
 - horny prehlad webu je schovany do rozbalovacieho bloku, aby pri beznej praci nezavadzal
 - v `Produkty` pribudol novy hlavny blok `Produkty z vybraneho clanku`

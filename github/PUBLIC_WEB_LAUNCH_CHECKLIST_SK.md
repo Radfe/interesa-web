@@ -2,6 +2,37 @@
 
 Tento dokument je urceny len pre verejny web projektu Interesa.sk.
 
+## Aktualne poradie riesenia
+
+1. Opravit a overit sekciu `Logo a ikonka` v admine.
+2. Nahrat finalne brand assety:
+   - hlavne logo
+   - ikonku / favicon bundle
+   - OG obrazok
+3. Dokazat jeden cisty `article-first` pilot pre:
+   - `najlepsie-proteiny-2026`
+4. Ziskat prve technicky hotove kandidatne produkty pre prve 3 prioritne clanky.
+5. Spravit finalny vyber produktov vo web vlakne.
+6. Napojit realne produktove bloky, obrazky a kliky do obchodov na verejnom webe.
+7. Dorobit posledny pass na homepage, kategoriach a top money clankoch.
+8. Spravit launch QA.
+9. Az potom hosting deployment.
+
+## Brand upload: technicke pravidla
+
+- Ak je sekcia `Logo a ikonka` pokazena alebo neuklada nove assety, je to aktualne rozumne dat na prve miesto.
+- Bez funkcnej brand sekcie sa zbytocne tocia dalsie pokusy dokola a web stale zostava na starom logu.
+- `Hlavne logo` sa ma nahravat ako:
+  - `logo-full.svg`
+  - fallback: `logo-full.png`
+- `Ikonka stranky` sa nema nahravat ako SVG.
+- Zdroj pre favicon a male ikony ma byt:
+  - `logo-icon.png`
+  - alebo iny stvorcovy PNG/JPG/WEBP zdroj
+- `Obrazok pri zdielani` odporucany upload:
+  - `og-default.png`
+- Frontend preferuje odvodeny asset `logo-full-web`, ak sa po nahrati korektne vytvori.
+
 ## Co je hotove na webe
 
 - Desktop menu funguje stabilne a uz neschovava obsah pri beznom pouziti.
