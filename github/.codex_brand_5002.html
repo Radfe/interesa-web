@@ -8,21 +8,21 @@
   <meta name="robots" content="noindex,nofollow" />
   <meta name="theme-color" content="#11a96d" />
   <meta name="color-scheme" content="light" />
-  <link rel="canonical" href="http://127.0.0.1:5001/admin" />
+  <link rel="canonical" href="http://127.0.0.1:5002/admin" />
 
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Interesa" />
   <meta property="og:locale" content="sk_SK" />
-  <meta property="og:url" content="http://127.0.0.1:5001/admin" />
+  <meta property="og:url" content="http://127.0.0.1:5002/admin" />
   <meta property="og:title" content="Admin | Interesa" />
   <meta property="og:description" content="Interny admin panel pre clanky, produkty, obrazky a odkazy do obchodov." />
-  <meta property="og:image" content="http://127.0.0.1:5001/assets/img/og-default.jpg?v=1773125880" />
+  <meta property="og:image" content="http://127.0.0.1:5002/assets/img/og-default.jpg?v=1773125880" />
   <meta property="og:image:alt" content="Admin | Interesa" />
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Admin | Interesa" />
   <meta name="twitter:description" content="Interny admin panel pre clanky, produkty, obrazky a odkazy do obchodov." />
-  <meta name="twitter:image" content="http://127.0.0.1:5001/assets/img/og-default.jpg?v=1773125880" />
+  <meta name="twitter:image" content="http://127.0.0.1:5002/assets/img/og-default.jpg?v=1773125880" />
   <meta name="twitter:image:alt" content="Admin | Interesa" />
 
   <link rel="shortcut icon" href="/assets/img/brand/favicon-32.png?v=1773780254" type="image/png" />
@@ -53,22 +53,71 @@
   <div id="megaTray" class="mega-tray" aria-hidden="true"></div>
   <main id="obsah">
 <section class="container admin-page">
-      <div class="admin-login-wrap">
-      <section class="admin-login-card">
-        <p class="admin-kicker">Protected admin</p>
-        <h1>Prihlasenie do adminu</h1>
-        <p class="admin-meta">Tento panel je urceny na internu spravu clankov, produktov, obrazkov a affiliate odkazov.</p>
-                
-        <form method="post" class="admin-form admin-form-stack">
-          <input type="hidden" name="action" value="login" />
-          <label>
-            <span>Heslo</span>
-            <input type="password" name="password" autocomplete="current-password" required />
-          </label>
-          <button class="btn btn-cta" type="submit">Prihlasit sa</button>
-        </form>
-                  <p class="admin-note">Pouziva sa docasne predvolene heslo <strong>interesa-admin</strong>. Pre lokalnu zmenu vytvor <code>public/storage/admin/auth.php</code> podla <code>auth.example.php</code>.</p>
-              </section>
+      <div class="admin-shell">
+                        <aside class="admin-sidebar">
+        <div class="admin-sidebar-head">
+          <div>
+            <h1>Admin</h1>
+            <p class="admin-meta">Jednoducha sprava clankov, produktov, obrazkov a odkazu.</p>
+          </div>
+          <form method="post">
+            <input type="hidden" name="action" value="logout" />
+            <button class="btn btn-secondary btn-small" type="submit">Odhlasit</button>
+          </form>
+        </div>
+        <nav class="admin-nav">
+          <a class="" href="/admin?section=articles&slug=pre-workout-ako-vybrat">Clanky</a>
+          <a class="" href="/admin?section=products">Produkty</a>
+          <a class="" href="/admin?section=images&slug=pre-workout-ako-vybrat">Obrazky</a>
+          <a class="" href="/admin?section=affiliates&code=doplnky-vyzivy-aktin">Odkazy do obchodu</a>
+          <a class="is-active" href="/admin?section=brand">Logo a ikonka</a>
+          <a class="" href="/admin?section=tools">Import / export</a>
+          <a class="" href="/admin?section=help">Pomoc / quickstart</a>
+          <a href="/admin/ai-status">AI status</a>
+        </nav>
+        <div class="admin-note">
+          Tu spravujes obsah webu. V kazdej casti mas len tie kroky, ktore teraz naozaj potrebujes.
+        </div>
+        <section class="admin-quickstart">
+          <h2>Rychly start</h2>
+                      <ol class="admin-quickstart-list">
+              <li>Nahraj hlavne logo, ak chces zmenit logo v hlavicke webu.</li>
+              <li>Nahraj zdrojovy obrazok pre ikonku stranky.</li>
+              <li>Admin z nej pripravi male verzie pre prehliadac a mobil.</li>
+            </ol>
+                  </section>
+      </aside>
+      
+      <div class="admin-main">
+                                                
+        
+                <details class="admin-subsection is-compact">
+          <summary><strong>Zakladny prehlad webu</strong> - bezne netreba otvarat</summary>
+          <section class="admin-dashboard-grid">
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Clanky s admin zmenou</span>
+              <strong>0</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Produkty ulozene v admine</span>
+              <strong>23</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Klikacie odkazy</span>
+              <strong>40</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Hlavne obrazky clankov hotove</span>
+              <strong></strong>
+            </article>
+          </section>
+        </details>
+        
+        
+        
+        
+        
+              </div>
     </div>
   </section>
 <style>
@@ -994,7 +1043,7 @@
 </footer>
 
 <button class="dev-reload-fab" type="button" data-dev-reload>Obnovit verziu</button>
-<div class="dev-build-badge" aria-live="polite">Verzia 20260319-153550</div>
+<div class="dev-build-badge" aria-live="polite">Verzia 20260319-231925</div>
 
 <script src="/assets/js/app.js?v=1773569219" defer></script>
 <script src="/assets/js/admin.js?v=1773482673&amp;copyfix=20260314b" defer></script>

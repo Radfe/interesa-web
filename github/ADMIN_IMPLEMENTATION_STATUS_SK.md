@@ -789,3 +789,11 @@ Viditelna verzia v lokalnom prostredi:
 - tlacidlo `Obnovit verziu` uz ma vedla seba aj citatelnu build verziu
 - build verzia sa rata z poslednej zmeny v lokalnych `php`, `css`, `js` a `json` suboroch v `public`
 - ciel je, aby bolo na prvy pohlad jasne, ktoru verziu webu alebo adminu mas prave otvorenu
+## 2026-03-19 - Zrychlenie potvrdenia zmien
+
+- Do `.gitignore` som doplnil subory, ktore su len docasne alebo lokalne generovane:
+  - `public/storage/admin/product-candidates.json`
+  - `tmp_homepage.html`
+  - `tmp_products_import.html`
+- Ciel: aby sa tieto subory zbytocne neprenasali do git diffu a nespomalovali potvrdenie zmien v Codex desktope.
+- Toto neriesi kazdu cast pomalosti, ale odstranuje konkretne zbytocne trackovane subory, ktore nafukovali zmeny.

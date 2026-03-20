@@ -2244,6 +2244,15 @@ if ($isAuthed) {
                 );
                 $imported = is_array($importResult['ids'] ?? null) ? $importResult['ids'] : [];
                 $batchId = (string) ($importResult['batch_id'] ?? '');
+                $firstImportedCandidate = trim((string) ($imported[0] ?? ''));
+                if ($firstImportedCandidate !== '') {
+                    interessa_admin_redirect_fragment('products', [
+                        'candidate' => $firstImportedCandidate,
+                        'saved' => 'candidate-imported',
+                        'batch' => $batchId,
+                        'import_article' => $candidateTargetArticleSlug,
+                    ], 'products-current-candidate');
+                }
                 interessa_admin_redirect_fragment('products', [
                     'saved' => 'candidate-imported',
                     'batch' => $batchId,

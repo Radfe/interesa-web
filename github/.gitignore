@@ -3,3 +3,6 @@ public/storage/dognet/raw/*.xml
 !public/storage/dognet/raw/.gitkeep
 
 public/storage/admin/auth.php
+public/storage/admin/product-candidates.json
+tmp_homepage.html
+tmp_products_import.html
