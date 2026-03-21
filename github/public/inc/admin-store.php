@@ -1310,19 +1310,6 @@ if (!function_exists('interessa_admin_save_candidate_assignment')) {
         $candidate['show_in_top'] = !empty($assignment['show_in_top']);
         $candidate['show_in_comparison'] = !empty($assignment['show_in_comparison']);
 
-        $articleSlug = trim((string) ($candidate['article_slug'] ?? ''));
-        $productSlug = interessa_admin_slugify((string) ($candidate['product_slug'] ?? ''));
-        if ($articleSlug !== '' && $productSlug !== '') {
-            interessa_admin_save_article_product_record($articleSlug, $productSlug, [
-                'order' => (int) ($candidate['order'] ?? 10),
-                'role' => (string) ($candidate['role'] ?? 'standard'),
-                'show_in_top' => !empty($candidate['show_in_top']),
-                'show_in_comparison' => !empty($candidate['show_in_comparison']),
-                'enabled' => true,
-            ]);
-            interessa_admin_sync_article_product_override($articleSlug);
-        }
-
         return interessa_admin_save_product_candidate_record($id, $candidate);
     }
 }
@@ -1406,15 +1393,7 @@ if (!function_exists('interessa_admin_approve_candidate_for_web')) {
             throw new RuntimeException('Kandidat nema kod produktu.');
         }
 
-        if (trim((string) ($candidate['url'] ?? '')) === '') {
-            throw new RuntimeException('Najprv dopln link produktu.');
-        }
-
         $clickCode = trim((string) ($candidate['click_code'] ?? ''));
-        if ($clickCode === '') {
-            throw new RuntimeException('Najprv priprav klik do obchodu.');
-        }
-
         $clickReady = $clickCode !== '' && trim((string) ($candidate['click_url'] ?? '')) !== '';
 
         $existingAffiliateRecord = array_replace(
@@ -1437,8 +1416,10 @@ if (!function_exists('interessa_admin_approve_candidate_for_web')) {
         $productPayload = interessa_admin_product_bridge_payload_from_candidate($candidate, $existingProduct);
         interessa_admin_save_product_record($productSlug, $productPayload);
 
-        if (trim((string) ($candidate['article_slug'] ?? '')) !== '') {
-            interessa_admin_bind_product_to_article((string) $candidate['article_slug'], $productSlug, [
+        $articleSlug = trim((string) ($candidate['article_slug'] ?? ''));
+        $articleReady = $articleSlug !== '';
+        if ($articleReady) {
+            interessa_admin_bind_product_to_article($articleSlug, $productSlug, [
                 'order' => (int) ($candidate['order'] ?? 1),
                 'role' => (string) ($candidate['role'] ?? 'standard'),
                 'show_in_top' => !empty($candidate['show_in_top']),
@@ -1469,6 +1450,7 @@ if (!function_exists('interessa_admin_approve_candidate_for_web')) {
             'id' => $id,
             'product_slug' => $productSlug,
             'article_slug' => (string) ($candidate['article_slug'] ?? ''),
+            'article_ready' => $articleReady,
             'mirrored' => $mirrored,
         ];
     }
