@@ -8,6 +8,7 @@ const INTERESSA_ADMIN_STORAGE_DIR = __DIR__ . '/../storage/admin';
 const INTERESSA_ADMIN_ARTICLES_DIR = INTERESSA_ADMIN_STORAGE_DIR . '/articles';
 const INTERESSA_ADMIN_PRODUCTS_FILE = INTERESSA_ADMIN_STORAGE_DIR . '/products.json';
 const INTERESSA_ADMIN_AFFILIATE_LINKS_FILE = INTERESSA_ADMIN_STORAGE_DIR . '/affiliate-links.json';
+const INTERESSA_ADMIN_ARTICLE_PRODUCTS_FILE = INTERESSA_ADMIN_STORAGE_DIR . '/article-products.json';
 const INTERESSA_ADMIN_PRODUCT_CANDIDATES_FILE = INTERESSA_ADMIN_STORAGE_DIR . '/product-candidates.json';
 
 if (!function_exists('interessa_admin_ensure_dir')) {
@@ -805,6 +806,107 @@ if (!function_exists('interessa_admin_normalize_candidate_role')) {
     }
 }
 
+if (!function_exists('interessa_admin_article_product_key')) {
+    function interessa_admin_article_product_key(string $articleSlug, string $productSlug): string {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        $productSlug = interessa_admin_slugify($productSlug);
+        return $articleSlug !== '' && $productSlug !== ''
+            ? $articleSlug . '::' . $productSlug
+            : '';
+    }
+}
+
+if (!function_exists('interessa_admin_article_products')) {
+    function interessa_admin_article_products(): array {
+        return interessa_admin_read_json(INTERESSA_ADMIN_ARTICLE_PRODUCTS_FILE, []);
+    }
+}
+
+if (!function_exists('interessa_admin_save_article_products')) {
+    function interessa_admin_save_article_products(array $rows): void {
+        ksort($rows);
+        interessa_admin_write_json(INTERESSA_ADMIN_ARTICLE_PRODUCTS_FILE, $rows);
+    }
+}
+
+if (!function_exists('interessa_admin_normalize_article_product_record')) {
+    function interessa_admin_normalize_article_product_record(array $row): array {
+        $articleSlug = canonical_article_slug(trim((string) ($row['article_slug'] ?? '')));
+        $productSlug = interessa_admin_slugify((string) ($row['product_slug'] ?? $row['slug'] ?? ''));
+        $createdAt = trim((string) ($row['created_at'] ?? ''));
+        if ($createdAt === '') {
+            $createdAt = date('c');
+        }
+
+        return [
+            'article_slug' => $articleSlug,
+            'product_slug' => $productSlug,
+            'order' => max(1, (int) ($row['order'] ?? 1)),
+            'role' => interessa_admin_normalize_candidate_role($row['role'] ?? ''),
+            'show_in_top' => !empty($row['show_in_top']),
+            'show_in_comparison' => !empty($row['show_in_comparison']),
+            'enabled' => array_key_exists('enabled', $row) ? !empty($row['enabled']) : true,
+            'created_at' => $createdAt,
+            'updated_at' => date('c'),
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_save_article_product_record')) {
+    function interessa_admin_save_article_product_record(string $articleSlug, string $productSlug, array $row): array {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        $productSlug = interessa_admin_slugify($productSlug);
+        $key = interessa_admin_article_product_key($articleSlug, $productSlug);
+        if ($key === '') {
+            throw new RuntimeException('Chyba clanok alebo produkt pre article_product vazbu.');
+        }
+
+        $rows = interessa_admin_article_products();
+        $existing = is_array($rows[$key] ?? null) ? $rows[$key] : [];
+        $payload = array_replace($existing, $row, [
+            'article_slug' => $articleSlug,
+            'product_slug' => $productSlug,
+        ]);
+        $rows[$key] = interessa_admin_normalize_article_product_record($payload);
+        interessa_admin_save_article_products($rows);
+        return $rows[$key];
+    }
+}
+
+if (!function_exists('interessa_admin_article_product_records_for_article')) {
+    function interessa_admin_article_product_records_for_article(string $articleSlug): array {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        if ($articleSlug === '') {
+            return [];
+        }
+
+        $matches = [];
+        foreach (interessa_admin_article_products() as $key => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $normalized = interessa_admin_normalize_article_product_record($row);
+            if (($normalized['article_slug'] ?? '') !== $articleSlug) {
+                continue;
+            }
+
+            $matches[$key] = $normalized;
+        }
+
+        uasort($matches, static function (array $left, array $right): int {
+            $orderCompare = ((int) ($left['order'] ?? 999)) <=> ((int) ($right['order'] ?? 999));
+            if ($orderCompare !== 0) {
+                return $orderCompare;
+            }
+
+            return strcmp((string) ($left['product_slug'] ?? ''), (string) ($right['product_slug'] ?? ''));
+        });
+
+        return array_values($matches);
+    }
+}
+
 if (!function_exists('interessa_admin_normalize_product_candidate_record')) {
     function interessa_admin_normalize_product_candidate_record(string $id, array $row): array {
         $id = interessa_admin_slugify($id);
@@ -1095,6 +1197,18 @@ if (!function_exists('interessa_admin_save_candidate_assignment')) {
         $candidate['role'] = interessa_admin_normalize_candidate_role($assignment['role'] ?? '');
         $candidate['show_in_top'] = !empty($assignment['show_in_top']);
         $candidate['show_in_comparison'] = !empty($assignment['show_in_comparison']);
+
+        $articleSlug = trim((string) ($candidate['article_slug'] ?? ''));
+        $productSlug = interessa_admin_slugify((string) ($candidate['product_slug'] ?? ''));
+        if ($articleSlug !== '' && $productSlug !== '') {
+            interessa_admin_save_article_product_record($articleSlug, $productSlug, [
+                'order' => (int) ($candidate['order'] ?? 10),
+                'role' => (string) ($candidate['role'] ?? 'standard'),
+                'show_in_top' => !empty($candidate['show_in_top']),
+                'show_in_comparison' => !empty($candidate['show_in_comparison']),
+                'enabled' => true,
+            ]);
+        }
 
         return interessa_admin_save_product_candidate_record($id, $candidate);
     }
