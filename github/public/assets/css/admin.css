@@ -10,7 +10,8 @@
 }
 
 .admin-shell.is-products-pilot,
-.admin-shell.is-product-candidate-focus {
+.admin-shell.is-product-candidate-focus,
+.admin-shell.is-brand-focus {
   display: block;
   max-width: 1080px;
   margin-inline: auto;
@@ -32,7 +33,8 @@
 }
 
 .admin-shell.is-products-pilot .admin-sidebar,
-.admin-shell.is-product-candidate-focus .admin-sidebar {
+.admin-shell.is-product-candidate-focus .admin-sidebar,
+.admin-shell.is-brand-focus .admin-sidebar {
   display: none !important;
 }
 
@@ -78,14 +80,16 @@
 }
 
 .admin-shell.is-products-pilot .admin-main,
-.admin-shell.is-product-candidate-focus .admin-main {
+.admin-shell.is-product-candidate-focus .admin-main,
+.admin-shell.is-brand-focus .admin-main {
   width: 100%;
   max-width: 1080px;
   margin-inline: auto;
 }
 
 .admin-shell.is-products-pilot > * + *,
-.admin-shell.is-product-candidate-focus > * + * {
+.admin-shell.is-product-candidate-focus > * + *,
+.admin-shell.is-brand-focus > * + * {
   margin-top: 1rem;
 }
 
@@ -766,7 +770,8 @@
 }
 
 .admin-shell.is-products-pilot .admin-brief-grid,
-.admin-shell.is-product-candidate-focus .admin-brief-grid {
+.admin-shell.is-product-candidate-focus .admin-brief-grid,
+.admin-shell.is-brand-focus .admin-brief-grid {
   grid-template-columns: 1fr;
 }
 

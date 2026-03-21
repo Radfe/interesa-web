@@ -797,3 +797,15 @@ Viditelna verzia v lokalnom prostredi:
   - `tmp_products_import.html`
 - Ciel: aby sa tieto subory zbytocne neprenasali do git diffu a nespomalovali potvrdenie zmien v Codex desktope.
 - Toto neriesi kazdu cast pomalosti, ale odstranuje konkretne zbytocne trackovane subory, ktore nafukovali zmeny.
+## 2026-03-20 - oprava sekcie Logo a ikonka
+
+- opravena kriticka chyba v `public/admin/index.php`, kde chybalo zavretie hlavnej PHP vetvy a admin subor bol syntakticky neplatny
+- dosledok tejto chyby bol, ze sekcia `Logo a ikonka` sa na lokalnom serveri mohla renderovat len ciastocne alebo v rozbitom stave
+- po oprave subor znovu prechadza `php -l`
+- dalsi ocakavany krok v UI:
+  - otvorit `/admin?section=brand`
+  - kliknut `Obnovit verziu`
+  - overit, ze sa zobrazuju bloky:
+    - `Hlavne logo`
+    - `Ikonka stranky`
+    - `Obrazok pri zdielani`

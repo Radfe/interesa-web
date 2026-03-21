@@ -2943,6 +2943,7 @@ $selectedCandidate = $selectedCandidateId !== '' && isset($candidateRowsById[$se
 $candidateFocusRequested = trim((string) ($_GET['candidate'] ?? '')) !== '';
 $productsPilotMode = $section === 'products';
 $productCandidateFocusMode = $section === 'products' && $candidateFocusRequested && is_array($selectedCandidate);
+$brandFocusMode = $section === 'brand';
 $candidateImportedCount = count($candidateRows);
 $candidateClickReadyCount = 0;
 $candidateAssignedCount = 0;
@@ -3122,7 +3123,7 @@ require dirname(__DIR__) . '/inc/head.php';
       </section>
     </div>
   <?php else: ?>
-    <div class="admin-shell<?= $productsPilotMode ? ' is-products-pilot' : '' ?><?= $productCandidateFocusMode ? ' is-product-candidate-focus' : '' ?>">
+    <div class="admin-shell<?= $productsPilotMode ? ' is-products-pilot' : '' ?><?= $productCandidateFocusMode ? ' is-product-candidate-focus' : '' ?><?= $brandFocusMode ? ' is-brand-focus' : '' ?>">
       <?php if ($flashMessage !== ''): ?>
         <div class="admin-flash is-success">
           <div><?= esc($flashMessage) ?></div>
@@ -3144,7 +3145,7 @@ require dirname(__DIR__) . '/inc/head.php';
       <?php if ($error !== ''): ?>
         <div class="admin-flash is-error"><?= esc($error) ?></div>
       <?php endif; ?>
-      <?php if (!$productsPilotMode && !$productCandidateFocusMode): ?>
+      <?php if (!$productsPilotMode && !$productCandidateFocusMode && !$brandFocusMode): ?>
       <aside class="admin-sidebar">
         <div class="admin-sidebar-head">
           <div>
@@ -3243,7 +3244,7 @@ require dirname(__DIR__) . '/inc/head.php';
           <div class="admin-flash is-error"><?= esc($error) ?></div>
         <?php endif; ?>
 
-        <?php if (!$productCandidateFocusMode && $section !== 'products'): ?>
+        <?php if (!$productCandidateFocusMode && $section !== 'products' && $section !== 'brand'): ?>
         <details class="admin-subsection is-compact">
           <summary><strong>Zakladny prehlad webu</strong> - bezne netreba otvarat</summary>
           <section class="admin-dashboard-grid">
@@ -5620,10 +5621,9 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
             </section>
           </section>
-          <?php endif; ?>
-        <?php endif; ?>
+<?php endif; ?>
 
-        <?php if ($section === 'affiliates'): ?>
+<?php if ($section === 'affiliates'): ?>
           <section class="admin-card">
             <div class="admin-card-head">
               <div>
@@ -7219,6 +7219,7 @@ require dirname(__DIR__) . '/inc/head.php';
     });
   })();
 </script>
+<?php endif; ?>
 <?php require dirname(__DIR__) . '/inc/footer.php'; ?>
 
 
