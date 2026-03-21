@@ -2984,6 +2984,18 @@ foreach ($candidateRows as $candidateRow) {
     if ($candidateHasImage) {
         $candidateImageKnownCount++;
     }
+    $candidateSummaryLabel = 'Missing click';
+    $candidateSummaryTone = 'is-warning';
+    if ($candidateClickStatusValue === 'ready' && !$candidateHasArticle) {
+        $candidateSummaryLabel = 'Missing article';
+    } elseif ($candidateClickStatusValue === 'ready' && $candidateHasArticle && $candidateAffiliateStatusValue === 'missing') {
+        $candidateSummaryLabel = 'Missing affiliate';
+    } elseif ($candidateClickStatusValue === 'ready' && $candidateHasArticle && $candidateAffiliateStatusValue !== 'missing' && $candidateApproved) {
+        $candidateSummaryLabel = 'Ready for article';
+        $candidateSummaryTone = 'is-good';
+    } elseif ($candidateClickStatusValue === 'ready' && $candidateHasArticle) {
+        $candidateSummaryLabel = 'Ready to approve';
+    }
     $candidateNextLabel = 'Krok 2: Pripravit klik';
     if (!$candidateHasClick && trim((string) ($candidateRow['url'] ?? '')) === '') {
         $candidateNextLabel = 'Krok 1: Chyba link produktu';
@@ -3016,6 +3028,8 @@ foreach ($candidateRows as $candidateRow) {
         'product_status_tone' => $candidateProductStatusValue !== '' ? 'is-good' : 'is-warning',
         'affiliate_status' => 'Affiliate: ' . ($candidateAffiliateStatusValue !== '' ? $candidateAffiliateStatusValue : 'missing'),
         'affiliate_status_tone' => in_array($candidateAffiliateStatusValue, ['created', 'updated'], true) ? 'is-good' : 'is-warning',
+        'summary_label' => $candidateSummaryLabel,
+        'summary_tone' => $candidateSummaryTone,
     ];
 }
 
@@ -3064,6 +3078,21 @@ $selectedCandidateClickStatus = !$selectedCandidateHasClick
     ? 'missing'
     : (((string) ($selectedCandidate['click_status'] ?? '') === 'ready') ? 'ready' : 'missing');
 $selectedCandidateClickStatusLabel = $selectedCandidateClickStatus;
+$selectedCandidateAffiliateStatus = is_array($selectedCandidate)
+    ? trim((string) ($selectedCandidate['affiliate_status'] ?? 'missing'))
+    : 'missing';
+$selectedCandidateSummaryLabel = 'Missing click';
+$selectedCandidateSummaryTone = 'is-warning';
+if ($selectedCandidateClickStatus === 'ready' && !$selectedCandidateHasArticle) {
+    $selectedCandidateSummaryLabel = 'Missing article';
+} elseif ($selectedCandidateClickStatus === 'ready' && $selectedCandidateHasArticle && $selectedCandidateAffiliateStatus === 'missing') {
+    $selectedCandidateSummaryLabel = 'Missing affiliate';
+} elseif ($selectedCandidateClickStatus === 'ready' && $selectedCandidateHasArticle && $selectedCandidateAffiliateStatus !== 'missing' && $selectedCandidateApproved) {
+    $selectedCandidateSummaryLabel = 'Ready for article';
+    $selectedCandidateSummaryTone = 'is-good';
+} elseif ($selectedCandidateClickStatus === 'ready' && $selectedCandidateHasArticle) {
+    $selectedCandidateSummaryLabel = 'Ready to approve';
+}
 $selectedCandidateArticleFit = is_array($selectedCandidate)
     ? interessa_admin_candidate_phase_one_fit($selectedCandidate)
     : ['status' => 'no-fit', 'slug' => '', 'reason' => '', 'hits' => [], 'blocked' => []];
@@ -4054,8 +4083,10 @@ require dirname(__DIR__) . '/inc/head.php';
                             <?php if ($recentImportedStepDetails !== []): ?>
                               <p class="admin-meta"><?= esc(implode(' / ', $recentImportedStepDetails)) ?></p>
                             <?php endif; ?>
+                            <p class="admin-meta"><strong>Summary:</strong> <?= esc((string) ($recentImportedRow['summary_label'] ?? 'Missing click')) ?></p>
                             <div class="admin-status-pills">
                               <span class="admin-status-pill is-good">Nacitany</span>
+                              <span class="admin-status-pill <?= esc((string) ($recentImportedRow['summary_tone'] ?? 'is-warning')) ?>"><?= esc((string) ($recentImportedRow['summary_label'] ?? 'Missing click')) ?></span>
                               <span class="admin-status-pill<?= !empty($recentImportedRow['has_image']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_image']) ? 'Obrazok sa nasiel' : 'Obrazok chyba' ?></span>
                               <span class="admin-status-pill<?= !empty($recentImportedRow['has_click']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recentImportedRow['has_click']) ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
                               <span class="admin-status-pill <?= esc((string) ($recentImportedRow['approved_tone'] ?? 'is-warning')) ?>"><?= esc((string) ($recentImportedRow['approved_label'] ?? 'Neschvaleny')) ?></span>
@@ -4108,6 +4139,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
                   <div class="admin-brief-card">
                     <h3>Co je dalsi krok</h3>
+                    <p class="admin-note"><strong>Summary:</strong> <?= esc($selectedCandidateSummaryLabel) ?></p>
+                    <div class="admin-status-pills">
+                      <span class="admin-status-pill <?= esc($selectedCandidateSummaryTone) ?>"><?= esc($selectedCandidateSummaryLabel) ?></span>
+                    </div>
                     <?php if (!$selectedCandidateHasClick): ?>
                     <p>Chyba len technicky klik do obchodu. Klikni tlacidlo nizsie a admin ho pripravi z product_url.</p>
                     <?php elseif (!$selectedCandidateHasArticle): ?>
@@ -4243,7 +4278,9 @@ require dirname(__DIR__) . '/inc/head.php';
                           <div>
                             <strong><?= esc((string) ($recentImportedIndex + 1)) ?>. <?= esc((string) $recentImportedRow['name']) ?></strong>
                             <p><?= esc((string) ($recentImportedRow['merchant'] ?? '')) ?></p>
+                            <p class="admin-meta"><strong>Summary:</strong> <?= esc((string) ($recentImportedRow['summary_label'] ?? 'Missing click')) ?></p>
                             <div class="admin-status-pills">
+                              <span class="admin-status-pill <?= esc((string) ($recentImportedRow['summary_tone'] ?? 'is-warning')) ?>"><?= esc((string) ($recentImportedRow['summary_label'] ?? 'Missing click')) ?></span>
                               <span class="admin-status-pill <?= esc((string) ($recentImportedRow['approved_tone'] ?? 'is-warning')) ?>"><?= esc((string) ($recentImportedRow['approved_label'] ?? 'Neschvaleny')) ?></span>
                               <span class="admin-status-pill <?= esc((string) ($recentImportedRow['click_status_tone'] ?? 'is-warning')) ?>"><?= esc((string) ($recentImportedRow['click_status'] ?? 'Click: missing')) ?></span>
                               <span class="admin-status-pill <?= esc((string) ($recentImportedRow['product_status_tone'] ?? 'is-warning')) ?>"><?= esc((string) ($recentImportedRow['product_status'] ?? 'Produkt: caka')) ?></span>
