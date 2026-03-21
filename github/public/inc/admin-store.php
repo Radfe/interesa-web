@@ -1314,6 +1314,73 @@ if (!function_exists('interessa_admin_save_candidate_assignment')) {
     }
 }
 
+if (!function_exists('interessa_admin_product_bridge_payload_from_candidate')) {
+    function interessa_admin_product_bridge_payload_from_candidate(array $candidate, array $existingProduct = []): array {
+        $productSlug = interessa_admin_slugify((string) ($candidate['product_slug'] ?? ''));
+        $current = array_replace(
+            is_array($existingProduct) ? $existingProduct : [],
+            interessa_admin_product_record($productSlug) ?? []
+        );
+
+        $resolvedCurrent = interessa_normalize_product($current);
+        $currentImage = is_array($current['image'] ?? null) ? $current['image'] : [];
+        $candidateName = interessa_admin_normalize_text($candidate['name'] ?? '');
+        $candidateMerchant = interessa_admin_normalize_text($candidate['merchant'] ?? '');
+        $candidateMerchantSlug = interessa_admin_slugify((string) ($candidate['merchant_slug'] ?? ''));
+        $candidateCategory = normalize_category_slug((string) ($candidate['category'] ?? ''));
+        $candidateFallbackUrl = trim((string) ($candidate['url'] ?? ''));
+        $candidateImageRemoteSrc = trim((string) ($candidate['image_remote_src'] ?? ''));
+        $candidateAffiliateCode = interessa_admin_slugify((string) ($candidate['click_code'] ?? ''));
+
+        $merged = [
+            'slug' => $productSlug,
+            'name' => trim((string) ($current['name'] ?? '')),
+            'brand' => trim((string) ($current['brand'] ?? '')),
+            'merchant' => trim((string) ($current['merchant'] ?? '')),
+            'merchant_slug' => trim((string) ($current['merchant_slug'] ?? '')),
+            'category' => trim((string) ($current['category'] ?? '')),
+            'affiliate_code' => trim((string) ($current['affiliate_code'] ?? '')),
+            'fallback_url' => trim((string) ($current['fallback_url'] ?? '')),
+            'summary' => trim((string) ($current['summary'] ?? '')),
+            'rating' => $current['rating'] ?? 0,
+            'pros' => $current['pros'] ?? [],
+            'cons' => $current['cons'] ?? [],
+            'image_asset' => trim((string) ($current['image_asset'] ?? ($currentImage['asset'] ?? ''))),
+            'image_remote_src' => trim((string) ($current['image_remote_src'] ?? ($currentImage['remote_src'] ?? ''))),
+        ];
+
+        if ($merged['name'] === '' && $candidateName !== '') {
+            $merged['name'] = $candidateName;
+        }
+        if ($merged['brand'] === '' && $candidateMerchant !== '') {
+            $merged['brand'] = $candidateMerchant;
+        }
+        if ($merged['merchant'] === '' && $candidateMerchant !== '') {
+            $merged['merchant'] = $candidateMerchant;
+        }
+        if ($merged['merchant_slug'] === '' && $candidateMerchantSlug !== '') {
+            $merged['merchant_slug'] = $candidateMerchantSlug;
+        }
+        if ($merged['category'] === '' && $candidateCategory !== '') {
+            $merged['category'] = $candidateCategory;
+        }
+        if ($merged['affiliate_code'] === '' && $candidateAffiliateCode !== '') {
+            $merged['affiliate_code'] = $candidateAffiliateCode;
+        }
+        if ($merged['fallback_url'] === '' && $candidateFallbackUrl !== '') {
+            $merged['fallback_url'] = $candidateFallbackUrl;
+        }
+        if ($merged['image_remote_src'] === '' && $candidateImageRemoteSrc !== '') {
+            $merged['image_remote_src'] = $candidateImageRemoteSrc;
+        }
+        if ($merged['image_asset'] === '' && trim((string) ($resolvedCurrent['image_local_asset'] ?? '')) !== '') {
+            $merged['image_asset'] = trim((string) ($resolvedCurrent['image_local_asset'] ?? ''));
+        }
+
+        return $merged;
+    }
+}
+
 if (!function_exists('interessa_admin_approve_candidate_for_web')) {
     function interessa_admin_approve_candidate_for_web(string $id): array {
         $candidate = interessa_admin_product_candidate_record($id);
@@ -1335,17 +1402,11 @@ if (!function_exists('interessa_admin_approve_candidate_for_web')) {
             throw new RuntimeException('Najprv priprav klik do obchodu.');
         }
 
-        $productPayload = [
-            'name' => (string) ($candidate['name'] ?? ''),
-            'brand' => (string) ($candidate['merchant'] ?? ''),
-            'merchant' => (string) ($candidate['merchant'] ?? ''),
-            'merchant_slug' => (string) ($candidate['merchant_slug'] ?? ''),
-            'category' => (string) ($candidate['category'] ?? ''),
-            'affiliate_code' => $clickCode,
-            'fallback_url' => (string) ($candidate['url'] ?? ''),
-            'image_remote_src' => (string) ($candidate['image_remote_src'] ?? ''),
-            'summary' => '',
-        ];
+        $existingProduct = array_replace(
+            interessa_product($productSlug) ?? [],
+            interessa_admin_product_record($productSlug) ?? []
+        );
+        $productPayload = interessa_admin_product_bridge_payload_from_candidate($candidate, $existingProduct);
         interessa_admin_save_product_record($productSlug, $productPayload);
 
         if (trim((string) ($candidate['article_slug'] ?? '')) !== '') {
