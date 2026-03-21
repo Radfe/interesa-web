@@ -70,6 +70,21 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsi import UX krok:
+- sekcia `Produkty` uz nie je natvrdo naviazana len na `najlepsie-proteiny-2026`
+- pri importe sa da prepinat cielovy clanok priamo v admine
+- import formular uz ukazuje len:
+  - clanok
+  - obchod, ak ich je viac
+  - URL feedu
+- po importe ostava jasny zoznam produktov z posledneho importu s klikacim otvorenim produktu
+- z hlavneho toku zmizli neakcne texty o povolenych a zakazanych typoch produktov
+- hlavny tok ma byt:
+  - vyber clanok
+  - vloz URL
+  - nacitaj produkty
+  - otvor produkt
+
 Najnovsi produktovy krok:
 - sekcia `Produkty` uz ide cela v jednstlpcovom pilotnom rezime, nielen pri `candidate=...`
 - po importe uz nema ostat viditelny bočný admin panel vedla prazdneho obsahu
