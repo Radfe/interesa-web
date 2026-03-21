@@ -2930,6 +2930,7 @@ $allCandidateRowsById = interessa_admin_product_candidates();
 uasort($allCandidateRowsById, static function (array $a, array $b): int {
     return strcmp((string) ($b['updated_at'] ?? ''), (string) ($a['updated_at'] ?? ''));
 });
+$candidateReadyOnly = trim((string) ($_GET['candidate_ready'] ?? '')) === '1';
 $candidateRowsById = [];
 foreach ($allCandidateRowsById as $candidateRowId => $candidateRowValue) {
     $candidateRowTargetArticleSlug = canonical_article_slug((string) ($candidateRowValue['target_article_slug'] ?? ''));
@@ -3030,6 +3031,7 @@ foreach ($candidateRows as $candidateRow) {
         'affiliate_status_tone' => in_array($candidateAffiliateStatusValue, ['created', 'updated'], true) ? 'is-good' : 'is-warning',
         'summary_label' => $candidateSummaryLabel,
         'summary_tone' => $candidateSummaryTone,
+        'is_ready_for_article' => $candidateSummaryLabel === 'Ready for article',
     ];
 }
 
@@ -3043,6 +3045,12 @@ if ($recentCandidateBatchId !== '') {
 }
 $recentImportedVisibleRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
     return (string) ($row['fit_status'] ?? 'blocked') === 'allowed';
+}));
+$recentImportedReadyCount = count(array_filter($recentImportedVisibleRows, static function (array $row): bool {
+    return !empty($row['is_ready_for_article']);
+}));
+$recentImportedVisibleRows = array_values(array_filter($recentImportedVisibleRows, static function (array $row) use ($candidateReadyOnly): bool {
+    return !$candidateReadyOnly || !empty($row['is_ready_for_article']);
 }));
 $recentImportedBlockedRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
     return (string) ($row['fit_status'] ?? 'allowed') !== 'allowed';
@@ -4065,9 +4073,13 @@ require dirname(__DIR__) . '/inc/head.php';
                     <p class="admin-meta">Skus iny obchod alebo iny feed. Pilot sem pusta len ciste proteinove produkty.</p>
                   <?php else: ?>
                     <p class="admin-note"><strong>Import je hotovy.</strong> Dalsi krok je hned tu: otvor jeden produkt z tohto zoznamu.</p>
+                    <div class="admin-filter-pills is-left">
+                      <a class="admin-filter-pill<?= !$candidateReadyOnly ? ' is-active' : '' ?>" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>#products-current-candidate">Vsetky</a>
+                      <a class="admin-filter-pill<?= $candidateReadyOnly ? ' is-active' : '' ?>" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>&amp;candidate_ready=1#products-current-candidate">Len ready<?= $recentImportedReadyCount > 0 ? ' (' . esc((string) $recentImportedReadyCount) . ')' : '' ?></a>
+                    </div>
                     <div class="admin-queue-list">
                       <?php foreach ($recentImportedVisibleRows as $recentImportedIndex => $recentImportedRow): ?>
-                        <article class="admin-queue-item">
+                        <article class="admin-queue-item<?= !empty($recentImportedRow['is_ready_for_article']) ? ' is-ready-for-article' : '' ?>">
                           <div>
                             <strong><?= esc((string) ($recentImportedIndex + 1)) ?>. <?= esc((string) $recentImportedRow['name']) ?></strong>
                             <p><?= esc((string) ($recentImportedRow['merchant'] ?? '')) ?></p>
@@ -4271,10 +4283,14 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php endif; ?>
                     </div>
                   </div>
+                  <div class="admin-filter-pills is-left">
+                    <a class="admin-filter-pill<?= !$candidateReadyOnly ? ' is-active' : '' ?>" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?><?= $selectedCandidateId !== '' ? '&amp;candidate=' . esc($selectedCandidateId) : '' ?>#products-imported-list">Vsetky</a>
+                    <a class="admin-filter-pill<?= $candidateReadyOnly ? ' is-active' : '' ?>" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?><?= $selectedCandidateId !== '' ? '&amp;candidate=' . esc($selectedCandidateId) : '' ?>&amp;candidate_ready=1#products-imported-list">Len ready<?= $recentImportedReadyCount > 0 ? ' (' . esc((string) $recentImportedReadyCount) . ')' : '' ?></a>
+                  </div>
                   <?php if ($recentImportedVisibleRows !== []): ?>
                     <div class="admin-queue-list">
                       <?php foreach ($recentImportedVisibleRows as $recentImportedIndex => $recentImportedRow): ?>
-                        <article class="admin-queue-item">
+                        <article class="admin-queue-item<?= !empty($recentImportedRow['is_ready_for_article']) ? ' is-ready-for-article' : '' ?>">
                           <div>
                             <strong><?= esc((string) ($recentImportedIndex + 1)) ?>. <?= esc((string) $recentImportedRow['name']) ?></strong>
                             <p><?= esc((string) ($recentImportedRow['merchant'] ?? '')) ?></p>
