@@ -3043,15 +3043,16 @@ if ($recentCandidateBatchId !== '') {
         }
     }
 }
-$recentImportedVisibleRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
+$recentImportedPilotRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
     return (string) ($row['fit_status'] ?? 'blocked') === 'allowed';
 }));
-$recentImportedReadyCount = count(array_filter($recentImportedVisibleRows, static function (array $row): bool {
+$recentImportedReadyCount = count(array_filter($recentImportedPilotRows, static function (array $row): bool {
     return !empty($row['is_ready_for_article']);
 }));
-$recentImportedVisibleRows = array_values(array_filter($recentImportedVisibleRows, static function (array $row) use ($candidateReadyOnly): bool {
+$recentImportedVisibleRows = array_values(array_filter($recentImportedPilotRows, static function (array $row) use ($candidateReadyOnly): bool {
     return !$candidateReadyOnly || !empty($row['is_ready_for_article']);
 }));
+$firstRecentImportedVisibleRow = $recentImportedVisibleRows[0] ?? null;
 $recentImportedBlockedRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
     return (string) ($row['fit_status'] ?? 'allowed') !== 'allowed';
 }));
@@ -4073,11 +4074,22 @@ require dirname(__DIR__) . '/inc/head.php';
 
               <?php if (!is_array($selectedCandidate)): ?>
                 <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
-                  <?php if ($recentImportedVisibleRows === []): ?>
+                  <?php if ($recentImportedPilotRows === []): ?>
                     <p class="admin-note"><strong>Import prebehol, ale v tomto batchi nie je ziadny vhodny produkt pre clanok Najlepsie proteiny 2026.</strong></p>
                     <p class="admin-meta">Skus iny obchod alebo iny feed. Pilot sem pusta len ciste proteinove produkty.</p>
+                  <?php elseif ($recentImportedVisibleRows === []): ?>
+                    <p class="admin-note"><strong>V tomto batchi zatial nie je ziadny kandidat pre zvoleny filter.</strong></p>
+                    <p class="admin-meta">Prepni na <strong>Vsetky</strong> a otvor jeden produkt z posledneho importu.</p>
+                    <div class="admin-actions">
+                      <a class="btn btn-secondary" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>#products-current-candidate">Zobrazit vsetky produkty z importu</a>
+                    </div>
                   <?php else: ?>
                     <p class="admin-note"><strong>Import je hotovy.</strong> Dalsi krok je hned tu: otvor jeden produkt z tohto zoznamu.</p>
+                    <?php if (is_array($firstRecentImportedVisibleRow)): ?>
+                      <div class="admin-actions">
+                        <a class="btn btn-cta" href="/admin?section=products&amp;batch=<?= esc($recentCandidateBatchId) ?>&amp;candidate=<?= esc((string) ($firstRecentImportedVisibleRow['id'] ?? '')) ?>#products-current-candidate">Otvorit prvy produkt z importu</a>
+                      </div>
+                    <?php endif; ?>
                     <div class="admin-filter-pills is-left">
                       <a class="admin-filter-pill<?= !$candidateReadyOnly ? ' is-active' : '' ?>" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>#products-current-candidate">Vsetky</a>
                       <a class="admin-filter-pill<?= $candidateReadyOnly ? ' is-active' : '' ?>" href="/admin?section=products<?= $recentCandidateBatchId !== '' ? '&amp;batch=' . esc($recentCandidateBatchId) : '' ?>&amp;candidate_ready=1#products-current-candidate">Len ready<?= $recentImportedReadyCount > 0 ? ' (' . esc((string) $recentImportedReadyCount) . ')' : '' ?></a>
