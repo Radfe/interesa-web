@@ -907,6 +907,74 @@ if (!function_exists('interessa_admin_article_product_records_for_article')) {
     }
 }
 
+if (!function_exists('interessa_admin_article_product_role_label')) {
+    function interessa_admin_article_product_role_label(string $role): string {
+        $role = interessa_admin_normalize_candidate_role($role);
+        return match ($role) {
+            'featured' => 'Hlavny tip',
+            'value' => 'Vyhodna volba',
+            'alternative' => 'Ina moznost',
+            'vegan' => 'Veganska moznost',
+            'clean' => 'Cista moznost',
+            default => 'Bez oznacenia',
+        };
+    }
+}
+
+if (!function_exists('interessa_admin_sync_article_product_override')) {
+    function interessa_admin_sync_article_product_override(string $articleSlug): void {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        if ($articleSlug === '') {
+            throw new RuntimeException('Chyba slug clanku pre article_product mirror.');
+        }
+
+        $links = interessa_admin_article_product_records_for_article($articleSlug);
+        $productPlan = [];
+        $recommendedProducts = [];
+        $comparisonRows = [];
+
+        foreach ($links as $row) {
+            if (!is_array($row) || empty($row['enabled'])) {
+                continue;
+            }
+
+            $productSlug = interessa_admin_slugify((string) ($row['product_slug'] ?? ''));
+            if ($productSlug === '') {
+                continue;
+            }
+
+            $planRow = [
+                'product_slug' => $productSlug,
+                'order' => max(1, (int) ($row['order'] ?? 1)),
+                'role' => interessa_admin_normalize_candidate_role($row['role'] ?? ''),
+                'show_in_top' => !empty($row['show_in_top']),
+                'show_in_comparison' => !empty($row['show_in_comparison']),
+            ];
+            $productPlan[] = $planRow;
+
+            if (!empty($planRow['show_in_top'])) {
+                $recommendedProducts[] = $productSlug;
+            }
+
+            if (!empty($planRow['show_in_comparison'])) {
+                $comparisonRows[] = [
+                    'product_slug' => $productSlug,
+                    'best_for' => interessa_admin_article_product_role_label((string) ($planRow['role'] ?? 'standard')),
+                ];
+            }
+        }
+
+        $override = interessa_admin_article_content($articleSlug);
+        $existingComparison = is_array($override['comparison'] ?? null) ? $override['comparison'] : [];
+        $override['product_plan'] = $productPlan;
+        $override['recommended_products'] = array_values(array_unique($recommendedProducts));
+        $override['comparison'] = array_replace($existingComparison, [
+            'rows' => $comparisonRows,
+        ]);
+        interessa_admin_save_article_override($articleSlug, $override);
+    }
+}
+
 if (!function_exists('interessa_admin_normalize_product_candidate_record')) {
     function interessa_admin_normalize_product_candidate_record(string $id, array $row): array {
         $id = interessa_admin_slugify($id);
@@ -1085,34 +1153,14 @@ if (!function_exists('interessa_admin_bind_product_to_article')) {
             throw new RuntimeException('Chyba clanok alebo produkt pre prepojenie.');
         }
 
-        $override = interessa_admin_article_content($articleSlug);
-        $plan = is_array($override['product_plan'] ?? null) ? array_values($override['product_plan']) : [];
-        $filtered = [];
-        foreach ($plan as $row) {
-            if (!is_array($row) || interessa_admin_slugify((string) ($row['product_slug'] ?? '')) === $productSlug) {
-                continue;
-            }
-            $filtered[] = $row;
-        }
-
-        $filtered[] = [
-            'product_slug' => $productSlug,
+        interessa_admin_save_article_product_record($articleSlug, $productSlug, [
             'order' => max(1, (int) ($settings['order'] ?? 1)),
             'role' => interessa_admin_normalize_candidate_role($settings['role'] ?? ''),
             'show_in_top' => !empty($settings['show_in_top']),
             'show_in_comparison' => !empty($settings['show_in_comparison']),
-        ];
-
-        usort($filtered, static function (array $a, array $b): int {
-            return ((int) ($a['order'] ?? 99)) <=> ((int) ($b['order'] ?? 99));
-        });
-
-        $override['product_plan'] = $filtered;
-        $override['recommended_products'] = array_values(array_map(
-            static fn(array $row): string => (string) ($row['product_slug'] ?? ''),
-            $filtered
-        ));
-        interessa_admin_save_article_override($articleSlug, $override);
+            'enabled' => true,
+        ]);
+        interessa_admin_sync_article_product_override($articleSlug);
     }
 }
 
@@ -1208,6 +1256,7 @@ if (!function_exists('interessa_admin_save_candidate_assignment')) {
                 'show_in_comparison' => !empty($candidate['show_in_comparison']),
                 'enabled' => true,
             ]);
+            interessa_admin_sync_article_product_override($articleSlug);
         }
 
         return interessa_admin_save_product_candidate_record($id, $candidate);
