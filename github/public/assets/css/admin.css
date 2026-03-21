@@ -773,6 +773,15 @@
   padding: 0.7rem 0.8rem;
 }
 
+.article-product-workflow {
+  display: grid;
+  gap: 1rem;
+}
+
+.article-product-section {
+  margin-top: 0;
+}
+
 .article-product-simple-grid {
   grid-template-columns: minmax(110px, 140px) minmax(0, 1fr);
   align-items: start;
@@ -813,6 +822,29 @@
 
 .admin-inline-more[open] {
   gap: 0.5rem;
+}
+
+.article-product-toggle {
+  position: relative;
+  justify-self: start;
+}
+
+.article-product-toggle__input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.article-product-toggle--add:has(.article-product-toggle__input:checked) {
+  background: #e9f7ee;
+  border-color: rgba(33, 96, 56, 0.28);
+  color: #216038;
+}
+
+.article-product-toggle--remove:has(.article-product-toggle__input:not(:checked)) {
+  background: #fef2f2;
+  border-color: rgba(185, 28, 28, 0.18);
+  color: #9f1239;
 }
 
 .admin-status-grid {
