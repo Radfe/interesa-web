@@ -975,6 +975,57 @@ if (!function_exists('interessa_admin_sync_article_product_override')) {
     }
 }
 
+if (!function_exists('interessa_admin_article_product_state')) {
+    function interessa_admin_article_product_state(string $articleSlug, ?array $fallbackOverride = null): array {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        $fallbackOverride = is_array($fallbackOverride) ? $fallbackOverride : interessa_admin_article_content($articleSlug);
+
+        $links = $articleSlug !== '' ? interessa_admin_article_product_records_for_article($articleSlug) : [];
+        $productPlan = [];
+        $recommendedProducts = [];
+
+        foreach ($links as $row) {
+            if (!is_array($row) || empty($row['enabled'])) {
+                continue;
+            }
+
+            $productSlug = interessa_admin_slugify((string) ($row['product_slug'] ?? ''));
+            if ($productSlug === '') {
+                continue;
+            }
+
+            $planRow = [
+                'product_slug' => $productSlug,
+                'order' => max(1, (int) ($row['order'] ?? 1)),
+                'role' => interessa_admin_normalize_candidate_role($row['role'] ?? ''),
+                'show_in_top' => !empty($row['show_in_top']),
+                'show_in_comparison' => !empty($row['show_in_comparison']),
+            ];
+            $productPlan[] = $planRow;
+
+            if (!empty($planRow['show_in_top'])) {
+                $recommendedProducts[] = $productSlug;
+            }
+        }
+
+        if ($productPlan !== []) {
+            return [
+                'product_plan' => $productPlan,
+                'recommended_products' => array_values(array_unique($recommendedProducts)),
+                'source' => 'article_products',
+            ];
+        }
+
+        return [
+            'product_plan' => is_array($fallbackOverride['product_plan'] ?? null) ? array_values($fallbackOverride['product_plan']) : [],
+            'recommended_products' => is_array($fallbackOverride['recommended_products'] ?? null)
+                ? array_values(array_unique(array_map('strval', $fallbackOverride['recommended_products'])))
+                : [],
+            'source' => 'article_override',
+        ];
+    }
+}
+
 if (!function_exists('interessa_admin_normalize_product_candidate_record')) {
     function interessa_admin_normalize_product_candidate_record(string $id, array $row): array {
         $id = interessa_admin_slugify($id);

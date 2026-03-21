@@ -2666,11 +2666,18 @@ while (count($sections) < 5) {
 
 $comparison = is_array($selectedArticleOverride['comparison'] ?? null) ? $selectedArticleOverride['comparison'] : ['columns' => [], 'rows' => []];
 $comparisonEditor = interessa_admin_comparison_editor_state($comparison);
-$articleEditorProductSlugs = is_array($selectedArticleOverride['recommended_products'] ?? null) ? array_values(array_unique(array_map('strval', $selectedArticleOverride['recommended_products']))) : [];
+$selectedArticleProductState = $selectedArticleSlug !== ''
+    ? interessa_admin_article_product_state($selectedArticleSlug, $selectedArticleOverride)
+    : ['product_plan' => [], 'recommended_products' => [], 'source' => 'article_override'];
+$articleEditorProductSlugs = is_array($selectedArticleProductState['recommended_products'] ?? null)
+    ? array_values(array_unique(array_map('strval', $selectedArticleProductState['recommended_products'])))
+    : [];
 if ($articleEditorProductSlugs === []) {
     $articleEditorProductSlugs = interessa_admin_article_default_products($selectedArticleSlug, $catalog);
 }
-$articleProductPlan = is_array($selectedArticleOverride['product_plan'] ?? null) ? array_values($selectedArticleOverride['product_plan']) : [];
+$articleProductPlan = is_array($selectedArticleProductState['product_plan'] ?? null)
+    ? array_values($selectedArticleProductState['product_plan'])
+    : [];
 if ($articleProductPlan === []) {
     $articleProductPlan = interessa_admin_article_default_product_plan($selectedArticleSlug, $catalog);
 }
@@ -2787,14 +2794,17 @@ if ($selectedProductArticleSlug === '' || !in_array($selectedProductArticleSlug,
 }
 $selectedProductArticleHelp = interessa_admin_article_product_help($selectedProductArticleSlug);
 $selectedProductArticleOverride = $selectedProductArticleSlug !== '' ? interessa_admin_article_content($selectedProductArticleSlug) : interessa_admin_normalize_article_override('', []);
-$productPageArticleProductSlugs = is_array($selectedProductArticleOverride['recommended_products'] ?? null)
-    ? array_values(array_unique(array_map('strval', $selectedProductArticleOverride['recommended_products'])))
+$selectedProductArticleState = $selectedProductArticleSlug !== ''
+    ? interessa_admin_article_product_state($selectedProductArticleSlug, $selectedProductArticleOverride)
+    : ['product_plan' => [], 'recommended_products' => [], 'source' => 'article_override'];
+$productPageArticleProductSlugs = is_array($selectedProductArticleState['recommended_products'] ?? null)
+    ? array_values(array_unique(array_map('strval', $selectedProductArticleState['recommended_products'])))
     : [];
 if ($productPageArticleProductSlugs === []) {
     $productPageArticleProductSlugs = interessa_admin_article_default_products($selectedProductArticleSlug, $catalog);
 }
-$productPageArticleProductPlan = is_array($selectedProductArticleOverride['product_plan'] ?? null)
-    ? array_values($selectedProductArticleOverride['product_plan'])
+$productPageArticleProductPlan = is_array($selectedProductArticleState['product_plan'] ?? null)
+    ? array_values($selectedProductArticleState['product_plan'])
     : [];
 if ($productPageArticleProductPlan === []) {
     $productPageArticleProductPlan = interessa_admin_article_default_product_plan($selectedProductArticleSlug, $catalog);
