@@ -3342,11 +3342,16 @@ require dirname(__DIR__) . '/inc/head.php';
                 <h2>Uprava vybraneho clanku</h2>
               </div>
               <div class="admin-inline-actions">
-                <a class="btn btn-secondary btn-small" href="#article-check-block">Skontrolovat clanok</a>
-                <a class="btn btn-secondary btn-small" href="#article-products-block">Produkty v clanku</a>
-                <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit obrazky</a>
-                <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
+                <a class="btn btn-cta btn-small" href="#article-products-block">Produkty v clanku</a>
                 <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
+                <a class="btn btn-secondary btn-small" href="#article-check-block">Skontrolovat clanok</a>
+                <details class="admin-inline-more">
+                  <summary>Dalsie akcie</summary>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit obrazky</a>
+                    <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
+                  </div>
+                </details>
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="articles" />
@@ -3432,8 +3437,6 @@ require dirname(__DIR__) . '/inc/head.php';
                 <textarea name="intro" rows="3"><?= esc((string) ($selectedArticleOverride['intro'] ?: $selectedArticleMeta['description'])) ?></textarea>
               </label>
               </section>
-
-              <p class="admin-note">Ak teraz riesis produkty pre tento clanok, nizsie klikaj len v casti <strong>Produkty v tomto clanku</strong>. Ostatne casti otvor len ked menis samotny text clanku.</p>
 
               <section class="admin-subsection is-compact" id="article-check-block">
                 <div class="admin-subsection-head">
@@ -3570,12 +3573,12 @@ require dirname(__DIR__) . '/inc/head.php';
                         <span class="admin-status-pill<?= $productStateClass ?>"><?= esc($productStateLabel) ?></span>
                         <span class="admin-status-pill<?= $productSelected ? ' is-good' : '' ?>"><?= $productSelected ? 'Vybrany' : 'Nevybrany' ?></span>
                       </div>
-                      <p class="admin-note"><?= esc($productNextNote) ?></p>
-                      <div class="admin-inline-actions admin-check-card__actions">
-                        <a class="btn btn-secondary btn-small" href="<?= esc($productNextHref) ?>"><?= esc($productNextLabel) ?></a>
-                      </div>
                       <details class="admin-advanced-toggle">
-                        <summary>Pokrocile nastavenia</summary>
+                        <summary>Pokrocile</summary>
+                        <p class="admin-note"><?= esc($productNextNote) ?></p>
+                        <div class="admin-inline-actions admin-check-card__actions">
+                          <a class="btn btn-secondary btn-small" href="<?= esc($productNextHref) ?>"><?= esc($productNextLabel) ?></a>
+                        </div>
                         <div class="admin-grid two-up">
                           <label>
                             <span>Maly stitok pri produkte</span>
