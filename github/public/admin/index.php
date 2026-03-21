@@ -488,6 +488,7 @@ function interessa_admin_collect_article_product_plan(): array {
     $orders = $_POST['article_product_order'] ?? [];
     $roles = $_POST['article_product_role'] ?? [];
     $placement = $_POST['article_product_placement'] ?? [];
+    $featuredSlug = interessa_admin_slugify((string) ($_POST['article_product_featured_slug'] ?? ''));
     $top = $_POST['article_product_top'] ?? [];
     $comparison = $_POST['article_product_comparison'] ?? [];
 
@@ -506,6 +507,9 @@ function interessa_admin_collect_article_product_plan(): array {
         if (!in_array($role, ['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'], true)) {
             $role = 'standard';
         }
+        if ($featuredSlug !== '' && $productSlug === $featuredSlug) {
+            $role = 'featured';
+        }
 
         $placementValue = interessa_admin_slugify((string) ($placement[$productSlug] ?? ''));
         $showInTop = isset($top[$productSlug]);
@@ -513,6 +517,9 @@ function interessa_admin_collect_article_product_plan(): array {
         if (in_array($placementValue, ['recommended', 'comparison', 'both', 'hidden'], true)) {
             $showInTop = in_array($placementValue, ['recommended', 'both'], true);
             $showInComparison = in_array($placementValue, ['comparison', 'both'], true);
+        }
+        if ($featuredSlug !== '' && $productSlug === $featuredSlug) {
+            $showInTop = true;
         }
 
         $rows[] = [
@@ -3488,8 +3495,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <h3>Produkty v tomto clanku</h3>
                 </div>
-                <p class="admin-note">Tu robis len toto: zapni produkt, nastav poradie, vyber maly stitok pri produkte a povedz, ci sa ma ukazat v hornom vybere alebo v porovnavacej tabulke. Produkt s poradiom 1 bude hlavny tip.</p>
-                <p class="admin-note"><strong>Pre tento clanok:</strong> <?= esc((string) ($selectedProductArticleHelp['summary'] ?? '')) ?></p>
+                <p class="admin-note">Tu ti staci len vybrat produkty, nastavit poradie a oznacit hlavny produkt. Ostatne volby su nizsie schovane ako pokrocile.</p>
                 <div class="admin-check-grid">
                   <?php foreach ($catalog as $productSlug => $productRow): ?>
                     <?php
@@ -3503,6 +3509,21 @@ require dirname(__DIR__) . '/inc/head.php';
                       $productPackshotReady = !empty($productNormalized['has_local_image']);
                       $productAffiliateCode = trim((string) ($productNormalized['affiliate_code'] ?? ''));
                       $productAffiliateReady = $productAffiliateCode !== '' && aff_resolve($productAffiliateCode) !== null;
+                        $productSelected = isset($articleProductPlanMap[(string) $productSlug]) || in_array((string) $productSlug, $articleEditorProductSlugs, true);
+                        $productIsFeatured = (string) ($planState['role'] ?? 'standard') === 'featured';
+                        if ($productPackshotReady && $productAffiliateReady) {
+                          $productStateLabel = 'Hotovo';
+                          $productStateClass = ' is-good';
+                        } elseif ($productPackshotReady && !$productAffiliateReady) {
+                          $productStateLabel = 'Chyba odkaz';
+                          $productStateClass = ' is-warning';
+                        } elseif (!$productPackshotReady && $productAffiliateReady) {
+                          $productStateLabel = 'Chyba obrazok';
+                          $productStateClass = ' is-warning';
+                        } else {
+                          $productStateLabel = 'Chyba obrazok a odkaz';
+                          $productStateClass = ' is-warning';
+                        }
                         $productNextHref = '/admin?section=products&product=' . rawurlencode((string) $productSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug) . '&focus=product_edit#product-edit-form';
                         $productNextLabel = 'Doplnit produkt';
                         $productNextNote = 'Ak tomuto produktu este chyba obrazok alebo udaje, klikni sem.';
@@ -3520,9 +3541,9 @@ require dirname(__DIR__) . '/inc/head.php';
                           $productNextNote = 'Tento produkt je pripraveny.';
                         }
                     ?>
-                    <div class="admin-check-card-wrap">
+                    <div class="admin-check-card-wrap<?= $productSelected ? ' is-selected' : '' ?>">
                       <label class="admin-check-card">
-                        <input type="checkbox" name="article_product_enabled[<?= esc((string) $productSlug) ?>]" value="1" <?= isset($articleProductPlanMap[(string) $productSlug]) || in_array((string) $productSlug, $articleEditorProductSlugs, true) ? 'checked' : '' ?> />
+                        <input type="checkbox" name="article_product_enabled[<?= esc((string) $productSlug) ?>]" value="1" <?= $productSelected ? 'checked' : '' ?> />
                         <span><strong><?= esc((string) ($productRow['name'] ?? $productSlug)) ?></strong><small><?= esc((string) $productSlug) ?></small></span>
                       </label>
                       <?php
@@ -3532,41 +3553,49 @@ require dirname(__DIR__) . '/inc/head.php';
                                 ? 'recommended'
                                 : (!empty($planState['show_in_comparison']) ? 'comparison' : 'hidden'));
                       ?>
-                      <div class="admin-grid two-up">
+                      <div class="admin-grid article-product-simple-grid">
                         <label>
-                          <span>Poradie v zozname (1 je prve)</span>
+                          <span>Poradie</span>
                           <input type="number" name="article_product_order[<?= esc((string) $productSlug) ?>]" min="1" step="1" value="<?= esc((string) ($planState['order'] ?? 99)) ?>" />
                         </label>
                         <label>
-                          <span>Maly stitok pri produkte</span>
-                          <select name="article_product_role[<?= esc((string) $productSlug) ?>]">
-                            <?php foreach (['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'] as $roleOption): ?>
-                              <option value="<?= esc($roleOption) ?>" <?= (string) ($planState['role'] ?? 'standard') === $roleOption ? 'selected' : '' ?>><?= esc(interessa_admin_role_label($roleOption)) ?></option>
-                            <?php endforeach; ?>
-                          </select>
+                          <span>Hlavny produkt</span>
+                          <div class="admin-check-card admin-check-card--inline">
+                            <input type="radio" name="article_product_featured_slug" value="<?= esc((string) $productSlug) ?>" <?= $productIsFeatured ? 'checked' : '' ?> />
+                            <span><strong><?= $productIsFeatured ? 'Toto je hlavny produkt' : 'Oznacit ako hlavny' ?></strong></span>
+                          </div>
                         </label>
                       </div>
-                      <p class="admin-meta">Hlavny tip = hlavna odporucana volba. Vyhodna volba = dobry pomer cena a vykon. Ina moznost = druha alternativa. Bez oznacenia = bez maleho stitku.</p>
-                      <label>
-                        <span>Kde sa ma ukazat</span>
-                        <select name="article_product_placement[<?= esc((string) $productSlug) ?>]">
-                          <option value="recommended" <?= $placementValue === 'recommended' ? 'selected' : '' ?>>Len v hornom vybere</option>
-                          <option value="comparison" <?= $placementValue === 'comparison' ? 'selected' : '' ?>>Len v porovnavacej tabulke</option>
-                          <option value="both" <?= $placementValue === 'both' ? 'selected' : '' ?>>V hornom vybere aj v porovnavacej tabulke</option>
-                          <option value="hidden" <?= $placementValue === 'hidden' ? 'selected' : '' ?>>Zatial nikde</option>
-                        </select>
-                      </label>
                       <div class="admin-status-pills">
-                        <span class="admin-status-pill<?= $productAffiliateReady ? ' is-good' : ' is-warning' ?>"><?= $productAffiliateReady ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
-                        <span class="admin-status-pill<?= $productPackshotReady ? ' is-good' : ' is-warning' ?>"><?= $productPackshotReady ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
+                        <span class="admin-status-pill<?= $productStateClass ?>"><?= esc($productStateLabel) ?></span>
+                        <span class="admin-status-pill<?= $productSelected ? ' is-good' : '' ?>"><?= $productSelected ? 'Vybrany' : 'Nevybrany' ?></span>
                       </div>
                       <p class="admin-note"><?= esc($productNextNote) ?></p>
                       <div class="admin-inline-actions admin-check-card__actions">
                         <a class="btn btn-secondary btn-small" href="<?= esc($productNextHref) ?>"><?= esc($productNextLabel) ?></a>
-                        <?php if ($productAffiliateCode !== ''): ?>
-                          <a class="btn btn-secondary btn-small" href="/dognet-helper?code=<?= esc($productAffiliateCode) ?>">Dognet pomocnik</a>
-                        <?php endif; ?>
                       </div>
+                      <details class="admin-advanced-toggle">
+                        <summary>Pokrocile nastavenia</summary>
+                        <div class="admin-grid two-up">
+                          <label>
+                            <span>Maly stitok pri produkte</span>
+                            <select name="article_product_role[<?= esc((string) $productSlug) ?>]">
+                              <?php foreach (['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'] as $roleOption): ?>
+                                <option value="<?= esc($roleOption) ?>" <?= (string) ($planState['role'] ?? 'standard') === $roleOption ? 'selected' : '' ?>><?= esc(interessa_admin_role_label($roleOption)) ?></option>
+                              <?php endforeach; ?>
+                            </select>
+                          </label>
+                          <label>
+                            <span>Kde sa ma ukazat</span>
+                            <select name="article_product_placement[<?= esc((string) $productSlug) ?>]">
+                              <option value="recommended" <?= $placementValue === 'recommended' ? 'selected' : '' ?>>Len v hornom vybere</option>
+                              <option value="comparison" <?= $placementValue === 'comparison' ? 'selected' : '' ?>>Len v porovnavacej tabulke</option>
+                              <option value="both" <?= $placementValue === 'both' ? 'selected' : '' ?>>V hornom vybere aj v porovnavacej tabulke</option>
+                              <option value="hidden" <?= $placementValue === 'hidden' ? 'selected' : '' ?>>Zatial nikde</option>
+                            </select>
+                          </label>
+                        </div>
+                      </details>
                     </div>
                   <?php endforeach; ?>
                 </div>

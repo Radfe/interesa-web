@@ -752,11 +752,42 @@
 .admin-check-card-wrap {
   display: grid;
   gap: 0.55rem;
+  padding: 0.85rem;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fbfcfd;
+}
+
+.admin-check-card-wrap.is-selected {
+  border-color: rgba(21, 49, 75, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f4f8fb 100%);
 }
 
 .admin-check-card__actions {
   margin-top: 0;
-  padding-left: 2.2rem;
+  padding-left: 0;
+}
+
+.admin-check-card--inline {
+  align-items: center;
+  padding: 0.7rem 0.8rem;
+}
+
+.article-product-simple-grid {
+  grid-template-columns: minmax(110px, 140px) minmax(0, 1fr);
+  align-items: start;
+}
+
+.admin-advanced-toggle {
+  margin-top: 0.15rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  padding-top: 0.7rem;
+}
+
+.admin-advanced-toggle summary {
+  cursor: pointer;
+  color: #39546b;
+  font-weight: 700;
 }
 
 .admin-status-grid {
@@ -807,6 +838,12 @@
   font-weight: 700;
   background: #eef2f7;
   color: #304256;
+}
+
+@media (max-width: 760px) {
+  .article-product-simple-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .admin-status-pill.is-good {

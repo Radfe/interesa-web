@@ -24,8 +24,11 @@
 </footer>
 
 <?php if (function_exists('interessa_is_local_dev') && interessa_is_local_dev()): ?>
-<button class="dev-reload-fab" type="button" data-dev-reload>Obnovit verziu</button>
-<div class="dev-build-badge" aria-live="polite">Verzia <?= esc(interessa_dev_build_label()) ?></div>
+<button class="dev-reload-fab" type="button" data-dev-reload>Nacitat znova lokalnu verziu</button>
+<div class="dev-build-badge" aria-live="polite">
+  <strong>Lokalna verzia</strong>
+  <span>Build <?= esc(interessa_dev_build_label()) ?></span>
+</div>
 <?php endif; ?>
 
 <script src="<?= asset('js/app.js') ?>" defer></script>

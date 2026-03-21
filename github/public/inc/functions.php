@@ -79,7 +79,7 @@ if (!function_exists('interessa_dev_build_label')) {
             $latestMtime = time();
         }
 
-        $label = date('Ymd-His', $latestMtime);
+        $label = date('d.m.Y H:i:s', $latestMtime);
         return $label;
     }
 }
