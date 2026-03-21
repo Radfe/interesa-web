@@ -1036,8 +1036,19 @@ if (!function_exists('interessa_admin_normalize_product_candidate_record')) {
             $sourceType = 'manual';
         }
         $clickStatus = interessa_admin_slugify((string) ($row['click_status'] ?? 'missing'));
-        if (!in_array($clickStatus, ['missing', 'direct', 'dognet'], true)) {
+        if (in_array($clickStatus, ['dognet', 'direct'], true)) {
+            $clickStatus = 'ready';
+        }
+        if (!in_array($clickStatus, ['missing', 'ready'], true)) {
             $clickStatus = 'missing';
+        }
+        $productStatus = interessa_admin_slugify((string) ($row['product_status'] ?? ''));
+        if (!in_array($productStatus, ['created', 'updated'], true)) {
+            $productStatus = '';
+        }
+        $affiliateStatus = interessa_admin_slugify((string) ($row['affiliate_status'] ?? 'missing'));
+        if (!in_array($affiliateStatus, ['created', 'updated', 'missing'], true)) {
+            $affiliateStatus = 'missing';
         }
 
         $createdAt = trim((string) ($row['created_at'] ?? ''));
@@ -1071,6 +1082,8 @@ if (!function_exists('interessa_admin_normalize_product_candidate_record')) {
             'show_in_top' => !empty($row['show_in_top']),
             'show_in_comparison' => !empty($row['show_in_comparison']),
             'approved' => !empty($row['approved']),
+            'product_status' => $productStatus,
+            'affiliate_status' => $affiliateStatus,
             'notes' => interessa_admin_normalize_text($row['notes'] ?? ''),
             'created_at' => $createdAt,
             'updated_at' => date('c'),
@@ -1272,7 +1285,7 @@ if (!function_exists('interessa_admin_prepare_candidate_click')) {
         $candidate['url'] = $finalUrl;
         $candidate['click_code'] = $code;
         $candidate['click_url'] = $inputUrl;
-        $candidate['click_status'] = $linkType === 'affiliate' ? 'dognet' : 'direct';
+        $candidate['click_status'] = 'ready';
         $candidate = interessa_admin_save_product_candidate_record($id, $candidate);
 
         return [
@@ -1402,17 +1415,25 @@ if (!function_exists('interessa_admin_approve_candidate_for_web')) {
             throw new RuntimeException('Najprv priprav klik do obchodu.');
         }
 
+        $clickReady = $clickCode !== '' && trim((string) ($candidate['click_url'] ?? '')) !== '';
+
         $existingAffiliateRecord = array_replace(
             aff_record($clickCode) ?? [],
             interessa_admin_affiliate_links()[$clickCode] ?? []
         );
-        $affiliatePayload = interessa_admin_affiliate_bridge_payload_from_candidate($candidate, $existingAffiliateRecord);
-        interessa_admin_save_affiliate_record($clickCode, $affiliatePayload);
+        $affiliateWasExisting = $existingAffiliateRecord !== [];
+        $affiliateStatus = 'missing';
+        if ($clickReady) {
+            $affiliatePayload = interessa_admin_affiliate_bridge_payload_from_candidate($candidate, $existingAffiliateRecord);
+            interessa_admin_save_affiliate_record($clickCode, $affiliatePayload);
+            $affiliateStatus = $affiliateWasExisting ? 'updated' : 'created';
+        }
 
         $existingProduct = array_replace(
             interessa_product($productSlug) ?? [],
             interessa_admin_product_record($productSlug) ?? []
         );
+        $productWasExisting = $existingProduct !== [];
         $productPayload = interessa_admin_product_bridge_payload_from_candidate($candidate, $existingProduct);
         interessa_admin_save_product_record($productSlug, $productPayload);
 
@@ -1439,6 +1460,9 @@ if (!function_exists('interessa_admin_approve_candidate_for_web')) {
         }
 
         $candidate['approved'] = true;
+        $candidate['click_status'] = $clickReady ? 'ready' : 'missing';
+        $candidate['product_status'] = $productWasExisting ? 'updated' : 'created';
+        $candidate['affiliate_status'] = $affiliateStatus;
         $candidate = interessa_admin_save_product_candidate_record($id, $candidate);
 
         return [

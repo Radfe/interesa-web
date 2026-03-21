@@ -3051,7 +3051,7 @@ $selectedCandidateApproved = is_array($selectedCandidate) && !empty($selectedCan
 $selectedCandidateHasImage = is_array($selectedCandidate) && trim((string) ($selectedCandidate['image_remote_src'] ?? '')) !== '';
 $selectedCandidateClickStatus = !$selectedCandidateHasClick
     ? 'missing'
-    : (((string) ($selectedCandidate['click_status'] ?? '') === 'dognet') ? 'dognet' : 'direct');
+    : (((string) ($selectedCandidate['click_status'] ?? '') === 'ready') ? 'ready' : 'missing');
 $selectedCandidateClickStatusLabel = $selectedCandidateClickStatus;
 $selectedCandidateArticleFit = is_array($selectedCandidate)
     ? interessa_admin_candidate_phase_one_fit($selectedCandidate)
