@@ -98,6 +98,11 @@
   margin-inline: auto;
 }
 
+.admin-card.is-primary-flow {
+  border-color: rgba(31, 169, 113, 0.16);
+  box-shadow: 0 20px 54px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(31, 169, 113, 0.06);
+}
+
 .admin-card,
 .admin-brief-card {
   padding: 1.25rem;
@@ -268,6 +273,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+}
+
+.admin-subsection.is-primary-step {
+  border-color: rgba(31, 169, 113, 0.18);
+  background: linear-gradient(180deg, #ffffff 0%, #f6fbf8 100%);
 }
 
 .admin-inline-actions {

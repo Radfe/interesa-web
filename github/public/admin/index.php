@@ -3953,13 +3953,14 @@ require dirname(__DIR__) . '/inc/head.php';
               $selectedProductNextStepNote = 'Produkt uz ma obrazok aj klik do obchodu. Tu uz netreba nic robit.';
             }
           ?>
-          <section class="admin-card<?= $productCandidateFocusMode ? ' is-candidate-focus-root' : '' ?>" id="products-candidate-steps">
+          <section class="admin-card<?= $productCandidateFocusMode ? ' is-candidate-focus-root' : '' ?><?= !$productCandidateFocusMode ? ' is-primary-flow' : '' ?>" id="products-candidate-steps">
             <?php if (!$productCandidateFocusMode): ?>
             <div class="admin-card-head">
               <div>
                 <p class="admin-kicker">Pilot pre jeden clanok</p>
                 <h2>1. Nacitaj produkty pre clanok Najlepsie proteiny 2026</h2>
                 <p class="admin-note">Toto je jeden pilot, nie univerzalny importer. Tu sa nacitaju len prve vhodne proteiny pre clanok <strong>Najlepsie proteiny 2026</strong>.</p>
+                <p class="admin-note"><strong>Toto je zaciatok hlavneho workflowu.</strong> Najprv nacitaj produkty pre clanok, potom nizsie otvor jeden produkt z posledneho importu.</p>
               </div>
             </div>
             <?php if ($recentImportedRows !== []): ?>
@@ -4047,11 +4048,14 @@ require dirname(__DIR__) . '/inc/head.php';
             </section>
             <?php endif; ?>
 
-            <section class="admin-subsection is-compact" id="products-current-candidate">
+            <section class="admin-subsection is-compact is-primary-step" id="products-current-candidate">
               <div class="admin-subsection-head">
                   <div>
                   <h3><?= $productCandidateFocusMode ? 'Otvoreny produkt' : '2. Otvor jeden produkt z posledneho importu' ?></h3>
                   <p class="admin-meta"><?= $productCandidateFocusMode ? 'Tu uz robis len s jednym produktom. Dole je len jeho stav a dalsi spravny krok.' : 'Po importe uz len otvor jeden produkt z posledneho batchu. Admin ti potom ukaze dalsi spravny krok.' ?></p>
+                  <?php if (!$productCandidateFocusMode): ?>
+                    <p class="admin-note"><strong>Toto je hlavny dalsi krok.</strong> Bezny postup je: otvor jeden produkt, skontroluj ho a potom ho uloz do systemu.</p>
+                  <?php endif; ?>
                   <?php if (is_array($selectedCandidate)): ?>
                     <p class="admin-note"><strong>Prave otvoreny produkt:</strong> <?= esc((string) ($selectedCandidate['name'] ?? 'Produkt')) ?><?= trim((string) ($selectedCandidate['merchant'] ?? '')) !== '' ? ' / ' . esc((string) ($selectedCandidate['merchant'] ?? '')) : '' ?></p>
                   <?php endif; ?>
@@ -4062,9 +4066,10 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php endif; ?>
                   </div>
               </div>
-              <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
-                <p class="admin-note"><strong>Import je hotovy.</strong> Dole vidis len vhodne produkty z posledneho batchu. Klikni na jeden produkt a otvor ho.</p>
-              <?php endif; ?>
+                <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
+                  <p class="admin-note"><strong>Import je hotovy.</strong> Dole vidis len vhodne produkty z posledneho batchu. Klikni na jeden produkt a otvor ho.</p>
+                  <p class="admin-meta">Filter `Len ready` a dalsie stavy su pomocne. Hlavny postup je stale otvorit jeden produkt a dokoncit ho.</p>
+                <?php endif; ?>
 
               <?php if (!is_array($selectedCandidate)): ?>
                 <?php if ($recentImportedRows !== [] && !$productCandidateFocusMode): ?>
@@ -4239,7 +4244,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 </section>
 
                 <details class="admin-subsection is-compact">
-                  <summary><strong>Podrobne nastavenia tohto produktu</strong> - otvor len ked chces menit jednotlive veci rucne</summary>
+                  <summary><strong>Podrobne nastavenia tohto produktu</strong> - pomocne a pokrocile pouzitie</summary>
                   <div class="admin-grid two-up">
                     <form method="post" class="admin-form admin-form-stack">
                       <input type="hidden" name="action" value="prepare_candidate_click" />
@@ -4273,11 +4278,11 @@ require dirname(__DIR__) . '/inc/head.php';
 
               <?php if ($recentImportedRows !== [] && $productCandidateFocusMode): ?>
                 <details class="admin-subsection is-compact" id="products-imported-list">
-                  <summary><strong>Dalsie produkty z posledneho importu</strong> - otvor, ked chces prejst na dalsi produkt</summary>
+                  <summary><strong>Dalsie produkty z posledneho importu</strong> - pomocny zoznam, ked chces prejst na iny produkt</summary>
                   <div class="admin-subsection-head">
                     <div>
                       <h3>Posledny import: <?= esc((string) count($recentImportedVisibleRows)) ?> vhodnych produktov</h3>
-                      <p class="admin-meta">Tu vidis dalsie produkty z tohto isteho batchu. Pouzi len ked chces prejst na iny produkt.</p>
+                      <p class="admin-meta">Tu vidis dalsie produkty z tohto isteho batchu. Pouzi len ked chces prejst na iny produkt, nie ako hlavny workflow.</p>
                       <?php if ($recentImportedBlockedRows !== []): ?>
                         <p class="admin-note"><?= esc((string) count($recentImportedBlockedRows)) ?> produktov ostalo bokom, lebo do tohto clanku nepatria.</p>
                       <?php endif; ?>
