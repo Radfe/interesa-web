@@ -1402,6 +1402,13 @@ if (!function_exists('interessa_admin_approve_candidate_for_web')) {
             throw new RuntimeException('Najprv priprav klik do obchodu.');
         }
 
+        $existingAffiliateRecord = array_replace(
+            aff_record($clickCode) ?? [],
+            interessa_admin_affiliate_links()[$clickCode] ?? []
+        );
+        $affiliatePayload = interessa_admin_affiliate_bridge_payload_from_candidate($candidate, $existingAffiliateRecord);
+        interessa_admin_save_affiliate_record($clickCode, $affiliatePayload);
+
         $existingProduct = array_replace(
             interessa_product($productSlug) ?? [],
             interessa_admin_product_record($productSlug) ?? []
@@ -1440,6 +1447,54 @@ if (!function_exists('interessa_admin_approve_candidate_for_web')) {
             'article_slug' => (string) ($candidate['article_slug'] ?? ''),
             'mirrored' => $mirrored,
         ];
+    }
+}
+
+if (!function_exists('interessa_admin_affiliate_bridge_payload_from_candidate')) {
+    function interessa_admin_affiliate_bridge_payload_from_candidate(array $candidate, array $existingRecord = []): array {
+        $clickCode = interessa_admin_slugify((string) ($candidate['click_code'] ?? ''));
+        $current = array_replace(
+            is_array($existingRecord) ? $existingRecord : [],
+            interessa_admin_affiliate_links()[$clickCode] ?? []
+        );
+
+        $candidateClickUrl = trim((string) ($candidate['click_url'] ?? ''));
+        $candidateMerchant = interessa_admin_normalize_text($candidate['merchant'] ?? '');
+        $candidateMerchantSlug = interessa_admin_slugify((string) ($candidate['merchant_slug'] ?? ''));
+        $candidateProductSlug = interessa_admin_slugify((string) ($candidate['product_slug'] ?? ''));
+        $candidateClickStatus = interessa_admin_slugify((string) ($candidate['click_status'] ?? ''));
+        $candidateLinkType = $candidateClickStatus === 'direct' ? 'product' : 'affiliate';
+
+        $merged = [
+            'code' => $clickCode,
+            'url' => trim((string) ($current['url'] ?? '')),
+            'merchant' => trim((string) ($current['merchant'] ?? '')),
+            'merchant_slug' => trim((string) ($current['merchant_slug'] ?? '')),
+            'product_slug' => trim((string) ($current['product_slug'] ?? '')),
+            'link_type' => trim((string) ($current['link_type'] ?? '')),
+            'source' => trim((string) ($current['source'] ?? '')),
+        ];
+
+        if ($merged['url'] === '' && $candidateClickUrl !== '') {
+            $merged['url'] = $candidateClickUrl;
+        }
+        if ($merged['merchant'] === '' && $candidateMerchant !== '') {
+            $merged['merchant'] = $candidateMerchant;
+        }
+        if ($merged['merchant_slug'] === '' && $candidateMerchantSlug !== '') {
+            $merged['merchant_slug'] = $candidateMerchantSlug;
+        }
+        if ($merged['product_slug'] === '' && $candidateProductSlug !== '') {
+            $merged['product_slug'] = $candidateProductSlug;
+        }
+        if ($merged['link_type'] === '' && $candidateLinkType !== '') {
+            $merged['link_type'] = $candidateLinkType;
+        }
+        if ($merged['source'] === '') {
+            $merged['source'] = 'candidate-approved';
+        }
+
+        return $merged;
     }
 }
 
