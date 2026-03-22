@@ -1921,6 +1921,12 @@ if ($isAuthed) {
                 interessa_admin_save_product_record($slug, $payload);
                 $returnSection = trim((string) ($_POST['return_section'] ?? ''));
                 $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                $returnArticleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? $returnSlug)));
+                $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
+                if ($returnArticleSlug !== '' && $targetSlot > 0) {
+                    interessa_admin_assign_product_to_article_slot($returnArticleSlug, $slug, $targetSlot);
+                    interessa_admin_redirect_fragment('articles', ['slug' => $returnArticleSlug, 'saved' => 'product'], 'slot-' . $targetSlot);
+                }
                 if ($returnSection === 'images' && $returnSlug !== '' && $uploadedProductImage) {
                     interessa_admin_redirect('products', interessa_admin_product_image_redirect_query($slug, 'packshot', 'images', $returnSlug));
                 }
@@ -2587,6 +2593,8 @@ if (!in_array($returnSectionPrefill, ['articles', 'images'], true)) {
     $returnSectionPrefill = '';
 }
 $returnSlugPrefill = canonical_article_slug(trim((string) ($_GET['return_slug'] ?? '')));
+$returnArticlePrefill = canonical_article_slug(trim((string) ($_GET['article'] ?? $returnSlugPrefill)));
+$returnArticleSlotPrefill = max(0, min(3, (int) ($_GET['slot'] ?? 0)));
 $prefillNewProductName = trim((string) ($_GET['prefill_product_name'] ?? ''));
 $prefillNewProductSlug = trim((string) ($_GET['prefill_product_slug'] ?? ''));
 $prefillNewProductBrand = trim((string) ($_GET['prefill_product_brand'] ?? ''));
@@ -2797,6 +2805,13 @@ $recommendedPackshotReadyCount = (int) ($recommendedDiagnosticsSummary['packshot
 $recommendedMoneyReadyCount = (int) ($recommendedDiagnosticsSummary['money_ready'] ?? 0);
 $recommendedCardReadyCount = (int) ($recommendedDiagnosticsSummary['card_ready'] ?? 0);
 $articleSelectedProductSlugs = array_values(array_slice(array_unique(array_merge(array_keys($articleProductPlanMap), $articleEditorProductSlugs)), 0, 3));
+$articleSelectedSlotBySlug = [];
+foreach ($articleSelectedProductSlugs as $slotIndex => $slotSlug) {
+    $slotSlug = interessa_admin_slugify((string) $slotSlug);
+    if ($slotSlug !== '') {
+        $articleSelectedSlotBySlug[$slotSlug] = $slotIndex + 1;
+    }
+}
 $articleSelectedCount = count($articleSelectedProductSlugs);
 $articleSelectedImageMissingCount = 0;
 $articleSelectedClickMissingCount = 0;
@@ -2820,7 +2835,10 @@ foreach ($articleSelectedProductSlugs as $articleSelectedSlug) {
     if ($articleSelectedExists && $articleSelectedPackshotReady && $articleSelectedAffiliateReady) {
         $articleSelectedReadyCount++;
     }
-      $articleSelectedActionHref = '/admin?section=products&product=' . rawurlencode($articleSelectedSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug) . '&focus=product_edit#product-edit-form';
+      $articleSelectedActionSlot = (int) ($articleSelectedSlotBySlug[$articleSelectedSlug] ?? 0);
+      $articleSelectedActionHref = '/admin?section=products&product=' . rawurlencode($articleSelectedSlug)
+          . ($articleSelectedActionSlot > 0 ? '&article=' . rawurlencode($selectedArticleSlug) . '&slot=' . rawurlencode((string) $articleSelectedActionSlot) : '')
+          . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug) . '&focus=product_edit#product-edit-form';
       $articleSelectedActionLabel = 'Doplnit produkt';
       $articleSelectedActionNote = 'Tomuto produktu este chyba doplnenie.';
       if ($articleSelectedExists && $articleSelectedPackshotReady && !$articleSelectedAffiliateReady) {
@@ -3704,7 +3722,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       $slotRow = $slotSlug !== '' ? ($articleScopedProductOptions[$slotSlug] ?? null) : null;
                       $slotActionRow = $slotSlug !== '' ? ($articleSelectedActionRowsBySlug[$slotSlug] ?? []) : [];
                     ?>
-                    <section class="admin-subsection is-compact article-product-slot">
+                    <section class="admin-subsection is-compact article-product-slot" id="slot-<?= esc((string) $slotIndex) ?>">
                       <div class="admin-subsection-head">
                         <div>
                           <h4>Slot <?= esc((string) $slotIndex) ?></h4>
@@ -3732,7 +3750,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         </label>
                         <div class="admin-inline-actions">
                           <a class="btn btn-secondary btn-small" href="<?= esc((string) ($slotActionRow['next_href'] ?? ($slotRow['next_href'] ?? '#'))) ?>"><?= esc((string) ($slotActionRow['next_label'] ?? ($slotRow['next_label'] ?? 'Doplnit produkt'))) ?></a>
-                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $slotSlug) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Otvorit produkt</a>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $slotSlug) ?>&amp;article=<?= esc($selectedArticleSlug) ?>&amp;slot=<?= esc((string) $slotIndex) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Vybrat produkt pre slot</a>
                         </div>
                       <?php else: ?>
                         <p class="admin-note">Tento slot je prazdny. Vyber produkt zo zoznamu vyssie a uloz produkty v clanku.</p>
@@ -5070,11 +5088,16 @@ require dirname(__DIR__) . '/inc/head.php';
               <input type="hidden" name="action" value="save_product" />
               <?php if ($returnSectionPrefill !== ""): ?><input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill) ?>" /><?php endif; ?>
               <?php if ($returnSlugPrefill !== ""): ?><input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" /><?php endif; ?>
+              <?php if ($returnArticlePrefill !== ""): ?><input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" /><?php endif; ?>
+              <?php if ($returnArticleSlotPrefill > 0): ?><input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" /><?php endif; ?>
               <div id="product-edit-form" class="admin-subsection is-compact<?= $focusPanel === 'product_edit' ? ' is-focused' : '' ?>">
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Tu doplnis produkt</h3>
                     <p class="admin-meta">Sem ta posielaju tlacidla vyssie. Najprv sem vlozis link produktu alebo Dognet link. Admin sa potom pokusi sam doplnit zvysok.</p>
+                    <?php if ($returnArticlePrefill !== '' && $returnArticleSlotPrefill > 0): ?>
+                      <p class="admin-note"><strong>Po ulozeni sa tento produkt priradi do clanku <?= esc($returnArticlePrefill) ?> / Slot <?= esc((string) $returnArticleSlotPrefill) ?>.</strong></p>
+                    <?php endif; ?>
                   </div>
                 </div>
                 <div class="admin-flash is-success" style="margin-bottom:16px;">Bezny postup: 1. vloz link produktu alebo Dognet link -> 2. klikni Ulozit produkt -> 3. klikni Nacitat udaje z obchodu -> 4. klikni Ulozit obrazok z e-shopu.</div>

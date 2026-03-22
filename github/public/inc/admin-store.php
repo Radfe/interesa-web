@@ -1228,6 +1228,60 @@ if (!function_exists('interessa_admin_bind_product_to_article')) {
     }
 }
 
+if (!function_exists('interessa_admin_assign_product_to_article_slot')) {
+    function interessa_admin_assign_product_to_article_slot(string $articleSlug, string $productSlug, int $slot): void {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        $productSlug = interessa_admin_slugify($productSlug);
+        $slot = max(1, min(3, $slot));
+        if ($articleSlug === '' || $productSlug === '') {
+            throw new RuntimeException('Chyba clanok alebo produkt pre slot priradenie.');
+        }
+
+        $rows = interessa_admin_article_products();
+        $comparisonAllowed = false;
+        if (function_exists('interessa_article_comparison_table_whitelist')) {
+            $comparisonAllowed = in_array($articleSlug, interessa_article_comparison_table_whitelist(), true);
+        }
+
+        foreach ($rows as $key => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $normalized = interessa_admin_normalize_article_product_record($row);
+            if ((string) ($normalized['article_slug'] ?? '') !== $articleSlug) {
+                continue;
+            }
+
+            $rowProductSlug = interessa_admin_slugify((string) ($normalized['product_slug'] ?? ''));
+            $rowOrder = max(1, (int) ($normalized['order'] ?? 1));
+            if ($rowOrder === $slot && $rowProductSlug !== '' && $rowProductSlug !== $productSlug && !empty($normalized['enabled'])) {
+                $normalized['enabled'] = false;
+                $rows[$key] = $normalized;
+                $comparisonAllowed = !empty($normalized['show_in_comparison']);
+            }
+
+            if ($rowProductSlug === $productSlug && $rowOrder !== $slot && !empty($normalized['enabled'])) {
+                $normalized['enabled'] = false;
+                $rows[$key] = $normalized;
+            }
+        }
+
+        $rows[interessa_admin_article_product_key($articleSlug, $productSlug)] = interessa_admin_normalize_article_product_record([
+            'article_slug' => $articleSlug,
+            'product_slug' => $productSlug,
+            'order' => $slot,
+            'role' => $slot === 1 ? 'featured' : 'standard',
+            'show_in_top' => true,
+            'show_in_comparison' => $comparisonAllowed,
+            'enabled' => true,
+        ]);
+
+        interessa_admin_save_article_products($rows);
+        interessa_admin_sync_article_product_override($articleSlug);
+    }
+}
+
 if (!function_exists('interessa_admin_prepare_candidate_click')) {
     function interessa_admin_prepare_candidate_click(string $id): array {
         $candidate = interessa_admin_product_candidate_record($id);

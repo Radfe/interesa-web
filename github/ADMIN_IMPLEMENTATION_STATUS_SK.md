@@ -70,6 +70,15 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsi slot assign krok:
+- otvorenie produktu z clanku uz vie niest:
+  - `article`
+  - `slot`
+- samotne otvorenie produktu uz nic implicitne nepridava
+- explicitne priradenie sa urobi az pri `save_product`
+- po ulozeni sa produkt vrati spat na konkretny clanok a konkretne `#slot-{n}`
+- source of truth ostava article_product vrstva a jej mirror do legacy article override
+
 Najnovsi article produktovy krok:
 - v `Clanky` je produktovy rezim viac article-scoped a slot-based
 - hlavny workflow uz neukazuje volne menitelnu kategoriu ani intro ako hlavne polia pri produktoch
