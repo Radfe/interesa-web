@@ -515,6 +515,7 @@ function interessa_admin_collect_article_product_plan(): array {
         $comparisonAllowed = in_array($articleSlug, $whitelist, true);
         $rows = [];
         $seen = [];
+        $featuredProductSlug = interessa_admin_slugify((string) ($slotSelections[$slotFeatured] ?? ''));
 
         for ($slot = 1; $slot <= 3; $slot++) {
             $productSlug = interessa_admin_slugify((string) ($slotSelections[$slot] ?? ''));
@@ -527,7 +528,7 @@ function interessa_admin_collect_article_product_plan(): array {
             if (!in_array($role, ['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'], true)) {
                 $role = 'standard';
             }
-            if ($slot === $slotFeatured) {
+            if ($featuredProductSlug !== '' && $productSlug === $featuredProductSlug) {
                 $role = 'featured';
             }
 
@@ -538,7 +539,7 @@ function interessa_admin_collect_article_product_plan(): array {
 
             $showInTop = in_array($placementValue, ['recommended', 'both'], true);
             $showInComparison = in_array($placementValue, ['comparison', 'both'], true);
-            if ($slot === $slotFeatured) {
+            if ($featuredProductSlug !== '' && $productSlug === $featuredProductSlug) {
                 $showInTop = true;
             }
 
@@ -549,6 +550,20 @@ function interessa_admin_collect_article_product_plan(): array {
                 'show_in_top' => $showInTop,
                 'show_in_comparison' => $showInComparison,
             ];
+        }
+
+        if ($rows !== []) {
+            $hasFeatured = false;
+            foreach ($rows as $row) {
+                if ((string) ($row['role'] ?? 'standard') === 'featured') {
+                    $hasFeatured = true;
+                    break;
+                }
+            }
+            if (!$hasFeatured) {
+                $rows[0]['role'] = 'featured';
+                $rows[0]['show_in_top'] = true;
+            }
         }
 
         return $rows;
@@ -3694,15 +3709,15 @@ require dirname(__DIR__) . '/inc/head.php';
               <section class="admin-subsection is-compact">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>To najdolezitejsie pri tomto clanku</h3>
-                    <p class="admin-meta">Ak teraz riesis produkty, staci ti titulok, pevna kategoria clanku a nizsie 3 produktove sloty.</p>
+                    <h3>Hlavny produktovy workflow</h3>
+                    <p class="admin-meta">Tu riesis len 3 sloty, hlavny produkt a ulozenie produktov v clanku.</p>
                   </div>
                 </div>
               <div class="admin-grid two-up">
-                <label>
-                  <span>Titulok</span>
-                  <input type="text" name="title" value="<?= esc((string) ($selectedArticleOverride['title'] ?: $selectedArticleMeta['title'])) ?>" />
-                </label>
+                <div>
+                  <span class="admin-label-like">Clanok</span>
+                  <p class="admin-note"><?= esc((string) ($selectedArticleOverride['title'] ?: $selectedArticleMeta['title'])) ?></p>
+                </div>
                 <?php $selectedCategory = (string) ($selectedArticleOverride['category'] ?: $selectedArticleMeta['category']); ?>
                 <div>
                   <span class="admin-label-like">Kategoria clanku</span>
@@ -3712,8 +3727,12 @@ require dirname(__DIR__) . '/inc/head.php';
               </section>
 
               <details class="admin-subsection is-compact">
-                <summary><strong>Redakcny obsah clanku</strong> - otvor len ked menis intro alebo kategoriu</summary>
+                <summary><strong>Redakcny obsah clanku</strong> - otvor len ked menis titulok, intro alebo kategoriu</summary>
                 <div class="admin-grid two-up">
+                  <label>
+                    <span>Titulok</span>
+                    <input type="text" name="title" value="<?= esc((string) ($selectedArticleOverride['title'] ?: $selectedArticleMeta['title'])) ?>" />
+                  </label>
                   <label>
                     <span>Kategoria</span>
                     <select name="category">
