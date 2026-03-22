@@ -70,6 +70,12 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsi shell unification krok:
+- core sekcie v `/admin` uz bezia cez jeden stabilny shell
+- root wrapper uz pri `Produkty` ani `Logo a ikonka` neprepina admin do ineho layout rezimu
+- lave menu uz nema byt schovane len preto, ze si v `products` alebo `brand`
+- focus rezimy maju ostat len vo vnutri obsahu sekcie, nie na urovni root shellu
+
 Najnovsi slot assign krok:
 - otvorenie produktu z clanku uz vie niest:
   - `article`
