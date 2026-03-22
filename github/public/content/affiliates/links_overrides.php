@@ -38,6 +38,15 @@ return array (
     'link_type' => 'affiliate',
     'source' => 'dognet-helper',
   ),
+  'gymbeam-gymbeam-pure-isowhey-bez-pr-ichute-gymbeam' => 
+  array (
+    'url' => 'https://gymbeam.sk/pure-isowhey-gymbeam.html?utm_term=dognet',
+    'merchant' => 'Gymbeam',
+    'merchant_slug' => 'gymbeam',
+    'product_slug' => 'gymbeam-gymbeam-pure-isowhey-bez-pr-ichute',
+    'link_type' => 'affiliate',
+    'source' => 'dognet-helper',
+  ),
   'gymbeam-nutrend-excelent-protein-bar-limetka-pap-aja-gymbeam' => 
   array (
     'url' => 'https://gymbeam.sk/592-proteinova-tycinka-excelent-85-g-nutrend.html?utm_term=dognet',
