@@ -85,6 +85,12 @@ Najnovsi slot assign krok:
 - po ulozeni sa produkt vrati spat na konkretny clanok a konkretne `#slot-{n}`
 - source of truth ostava article_product vrstva a jej mirror do legacy article override
 
+Najnovsi article-slot mode krok:
+- `products` sekcia ma samostatny `article-slot mode`, ked URL nesie `article` a `slot`
+- v tomto rezime sa batch/import cockpit nema miesat do hlavneho toku
+- ostava len produktovy editor pre konkretny clanok a slot
+- medzikroky v produkte uz nesu `article_slug` a `target_slot`, aby sa kontext pocas doplnenia nestratil
+
 Najnovsi article produktovy krok:
 - v `Clanky` je produktovy rezim viac article-scoped a slot-based
 - hlavny workflow uz neukazuje volne menitelnu kategoriu ani intro ako hlavne polia pri produktoch

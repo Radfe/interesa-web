@@ -55,6 +55,25 @@ function interessa_admin_product_image_redirect_query(string $slug, string $save
     return $query;
 }
 
+function interessa_admin_product_article_slot_query(string $productSlug, string $articleSlug, int $slot, string $saved = '', string $focus = 'product_edit'): array {
+    $articleSlug = canonical_article_slug($articleSlug);
+    $slot = max(0, min(3, $slot));
+    $query = [
+        'product' => trim($productSlug),
+        'article' => $articleSlug,
+        'slot' => $slot > 0 ? (string) $slot : '',
+        'return_section' => 'articles',
+        'return_slug' => $articleSlug,
+    ];
+    if ($saved !== '') {
+        $query['saved'] = $saved;
+    }
+    if ($focus !== '') {
+        $query['focus'] = $focus;
+    }
+    return $query;
+}
+
 function interessa_admin_decode_json_textarea(string $value, string $label): array {
     $value = trim($value);
     if ($value === '') {
@@ -1966,6 +1985,8 @@ if ($isAuthed) {
                 $slug = trim((string) ($_POST['product_slug'] ?? ''));
                 $returnSection = trim((string) ($_POST['return_section'] ?? ''));
                 $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                $returnArticleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? $returnSlug)));
+                $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
                 $result = interessa_admin_prepare_product_from_input_link($slug, (string) ($_POST['source_link'] ?? ''));
                 $savedKey = 'product-link-ready';
 
@@ -1983,6 +2004,9 @@ if ($isAuthed) {
                     }
                 }
 
+                if ($returnArticleSlug !== '' && $targetSlot > 0) {
+                    interessa_admin_redirect('products', interessa_admin_product_article_slot_query((string) ($result['slug'] ?? $slug), $returnArticleSlug, $targetSlot, $savedKey, 'product_image'));
+                }
                 if ($returnSection === 'images' && $returnSlug !== '') {
                     interessa_admin_redirect('products', interessa_admin_product_image_redirect_query((string) ($result['slug'] ?? $slug), $savedKey, 'images', $returnSlug));
                 }
@@ -2077,6 +2101,8 @@ if ($isAuthed) {
                 $slug = trim((string) ($_POST['product_slug'] ?? ''));
                 $returnSection = trim((string) ($_POST['return_section'] ?? 'products'));
                 $returnArticleSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                $targetArticleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? $returnArticleSlug)));
+                $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
                 $product = interessa_product($slug);
                 if (!is_array($product)) {
                     throw new RuntimeException('Vybrany produkt sa nenasiel v katalogu.');
@@ -2089,6 +2115,9 @@ if ($isAuthed) {
                 $payload['image_asset'] = $asset;
                 interessa_admin_save_product_record($slug, $payload);
 
+                if ($targetArticleSlug !== '' && $targetSlot > 0) {
+                    interessa_admin_redirect('products', interessa_admin_product_article_slot_query($slug, $targetArticleSlug, $targetSlot, 'packshot', 'product_image'));
+                }
                 if ($returnSection === 'images' && $returnArticleSlug !== '') {
                     interessa_admin_redirect('products', interessa_admin_product_image_redirect_query($slug, 'packshot', 'images', $returnArticleSlug));
                 }
@@ -2100,6 +2129,8 @@ if ($isAuthed) {
                 $slug = trim((string) ($_POST['product_slug'] ?? ''));
                 $returnSection = trim((string) ($_POST['return_section'] ?? 'products'));
                 $returnArticleSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                $targetArticleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? $returnArticleSlug)));
+                $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
                 $product = interessa_product($slug);
                 if (!is_array($product)) {
                     throw new RuntimeException('Vybrany produkt sa nenasiel v katalogu.');
@@ -2117,6 +2148,9 @@ if ($isAuthed) {
                 $payload['image_asset'] = $asset;
                 interessa_admin_save_product_record($slug, $payload);
 
+                if ($targetArticleSlug !== '' && $targetSlot > 0) {
+                    interessa_admin_redirect('products', interessa_admin_product_article_slot_query($slug, $targetArticleSlug, $targetSlot, 'packshot-mirrored', 'product_image'));
+                }
                 if ($returnSection === 'images' && $returnArticleSlug !== '') {
                     interessa_admin_redirect('products', interessa_admin_product_image_redirect_query($slug, 'packshot-mirrored', 'images', $returnArticleSlug));
                 }
@@ -2131,6 +2165,8 @@ if ($isAuthed) {
                 $slug = trim((string) ($_POST['product_slug'] ?? ''));
                 $returnSection = trim((string) ($_POST['return_section'] ?? 'products'));
                 $returnArticleSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+                $targetArticleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? $returnArticleSlug)));
+                $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
 
                 $result = interessa_admin_enrich_product_record_from_source($slug);
 
@@ -2164,6 +2200,9 @@ if ($isAuthed) {
                                 : 'product-remote-ready';
                         }
                     }
+                }
+                if ($targetArticleSlug !== '' && $targetSlot > 0) {
+                    interessa_admin_redirect('products', interessa_admin_product_article_slot_query($slug, $targetArticleSlug, $targetSlot, $savedKey, 'product_image'));
                 }
                 if ($returnSection === 'images' && $returnArticleSlug !== '') {
                     interessa_admin_redirect('products', interessa_admin_product_image_redirect_query($slug, $savedKey, 'images', $returnArticleSlug));
@@ -2595,6 +2634,13 @@ if (!in_array($returnSectionPrefill, ['articles', 'images'], true)) {
 $returnSlugPrefill = canonical_article_slug(trim((string) ($_GET['return_slug'] ?? '')));
 $returnArticlePrefill = canonical_article_slug(trim((string) ($_GET['article'] ?? $returnSlugPrefill)));
 $returnArticleSlotPrefill = max(0, min(3, (int) ($_GET['slot'] ?? 0)));
+$articleSlotMode = $section === 'products' && $returnArticlePrefill !== '' && $returnArticleSlotPrefill > 0;
+$articleSlotModeTitle = $articleSlotMode ? (string) ($articleOptions[$returnArticlePrefill]['title'] ?? humanize_slug($returnArticlePrefill)) : '';
+$productReturnSection = $articleSlotMode ? 'articles' : ($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products');
+$productReturnSlug = $articleSlotMode ? $returnArticlePrefill : $returnSlugPrefill;
+$articleSlotBackHref = $articleSlotMode
+    ? '/admin?section=articles&slug=' . rawurlencode($returnArticlePrefill) . '#slot-' . rawurlencode((string) $returnArticleSlotPrefill)
+    : '';
 $prefillNewProductName = trim((string) ($_GET['prefill_product_name'] ?? ''));
 $prefillNewProductSlug = trim((string) ($_GET['prefill_product_slug'] ?? ''));
 $prefillNewProductBrand = trim((string) ($_GET['prefill_product_brand'] ?? ''));
@@ -4150,6 +4196,40 @@ require dirname(__DIR__) . '/inc/head.php';
               $selectedProductNextStepNote = 'Produkt uz ma obrazok aj klik do obchodu. Tu uz netreba nic robit.';
             }
           ?>
+          <?php if ($articleSlotMode && $selectedProductSlug !== ''): ?>
+          <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Clanok je hlavny kontext</p>
+                <h2>Slot <?= esc((string) $returnArticleSlotPrefill) ?> pre clanok <?= esc($articleSlotModeTitle) ?></h2>
+                <p class="admin-note">Tu doplnas len jeden produkt pre konkretny slot. Po ulozeni sa vratis spat na clanok.</p>
+              </div>
+              <div class="admin-inline-actions">
+                <a class="btn btn-secondary" href="<?= esc($articleSlotBackHref) ?>">Spat na clanok</a>
+                <a class="btn btn-secondary" href="<?= esc(article_url($returnArticlePrefill)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
+              </div>
+            </div>
+            <div class="admin-status-grid">
+              <article class="admin-status-card">
+                <strong><?= esc((string) $returnArticleSlotPrefill) ?></strong>
+                <span>Aktualny slot</span>
+              </article>
+              <article class="admin-status-card">
+                <strong><?= trim((string) ($selectedProduct['name'] ?? '')) !== '' ? 'Ano' : 'Nie' ?></strong>
+                <span>Nazov produktu</span>
+              </article>
+              <article class="admin-status-card">
+                <strong><?= $selectedProductPackshotReady ? 'Hotovo' : 'Chyba' ?></strong>
+                <span>Obrazok produktu</span>
+              </article>
+              <article class="admin-status-card">
+                <strong><?= $selectedProductClickReady ? 'Hotovo' : 'Chyba' ?></strong>
+                <span>Klik do obchodu</span>
+              </article>
+            </div>
+          </section>
+          <?php endif; ?>
+          <?php if (!$articleSlotMode): ?>
           <section class="admin-card<?= $productCandidateFocusMode ? ' is-candidate-focus-root' : '' ?><?= !$productCandidateFocusMode ? ' is-primary-flow' : '' ?>" id="products-candidate-steps">
             <?php if (!$productCandidateFocusMode): ?>
             <div class="admin-card-head">
@@ -4502,16 +4582,26 @@ require dirname(__DIR__) . '/inc/head.php';
                 </section>
               <?php endif; ?>
           </section>
+          <?php endif; ?>
 
-          <?php if (!$productCandidateFocusMode && $manualProductRequested && $selectedProductSlug !== ''): ?>
+          <?php if ((($articleSlotMode && $selectedProductSlug !== '') || (!$articleSlotMode && !$productCandidateFocusMode && $manualProductRequested && $selectedProductSlug !== ''))): ?>
+          <?php if ($articleSlotMode): ?>
+          <section class="admin-card" id="products-main-page">
+          <?php else: ?>
           <details class="admin-card" id="products-main-page">
             <summary><strong>Rucne opravy a starsie nastavenia</strong> - otvor len vtedy, ked potrebujes opravovat jednotlive produkty po jednom</summary>
+          <?php endif; ?>
             <div class="admin-card-head">
               <div>
-                <p class="admin-kicker">Rucne opravy</p>
-                <h2>Jednotlive produkty</h2>
-                <p class="admin-note">Toto otvor len vtedy, ked potrebujes opravovat jeden konkretny produkt rucne. Bezny postup je vyssie v 4 krokoch.</p>
+                <p class="admin-kicker"><?= $articleSlotMode ? 'Editor produktu pre slot' : 'Rucne opravy' ?></p>
+                <h2><?= $articleSlotMode ? 'Doplnit produkt pre clanok' : 'Jednotlive produkty' ?></h2>
+                <p class="admin-note"><?= $articleSlotMode ? 'V tomto rezime vidis len to, co treba doplnit pre jeden konkretne vybrany produkt v clanku.' : 'Toto otvor len vtedy, ked potrebujes opravovat jeden konkretny produkt rucne. Bezny postup je vyssie v 4 krokoch.' ?></p>
               </div>
+              <?php if ($articleSlotMode): ?>
+              <div class="admin-inline-actions">
+                <a class="btn btn-secondary btn-small" href="<?= esc($articleSlotBackHref) ?>">Spat na clanok</a>
+              </div>
+              <?php else: ?>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="products" />
                 <select name="product" onchange="this.form.submit()">
@@ -4520,8 +4610,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php endforeach; ?>
                 </select>
               </form>
+              <?php endif; ?>
             </div>
 
+            <?php if (!$articleSlotMode): ?>
             <section class="admin-subsection is-compact" id="products-article-scan">
               <div class="admin-subsection-head">
                 <div>
@@ -4580,8 +4672,9 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               <?php endif; ?>
             </section>
+            <?php endif; ?>
 
-            <?php if ($returnSectionPrefill !== "" && $returnSlugPrefill !== ""): ?>
+            <?php if (!$articleSlotMode && $returnSectionPrefill !== "" && $returnSlugPrefill !== ""): ?>
               <section class="admin-subsection is-compact">
                 <p class="admin-note">Tento editor bol otvoreny z workflowu pre clanok <strong><?= esc($returnSlugPrefill) ?></strong>.</p>
                 <div class="admin-inline-actions">
@@ -4594,7 +4687,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <div class="admin-subsection-head">
                 <div>
                   <h3>Stav tohto produktu</h3>
-                  <p class="admin-meta">Tu vidis len vybrany produkt. Ked kliknes na produkt z clanku vyssie, otvoris prave tuto cast.</p>
+                  <p class="admin-meta"><?= $articleSlotMode ? 'Toto je produkt, ktory sa po ulozeni priradi do vybraneho slotu.' : 'Tu vidis len vybrany produkt. Ked kliknes na produkt z clanku vyssie, otvoris prave tuto cast.' ?></p>
                 </div>
               </div>
               <div class="admin-status-grid">
@@ -4618,6 +4711,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <p class="admin-note"><strong>Co spravit dalej:</strong> <?= esc($selectedProductNextStepNote) ?></p>
             </section>
 
+            <?php if (!$articleSlotMode): ?>
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
@@ -4642,26 +4736,29 @@ require dirname(__DIR__) . '/inc/head.php';
                 <a class="btn btn-secondary btn-small" href="#product-link-form">Vlozit link produktu</a>
               </div>
             </section>
+            <?php endif; ?>
 
             <section id="product-link-form" class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
-                  <h3>1. Vloz link produktu</h3>
-                  <p class="admin-meta">Sem vloz bud priamu stranku produktu, alebo Dognet link. Admin sa pokusi sam doplnit zvysok.</p>
+                  <h3><?= $articleSlotMode ? 'Link produktu a klik do obchodu' : '1. Vloz link produktu' ?></h3>
+                  <p class="admin-meta"><?= $articleSlotMode ? 'Sem vloz priamy link produktu alebo Dognet link. Tento krok pripravi produkt pre vybrany slot.' : 'Sem vloz bud priamu stranku produktu, alebo Dognet link. Admin sa pokusi sam doplnit zvysok.' ?></p>
                 </div>
               </div>
               <form method="post" class="admin-form admin-form-stack">
                 <input type="hidden" name="action" value="prepare_product_from_link" />
                 <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
-                <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
-                <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
+                <input type="hidden" name="return_section" value="<?= esc($productReturnSection) ?>" />
+                <input type="hidden" name="return_slug" value="<?= esc($productReturnSlug) ?>" />
+                <?php if ($articleSlotMode): ?><input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" /><?php endif; ?>
+                <?php if ($articleSlotMode): ?><input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" /><?php endif; ?>
                 <label>
                   <span>Link produktu alebo Dognet link</span>
                   <input type="url" name="source_link" value="<?= esc($selectedProductQuickInputUrl) ?>" placeholder="https://go.dognet.com/... alebo https://obchod.sk/konkretny-produkt" />
                 </label>
                 <p class="admin-note">Sem patri bud Dognet link pre tento produkt, alebo priamo stranka produktu v obchode. Aj obycajny link produktu staci na rozbehnutie. Dognet mozes doplnit neskor.</p>
                 <div class="admin-actions">
-                  <button class="btn btn-cta" type="submit">1. Vlozit link a pripravit produkt aj klik</button>
+                  <button class="btn btn-cta" type="submit"><?= $articleSlotMode ? 'Pripravit produkt pre tento slot' : '1. Vlozit link a pripravit produkt aj klik' ?></button>
                 </div>
               </form>
             </section>
@@ -4683,8 +4780,10 @@ require dirname(__DIR__) . '/inc/head.php';
                     <form method="post" class="admin-inline-form">
                       <input type="hidden" name="action" value="prepare_product_from_link" />
                       <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
-                      <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
-                      <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
+                      <input type="hidden" name="return_section" value="<?= esc($productReturnSection) ?>" />
+                      <input type="hidden" name="return_slug" value="<?= esc($productReturnSlug) ?>" />
+                      <?php if ($articleSlotMode): ?><input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" /><?php endif; ?>
+                      <?php if ($articleSlotMode): ?><input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" /><?php endif; ?>
                       <input type="hidden" name="source_link" value="<?= esc($selectedProductQuickInputUrl) ?>" />
                       <button class="btn btn-secondary btn-small" type="submit">1. Pripravit produkt z ulozeneho linku</button>
                     </form>
@@ -4692,16 +4791,20 @@ require dirname(__DIR__) . '/inc/head.php';
                     <form method="post" class="admin-inline-form">
                       <input type="hidden" name="action" value="enrich_product_from_source" />
                       <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
-                      <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
-                      <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
+                      <input type="hidden" name="return_section" value="<?= esc($productReturnSection) ?>" />
+                      <input type="hidden" name="return_slug" value="<?= esc($productReturnSlug) ?>" />
+                      <?php if ($articleSlotMode): ?><input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" /><?php endif; ?>
+                      <?php if ($articleSlotMode): ?><input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" /><?php endif; ?>
                       <button class="btn btn-secondary btn-small" type="submit">2. Nacitat udaje z obchodu</button>
                     </form>
                   <?php elseif ($selectedProductNextStep === 'save_image'): ?>
                     <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
                       <input type="hidden" name="action" value="mirror_packshot_from_remote" />
                       <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
-                      <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
-                      <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
+                      <input type="hidden" name="return_section" value="<?= esc($productReturnSection) ?>" />
+                      <input type="hidden" name="return_slug" value="<?= esc($productReturnSlug) ?>" />
+                      <?php if ($articleSlotMode): ?><input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" /><?php endif; ?>
+                      <?php if ($articleSlotMode): ?><input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" /><?php endif; ?>
                       <button class="btn btn-secondary btn-small" type="submit">3. Ulozit obrazok z e-shopu</button>
                     </form>
                   <?php elseif ($selectedProductNextStep === 'affiliate'): ?>
@@ -4715,6 +4818,7 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
             </section>
 
+            <?php if (!$articleSlotMode): ?>
             <details class="admin-subsection is-compact">
               <summary><strong>Vytvorit produkt rucne</strong> - otvor len vtedy, ked produkt este v admine vobec neexistuje</summary>
               <div class="admin-subsection-head">
@@ -4746,7 +4850,9 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               </form>
             </details>
+            <?php endif; ?>
 
+            <?php if (!$articleSlotMode): ?>
             <details class="admin-subsection">
               <summary><strong>Produkty bez hotoveho obrazka</strong> - otvor len ked chces doplnat obrazky po jednom</summary>
               <div class="admin-subsection-head">
@@ -4831,6 +4937,8 @@ require dirname(__DIR__) . '/inc/head.php';
                 <?php endforeach; ?>
               </div>
             </details>
+            <?php endif; ?>
+            <?php if (!$articleSlotMode): ?>
             <details class="admin-subsection is-compact">
               <summary><strong>Produkty bez odkazu do obchodu</strong> - otvor len ked chces dokoncit odkazy do obchodov</summary>
               <div class="admin-subsection-head">
@@ -4873,7 +4981,9 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               <?php endif; ?>
             </details>
+            <?php endif; ?>
 
+            <?php if (!$articleSlotMode): ?>
             <details class="admin-subsection is-compact">
               <summary><strong>Co este pri produktoch chyba</strong> - otvor len ked chces doplnat texty a hodnotenia</summary>
               <div class="admin-subsection-head">
@@ -4916,6 +5026,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               <?php endif; ?>
             </details>
+            <?php endif; ?>
 
             <section id="product-image-preview" class="admin-subsection admin-asset-preview<?= $focusPanel === 'product_image' ? ' is-focused' : '' ?>">
               <div class="admin-subsection-head">
@@ -4947,6 +5058,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <p class="admin-note">Kolko produktov este caka: <?= esc((string) $selectedPackshotQueuePosition) ?> / <?= esc((string) count($missingPackshotSlugs)) ?></p>
                   <?php endif; ?>
                   <?php if ($prevMissingPackshotSlug !== '' || $nextMissingPackshotSlug !== ''): ?>
+                    <?php if (!$articleSlotMode): ?>
                     <div class="admin-inline-actions">
                       <?php if ($prevMissingPackshotSlug !== ''): ?>
                         <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($prevMissingPackshotSlug) ?>&amp;product_image_filter=missing">Predchadzajuci produkt bez obrazka</a>
@@ -4955,6 +5067,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($nextMissingPackshotSlug) ?>&amp;product_image_filter=missing">Dalsi produkt bez obrazka</a>
                       <?php endif; ?>
                     </div>
+                    <?php endif; ?>
                   <?php endif; ?>
                   <p><strong>Najdeny obrazok z obchodu:</strong> <?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?></p>
                   <?php if (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
@@ -4964,8 +5077,10 @@ require dirname(__DIR__) . '/inc/head.php';
                         <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
                           <input type="hidden" name="action" value="mirror_packshot_from_remote" />
                           <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
-                          <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
-                          <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
+                          <input type="hidden" name="return_section" value="<?= esc($productReturnSection) ?>" />
+                          <input type="hidden" name="return_slug" value="<?= esc($productReturnSlug) ?>" />
+                          <?php if ($articleSlotMode): ?><input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" /><?php endif; ?>
+                          <?php if ($articleSlotMode): ?><input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" /><?php endif; ?>
                           <button class="btn btn-secondary btn-small" type="submit">3. Ulozit obrazok z e-shopu</button>
                         </form>
                       <?php endif; ?>
@@ -4978,8 +5093,10 @@ require dirname(__DIR__) . '/inc/head.php';
                         <form method="post" class="admin-inline-form">
                           <input type="hidden" name="action" value="enrich_product_from_source" />
                           <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
-                          <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
-                          <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
+                          <input type="hidden" name="return_section" value="<?= esc($productReturnSection) ?>" />
+                          <input type="hidden" name="return_slug" value="<?= esc($productReturnSlug) ?>" />
+                          <?php if ($articleSlotMode): ?><input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" /><?php endif; ?>
+                          <?php if ($articleSlotMode): ?><input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" /><?php endif; ?>
                           <button class="btn btn-secondary btn-small" type="submit">2. Nacitat udaje z obchodu</button>
                         </form>
                       <?php else: ?>
@@ -4989,8 +5106,10 @@ require dirname(__DIR__) . '/inc/head.php';
                         <form method="post" class="admin-inline-form">
                           <input type="hidden" name="action" value="autofill_product_from_source" />
                           <input type="hidden" name="product_slug" value="<?= esc($selectedProductSlug) ?>" />
-                          <input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products') ?>" />
-                          <input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" />
+                          <input type="hidden" name="return_section" value="<?= esc($productReturnSection) ?>" />
+                          <input type="hidden" name="return_slug" value="<?= esc($productReturnSlug) ?>" />
+                          <?php if ($articleSlotMode): ?><input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" /><?php endif; ?>
+                          <?php if ($articleSlotMode): ?><input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" /><?php endif; ?>
                           <button class="btn btn-secondary btn-small" type="submit">Skusit doplnit produkt automaticky</button>
                         </form>
                       <?php endif; ?>
@@ -5005,17 +5124,17 @@ require dirname(__DIR__) . '/inc/head.php';
                       <p><strong>Kam teraz klik smeruje:</strong> <?= esc((string) ($selectedProductAffiliateUrl ?? $selectedProductSourceUrl)) ?></p>
                     </div>
                   </details>
-                    <?php if (trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== ''): ?>
+                    <?php if (!$articleSlotMode && trim((string) ($selectedProduct['affiliate_code'] ?? '')) !== ''): ?>
                       <div class="admin-inline-actions">
                         <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;code=<?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?>">Otvorit klikaci odkaz</a>
                         <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($selectedProduct['affiliate_code'] ?? '')) ?>">Kopirovat affiliate kod</button>
                       </div>
-                    <?php else: ?>
+                    <?php elseif (!$articleSlotMode): ?>
                       <div class="admin-inline-actions">
                         <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($selectedProduct['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>">Vytvorit klikaci odkaz</a>
                       </div>
                     <?php endif; ?>
-                  <?php if (trim((string) ($selectedProductTarget['href'] ?? '')) !== ''): ?>
+                  <?php if (!$articleSlotMode && trim((string) ($selectedProductTarget['href'] ?? '')) !== ''): ?>
                     <div class="admin-actions">
                       <a class="btn btn-secondary btn-small" href="<?= esc((string) $selectedProductTarget['href']) ?>" target="_blank" rel="noopener">Otvorit stranku, kam teraz smeruje klik</a>
                     </div>
@@ -5057,6 +5176,7 @@ require dirname(__DIR__) . '/inc/head.php';
               </section>
             <?php endif; ?>
 
+            <?php if (!$articleSlotMode): ?>
             <details class="admin-subsection is-compact">
               <summary><strong>Kde sa tento produkt pouziva</strong> - otvor len ked chces skontrolovat clanky</summary>
               <div class="admin-subsection-head">
@@ -5081,24 +5201,25 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               <?php endif; ?>
             </details>
+            <?php endif; ?>
 
             <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
               <input type="hidden" name="action" value="save_product" />
-              <?php if ($returnSectionPrefill !== ""): ?><input type="hidden" name="return_section" value="<?= esc($returnSectionPrefill) ?>" /><?php endif; ?>
-              <?php if ($returnSlugPrefill !== ""): ?><input type="hidden" name="return_slug" value="<?= esc($returnSlugPrefill) ?>" /><?php endif; ?>
+              <input type="hidden" name="return_section" value="<?= esc($productReturnSection) ?>" />
+              <?php if ($productReturnSlug !== ""): ?><input type="hidden" name="return_slug" value="<?= esc($productReturnSlug) ?>" /><?php endif; ?>
               <?php if ($returnArticlePrefill !== ""): ?><input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" /><?php endif; ?>
               <?php if ($returnArticleSlotPrefill > 0): ?><input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" /><?php endif; ?>
               <div id="product-edit-form" class="admin-subsection is-compact<?= $focusPanel === 'product_edit' ? ' is-focused' : '' ?>">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>Tu doplnis produkt</h3>
-                    <p class="admin-meta">Sem ta posielaju tlacidla vyssie. Najprv sem vlozis link produktu alebo Dognet link. Admin sa potom pokusi sam doplnit zvysok.</p>
+                    <h3><?= $articleSlotMode ? 'Ulozit produkt pre tento slot' : 'Tu doplnis produkt' ?></h3>
+                    <p class="admin-meta"><?= $articleSlotMode ? 'Tu ulozis produktove udaje. Po ulozeni sa vratis priamo naspat na clanok a slot sa hned aktualizuje.' : 'Sem ta posielaju tlacidla vyssie. Najprv sem vlozis link produktu alebo Dognet link. Admin sa potom pokusi sam doplnit zvysok.' ?></p>
                     <?php if ($returnArticlePrefill !== '' && $returnArticleSlotPrefill > 0): ?>
                       <p class="admin-note"><strong>Po ulozeni sa tento produkt priradi do clanku <?= esc($returnArticlePrefill) ?> / Slot <?= esc((string) $returnArticleSlotPrefill) ?>.</strong></p>
                     <?php endif; ?>
                   </div>
                 </div>
-                <div class="admin-flash is-success" style="margin-bottom:16px;">Bezny postup: 1. vloz link produktu alebo Dognet link -> 2. klikni Ulozit produkt -> 3. klikni Nacitat udaje z obchodu -> 4. klikni Ulozit obrazok z e-shopu.</div>
+                <div class="admin-flash is-success" style="margin-bottom:16px;"><?= $articleSlotMode ? 'Odporucany postup: dopln link produktu, nacitaj udaje z obchodu, uloz obrazok a potom produkt uloz naspat do clanku.' : 'Bezny postup: 1. vloz link produktu alebo Dognet link -> 2. klikni Ulozit produkt -> 3. klikni Nacitat udaje z obchodu -> 4. klikni Ulozit obrazok z e-shopu.' ?></div>
                 <input type="hidden" name="product_slug" value="<?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?>" />
                 <input type="hidden" name="merchant_slug" value="<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>" />
                 <p class="admin-note"><strong>Kod produktu:</strong> <?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?><?php if (trim((string) ($selectedProduct['merchant_slug'] ?? '')) !== ''): ?> / <strong>Kod obchodu:</strong> <?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?><?php endif; ?></p>
@@ -5179,12 +5300,20 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               </details>
               <div class="admin-actions">
-                <button class="btn btn-cta" type="submit">Ulozit produkt</button>
-                <button class="btn btn-secondary" type="submit" name="action" value="delete_product_override" onclick="return confirm('Naozaj zmazat admin override produktu?');">Zmazat override produktu</button>
+                <button class="btn btn-cta" type="submit"><?= $articleSlotMode ? 'Ulozit produkt a vratit sa do clanku' : 'Ulozit produkt' ?></button>
+                <?php if ($articleSlotMode): ?>
+                  <a class="btn btn-secondary" href="<?= esc($articleSlotBackHref) ?>">Spat na clanok bez ulozenia</a>
+                <?php else: ?>
+                  <button class="btn btn-secondary" type="submit" name="action" value="delete_product_override" onclick="return confirm('Naozaj zmazat admin override produktu?');">Zmazat override produktu</button>
+                <?php endif; ?>
               </div>
               </div>
             </form>
+          <?php if ($articleSlotMode): ?>
           </section>
+          <?php else: ?>
+          </details>
+          <?php endif; ?>
         <?php endif; ?>
 
         <?php if ($section === 'images'): ?>
@@ -7299,6 +7428,8 @@ require dirname(__DIR__) . '/inc/head.php';
         const productSlugInput = form.querySelector('input[name="product_slug"]');
         const returnSectionInput = form.querySelector('input[name="return_section"]');
         const returnSlugInput = form.querySelector('input[name="return_slug"]');
+        const articleSlugInput = form.querySelector('input[name="article_slug"]');
+        const targetSlotInput = form.querySelector('input[name="target_slot"]');
 
         formData.set('action', 'upload_packshot_only');
         formData.set('product_slug', productSlugInput instanceof HTMLInputElement ? productSlugInput.value : '');
@@ -7307,6 +7438,12 @@ require dirname(__DIR__) . '/inc/head.php';
         }
         if (returnSlugInput instanceof HTMLInputElement && returnSlugInput.value) {
           formData.set('return_slug', returnSlugInput.value);
+        }
+        if (articleSlugInput instanceof HTMLInputElement && articleSlugInput.value) {
+          formData.set('article_slug', articleSlugInput.value);
+        }
+        if (targetSlotInput instanceof HTMLInputElement && targetSlotInput.value) {
+          formData.set('target_slot', targetSlotInput.value);
         }
         formData.set('product_image', webpFile, webpFile.name);
 
