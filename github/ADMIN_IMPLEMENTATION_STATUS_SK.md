@@ -70,6 +70,17 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsi article produktovy krok:
+- v `Clanky` je produktovy rezim viac article-scoped a slot-based
+- hlavny workflow uz neukazuje volne menitelnu kategoriu ani intro ako hlavne polia pri produktoch
+- clanok ma v hlavnom toku len:
+  - titulok
+  - pevnu kategoriu
+  - 3 sloty pre produkty
+- produkty sa uz nevyberaju z velkeho gridu kariet, ale do 3 pevnych slotov
+- hlavny produkt je jednoducho jeden zo slotov
+- checklist nad produktmi sa pocita len z tychto 3 slotov
+
 Najnovsi import UX krok:
 - sekcia `Produkty` uz nie je natvrdo naviazana len na `najlepsie-proteiny-2026`
 - pri importe sa da prepinat cielovy clanok priamo v admine

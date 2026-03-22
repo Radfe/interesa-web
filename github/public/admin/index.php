@@ -484,6 +484,57 @@ function interessa_admin_article_default_product_plan(string $slug, array $catal
 }
 
 function interessa_admin_collect_article_product_plan(): array {
+    $slotSelections = $_POST['article_product_slot'] ?? [];
+    if (is_array($slotSelections)) {
+        $slotFeatured = max(1, min(3, (int) ($_POST['article_product_featured_slot'] ?? 1)));
+        $roles = $_POST['article_product_role'] ?? [];
+        $placement = $_POST['article_product_placement'] ?? [];
+        $articleSlug = canonical_article_slug((string) ($_POST['slug'] ?? ''));
+        $whitelist = function_exists('interessa_article_comparison_table_whitelist')
+            ? interessa_article_comparison_table_whitelist()
+            : [];
+        $comparisonAllowed = in_array($articleSlug, $whitelist, true);
+        $rows = [];
+        $seen = [];
+
+        for ($slot = 1; $slot <= 3; $slot++) {
+            $productSlug = interessa_admin_slugify((string) ($slotSelections[$slot] ?? ''));
+            if ($productSlug === '' || isset($seen[$productSlug])) {
+                continue;
+            }
+            $seen[$productSlug] = true;
+
+            $role = interessa_admin_slugify((string) ($roles[$productSlug] ?? 'standard'));
+            if (!in_array($role, ['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'], true)) {
+                $role = 'standard';
+            }
+            if ($slot === $slotFeatured) {
+                $role = 'featured';
+            }
+
+            $placementValue = interessa_admin_slugify((string) ($placement[$productSlug] ?? ''));
+            if (!in_array($placementValue, ['recommended', 'comparison', 'both', 'hidden'], true)) {
+                $placementValue = $comparisonAllowed ? 'both' : 'recommended';
+            }
+
+            $showInTop = in_array($placementValue, ['recommended', 'both'], true);
+            $showInComparison = in_array($placementValue, ['comparison', 'both'], true);
+            if ($slot === $slotFeatured) {
+                $showInTop = true;
+            }
+
+            $rows[] = [
+                'product_slug' => $productSlug,
+                'order' => $slot,
+                'role' => $role,
+                'show_in_top' => $showInTop,
+                'show_in_comparison' => $showInComparison,
+            ];
+        }
+
+        return $rows;
+    }
+
     $enabled = $_POST['article_product_enabled'] ?? [];
     $orders = $_POST['article_product_order'] ?? [];
     $roles = $_POST['article_product_role'] ?? [];
@@ -2715,6 +2766,7 @@ $articleEditorInjectedProduct = trim((string) ($_GET['add_product'] ?? ''));
 if ($articleEditorInjectedProduct !== '' && interessa_product($articleEditorInjectedProduct) !== null && !in_array($articleEditorInjectedProduct, $articleEditorProductSlugs, true)) {
     $articleEditorProductSlugs[] = $articleEditorInjectedProduct;
 }
+$articleEditorProductSlugs = array_values(array_slice(array_unique(array_map('strval', $articleEditorProductSlugs)), 0, 3));
 $articleEditorInjectedProductName = $articleEditorInjectedProduct !== '' && interessa_product($articleEditorInjectedProduct) !== null
     ? (string) ((interessa_product($articleEditorInjectedProduct)['name'] ?? $articleEditorInjectedProduct))
     : '';
@@ -2744,7 +2796,7 @@ $recommendedAffiliateReadyCount = (int) ($recommendedDiagnosticsSummary['affilia
 $recommendedPackshotReadyCount = (int) ($recommendedDiagnosticsSummary['packshot_ready'] ?? 0);
 $recommendedMoneyReadyCount = (int) ($recommendedDiagnosticsSummary['money_ready'] ?? 0);
 $recommendedCardReadyCount = (int) ($recommendedDiagnosticsSummary['card_ready'] ?? 0);
-$articleSelectedProductSlugs = array_values(array_unique(array_merge(array_keys($articleProductPlanMap), $articleEditorProductSlugs)));
+$articleSelectedProductSlugs = array_values(array_slice(array_unique(array_merge(array_keys($articleProductPlanMap), $articleEditorProductSlugs)), 0, 3));
 $articleSelectedCount = count($articleSelectedProductSlugs);
 $articleSelectedImageMissingCount = 0;
 $articleSelectedClickMissingCount = 0;
@@ -2797,6 +2849,102 @@ foreach ($articleSelectedProductSlugs as $articleSelectedSlug) {
         'next_href' => $articleSelectedActionHref,
         'next_label' => $articleSelectedActionLabel,
         'next_note' => $articleSelectedActionNote,
+    ];
+}
+$articleSelectedActionRowsBySlug = [];
+foreach ($articleSelectedActionRows as $articleSelectedActionRow) {
+    $actionSlug = trim((string) ($articleSelectedActionRow['slug'] ?? ''));
+    if ($actionSlug !== '') {
+        $articleSelectedActionRowsBySlug[$actionSlug] = $articleSelectedActionRow;
+    }
+}
+$articleScopedProductOptionSlugs = [];
+foreach ($articleSelectedProductSlugs as $selectedSlug) {
+    if (isset($catalog[$selectedSlug])) {
+        $articleScopedProductOptionSlugs[] = $selectedSlug;
+    }
+}
+foreach (interessa_admin_article_default_products($selectedArticleSlug, $catalog) as $defaultSlug) {
+    $defaultSlug = interessa_admin_slugify((string) $defaultSlug);
+    if ($defaultSlug !== '' && isset($catalog[$defaultSlug])) {
+        $articleScopedProductOptionSlugs[] = $defaultSlug;
+    }
+}
+foreach (interessa_admin_product_candidates() as $candidateRow) {
+    if (!is_array($candidateRow)) {
+        continue;
+    }
+    $candidateTargetArticleSlug = canonical_article_slug((string) ($candidateRow['target_article_slug'] ?? $candidateRow['article_slug'] ?? ''));
+    if ($candidateTargetArticleSlug !== $selectedArticleSlug) {
+        continue;
+    }
+    $candidateProductSlug = interessa_admin_slugify((string) ($candidateRow['product_slug'] ?? $candidateRow['slug'] ?? ''));
+    if ($candidateProductSlug !== '' && isset($catalog[$candidateProductSlug])) {
+        $articleScopedProductOptionSlugs[] = $candidateProductSlug;
+    }
+}
+$articleSelectedCategorySlug = normalize_category_slug((string) ($selectedArticleOverride['category'] ?? $selectedArticleMeta['category'] ?? ''));
+if (count($articleScopedProductOptionSlugs) < 6 && $articleSelectedCategorySlug !== '') {
+    foreach ($catalog as $catalogSlug => $catalogRow) {
+        $catalogCategory = normalize_category_slug((string) ($catalogRow['category'] ?? ''));
+        if ($catalogCategory !== '' && $catalogCategory === $articleSelectedCategorySlug) {
+            $articleScopedProductOptionSlugs[] = (string) $catalogSlug;
+        }
+    }
+}
+if ($articleScopedProductOptionSlugs === []) {
+    foreach (array_slice(array_keys($catalog), 0, 12) as $fallbackSlug) {
+        $articleScopedProductOptionSlugs[] = (string) $fallbackSlug;
+    }
+}
+$articleScopedProductOptionSlugs = array_values(array_unique(array_map('strval', $articleScopedProductOptionSlugs)));
+$articleScopedProductOptions = [];
+foreach ($articleScopedProductOptionSlugs as $optionSlug) {
+    if (!isset($catalog[$optionSlug])) {
+        continue;
+    }
+    $optionProduct = interessa_normalize_product(is_array($catalog[$optionSlug]) ? $catalog[$optionSlug] : []);
+    $optionAffiliateCode = trim((string) ($optionProduct['affiliate_code'] ?? ''));
+    $optionPackshotReady = !empty($optionProduct['has_local_image']);
+    $optionAffiliateReady = $optionAffiliateCode !== '' && aff_resolve($optionAffiliateCode) !== null;
+    if ($optionPackshotReady && $optionAffiliateReady) {
+        $optionStateLabel = 'Hotovo';
+        $optionStateClass = ' is-good';
+    } elseif ($optionPackshotReady && !$optionAffiliateReady) {
+        $optionStateLabel = 'Chyba odkaz';
+        $optionStateClass = ' is-warning';
+    } elseif (!$optionPackshotReady && $optionAffiliateReady) {
+        $optionStateLabel = 'Chyba obrazok';
+        $optionStateClass = ' is-warning';
+    } else {
+        $optionStateLabel = 'Chyba obrazok a odkaz';
+        $optionStateClass = ' is-warning';
+    }
+    $optionNextHref = '/admin?section=products&product=' . rawurlencode((string) $optionSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug) . '&focus=product_edit#product-edit-form';
+    $optionNextLabel = 'Doplnit produkt';
+    if ($optionPackshotReady && !$optionAffiliateReady) {
+        if ($optionAffiliateCode !== '') {
+            $optionNextHref = '/dognet-helper?code=' . rawurlencode($optionAffiliateCode);
+        } else {
+            $optionNextHref = '/admin?section=affiliates&prefill_code=' . rawurlencode((string) $optionSlug) . '&prefill_merchant=' . rawurlencode((string) ($optionProduct['merchant'] ?? '')) . '&prefill_merchant_slug=' . rawurlencode(interessa_admin_slugify((string) ($optionProduct['merchant'] ?? ''))) . '&prefill_product_slug=' . rawurlencode((string) $optionSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug);
+        }
+        $optionNextLabel = 'Doplnit odkaz';
+    } elseif ($optionPackshotReady && $optionAffiliateReady) {
+        $optionNextLabel = 'Hotovo';
+    }
+    $articleScopedProductOptions[$optionSlug] = [
+        'slug' => (string) $optionSlug,
+        'name' => (string) ($catalog[$optionSlug]['name'] ?? $optionSlug),
+        'state_label' => $optionStateLabel,
+        'state_class' => $optionStateClass,
+        'next_href' => $optionNextHref,
+        'next_label' => $optionNextLabel,
+        'role' => (string) ($articleProductPlanMap[$optionSlug]['role'] ?? 'standard'),
+        'placement' => !empty($articleProductPlanMap[$optionSlug]['show_in_top']) && !empty($articleProductPlanMap[$optionSlug]['show_in_comparison'])
+            ? 'both'
+            : (!empty($articleProductPlanMap[$optionSlug]['show_in_top'])
+                ? 'recommended'
+                : (!empty($articleProductPlanMap[$optionSlug]['show_in_comparison']) ? 'comparison' : 'hidden')),
     ];
 }
 $productArticleOptionSlugs = $phaseOneArticleSlugs !== []
@@ -3430,7 +3578,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>To najdolezitejsie pri tomto clanku</h3>
-                    <p class="admin-meta">Ak teraz plnis produkty, staci ti nazov, kategoria, kratky uvod a nizsie blok Produkty v tomto clanku.</p>
+                    <p class="admin-meta">Ak teraz riesis produkty, staci ti titulok, pevna kategoria clanku a nizsie 3 produktove sloty.</p>
                   </div>
                 </div>
               <div class="admin-grid two-up">
@@ -3438,23 +3586,33 @@ require dirname(__DIR__) . '/inc/head.php';
                   <span>Titulok</span>
                   <input type="text" name="title" value="<?= esc((string) ($selectedArticleOverride['title'] ?: $selectedArticleMeta['title'])) ?>" />
                 </label>
-                <label>
-                  <span>Kategoria</span>
-                  <?php $selectedCategory = (string) ($selectedArticleOverride['category'] ?: $selectedArticleMeta['category']); ?>
-                  <select name="category">
-                    <option value="">Bez kategorie</option>
-                    <?php foreach ($categoryOptions as $categorySlug => $categoryRow): ?>
-                      <option value="<?= esc((string) $categorySlug) ?>" <?= $selectedCategory === (string) $categorySlug ? 'selected' : '' ?>><?= esc((string) ($categoryRow['title'] ?? $categorySlug)) ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                </label>
+                <?php $selectedCategory = (string) ($selectedArticleOverride['category'] ?: $selectedArticleMeta['category']); ?>
+                <div>
+                  <span class="admin-label-like">Kategoria clanku</span>
+                  <p class="admin-note"><?= esc((string) ($categoryOptions[$selectedCategory]['title'] ?? ($selectedCategory !== '' ? $selectedCategory : 'Bez kategorie'))) ?></p>
+                </div>
               </div>
-
-              <label>
-                <span>Intro</span>
-                <textarea name="intro" rows="3"><?= esc((string) ($selectedArticleOverride['intro'] ?: $selectedArticleMeta['description'])) ?></textarea>
-              </label>
               </section>
+
+              <details class="admin-subsection is-compact">
+                <summary><strong>Redakcny obsah clanku</strong> - otvor len ked menis intro alebo kategoriu</summary>
+                <div class="admin-grid two-up">
+                  <label>
+                    <span>Kategoria</span>
+                    <select name="category">
+                      <option value="">Bez kategorie</option>
+                      <?php foreach ($categoryOptions as $categorySlug => $categoryRow): ?>
+                        <option value="<?= esc((string) $categorySlug) ?>" <?= $selectedCategory === (string) $categorySlug ? 'selected' : '' ?>><?= esc((string) ($categoryRow['title'] ?? $categorySlug)) ?></option>
+                      <?php endforeach; ?>
+                    </select>
+                  </label>
+                  <div></div>
+                </div>
+                <label>
+                  <span>Intro</span>
+                  <textarea name="intro" rows="3"><?= esc((string) ($selectedArticleOverride['intro'] ?: $selectedArticleMeta['description'])) ?></textarea>
+                </label>
+              </details>
 
               <section class="admin-subsection is-compact" id="article-check-block">
                 <div class="admin-subsection-head">
@@ -3508,7 +3666,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php endforeach; ?>
                   </div>
                 <?php else: ?>
-                  <p class="admin-note">Tento clanok este nema vybrate ziadne produkty. Nizsie v casti <strong>Produkty v tomto clanku</strong> oznac, co sem patri.</p>
+                  <p class="admin-note">Tento clanok este nema vybrate ziadne produkty. Nizsie vypln 3 sloty v casti <strong>Produkty v tomto clanku</strong>.</p>
                 <?php endif; ?>
               </section>
 
@@ -3516,210 +3674,76 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <h3>Produkty v tomto clanku</h3>
                 </div>
-                <p class="admin-note">Vyber produkty, ktore do clanku patria, jednemu nastav hlavny produkt a potom uloz produkty pre clanok.</p>
+                <p class="admin-note">Tento clanok ma pevne 3 sloty. Vyber do nich produkty, oznac hlavny produkt a potom uloz produkty v clanku.</p>
                 <?php
-                  $selectedArticleProductRows = [];
-                  $availableArticleProductRows = [];
-                  foreach ($catalog as $productSlug => $productRow) {
-                      $planState = $articleProductPlanMap[(string) $productSlug] ?? [
-                          'order' => in_array((string) $productSlug, $articleEditorProductSlugs, true) ? (array_search((string) $productSlug, $articleEditorProductSlugs, true) + 1) : 0,
-                          'role' => in_array((string) $productSlug, $articleEditorProductSlugs, true) && array_search((string) $productSlug, $articleEditorProductSlugs, true) === 0 ? 'featured' : 'standard',
-                          'show_in_top' => in_array((string) $productSlug, $articleEditorProductSlugs, true),
-                          'show_in_comparison' => in_array((string) $productSlug, $articleEditorProductSlugs, true),
-                      ];
-                      $productNormalized = interessa_normalize_product(is_array($productRow) ? $productRow : []);
-                      $productPackshotReady = !empty($productNormalized['has_local_image']);
-                      $productAffiliateCode = trim((string) ($productNormalized['affiliate_code'] ?? ''));
-                      $productAffiliateReady = $productAffiliateCode !== '' && aff_resolve($productAffiliateCode) !== null;
-                      $productSelected = isset($articleProductPlanMap[(string) $productSlug]) || in_array((string) $productSlug, $articleEditorProductSlugs, true);
-                      $productIsFeatured = (string) ($planState['role'] ?? 'standard') === 'featured';
-                      if ($productPackshotReady && $productAffiliateReady) {
-                          $productStateLabel = 'Hotovo';
-                          $productStateClass = ' is-good';
-                      } elseif ($productPackshotReady && !$productAffiliateReady) {
-                          $productStateLabel = 'Chyba odkaz';
-                          $productStateClass = ' is-warning';
-                      } elseif (!$productPackshotReady && $productAffiliateReady) {
-                          $productStateLabel = 'Chyba obrazok';
-                          $productStateClass = ' is-warning';
-                      } else {
-                          $productStateLabel = 'Chyba obrazok a odkaz';
-                          $productStateClass = ' is-warning';
-                      }
-                      $productNextHref = '/admin?section=products&product=' . rawurlencode((string) $productSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug) . '&focus=product_edit#product-edit-form';
-                      $productNextLabel = 'Doplnit produkt';
-                      $productNextNote = 'Ak tomuto produktu este chyba obrazok alebo udaje, klikni sem.';
-                      if ($productPackshotReady && !$productAffiliateReady) {
-                          if ($productAffiliateCode !== '') {
-                              $productNextHref = '/dognet-helper?code=' . rawurlencode($productAffiliateCode);
-                          } else {
-                              $productNextHref = '/admin?section=affiliates&prefill_code=' . rawurlencode((string) $productSlug) . '&prefill_merchant=' . rawurlencode((string) ($productNormalized['merchant'] ?? '')) . '&prefill_merchant_slug=' . rawurlencode(interessa_admin_slugify((string) ($productNormalized['merchant'] ?? ''))) . '&prefill_product_slug=' . rawurlencode((string) $productSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug);
-                          }
-                          $productNextLabel = 'Doplnit odkaz';
-                          $productNextNote = 'Obrazok je hotovy. Chyba uz len kliknutie do obchodu.';
-                      } elseif ($productPackshotReady && $productAffiliateReady) {
-                          $productNextHref = '/dognet-helper?code=' . rawurlencode($productAffiliateCode);
-                          $productNextLabel = 'Hotovo';
-                          $productNextNote = 'Tento produkt je pripraveny.';
-                      }
-                      $placementValue = !empty($planState['show_in_top']) && !empty($planState['show_in_comparison'])
-                          ? 'both'
-                          : (!empty($planState['show_in_top'])
-                              ? 'recommended'
-                              : (!empty($planState['show_in_comparison']) ? 'comparison' : 'hidden'));
-                      $cardRow = [
-                          'slug' => (string) $productSlug,
-                          'name' => (string) ($productRow['name'] ?? $productSlug),
-                          'selected' => $productSelected,
-                          'is_featured' => $productIsFeatured,
-                          'order' => max(1, (int) ($planState['order'] ?? 1)),
-                          'state_label' => $productStateLabel,
-                          'state_class' => $productStateClass,
-                          'next_href' => $productNextHref,
-                          'next_label' => $productNextLabel,
-                          'next_note' => $productNextNote,
-                          'role' => (string) ($planState['role'] ?? 'standard'),
-                          'placement' => $placementValue,
-                      ];
-                      if ($productSelected) {
-                          $selectedArticleProductRows[] = $cardRow;
-                      } else {
-                          $availableArticleProductRows[] = $cardRow;
+                  $articleSlotSelections = [
+                      1 => $articleSelectedProductSlugs[0] ?? '',
+                      2 => $articleSelectedProductSlugs[1] ?? '',
+                      3 => $articleSelectedProductSlugs[2] ?? '',
+                  ];
+                  $articleFeaturedSlot = 1;
+                  foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
+                      if ($slotSlug !== '' && (string) ($articleProductPlanMap[$slotSlug]['role'] ?? 'standard') === 'featured') {
+                          $articleFeaturedSlot = (int) $slotIndex;
+                          break;
                       }
                   }
-                  usort($selectedArticleProductRows, static function (array $left, array $right): int {
-                      $orderCompare = ((int) ($left['order'] ?? 999)) <=> ((int) ($right['order'] ?? 999));
-                      if ($orderCompare !== 0) {
-                          return $orderCompare;
+                  if ((string) ($articleSlotSelections[$articleFeaturedSlot] ?? '') === '') {
+                      foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
+                          if ($slotSlug !== '') {
+                              $articleFeaturedSlot = (int) $slotIndex;
+                              break;
+                          }
                       }
-                      return strcmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
-                  });
+                  }
                 ?>
-                <div class="article-product-workflow">
-                  <section class="admin-subsection is-compact article-product-section">
-                    <div class="admin-subsection-head">
-                      <div>
-                        <h4>Vybrane produkty v clanku</h4>
-                        <p class="admin-meta"><?= esc((string) count($selectedArticleProductRows)) ?> vybranych</p>
+                <div class="admin-grid one-up">
+                  <?php for ($slotIndex = 1; $slotIndex <= 3; $slotIndex++): ?>
+                    <?php
+                      $slotSlug = (string) ($articleSlotSelections[$slotIndex] ?? '');
+                      $slotRow = $slotSlug !== '' ? ($articleScopedProductOptions[$slotSlug] ?? null) : null;
+                      $slotActionRow = $slotSlug !== '' ? ($articleSelectedActionRowsBySlug[$slotSlug] ?? []) : [];
+                    ?>
+                    <section class="admin-subsection is-compact article-product-slot">
+                      <div class="admin-subsection-head">
+                        <div>
+                          <h4>Slot <?= esc((string) $slotIndex) ?></h4>
+                          <p class="admin-meta"><?= $slotIndex === $articleFeaturedSlot && $slotSlug !== '' ? 'Hlavny produkt' : 'Vyber 1 produkt pre tento slot' ?></p>
+                        </div>
                       </div>
-                    </div>
-                    <?php if ($selectedArticleProductRows !== []): ?>
-                      <div class="admin-check-grid article-product-selected-grid">
-                        <?php foreach ($selectedArticleProductRows as $row): ?>
-                          <div class="admin-check-card-wrap is-selected">
-                            <div class="admin-check-card">
-                              <span><strong><?= esc((string) $row['name']) ?></strong><small><?= esc((string) $row['slug']) ?></small></span>
-                            </div>
-                            <div class="admin-grid article-product-simple-grid">
-                              <label>
-                                <span>Poradie</span>
-                                <input type="number" name="article_product_order[<?= esc((string) $row['slug']) ?>]" min="1" step="1" value="<?= esc((string) $row['order']) ?>" />
-                              </label>
-                              <label>
-                                <span>Hlavny produkt</span>
-                                <div class="admin-check-card admin-check-card--inline">
-                                  <input type="radio" name="article_product_featured_slug" value="<?= esc((string) $row['slug']) ?>" <?= !empty($row['is_featured']) ? 'checked' : '' ?> />
-                                  <span><strong><?= !empty($row['is_featured']) ? 'Toto je hlavny produkt' : 'Oznacit ako hlavny' ?></strong></span>
-                                </div>
-                              </label>
-                            </div>
-                            <div class="admin-status-pills">
-                              <span class="admin-status-pill<?= esc((string) $row['state_class']) ?>"><?= esc((string) $row['state_label']) ?></span>
-                            </div>
-                            <label class="btn btn-secondary btn-small article-product-toggle article-product-toggle--remove">
-                              <input class="article-product-toggle__input" type="checkbox" name="article_product_enabled[<?= esc((string) $row['slug']) ?>]" value="1" checked />
-                              <span>Odobrat z clanku</span>
-                            </label>
-                            <details class="admin-advanced-toggle">
-                              <summary>Pokrocile</summary>
-                              <p class="admin-note"><?= esc((string) $row['next_note']) ?></p>
-                              <div class="admin-inline-actions admin-check-card__actions">
-                                <a class="btn btn-secondary btn-small" href="<?= esc((string) $row['next_href']) ?>"><?= esc((string) $row['next_label']) ?></a>
-                              </div>
-                              <div class="admin-grid two-up">
-                                <label>
-                                  <span>Maly stitok pri produkte</span>
-                                  <select name="article_product_role[<?= esc((string) $row['slug']) ?>]">
-                                    <?php foreach (['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'] as $roleOption): ?>
-                                      <option value="<?= esc($roleOption) ?>" <?= (string) ($row['role'] ?? 'standard') === $roleOption ? 'selected' : '' ?>><?= esc(interessa_admin_role_label($roleOption)) ?></option>
-                                    <?php endforeach; ?>
-                                  </select>
-                                </label>
-                                <label>
-                                  <span>Kde sa ma ukazat</span>
-                                  <select name="article_product_placement[<?= esc((string) $row['slug']) ?>]">
-                                    <option value="recommended" <?= (string) ($row['placement'] ?? '') === 'recommended' ? 'selected' : '' ?>>Len v hornom vybere</option>
-                                    <option value="comparison" <?= (string) ($row['placement'] ?? '') === 'comparison' ? 'selected' : '' ?>>Len v porovnavacej tabulke</option>
-                                    <option value="both" <?= (string) ($row['placement'] ?? '') === 'both' ? 'selected' : '' ?>>V hornom vybere aj v porovnavacej tabulke</option>
-                                    <option value="hidden" <?= (string) ($row['placement'] ?? '') === 'hidden' ? 'selected' : '' ?>>Zatial nikde</option>
-                                  </select>
-                                </label>
-                              </div>
-                            </details>
-                          </div>
-                        <?php endforeach; ?>
-                      </div>
-                    <?php else: ?>
-                      <p class="admin-note">Tento clanok zatial nema vybrane ziadne produkty.</p>
-                    <?php endif; ?>
-                  </section>
-
-                  <section class="admin-subsection is-compact article-product-section">
-                    <div class="admin-subsection-head">
-                      <div>
-                        <h4>Dostupne produkty pre clanok</h4>
-                        <p class="admin-meta"><?= esc((string) count($availableArticleProductRows)) ?> dostupnych</p>
-                      </div>
-                    </div>
-                    <?php if ($availableArticleProductRows !== []): ?>
-                      <div class="admin-check-grid article-product-available-grid">
-                        <?php foreach ($availableArticleProductRows as $index => $row): ?>
-                          <div class="admin-check-card-wrap">
-                            <input type="hidden" name="article_product_order[<?= esc((string) $row['slug']) ?>]" value="" />
-                            <div class="admin-check-card">
-                              <span><strong><?= esc((string) $row['name']) ?></strong><small><?= esc((string) $row['slug']) ?></small></span>
-                            </div>
-                            <div class="admin-status-pills">
-                              <span class="admin-status-pill<?= esc((string) $row['state_class']) ?>"><?= esc((string) $row['state_label']) ?></span>
-                            </div>
-                            <label class="btn btn-secondary btn-small article-product-toggle article-product-toggle--add">
-                              <input class="article-product-toggle__input" type="checkbox" name="article_product_enabled[<?= esc((string) $row['slug']) ?>]" value="1" />
-                              <span>Pridat do clanku</span>
-                            </label>
-                            <details class="admin-advanced-toggle">
-                              <summary>Doplnit produkt</summary>
-                              <p class="admin-note"><?= esc((string) $row['next_note']) ?></p>
-                              <div class="admin-inline-actions admin-check-card__actions">
-                                <a class="btn btn-secondary btn-small" href="<?= esc((string) $row['next_href']) ?>"><?= esc((string) $row['next_label']) ?></a>
-                              </div>
-                              <div class="admin-grid two-up">
-                                <label>
-                                  <span>Maly stitok pri produkte</span>
-                                  <select name="article_product_role[<?= esc((string) $row['slug']) ?>]">
-                                    <?php foreach (['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'] as $roleOption): ?>
-                                      <option value="<?= esc($roleOption) ?>" <?= (string) ($row['role'] ?? 'standard') === $roleOption ? 'selected' : '' ?>><?= esc(interessa_admin_role_label($roleOption)) ?></option>
-                                    <?php endforeach; ?>
-                                  </select>
-                                </label>
-                                <label>
-                                  <span>Kde sa ma ukazat</span>
-                                  <select name="article_product_placement[<?= esc((string) $row['slug']) ?>]">
-                                    <option value="recommended" <?= (string) ($row['placement'] ?? '') === 'recommended' ? 'selected' : '' ?>>Len v hornom vybere</option>
-                                    <option value="comparison" <?= (string) ($row['placement'] ?? '') === 'comparison' ? 'selected' : '' ?>>Len v porovnavacej tabulke</option>
-                                    <option value="both" <?= (string) ($row['placement'] ?? '') === 'both' ? 'selected' : '' ?>>V hornom vybere aj v porovnavacej tabulke</option>
-                                    <option value="hidden" <?= (string) ($row['placement'] ?? '') === 'hidden' ? 'selected' : '' ?>>Zatial nikde</option>
-                                  </select>
-                                </label>
-                              </div>
-                            </details>
-                          </div>
-                        <?php endforeach; ?>
-                      </div>
-                    <?php else: ?>
-                      <p class="admin-note">Vsetky dostupne produkty su uz pridane do tohto clanku.</p>
-                    <?php endif; ?>
-                  </section>
+                      <label>
+                        <span>Produkt pre slot <?= esc((string) $slotIndex) ?></span>
+                        <select name="article_product_slot[<?= esc((string) $slotIndex) ?>]">
+                          <option value="">Nechat prazdny slot</option>
+                          <?php foreach ($articleScopedProductOptions as $optionSlug => $optionRow): ?>
+                            <option value="<?= esc((string) $optionSlug) ?>" <?= $slotSlug === (string) $optionSlug ? 'selected' : '' ?>><?= esc((string) ($optionRow['name'] ?? $optionSlug)) ?></option>
+                          <?php endforeach; ?>
+                        </select>
+                      </label>
+                      <?php if (is_array($slotRow)): ?>
+                        <input type="hidden" name="article_product_role[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['role'] ?? 'standard')) ?>" />
+                        <input type="hidden" name="article_product_placement[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['placement'] ?? 'recommended')) ?>" />
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill<?= esc((string) ($slotRow['state_class'] ?? ' is-warning')) ?>"><?= esc((string) ($slotRow['state_label'] ?? 'Chyba')) ?></span>
+                        </div>
+                        <label class="admin-check-card admin-check-card--inline">
+                          <input type="radio" name="article_product_featured_slot" value="<?= esc((string) $slotIndex) ?>" <?= $slotIndex === $articleFeaturedSlot ? 'checked' : '' ?> />
+                          <span><strong><?= $slotIndex === $articleFeaturedSlot ? 'Toto je hlavny produkt' : 'Nastavit ako hlavny produkt' ?></strong></span>
+                        </label>
+                        <div class="admin-inline-actions">
+                          <a class="btn btn-secondary btn-small" href="<?= esc((string) ($slotActionRow['next_href'] ?? ($slotRow['next_href'] ?? '#'))) ?>"><?= esc((string) ($slotActionRow['next_label'] ?? ($slotRow['next_label'] ?? 'Doplnit produkt'))) ?></a>
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $slotSlug) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Otvorit produkt</a>
+                        </div>
+                      <?php else: ?>
+                        <p class="admin-note">Tento slot je prazdny. Vyber produkt zo zoznamu vyssie a uloz produkty v clanku.</p>
+                      <?php endif; ?>
+                    </section>
+                  <?php endfor; ?>
                 </div>
+                <details class="admin-subsection is-compact">
+                  <summary><strong>Zdroj produktov pre tieto sloty</strong> - otvor len ked chces skontrolovat kandidatov</summary>
+                  <p class="admin-note">Na vyber mas <?= esc((string) count($articleScopedProductOptions)) ?> produktov, ktore su viazane na tento clanok, odporucane pre tento clanok alebo patria do rovnakej kategorie.</p>
+                </details>
               </div>
 
               <details class="admin-subsection">
