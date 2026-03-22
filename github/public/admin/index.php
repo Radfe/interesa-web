@@ -2788,17 +2788,32 @@ $comparisonEditor = interessa_admin_comparison_editor_state($comparison);
 $selectedArticleProductState = $selectedArticleSlug !== ''
     ? interessa_admin_article_product_state($selectedArticleSlug, $selectedArticleOverride)
     : ['product_plan' => [], 'recommended_products' => [], 'source' => 'article_override'];
-$articleEditorProductSlugs = is_array($selectedArticleProductState['recommended_products'] ?? null)
-    ? array_values(array_unique(array_map('strval', $selectedArticleProductState['recommended_products'])))
-    : [];
-if ($articleEditorProductSlugs === []) {
-    $articleEditorProductSlugs = interessa_admin_article_default_products($selectedArticleSlug, $catalog);
-}
 $articleProductPlan = is_array($selectedArticleProductState['product_plan'] ?? null)
     ? array_values($selectedArticleProductState['product_plan'])
     : [];
 if ($articleProductPlan === []) {
     $articleProductPlan = interessa_admin_article_default_product_plan($selectedArticleSlug, $catalog);
+}
+$articleProductPlanHasExplicitSource = !empty($selectedArticleProductState['product_plan']);
+$articleEditorProductSlugs = [];
+if ($articleProductPlanHasExplicitSource) {
+    foreach ($articleProductPlan as $planRow) {
+        if (!is_array($planRow)) {
+            continue;
+        }
+        $planSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
+        if ($planSlug !== '') {
+            $articleEditorProductSlugs[] = $planSlug;
+        }
+    }
+    $articleEditorProductSlugs = array_values(array_unique($articleEditorProductSlugs));
+} else {
+    $articleEditorProductSlugs = is_array($selectedArticleProductState['recommended_products'] ?? null)
+        ? array_values(array_unique(array_map('strval', $selectedArticleProductState['recommended_products'])))
+        : [];
+    if ($articleEditorProductSlugs === []) {
+        $articleEditorProductSlugs = interessa_admin_article_default_products($selectedArticleSlug, $catalog);
+    }
 }
 $articleProductPlanMap = [];
 $articleSlotSelections = [
@@ -2859,19 +2874,21 @@ $recommendedAffiliateReadyCount = (int) ($recommendedDiagnosticsSummary['affilia
 $recommendedPackshotReadyCount = (int) ($recommendedDiagnosticsSummary['packshot_ready'] ?? 0);
 $recommendedMoneyReadyCount = (int) ($recommendedDiagnosticsSummary['money_ready'] ?? 0);
 $recommendedCardReadyCount = (int) ($recommendedDiagnosticsSummary['card_ready'] ?? 0);
-$fallbackSlotIndex = 1;
-foreach ($articleEditorProductSlugs as $fallbackSlug) {
-    $fallbackSlug = interessa_admin_slugify((string) $fallbackSlug);
-    if ($fallbackSlug === '' || in_array($fallbackSlug, $articleSlotSelections, true)) {
-        continue;
+if (!$articleProductPlanHasExplicitSource) {
+    $fallbackSlotIndex = 1;
+    foreach ($articleEditorProductSlugs as $fallbackSlug) {
+        $fallbackSlug = interessa_admin_slugify((string) $fallbackSlug);
+        if ($fallbackSlug === '' || in_array($fallbackSlug, $articleSlotSelections, true)) {
+            continue;
+        }
+        while ($fallbackSlotIndex <= 3 && (string) ($articleSlotSelections[$fallbackSlotIndex] ?? '') !== '') {
+            $fallbackSlotIndex++;
+        }
+        if ($fallbackSlotIndex > 3) {
+            break;
+        }
+        $articleSlotSelections[$fallbackSlotIndex] = $fallbackSlug;
     }
-    while ($fallbackSlotIndex <= 3 && (string) ($articleSlotSelections[$fallbackSlotIndex] ?? '') !== '') {
-        $fallbackSlotIndex++;
-    }
-    if ($fallbackSlotIndex > 3) {
-        break;
-    }
-    $articleSlotSelections[$fallbackSlotIndex] = $fallbackSlug;
 }
 $articleSelectedProductSlugs = array_values(array_filter($articleSlotSelections, static fn(string $slug): bool => $slug !== ''));
 $articleSelectedSlotBySlug = [];
@@ -3046,17 +3063,32 @@ $selectedProductArticleOverride = $selectedProductArticleSlug !== '' ? interessa
 $selectedProductArticleState = $selectedProductArticleSlug !== ''
     ? interessa_admin_article_product_state($selectedProductArticleSlug, $selectedProductArticleOverride)
     : ['product_plan' => [], 'recommended_products' => [], 'source' => 'article_override'];
-$productPageArticleProductSlugs = is_array($selectedProductArticleState['recommended_products'] ?? null)
-    ? array_values(array_unique(array_map('strval', $selectedProductArticleState['recommended_products'])))
-    : [];
-if ($productPageArticleProductSlugs === []) {
-    $productPageArticleProductSlugs = interessa_admin_article_default_products($selectedProductArticleSlug, $catalog);
-}
 $productPageArticleProductPlan = is_array($selectedProductArticleState['product_plan'] ?? null)
     ? array_values($selectedProductArticleState['product_plan'])
     : [];
 if ($productPageArticleProductPlan === []) {
     $productPageArticleProductPlan = interessa_admin_article_default_product_plan($selectedProductArticleSlug, $catalog);
+}
+$productPageHasExplicitPlan = !empty($selectedProductArticleState['product_plan']);
+$productPageArticleProductSlugs = [];
+if ($productPageHasExplicitPlan) {
+    foreach ($productPageArticleProductPlan as $planRow) {
+        if (!is_array($planRow)) {
+            continue;
+        }
+        $planSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
+        if ($planSlug !== '') {
+            $productPageArticleProductSlugs[] = $planSlug;
+        }
+    }
+    $productPageArticleProductSlugs = array_values(array_unique($productPageArticleProductSlugs));
+} else {
+    $productPageArticleProductSlugs = is_array($selectedProductArticleState['recommended_products'] ?? null)
+        ? array_values(array_unique(array_map('strval', $selectedProductArticleState['recommended_products'])))
+        : [];
+    if ($productPageArticleProductSlugs === []) {
+        $productPageArticleProductSlugs = interessa_admin_article_default_products($selectedProductArticleSlug, $catalog);
+    }
 }
 $productPageArticlePlanMap = [];
 foreach ($productPageArticleProductPlan as $planRow) {
