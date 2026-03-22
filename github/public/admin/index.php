@@ -2801,6 +2801,11 @@ if ($articleProductPlan === []) {
     $articleProductPlan = interessa_admin_article_default_product_plan($selectedArticleSlug, $catalog);
 }
 $articleProductPlanMap = [];
+$articleSlotSelections = [
+    1 => '',
+    2 => '',
+    3 => '',
+];
 foreach ($articleProductPlan as $planRow) {
     if (!is_array($planRow)) {
         continue;
@@ -2815,6 +2820,10 @@ foreach ($articleProductPlan as $planRow) {
         'show_in_top' => !empty($planRow['show_in_top']),
         'show_in_comparison' => !empty($planRow['show_in_comparison']),
     ];
+    $planOrder = max(1, min(3, (int) ($planRow['order'] ?? 1)));
+    if ($articleSlotSelections[$planOrder] === '') {
+        $articleSlotSelections[$planOrder] = $planSlug;
+    }
 }
 $articleEditorInjectedProduct = trim((string) ($_GET['add_product'] ?? ''));
 if ($articleEditorInjectedProduct !== '' && interessa_product($articleEditorInjectedProduct) !== null && !in_array($articleEditorInjectedProduct, $articleEditorProductSlugs, true)) {
@@ -2850,12 +2859,26 @@ $recommendedAffiliateReadyCount = (int) ($recommendedDiagnosticsSummary['affilia
 $recommendedPackshotReadyCount = (int) ($recommendedDiagnosticsSummary['packshot_ready'] ?? 0);
 $recommendedMoneyReadyCount = (int) ($recommendedDiagnosticsSummary['money_ready'] ?? 0);
 $recommendedCardReadyCount = (int) ($recommendedDiagnosticsSummary['card_ready'] ?? 0);
-$articleSelectedProductSlugs = array_values(array_slice(array_unique(array_merge(array_keys($articleProductPlanMap), $articleEditorProductSlugs)), 0, 3));
+$fallbackSlotIndex = 1;
+foreach ($articleEditorProductSlugs as $fallbackSlug) {
+    $fallbackSlug = interessa_admin_slugify((string) $fallbackSlug);
+    if ($fallbackSlug === '' || in_array($fallbackSlug, $articleSlotSelections, true)) {
+        continue;
+    }
+    while ($fallbackSlotIndex <= 3 && (string) ($articleSlotSelections[$fallbackSlotIndex] ?? '') !== '') {
+        $fallbackSlotIndex++;
+    }
+    if ($fallbackSlotIndex > 3) {
+        break;
+    }
+    $articleSlotSelections[$fallbackSlotIndex] = $fallbackSlug;
+}
+$articleSelectedProductSlugs = array_values(array_filter($articleSlotSelections, static fn(string $slug): bool => $slug !== ''));
 $articleSelectedSlotBySlug = [];
-foreach ($articleSelectedProductSlugs as $slotIndex => $slotSlug) {
+foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
     $slotSlug = interessa_admin_slugify((string) $slotSlug);
     if ($slotSlug !== '') {
-        $articleSelectedSlotBySlug[$slotSlug] = $slotIndex + 1;
+        $articleSelectedSlotBySlug[$slotSlug] = (int) $slotIndex;
     }
 }
 $articleSelectedCount = count($articleSelectedProductSlugs);
@@ -3737,12 +3760,8 @@ require dirname(__DIR__) . '/inc/head.php';
                   <h3>Produkty v tomto clanku</h3>
                 </div>
                 <p class="admin-note">Tento clanok ma pevne 3 sloty. Vyber do nich produkty, oznac hlavny produkt a potom uloz produkty v clanku.</p>
+                <p class="admin-meta"><strong>Debug zdroj slotov:</strong> <?= esc((string) ($selectedArticleProductState['source'] ?? 'unknown')) ?></p>
                 <?php
-                  $articleSlotSelections = [
-                      1 => $articleSelectedProductSlugs[0] ?? '',
-                      2 => $articleSelectedProductSlugs[1] ?? '',
-                      3 => $articleSelectedProductSlugs[2] ?? '',
-                  ];
                   $articleFeaturedSlot = 1;
                   foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
                       if ($slotSlug !== '' && (string) ($articleProductPlanMap[$slotSlug]['role'] ?? 'standard') === 'featured') {
@@ -3771,6 +3790,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <div>
                           <h4>Slot <?= esc((string) $slotIndex) ?></h4>
                           <p class="admin-meta"><?= $slotIndex === $articleFeaturedSlot && $slotSlug !== '' ? 'Hlavny produkt' : 'Vyber 1 produkt pre tento slot' ?></p>
+                          <p class="admin-meta"><strong>Debug:</strong> <?= $slotSlug !== '' ? esc($slotSlug) : 'prazdny slot' ?> / source <?= esc((string) ($selectedArticleProductState['source'] ?? 'unknown')) ?></p>
                         </div>
                       </div>
                       <label>
