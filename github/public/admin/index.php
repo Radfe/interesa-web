@@ -7583,6 +7583,14 @@ require dirname(__DIR__) . '/inc/head.php';
       if (!(fileInput instanceof HTMLInputElement)) {
         return;
       }
+      const actionInput = form.querySelector('input[name="action"]');
+      const actionValue = actionInput instanceof HTMLInputElement ? actionInput.value : '';
+      const shouldHandleInlineUpload = form.classList.contains('admin-inline-upload')
+        || ['upload_hero_only', 'upload_category_image_only', 'upload_packshot_only', 'save_brand_logo', 'save_brand_og_default'].includes(actionValue);
+
+      if (!shouldHandleInlineUpload) {
+        return;
+      }
 
       if (fileInput.name === 'hero_image' || fileInput.name === 'category_image') {
         bindHeroCropPicker(form);
