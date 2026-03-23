@@ -1,0 +1,46 @@
+{
+    "aktin-balanced-preworkout": {
+        "slug": "aktin-balanced-preworkout",
+        "name": "Balanced stim pre-workout",
+        "brand": "",
+        "merchant": "Aktin",
+        "merchant_slug": "aktin",
+        "category": "pre-workout",
+        "affiliate_code": "pre-workout-ako-vybrat-aktin",
+        "fallback_url": "https://www.aktin.sk/",
+        "summary": "Balanced predtréningovka pre väčšinu tréningov bez extrémneho stimu.",
+        "rating": 0,
+        "pros": [
+            "vhodné pre väčšinu tréningov",
+            "nižšie riziko prestreleného kofeínu"
+        ],
+        "cons": [
+            "pre heavy stim fanúšikov môže byť miernejší"
+        ],
+        "image": {
+            "asset": "img/products/aktin/aktin-balanced-preworkout/main.webp"
+        }
+    },
+    "aktin-creatine-monohydrate": {
+        "slug": "aktin-creatine-monohydrate",
+        "name": "Creatine Monohydrate / osvedčený základ",
+        "brand": "",
+        "merchant": "Aktin",
+        "merchant_slug": "aktin",
+        "category": "kreatin",
+        "affiliate_code": "kreatin-porovnanie-aktin",
+        "fallback_url": "https://www.aktin.sk/",
+        "summary": "Najistejšia forma kreatínu z pohľadu dát aj dlhodobého používania.",
+        "rating": 0,
+        "pros": [
+            "najsilnejšie dôkazy zo všetkých foriem",
+            "jednoduché dávkovanie"
+        ],
+        "cons": [
+            "treba pravidelnosť, nie jednorazové použitie"
+        ],
+        "image": {
+            "asset": "img/products/aktin/aktin-creatine-monohydrate/main.webp"
+        }
+    }
+}
