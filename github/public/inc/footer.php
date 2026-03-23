@@ -24,10 +24,17 @@
 </footer>
 
 <?php if (function_exists('interessa_is_local_dev') && interessa_is_local_dev()): ?>
+<?php $localBuildMeta = function_exists('interessa_local_build_meta') ? interessa_local_build_meta() : []; ?>
 <button class="dev-reload-fab" type="button" data-dev-reload>Nacitat znova lokalnu verziu</button>
 <div class="dev-build-badge" aria-live="polite">
   <strong>Lokalna verzia</strong>
-  <span>Build <?= esc(interessa_dev_build_label()) ?></span>
+  <span>Marker <?= esc(interessa_dev_build_label()) ?></span>
+  <?php if (($localBuildMeta['started_at_display'] ?? '') !== ''): ?>
+    <span>Start <?= esc((string) $localBuildMeta['started_at_display']) ?></span>
+  <?php endif; ?>
+  <?php if (($localBuildMeta['git_short'] ?? '') !== ''): ?>
+    <span>Git <?= esc((string) $localBuildMeta['git_short']) ?></span>
+  <?php endif; ?>
 </div>
 <?php endif; ?>
 

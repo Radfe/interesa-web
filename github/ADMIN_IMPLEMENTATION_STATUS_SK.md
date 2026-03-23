@@ -70,6 +70,19 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsi lokalny start a verzia krok:
+- lokalny workflow ma mat jeden oficialny start:
+  - `start-interesa.cmd`
+- a jeden oficialny stop:
+  - `stop-interesa.cmd`
+- oficialny start teraz:
+  - zastavi stary lokalny server
+  - vygeneruje novy lokalny build marker do `.codex-local/local-build.json`
+  - spusti lokalny server
+  - otvori web aj admin
+- footer na lokalnom webe aj v admine teraz zobrazuje rovnaky marker, aky vypise start okno
+- stare wrappery `open-local-site*`, `restart-local-site*` a `stop-local-site.cmd/vbs` maju byt uz len deprecated vstupy smerujuce na oficialny start/stop
+
 Najnovsi category auto-pick krok:
 - pri vybranom clanku v admine uz existuje jednoduchy backend vyber produktov podla kategorie clanku
 - pribudol helper `getProductsForArticle(articleId)`, ktory:

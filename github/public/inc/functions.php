@@ -44,10 +44,46 @@ if (!function_exists('asset')) {
 }
 
 if (!function_exists('interessa_dev_build_label')) {
+    function interessa_local_build_meta(): array {
+        static $meta = null;
+
+        if ($meta !== null) {
+            return $meta;
+        }
+
+        $meta = [];
+        $markerFile = dirname(__DIR__, 2) . '/.codex-local/local-build.json';
+        if (!is_file($markerFile)) {
+            return $meta;
+        }
+
+        $decoded = json_decode((string) file_get_contents($markerFile), true);
+        if (!is_array($decoded)) {
+            return $meta;
+        }
+
+        $meta = [
+            'marker' => trim((string) ($decoded['marker'] ?? '')),
+            'started_at_display' => trim((string) ($decoded['started_at_display'] ?? '')),
+            'started_at_iso' => trim((string) ($decoded['started_at_iso'] ?? '')),
+            'git_short' => trim((string) ($decoded['git_short'] ?? '')),
+            'site_url' => trim((string) ($decoded['site_url'] ?? '')),
+            'admin_url' => trim((string) ($decoded['admin_url'] ?? '')),
+        ];
+
+        return $meta;
+    }
+
     function interessa_dev_build_label(): string {
         static $label = null;
 
         if ($label !== null) {
+            return $label;
+        }
+
+        $buildMeta = interessa_local_build_meta();
+        if (($buildMeta['marker'] ?? '') !== '') {
+            $label = (string) $buildMeta['marker'];
             return $label;
         }
 

@@ -1,3 +1,4 @@
 @echo off
 cd /d "%~dp0"
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0stop-local-site.ps1"
+echo DEPRECATED: pouzi stop-interesa.cmd ako oficialny lokalny stop.
+call "%~dp0stop-interesa.cmd"
