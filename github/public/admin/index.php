@@ -4035,7 +4035,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <?php if (!empty($slotActionRow['next_enabled'])): ?>
                             <a class="btn btn-secondary btn-small" href="<?= esc((string) ($slotActionRow['next_href'] ?? ($slotRow['next_href'] ?? '#'))) ?>"><?= esc((string) ($slotActionRow['next_label'] ?? ($slotRow['next_label'] ?? 'Doplnit produkt'))) ?></a>
                           <?php endif; ?>
-                          <?php if (!empty($slotActionRow['exists']) && !empty($slotActionRow['packshot_ready']) && !empty($slotActionRow['affiliate_ready'])): ?>
+                          <?php if (!empty($slotActionRow['exists']) && !empty($slotActionRow['affiliate_ready'])): ?>
                             <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Pozriet na webe</a>
                           <?php endif; ?>
                         </div>
