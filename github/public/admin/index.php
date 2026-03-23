@@ -3765,10 +3765,15 @@ require dirname(__DIR__) . '/inc/head.php';
 
         <?php if ($section === 'articles'): ?>
           <section class="admin-card">
+            <?php
+              $articleContextTitle = (string) ($selectedArticleOverride['title'] ?: $selectedArticleMeta['title']);
+              $articleContextCategory = (string) ($selectedArticleOverride['category'] ?: $selectedArticleMeta['category']);
+              $articleContextCategoryLabel = (string) ($categoryOptions[$articleContextCategory]['title'] ?? ($articleContextCategory !== '' ? $articleContextCategory : 'Bez kategorie'));
+            ?>
             <div class="admin-card-head">
               <div>
                 <p class="admin-kicker">Clanok</p>
-                <h2>Uprava vybraneho clanku</h2>
+                <h2>Editor clanku</h2>
               </div>
               <div class="admin-inline-actions">
                 <a class="btn btn-cta btn-small" href="#article-products-block">Produkty v clanku</a>
@@ -3791,6 +3796,21 @@ require dirname(__DIR__) . '/inc/head.php';
                 </select>
               </form>
             </div>
+
+            <section class="admin-article-context">
+              <p class="admin-article-context__eyebrow">CLANOK</p>
+              <h2><?= esc($articleContextTitle) ?></h2>
+              <div class="admin-article-context__meta">
+                <div>
+                  <span>Slug</span>
+                  <strong><?= esc($selectedArticleSlug) ?></strong>
+                </div>
+                <div>
+                  <span>Kategoria</span>
+                  <strong><?= esc($articleContextCategoryLabel) ?></strong>
+                </div>
+              </div>
+            </section>
 
             <details class="admin-subsection">
               <summary>Vytvorit novy clanok (bezne netreba)</summary>

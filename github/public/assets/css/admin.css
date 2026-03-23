@@ -89,6 +89,50 @@
   margin-bottom: 1rem;
 }
 
+.admin-article-context {
+  margin-bottom: 1.1rem;
+  padding: 1.15rem 1.2rem;
+  border: 1px solid rgba(21, 49, 75, 0.12);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(21, 49, 75, 0.05), rgba(45, 106, 140, 0.09));
+}
+
+.admin-article-context__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #2d6a8c;
+}
+
+.admin-article-context h2 {
+  margin: 0 0 0.8rem;
+  font-size: clamp(1.45rem, 2vw + 1rem, 2.1rem);
+  line-height: 1.15;
+}
+
+.admin-article-context__meta {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.admin-article-context__meta span {
+  display: block;
+  margin-bottom: 0.22rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5d6c7c;
+}
+
+.admin-article-context__meta strong {
+  display: block;
+  font-size: 1rem;
+  color: #15314b;
+}
+
 .admin-kicker {
   text-transform: uppercase;
   letter-spacing: 0.08em;
