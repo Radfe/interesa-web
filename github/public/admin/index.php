@@ -3969,7 +3969,6 @@ require dirname(__DIR__) . '/inc/head.php';
                 <?php if ($articleProductPlanHasExplicitSource === false): ?>
                   <p class="admin-note">Clanok zatial nema explicitne priradene produkty.</p>
                 <?php endif; ?>
-                <p class="admin-meta"><strong>Debug zdroj slotov:</strong> <?= $articleProductPlanHasExplicitSource ? 'explicit' : 'none' ?></p>
                 <?php
                   $articleFeaturedSlot = 1;
                   foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
@@ -3999,7 +3998,6 @@ require dirname(__DIR__) . '/inc/head.php';
                         <div>
                           <h4>Slot <?= esc((string) $slotIndex) ?></h4>
                           <p class="admin-meta"><?= $slotIndex === $articleFeaturedSlot && $slotSlug !== '' ? 'Hlavny produkt' : 'Vyber 1 produkt pre tento slot' ?></p>
-                          <p class="admin-meta"><strong>Debug:</strong> slot <?= esc((string) $slotIndex) ?> / <?= $slotSlug !== '' ? esc($slotSlug) : 'NULL' ?> / source <?= $slotSlug !== '' ? 'explicit' : 'none' ?></p>
                         </div>
                       </div>
                       <label>
@@ -4007,13 +4005,10 @@ require dirname(__DIR__) . '/inc/head.php';
                         <select name="article_product_slot[<?= esc((string) $slotIndex) ?>]">
                           <option value="">Nechat prazdny slot</option>
                           <?php foreach ($articleScopedProductOptions as $optionSlug => $optionRow): ?>
-                            <option value="<?= esc((string) $optionSlug) ?>" <?= $slotSlug === (string) $optionSlug ? 'selected' : '' ?>><?= esc((string) ($optionRow['name'] ?? $optionSlug)) ?> [<?= esc((string) ($optionRow['debug_source'] ?? 'unknown')) ?>]</option>
+                            <option value="<?= esc((string) $optionSlug) ?>" <?= $slotSlug === (string) $optionSlug ? 'selected' : '' ?>><?= esc((string) ($optionRow['name'] ?? $optionSlug)) ?></option>
                           <?php endforeach; ?>
                         </select>
                       </label>
-                      <?php if (is_array($slotRow)): ?>
-                        <p class="admin-meta"><strong>Debug zdroj moznosti:</strong> <?= esc((string) ($slotRow['debug_source'] ?? 'unknown')) ?></p>
-                      <?php endif; ?>
                       <?php if (is_array($slotRow)): ?>
                         <input type="hidden" name="article_product_role[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['role'] ?? 'standard')) ?>" />
                         <input type="hidden" name="article_product_placement[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['placement'] ?? 'recommended')) ?>" />
@@ -4027,6 +4022,9 @@ require dirname(__DIR__) . '/inc/head.php';
                         <div class="admin-inline-actions">
                           <a class="btn btn-secondary btn-small" href="<?= esc((string) ($slotActionRow['next_href'] ?? ($slotRow['next_href'] ?? '#'))) ?>"><?= esc((string) ($slotActionRow['next_label'] ?? ($slotRow['next_label'] ?? 'Doplnit produkt'))) ?></a>
                           <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $slotSlug) ?>&amp;article=<?= esc($selectedArticleSlug) ?>&amp;slot=<?= esc((string) $slotIndex) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Vybrat produkt pre slot</a>
+                          <?php if (!empty($slotActionRow['exists']) && !empty($slotActionRow['packshot_ready']) && !empty($slotActionRow['affiliate_ready'])): ?>
+                            <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Pozriet na webe</a>
+                          <?php endif; ?>
                         </div>
                       <?php else: ?>
                         <p class="admin-note">Ziadny produkt nie je priradeny.</p>
