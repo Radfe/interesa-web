@@ -3952,6 +3952,9 @@ require dirname(__DIR__) . '/inc/head.php';
                         </div>
                         <div class="admin-inline-actions">
                           <a class="btn btn-secondary btn-small" href="<?= esc((string) ($articleActionRow['next_href'] ?? '#')) ?>"><?= esc((string) ($articleActionRow['next_label'] ?? 'Otvorit')) ?></a>
+                          <?php if (!empty($articleActionRow['exists']) && !empty($articleActionRow['packshot_ready']) && !empty($articleActionRow['affiliate_ready'])): ?>
+                            <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Pozriet na webe</a>
+                          <?php endif; ?>
                         </div>
                       </article>
                     <?php endforeach; ?>
