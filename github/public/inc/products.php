@@ -105,6 +105,127 @@ if (!function_exists('interessa_product')) {
     }
 }
 
+if (!function_exists('interessa_article_product_category_map')) {
+    function interessa_article_product_category_map(): array {
+        return [
+            'proteiny' => ['proteiny'],
+            'sila' => ['kreatin', 'pre-workout', 'proteiny'],
+            'vyziva' => ['proteiny', 'kreatin', 'mineraly', 'probiotika-travenie', 'klby-koza'],
+            'mineraly' => ['mineraly'],
+            'imunita' => ['probiotika-travenie', 'mineraly'],
+            'klby-koza' => ['klby-koza', 'mineraly'],
+            'kreatin' => ['kreatin'],
+            'pre-workout' => ['pre-workout'],
+            'probiotika-travenie' => ['probiotika-travenie'],
+        ];
+    }
+}
+
+if (!function_exists('interessa_article_product_categories')) {
+    function interessa_article_product_categories(string $articleId): array {
+        $articleId = function_exists('canonical_article_slug') ? canonical_article_slug(trim($articleId)) : trim($articleId);
+        if ($articleId === '' || !function_exists('article_meta')) {
+            return [];
+        }
+
+        $meta = article_meta($articleId);
+        $articleCategory = normalize_category_slug((string) ($meta['category'] ?? ''));
+        if ($articleCategory === '') {
+            return [];
+        }
+
+        $map = interessa_article_product_category_map();
+        $categories = $map[$articleCategory] ?? [$articleCategory];
+        array_unshift($categories, $articleCategory);
+
+        $normalized = [];
+        foreach ($categories as $category) {
+            $category = normalize_category_slug((string) $category);
+            if ($category !== '' && !in_array($category, $normalized, true)) {
+                $normalized[] = $category;
+            }
+        }
+
+        return $normalized;
+    }
+}
+
+if (!function_exists('interessa_get_products_for_article')) {
+    function interessa_get_products_for_article(string $articleId, int $limit = 5): array {
+        $articleId = function_exists('canonical_article_slug') ? canonical_article_slug(trim($articleId)) : trim($articleId);
+        $limit = max(1, $limit);
+        if ($articleId === '') {
+            return [];
+        }
+
+        $articleCategories = interessa_article_product_categories($articleId);
+        if ($articleCategories === []) {
+            return [];
+        }
+
+        $matches = [];
+        foreach (interessa_product_catalog() as $productSlug => $product) {
+            $normalized = interessa_normalize_product(is_array($product) ? $product : []);
+            $normalizedSlug = trim((string) ($normalized['slug'] ?? $productSlug));
+            $productCategory = normalize_category_slug((string) ($normalized['category'] ?? ''));
+            if ($normalizedSlug === '' || $productCategory === '' || !in_array($productCategory, $articleCategories, true)) {
+                continue;
+            }
+
+            $categoryPriority = array_search($productCategory, $articleCategories, true);
+            if ($categoryPriority === false) {
+                $categoryPriority = 999;
+            }
+
+            $target = interessa_affiliate_target($normalized);
+            $categoryMeta = function_exists('category_meta') ? category_meta($productCategory) : null;
+            $affiliateLink = trim((string) ($target['href'] ?? ''));
+
+            $matches[] = [
+                'product_slug' => $normalizedSlug,
+                'name' => trim((string) ($normalized['name'] ?? $normalizedSlug)),
+                'image' => $normalized['image'],
+                'affiliate_link' => $affiliateLink !== '' ? $affiliateLink : '#',
+                'affiliate_label' => trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu',
+                'merchant' => trim((string) ($normalized['merchant'] ?? '')),
+                'category' => $productCategory,
+                'category_label' => trim((string) ($categoryMeta['title'] ?? humanize_slug($productCategory))),
+                'summary' => trim((string) ($normalized['summary'] ?? '')),
+                '_category_priority' => (int) $categoryPriority,
+                '_visual_score' => interessa_product_visual_score(is_array($product) ? $product : []),
+            ];
+        }
+
+        usort($matches, static function (array $left, array $right): int {
+            $priorityCompare = ((int) ($left['_category_priority'] ?? 999)) <=> ((int) ($right['_category_priority'] ?? 999));
+            if ($priorityCompare !== 0) {
+                return $priorityCompare;
+            }
+
+            $visualCompare = ((int) ($right['_visual_score'] ?? 0)) <=> ((int) ($left['_visual_score'] ?? 0));
+            if ($visualCompare !== 0) {
+                return $visualCompare;
+            }
+
+            return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
+        });
+
+        $matches = array_slice($matches, 0, $limit);
+        foreach ($matches as &$row) {
+            unset($row['_category_priority'], $row['_visual_score']);
+        }
+        unset($row);
+
+        return array_values($matches);
+    }
+}
+
+if (!function_exists('getProductsForArticle')) {
+    function getProductsForArticle(string $articleId, int $limit = 5): array {
+        return interessa_get_products_for_article($articleId, $limit);
+    }
+}
+
 if (!function_exists('interessa_guess_slug_from_text')) {
     function interessa_guess_slug_from_text(string $value): string {
         $value = strtolower(trim($value));

@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /storage
+Disallow: /dognet-helper
+Disallow: /hero-helper
+
+Sitemap: https://interesa.sk/sitemap.xml

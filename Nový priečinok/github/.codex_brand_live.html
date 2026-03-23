@@ -1,0 +1,1056 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin | Interesa</title>
+  <meta name="description" content="Interny admin panel pre clanky, produkty, obrazky a odkazy do obchodov." />
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="theme-color" content="#11a96d" />
+  <meta name="color-scheme" content="light" />
+  <link rel="canonical" href="http://127.0.0.1:5001/admin" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Interesa" />
+  <meta property="og:locale" content="sk_SK" />
+  <meta property="og:url" content="http://127.0.0.1:5001/admin" />
+  <meta property="og:title" content="Admin | Interesa" />
+  <meta property="og:description" content="Interny admin panel pre clanky, produkty, obrazky a odkazy do obchodov." />
+  <meta property="og:image" content="http://127.0.0.1:5001/assets/img/og-default.jpg?v=1773125880" />
+  <meta property="og:image:alt" content="Admin | Interesa" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Admin | Interesa" />
+  <meta name="twitter:description" content="Interny admin panel pre clanky, produkty, obrazky a odkazy do obchodov." />
+  <meta name="twitter:image" content="http://127.0.0.1:5001/assets/img/og-default.jpg?v=1773125880" />
+  <meta name="twitter:image:alt" content="Admin | Interesa" />
+
+  <link rel="shortcut icon" href="/assets/img/brand/favicon-32.png?v=1773780254" type="image/png" />
+  <link rel="icon" href="/assets/img/brand/logo-icon.png?v=1773780254" type="image/png" />
+  <link rel="icon" href="/assets/img/brand/favicon-32.png?v=1773780254" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/assets/img/brand/apple-touch-icon.png?v=1773780254" />
+  <link rel="stylesheet" href="/assets/css/main.css?v=1773930335" />
+  <link rel="stylesheet" href="/assets/css/compat.css?v=1773901275" />
+  <link rel="stylesheet" href="/assets/css/sidebar.css?v=1773125880" />
+  <link rel="stylesheet" href="/assets/css/patch.css?v=1773901275" />
+  <link rel="stylesheet" href="/assets/css/admin.css?v=1773934550" />  </head>
+<body>
+  <a class="skip-link" href="#obsah">Preskocit na obsah</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/" aria-label="Domov">
+                  <img src="/assets/img/brand/logo-full.png?v=1773783291" alt="Interesa.sk" loading="eager" decoding="async" class="brand-logo media-image media-image--brand media-image--logo-full is-source-local is-crop-contain" width="1600" height="400" srcset="/assets/img/brand/logo-full.png?v=1773783291 1600w" fetchpriority="high" data-image-kind="brand" data-image-variant="logo-full" data-image-source="local" data-image-entity="logo-full">              </a>
+
+      <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
+      <label for="nav-toggle" class="nav-toggle-btn" aria-label="Zobrazit menu" aria-controls="hlavne-menu" aria-expanded="false">
+        <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+      </label>
+
+      <nav id="hlavne-menu" class="main-nav" aria-label="Hlavna navigacia"><ul class="menu-root"><li class="menu-item has-mega"><a class="main-nav__link" href="/kategorie/proteiny" data-mega="proteiny" aria-haspopup="true">Zdravé proteíny</a><input type="checkbox" id="mm-proteiny" class="mega-toggle" aria-hidden="true" /><label class="mega-caret" for="mm-proteiny" aria-label="Rozbalit menu Zdravé proteíny"></label><div class="mega" role="region" aria-label="Zdravé proteíny podmenu"><div class="mega-col"><h3>Najdolezitejsie</h3><ul><li><a class="mega-link" href="/clanky/najlepsie-proteiny-2026">Najlepsie proteiny 2026</a></li><li><a class="mega-link" href="/clanky/protein-na-chudnutie">Protein na chudnutie</a></li><li><a class="mega-link" href="/clanky/veganske-proteiny-top-vyber-2026">Veganske proteiny</a></li></ul></div><div class="mega-col"><h3>Porovnania</h3><ul><li><a class="mega-link" href="/clanky/srvatkovy-protein-vs-izolat-vs-hydro">WPC vs WPI vs hydro</a></li><li><a class="mega-link" href="/clanky/najlepsi-protein-na-chudnutie-wpc-vs-wpi">WPC vs WPI na chudnutie</a></li><li><a class="mega-link" href="/clanky/clear-protein">Clear protein</a></li></ul></div><div class="mega-col"><h3>Preskumaj temu</h3><ul><li><a class="mega-link" href="/kategorie/proteiny">Prehlad proteinov</a></li><li><a class="mega-link" href="/clanky/proteiny">Zaklady proteinov</a></li><li><a class="mega-link" href="/clanky/">Vsetky clanky</a></li></ul></div></div></li><li class="menu-item has-mega"><a class="main-nav__link" href="/kategorie/vyziva" data-mega="vyziva" aria-haspopup="true">Zdravá výživa</a><input type="checkbox" id="mm-vyziva" class="mega-toggle" aria-hidden="true" /><label class="mega-caret" for="mm-vyziva" aria-label="Rozbalit menu Zdravá výživa"></label><div class="mega" role="region" aria-label="Zdravá výživa podmenu"><div class="mega-col"><h3>Strava a rutina</h3><ul><li><a class="mega-link" href="/clanky/doplnky-vyzivy">Doplnky vyzivy</a></li><li><a class="mega-link" href="/clanky/chudnutie-tip">Tipy na chudnutie</a></li><li><a class="mega-link" href="/clanky/spalovace-tukov-realita">Spalovace tukov: realita</a></li></ul></div><div class="mega-col"><h3>Travenie a tolerancia</h3><ul><li><a class="mega-link" href="/clanky/probiotika-a-travenie">Probiotika a travenie</a></li><li><a class="mega-link" href="/clanky/probiotika-ako-vybrat">Ako vybrat probiotika</a></li><li><a class="mega-link" href="/kategorie/probiotika-travenie">Prehlad travenia</a></li></ul></div><div class="mega-col"><h3>Ciele</h3><ul><li><a class="mega-link" href="/kategorie/vyziva">Zdrava vyziva</a></li><li><a class="mega-link" href="/kategorie/chudnutie">Chudnutie</a></li><li><a class="mega-link" href="/kategorie/probiotika">Probiotika</a></li></ul></div></div></li><li class="menu-item has-mega"><a class="main-nav__link" href="/kategorie/mineraly" data-mega="mineraly" aria-haspopup="true">Vitamíny a minerály</a><input type="checkbox" id="mm-mineraly" class="mega-toggle" aria-hidden="true" /><label class="mega-caret" for="mm-mineraly" aria-label="Rozbalit menu Vitamíny a minerály"></label><div class="mega" role="region" aria-label="Vitamíny a minerály podmenu"><div class="mega-col"><h3>Najcitanejsie</h3><ul><li><a class="mega-link" href="/clanky/horcik-ktory-je-najlepsi-a-preco">Aky horcik vybrat</a></li><li><a class="mega-link" href="/clanky/vitamin-d3-a-imunita">Vitamin D3 a imunita</a></li><li><a class="mega-link" href="/clanky/vitamin-c">Vitamin C</a></li></ul></div><div class="mega-col"><h3>Mineraly</h3><ul><li><a class="mega-link" href="/clanky/zinek">Zinok</a></li><li><a class="mega-link" href="/clanky/horcik">Horcik</a></li><li><a class="mega-link" href="/kategorie/mineraly">Prehlad mineralov</a></li></ul></div><div class="mega-col"><h3>Suvisiace temy</h3><ul><li><a class="mega-link" href="/kategorie/imunita">Imunita</a></li><li><a class="mega-link" href="/kategorie/vitaminy-mineraly">Vitaminy a mineraly</a></li><li><a class="mega-link" href="/clanky/imunita-prirodne-latky-ktore-funguju">Latky pre imunitu</a></li></ul></div></div></li><li class="menu-item"><a class="main-nav__link" href="/kategorie/imunita">Imunita</a></li><li class="menu-item"><a class="main-nav__link" href="/kategorie/sila">Sila a výkon</a></li><li class="menu-item"><a class="main-nav__link" href="/kategorie/klby-koza">Kåby a koža</a></li><li class="menu-item"><a class="main-nav__link" href="/clanky/">Clanky</a></li></ul></nav>    </div>
+  </header>
+
+  <div id="megaTray" class="mega-tray" aria-hidden="true"></div>
+  <main id="obsah">
+<section class="container admin-page">
+      <div class="admin-shell">
+                        <aside class="admin-sidebar">
+        <div class="admin-sidebar-head">
+          <div>
+            <h1>Admin</h1>
+            <p class="admin-meta">Jednoducha sprava clankov, produktov, obrazkov a odkazu.</p>
+          </div>
+          <form method="post">
+            <input type="hidden" name="action" value="logout" />
+            <button class="btn btn-secondary btn-small" type="submit">Odhlasit</button>
+          </form>
+        </div>
+        <nav class="admin-nav">
+          <a class="" href="/admin?section=articles&slug=pre-workout-ako-vybrat">Clanky</a>
+          <a class="" href="/admin?section=products">Produkty</a>
+          <a class="" href="/admin?section=images&slug=pre-workout-ako-vybrat">Obrazky</a>
+          <a class="" href="/admin?section=affiliates&code=doplnky-vyzivy-aktin">Odkazy do obchodu</a>
+          <a class="is-active" href="/admin?section=brand">Logo a ikonka</a>
+          <a class="" href="/admin?section=tools">Import / export</a>
+          <a class="" href="/admin?section=help">Pomoc / quickstart</a>
+          <a href="/admin/ai-status">AI status</a>
+        </nav>
+        <div class="admin-note">
+          Tu spravujes obsah webu. V kazdej casti mas len tie kroky, ktore teraz naozaj potrebujes.
+        </div>
+        <section class="admin-quickstart">
+          <h2>Rychly start</h2>
+                      <ol class="admin-quickstart-list">
+              <li>Nahraj hlavne logo, ak chces zmenit logo v hlavicke webu.</li>
+              <li>Nahraj zdrojovy obrazok pre ikonku stranky.</li>
+              <li>Admin z nej pripravi male verzie pre prehliadac a mobil.</li>
+            </ol>
+                  </section>
+      </aside>
+      
+      <div class="admin-main">
+                                                
+        
+                <details class="admin-subsection is-compact">
+          <summary><strong>Zakladny prehlad webu</strong> - bezne netreba otvarat</summary>
+          <section class="admin-dashboard-grid">
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Clanky s admin zmenou</span>
+              <strong>0</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Produkty ulozene v admine</span>
+              <strong>23</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Klikacie odkazy</span>
+              <strong>40</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span class="admin-stat-label">Hlavne obrazky clankov hotove</span>
+              <strong></strong>
+            </article>
+          </section>
+        </details>
+        
+        
+        
+        
+        
+              </div>
+    </div>
+  </section>
+<style>
+  .admin-copy-toast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 9999;
+    max-width: min(360px, calc(100vw - 32px));
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: #133b2c;
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.22);
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+  }
+
+  .admin-copy-toast.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .admin-copy-toast.is-error {
+    background: #8a1c1c;
+  }
+
+  .btn.is-copied {
+    background: #15803d;
+    border-color: #15803d;
+    color: #fff;
+  }
+
+  .admin-queue-item.is-focused,
+  .admin-mini-product-card.is-focused {
+    outline: 3px solid #34d399;
+    box-shadow: 0 20px 40px rgba(52, 211, 153, 0.18);
+  }
+
+  .admin-asset-preview.is-focused,
+  #product-edit-form.is-focused {
+    outline: 3px solid #34d399;
+    box-shadow: 0 20px 40px rgba(52, 211, 153, 0.18);
+    border-radius: 20px;
+  }
+
+  .admin-brand-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .admin-brand-preview-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+</style>
+<script>
+  (function () {
+    if (window.__interessaAdminCopyInit) {
+      return;
+    }
+    window.__interessaAdminCopyInit = true;
+    window.__interessaAdminInlineUploadEnabled = true;
+
+    let toastTimer = null;
+
+    function ensureToast() {
+      let toast = document.querySelector('[data-admin-copy-toast]');
+      if (toast) {
+        return toast;
+      }
+
+      toast = document.createElement('div');
+      toast.className = 'admin-copy-toast';
+      toast.setAttribute('data-admin-copy-toast', 'true');
+      toast.setAttribute('aria-live', 'polite');
+      toast.setAttribute('aria-atomic', 'true');
+      document.body.appendChild(toast);
+      return toast;
+    }
+
+    function showToast(message, isError) {
+      const toast = ensureToast();
+      toast.textContent = message;
+      toast.classList.toggle('is-error', !!isError);
+      toast.classList.add('is-visible');
+
+      if (toastTimer) {
+        window.clearTimeout(toastTimer);
+      }
+
+      toastTimer = window.setTimeout(function () {
+        toast.classList.remove('is-visible');
+      }, 2200);
+    }
+
+    function fallbackCopy(value) {
+      const textarea = document.createElement('textarea');
+      textarea.value = value;
+      textarea.setAttribute('readonly', 'readonly');
+      textarea.style.position = 'fixed';
+      textarea.style.top = '-9999px';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+
+      let ok = false;
+      try {
+        ok = document.execCommand('copy');
+      } catch (error) {
+        ok = false;
+      }
+
+      document.body.removeChild(textarea);
+      return ok;
+    }
+
+    function markButton(button) {
+      const originalText = button.getAttribute('data-copy-original-text') || button.textContent;
+      button.setAttribute('data-copy-original-text', originalText);
+      button.textContent = 'Skopirovane';
+      button.classList.add('is-copied');
+
+      window.setTimeout(function () {
+        button.textContent = button.getAttribute('data-copy-original-text') || originalText;
+        button.classList.remove('is-copied');
+      }, 1400);
+    }
+
+    async function copyValue(value) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+        return true;
+      }
+
+      return fallbackCopy(value);
+    }
+
+    function setFormBusy(form, busy) {
+      if (!(form instanceof HTMLFormElement)) {
+        return;
+      }
+
+      form.dataset.inlineUploadBusy = busy ? 'true' : 'false';
+      form.querySelectorAll('button[type="submit"]').forEach(function (button) {
+        if (button instanceof HTMLButtonElement) {
+          if (!button.hasAttribute('data-original-label')) {
+            button.setAttribute('data-original-label', button.textContent || 'Nahrat');
+          }
+          button.disabled = !!busy;
+          button.textContent = busy ? 'Nahravam...' : (button.getAttribute('data-original-label') || 'Nahrat');
+        }
+      });
+    }
+
+    function normalizedUploadExtension(file) {
+      if (!(file instanceof File)) {
+        return '';
+      }
+
+      const parts = String(file.name || '').toLowerCase().split('.');
+      if (parts.length < 2) {
+        return '';
+      }
+
+      const ext = parts.pop() || '';
+      return ext === 'jpeg' ? 'jpg' : ext;
+    }
+
+    async function readUploadHeader(file, length) {
+      if (!(file instanceof File) || typeof file.slice !== 'function') {
+        return new Uint8Array();
+      }
+
+      const buffer = await file.slice(0, length || 16).arrayBuffer();
+      return new Uint8Array(buffer);
+    }
+
+    async function detectUploadFormat(file) {
+      if (!(file instanceof File)) {
+        return 'unknown';
+      }
+
+      const type = (file.type || '').toLowerCase();
+      if (type === 'image/webp') {
+        return 'webp';
+      }
+      if (type === 'image/png') {
+        return 'png';
+      }
+      if (type === 'image/jpeg' || type === 'image/jpg') {
+        return 'jpg';
+      }
+
+      const ext = normalizedUploadExtension(file);
+      if (ext === 'webp' || ext === 'png' || ext === 'jpg') {
+        return ext;
+      }
+
+      const header = await readUploadHeader(file, 16);
+      if (
+        header.length >= 8 &&
+        header[0] === 0x89 &&
+        header[1] === 0x50 &&
+        header[2] === 0x4e &&
+        header[3] === 0x47 &&
+        header[4] === 0x0d &&
+        header[5] === 0x0a &&
+        header[6] === 0x1a &&
+        header[7] === 0x0a
+      ) {
+        return 'png';
+      }
+
+      if (
+        header.length >= 3 &&
+        header[0] === 0xff &&
+        header[1] === 0xd8 &&
+        header[2] === 0xff
+      ) {
+        return 'jpg';
+      }
+
+      if (
+        header.length >= 12 &&
+        header[0] === 0x52 &&
+        header[1] === 0x49 &&
+        header[2] === 0x46 &&
+        header[3] === 0x46 &&
+        header[8] === 0x57 &&
+        header[9] === 0x45 &&
+        header[10] === 0x42 &&
+        header[11] === 0x50
+      ) {
+        return 'webp';
+      }
+
+      return 'unknown';
+    }
+
+    function renameToWebp(name) {
+      const base = (name || 'image').replace(/\.[^.]+$/u, '') || 'image';
+      return base + '.webp';
+    }
+
+    function guessRemoteFileName(productSlug, contentType, disposition) {
+      const dispositionMatch = typeof disposition === 'string'
+        ? disposition.match(/filename\*?=(?:UTF-8''|\"?)([^\";]+)/i)
+        : null;
+      if (dispositionMatch && dispositionMatch[1]) {
+        const decoded = dispositionMatch[1].replace(/\"/g, '').trim();
+        if (decoded) {
+          return decodeURIComponent(decoded);
+        }
+      }
+
+      const normalizedType = String(contentType || '').toLowerCase();
+      if (normalizedType.includes('png')) {
+        return (productSlug || 'remote-packshot') + '.png';
+      }
+      if (normalizedType.includes('jpeg') || normalizedType.includes('jpg')) {
+        return (productSlug || 'remote-packshot') + '.jpg';
+      }
+      if (normalizedType.includes('webp')) {
+        return (productSlug || 'remote-packshot') + '.webp';
+      }
+      return (productSlug || 'remote-packshot') + '.img';
+    }
+
+    function loadImageFromFile(file) {
+      return new Promise(function (resolve, reject) {
+        const objectUrl = URL.createObjectURL(file);
+        const image = new Image();
+        image.onload = function () {
+          URL.revokeObjectURL(objectUrl);
+          resolve(image);
+        };
+        image.onerror = function () {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error('image-load-failed'));
+        };
+        image.src = objectUrl;
+      });
+    }
+
+    function cropAnchorForMode(mode) {
+      const normalizedMode = String(mode || 'center').toLowerCase();
+      if (normalizedMode === 'top') {
+        return 0.1;
+      }
+      if (normalizedMode === 'bottom') {
+        return 0.9;
+      }
+      return 0.5;
+    }
+
+    function resolveHeroCropMode(form) {
+      if (!(form instanceof HTMLFormElement)) {
+        return 'center';
+      }
+
+      const input = form.querySelector('input[name="hero_crop_mode"], input[name="category_crop_mode"]');
+      return input instanceof HTMLInputElement ? String(input.value || 'center').toLowerCase() : 'center';
+    }
+
+    function resolveHeroCropAnchor(form) {
+      return cropAnchorForMode(resolveHeroCropMode(form));
+    }
+
+    function createCropPreviewDataUrl(image, mode) {
+      const canvas = drawImageCoverToCanvas(image, 360, 240, {
+        cropAnchorY: cropAnchorForMode(mode)
+      });
+      return canvas.toDataURL('image/jpeg', 0.88);
+    }
+
+    async function refreshHeroCropPreviews(form, file) {
+      if (!(form instanceof HTMLFormElement) || !(file instanceof File)) {
+        return;
+      }
+
+      const picker = form.querySelector('[data-hero-crop-picker]');
+      if (!(picker instanceof HTMLElement)) {
+        return;
+      }
+
+      const image = await loadImageFromFile(file);
+      ['center', 'top', 'bottom'].forEach(function (mode) {
+        const preview = picker.querySelector('[data-crop-preview="' + mode + '"]');
+        if (preview instanceof HTMLElement) {
+          preview.style.backgroundImage = 'url(\"' + createCropPreviewDataUrl(image, mode) + '\")';
+        }
+      });
+
+      picker.hidden = false;
+      updateHeroCropSelection(form, resolveHeroCropMode(form));
+    }
+
+    function updateHeroCropSelection(form, mode) {
+      if (!(form instanceof HTMLFormElement)) {
+        return;
+      }
+
+      const normalizedMode = ['center', 'top', 'bottom'].includes(String(mode || '').toLowerCase())
+        ? String(mode).toLowerCase()
+        : 'center';
+      const input = form.querySelector('input[name="hero_crop_mode"]');
+      if (input instanceof HTMLInputElement) {
+        input.value = normalizedMode;
+      }
+
+      form.querySelectorAll('.admin-crop-option').forEach(function (button) {
+        if (!(button instanceof HTMLElement)) {
+          return;
+        }
+        button.classList.toggle('is-selected', button.getAttribute('data-crop-mode') === normalizedMode);
+      });
+    }
+
+    function bindHeroCropPicker(form) {
+      if (!(form instanceof HTMLFormElement)) {
+        return;
+      }
+
+      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="category_image"]');
+      if (!(fileInput instanceof HTMLInputElement)) {
+        return;
+      }
+
+      updateHeroCropSelection(form, resolveHeroCropMode(form));
+
+      fileInput.addEventListener('change', function () {
+        const selectedFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+        if (!(selectedFile instanceof File)) {
+          return;
+        }
+
+        refreshHeroCropPreviews(form, selectedFile).catch(function (error) {
+          console.error(error);
+          showToast('Nepodarilo sa pripravit nahlad vyrezu obrazka.', true);
+        });
+      });
+
+      form.querySelectorAll('.admin-crop-option').forEach(function (button) {
+        button.addEventListener('click', function () {
+          updateHeroCropSelection(form, button.getAttribute('data-crop-mode') || 'center');
+        });
+      });
+    }
+
+    function resolveUploadTarget(fileInput) {
+      const name = fileInput && typeof fileInput.name === 'string' ? fileInput.name : '';
+      if (name === 'hero_image') {
+        const form = fileInput instanceof HTMLInputElement ? fileInput.closest('form') : null;
+        return {
+          width: 1200,
+          height: 800,
+          label: 'hlavny obrazok clanku',
+          cropAnchorY: resolveHeroCropAnchor(form)
+        };
+      }
+      if (name === 'category_thumb_image') {
+        return {
+          width: 1200,
+          height: 1200,
+          label: 'mensi obrazok temy',
+          cropAnchorY: 0.5
+        };
+      }
+      if (name === 'category_image') {
+        const form = fileInput instanceof HTMLInputElement ? fileInput.closest('form') : null;
+        return {
+          width: 1600,
+          height: 900,
+          label: 'obrazok temy',
+          cropAnchorY: resolveHeroCropAnchor(form)
+        };
+      }
+
+      return {
+        width: 1200,
+        height: 1200,
+        label: 'obrazok produktu',
+        cropAnchorY: 0.5
+      };
+    }
+
+    function drawImageCoverToCanvas(image, targetWidth, targetHeight, options) {
+      const sourceWidth = image.naturalWidth || image.width || 0;
+      const sourceHeight = image.naturalHeight || image.height || 0;
+      if (sourceWidth <= 0 || sourceHeight <= 0) {
+        throw new Error('image-size-missing');
+      }
+
+      const cropAnchorY = options && Number.isFinite(Number(options.cropAnchorY))
+        ? Math.max(0, Math.min(1, Number(options.cropAnchorY)))
+        : 0.5;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const context = canvas.getContext('2d', { alpha: true });
+      if (!context) {
+        throw new Error('canvas-context-failed');
+      }
+
+      const sourceRatio = sourceWidth / sourceHeight;
+      const targetRatio = targetWidth / targetHeight;
+      let cropWidth = sourceWidth;
+      let cropHeight = sourceHeight;
+      let cropX = 0;
+      let cropY = 0;
+
+      if (sourceRatio > targetRatio) {
+        cropWidth = Math.round(sourceHeight * targetRatio);
+        cropX = Math.round((sourceWidth - cropWidth) / 2);
+      } else if (sourceRatio < targetRatio) {
+        cropHeight = Math.round(sourceWidth / targetRatio);
+        cropY = Math.round((sourceHeight - cropHeight) * cropAnchorY);
+      }
+
+      context.clearRect(0, 0, targetWidth, targetHeight);
+      context.drawImage(
+        image,
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        targetWidth,
+        targetHeight
+      );
+
+      return canvas;
+    }
+
+    async function blobHasWebpSignature(blob) {
+      if (!(blob instanceof Blob)) {
+        return false;
+      }
+
+      const header = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
+      return (
+        header.length >= 12 &&
+        header[0] === 0x52 &&
+        header[1] === 0x49 &&
+        header[2] === 0x46 &&
+        header[3] === 0x46 &&
+        header[8] === 0x57 &&
+        header[9] === 0x45 &&
+        header[10] === 0x42 &&
+        header[11] === 0x50
+      );
+    }
+
+    function canvasToBlob(canvas, type, quality) {
+      return new Promise(function (resolve, reject) {
+        canvas.toBlob(function (blob) {
+          if (blob) {
+            resolve(blob);
+            return;
+          }
+          reject(new Error('canvas-blob-failed'));
+        }, type, quality || 0.92);
+      });
+    }
+
+    async function canvasToVerifiedWebpBlob(canvas) {
+      if (typeof OffscreenCanvas !== 'undefined') {
+        try {
+          const offscreenCanvas = new OffscreenCanvas(canvas.width, canvas.height);
+          const offscreenContext = offscreenCanvas.getContext('2d', { alpha: true });
+          if (offscreenContext) {
+            offscreenContext.drawImage(canvas, 0, 0);
+            const offscreenBlob = await offscreenCanvas.convertToBlob({ type: 'image/webp', quality: 0.92 });
+            if (await blobHasWebpSignature(offscreenBlob)) {
+              return offscreenBlob;
+            }
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      const blob = await canvasToBlob(canvas, 'image/webp', 0.92);
+      if (await blobHasWebpSignature(blob)) {
+        return blob;
+      }
+
+      const dataUrl = canvas.toDataURL('image/webp', 0.92);
+      if (typeof dataUrl === 'string' && dataUrl.startsWith('data:image/webp;base64,')) {
+        const response = await fetch(dataUrl);
+        const dataUrlBlob = await response.blob();
+        if (await blobHasWebpSignature(dataUrlBlob)) {
+          return dataUrlBlob;
+        }
+      }
+
+      throw new Error('verified-webp-conversion-failed');
+    }
+
+    async function createWebpFileFromUpload(file, target) {
+      if (!(file instanceof File)) {
+        throw new Error('missing-upload-file');
+      }
+
+      const image = await loadImageFromFile(file);
+      const normalizedTarget = target && Number(target.width) > 0 && Number(target.height) > 0
+        ? {
+            width: Number(target.width),
+            height: Number(target.height),
+            cropAnchorY: Number.isFinite(Number(target.cropAnchorY)) ? Number(target.cropAnchorY) : 0.5
+          }
+        : {
+            width: image.naturalWidth || image.width,
+            height: image.naturalHeight || image.height,
+            cropAnchorY: 0.5
+          };
+      const canvas = drawImageCoverToCanvas(image, normalizedTarget.width, normalizedTarget.height, normalizedTarget);
+      const blob = await canvasToVerifiedWebpBlob(canvas);
+      return new File([blob], renameToWebp(file.name), {
+        type: 'image/webp',
+        lastModified: Date.now()
+      });
+    }
+
+    function drawImageContainToCanvas(image, targetWidth, targetHeight, options) {
+      const canvas = document.createElement('canvas');
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+
+      const context = canvas.getContext('2d', { alpha: true });
+      if (!context) {
+        return canvas;
+      }
+
+      context.clearRect(0, 0, targetWidth, targetHeight);
+
+      const sourceWidth = image.naturalWidth || image.width || targetWidth;
+      const sourceHeight = image.naturalHeight || image.height || targetHeight;
+      const scale = Math.min(targetWidth / sourceWidth, targetHeight / sourceHeight);
+      const drawWidth = Math.max(1, Math.round(sourceWidth * scale));
+      const drawHeight = Math.max(1, Math.round(sourceHeight * scale));
+      const offsetX = Math.round((targetWidth - drawWidth) / 2);
+      const offsetY = Math.round((targetHeight - drawHeight) / 2);
+
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+      return canvas;
+    }
+
+    async function createPngFileFromUpload(file, width, height, name) {
+      if (!(file instanceof File)) {
+        throw new Error('missing-upload-file');
+      }
+
+      const image = await loadImageFromFile(file);
+      const canvas = drawImageContainToCanvas(image, width, height, {});
+      const blob = await canvasToBlob(canvas, 'image/png');
+      return new File([blob], name, {
+        type: 'image/png',
+        lastModified: Date.now()
+      });
+    }
+
+    async function fetchRemotePackshotFile(form) {
+      const productSlugInput = form.querySelector('input[name="product_slug"]');
+      const productSlug = productSlugInput instanceof HTMLInputElement ? (productSlugInput.value || '').trim() : '';
+      if (!productSlug) {
+        throw new Error('missing-product-slug');
+      }
+
+      const params = new URLSearchParams({
+        section: 'products',
+        action: 'product_remote_image_proxy',
+        product: productSlug
+      });
+      const response = await fetch('/admin?' + params.toString(), {
+        credentials: 'same-origin'
+      });
+      if (!response.ok) {
+        const message = (await response.text()).trim();
+        throw new Error(message || 'remote-packshot-fetch-failed');
+      }
+
+      const blob = await response.blob();
+      if (!(blob instanceof Blob) || blob.size === 0) {
+        throw new Error('empty-remote-packshot');
+      }
+
+      const contentType = response.headers.get('content-type') || blob.type || 'application/octet-stream';
+      const disposition = response.headers.get('content-disposition') || '';
+      const fileName = guessRemoteFileName(productSlug, contentType, disposition);
+      return new File([blob], fileName, {
+        type: contentType,
+        lastModified: Date.now()
+      });
+    }
+
+    async function submitInlineUploadForm(form) {
+      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="category_image"], input[type="file"][name="category_thumb_image"], input[type="file"][name="product_image"]');
+      const selectedFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+      if (!(selectedFile instanceof File)) {
+        showToast('Najprv vyber obrazok.', true);
+        return;
+      }
+
+      const uploadTarget = resolveUploadTarget(fileInput);
+
+      setFormBusy(form, true);
+
+      try {
+        const webpFile = await createWebpFileFromUpload(selectedFile, uploadTarget);
+        const formData = new FormData(form);
+        formData.set(fileInput.name, webpFile, webpFile.name);
+
+        const response = await fetch('/admin', {
+          method: (form.method || 'POST').toUpperCase(),
+          body: formData,
+          credentials: 'same-origin'
+        });
+
+        if (response.redirected && response.url) {
+          window.location.assign(response.url);
+          return;
+        }
+
+        const html = await response.text();
+        if (typeof html === 'string' && html.trim() !== '') {
+          document.open();
+          document.write(html);
+          document.close();
+          return;
+        }
+
+        window.location.reload();
+      } finally {
+        setFormBusy(form, false);
+      }
+    }
+
+    async function submitRemotePackshotForm(form) {
+      setFormBusy(form, true);
+
+      try {
+        const remoteFile = await fetchRemotePackshotFile(form);
+        const webpFile = await createWebpFileFromUpload(remoteFile, {
+          width: 1200,
+          height: 1200,
+          label: 'obrazok produktu'
+        });
+        const formData = new FormData();
+        const productSlugInput = form.querySelector('input[name="product_slug"]');
+        const returnSectionInput = form.querySelector('input[name="return_section"]');
+        const returnSlugInput = form.querySelector('input[name="return_slug"]');
+
+        formData.set('action', 'upload_packshot_only');
+        formData.set('product_slug', productSlugInput instanceof HTMLInputElement ? productSlugInput.value : '');
+        if (returnSectionInput instanceof HTMLInputElement && returnSectionInput.value) {
+          formData.set('return_section', returnSectionInput.value);
+        }
+        if (returnSlugInput instanceof HTMLInputElement && returnSlugInput.value) {
+          formData.set('return_slug', returnSlugInput.value);
+        }
+        formData.set('product_image', webpFile, webpFile.name);
+
+        const response = await fetch('/admin', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+
+        if (response.redirected && response.url) {
+          window.location.assign(response.url);
+          return;
+        }
+
+        const html = await response.text();
+        if (typeof html === 'string' && html.trim() !== '') {
+          document.open();
+          document.write(html);
+          document.close();
+          return;
+        }
+
+        window.location.reload();
+      } finally {
+        setFormBusy(form, false);
+      }
+    }
+
+    async function submitBrandIconForm(form) {
+      const fileInput = form.querySelector('input[type="file"][name="brand_icon_source"]');
+      if (!(fileInput instanceof HTMLInputElement) || !fileInput.files || !fileInput.files.length) {
+        showToast('Najprv vyber obrazok.', true);
+        return;
+      }
+
+      const sourceFile = fileInput.files[0];
+      setFormBusy(form, true);
+
+      try {
+        const logoIconFile = await createPngFileFromUpload(sourceFile, 512, 512, 'logo-icon.png');
+        const favicon32File = await createPngFileFromUpload(sourceFile, 32, 32, 'favicon-32.png');
+        const favicon48File = await createPngFileFromUpload(sourceFile, 48, 48, 'favicon-48.png');
+        const appleTouchFile = await createPngFileFromUpload(sourceFile, 180, 180, 'apple-touch-icon.png');
+
+        const formData = new FormData();
+        formData.set('action', 'save_brand_icon_bundle');
+        formData.set('logo_icon', logoIconFile, logoIconFile.name);
+        formData.set('favicon_32', favicon32File, favicon32File.name);
+        formData.set('favicon_48', favicon48File, favicon48File.name);
+        formData.set('apple_touch_icon', appleTouchFile, appleTouchFile.name);
+
+        const response = await fetch('/admin', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+
+        if (response.redirected && response.url) {
+          window.location.assign(response.url);
+          return;
+        }
+
+        const html = await response.text();
+        if (typeof html === 'string' && html.trim() !== '') {
+          document.open();
+          document.write(html);
+          document.close();
+          return;
+        }
+
+        window.location.reload();
+      } finally {
+        setFormBusy(form, false);
+      }
+    }
+
+    document.querySelectorAll('form.admin-inline-upload, form.admin-form').forEach(function (form) {
+      const fileInput = form.querySelector('input[type="file"][name="hero_image"], input[type="file"][name="category_image"], input[type="file"][name="category_thumb_image"], input[type="file"][name="product_image"]');
+      if (!(fileInput instanceof HTMLInputElement)) {
+        return;
+      }
+
+      if (fileInput.name === 'hero_image' || fileInput.name === 'category_image') {
+        bindHeroCropPicker(form);
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        submitInlineUploadForm(form).catch(function (error) {
+          console.error(error);
+          showToast('Konverzia do WebP zlyhala. Nahraj iny obrazok.', true);
+        });
+        }, true);
+    });
+
+    document.querySelectorAll('form[data-remote-packshot-form="true"]').forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        submitRemotePackshotForm(form).catch(function (error) {
+          console.error(error);
+          const message = error && error.message ? String(error.message) : '';
+          showToast(message !== '' ? message : 'Packshot z e-shopu sa nepodarilo ulozit.', true);
+        });
+      }, true);
+    });
+
+    document.querySelectorAll('form[data-brand-icon-form="true"]').forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        submitBrandIconForm(form).catch(function (error) {
+          console.error(error);
+          showToast('Ikonku sa nepodarilo pripravit.', true);
+        });
+      }, true);
+    });
+
+    const focusedProductCard = document.querySelector('[data-focus-product="true"]');
+    if (focusedProductCard instanceof HTMLElement) {
+      window.setTimeout(function () {
+        focusedProductCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 80);
+    }
+
+    const focusedPanel = document.getElementById('product-image-preview');
+    if (focusedPanel instanceof HTMLElement && focusedPanel.classList.contains('is-focused')) {
+      window.setTimeout(function () {
+        focusedPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 80);
+    }
+
+    const focusedProductEdit = document.getElementById('product-edit-form');
+    if (focusedProductEdit instanceof HTMLElement && focusedProductEdit.classList.contains('is-focused')) {
+      window.setTimeout(function () {
+        focusedProductEdit.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 80);
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const savedState = params.get('saved') || '';
+    const savedTargetMap = {
+      'candidate-imported': 'products-current-candidate',
+      'candidate-click': 'products-current-candidate',
+      'candidate-assignment': 'products-current-candidate',
+      'candidate-approved': 'products-current-candidate'
+    };
+    const savedTargetId = savedTargetMap[savedState] || '';
+    if (savedTargetId !== '') {
+      const savedTarget = document.getElementById(savedTargetId);
+      if (savedTarget instanceof HTMLElement) {
+        window.setTimeout(function () {
+          savedTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 120);
+      }
+    }
+
+    document.addEventListener('click', async function (event) {
+      const button = event.target.closest('[data-copy-value]');
+      if (!button) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const value = button.getAttribute('data-copy-value') || '';
+      const label = (button.getAttribute('data-copy-label') || button.textContent || 'Text').trim();
+      if (!value) {
+        showToast(label + ': nic na kopirovanie.', true);
+        return;
+      }
+
+      try {
+        const ok = await copyValue(value);
+        if (!ok) {
+          throw new Error('copy-failed');
+        }
+
+        markButton(button);
+        showToast(label + ': skopirovane.', false);
+      } catch (error) {
+        showToast('Kopirovanie zlyhalo. Skus znova.', true);
+      }
+    });
+  })();
+</script>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a class="footer-brand-mark" href="/" aria-label="Interesa domov">
+        <img src="/assets/img/brand/logo-icon.png?v=1773780254" alt="Interesa symbol" loading="eager" decoding="async" width="28" height="28" class="footer-brand-icon media-image media-image--brand media-image--logo-icon is-source-local is-crop-contain" srcset="/assets/img/brand/logo-icon.png?v=1773780254 512w" fetchpriority="high" data-image-kind="brand" data-image-variant="logo-icon" data-image-source="local" data-image-entity="logo-icon">        <span class="footer-brand-title">Interesa.sk</span>
+      </a>
+      <p class="footer-brand-copy">Prakticke porovnania, navody a odporucania pre ludi, ktori sa chcu vo vyzive zorientovat bez chaosu.</p>
+      <p class="footer-note">&copy; <span id="year"></span> Interesa. Niektore odkazy mozu viest na partnerske obchody. Ak cez ne nakupis, cena pre teba ostava rovnaka.</p>
+    </div>
+
+    <div class="footer-links">
+      <nav aria-label="Sekundarna navigacia">
+        <a href="/clanky/">Clanky</a>
+        <a href="/kategorie/">Kategorie</a>
+        <a href="/kategorie/proteiny">Proteiny</a>
+        <a href="/kategorie/mineraly">Vitaminy a mineraly</a>
+        <a href="/kategorie/sila">Sila a vykon</a>
+        <a href="/kategorie/klby-koza">Klby a koza</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<button class="dev-reload-fab" type="button" data-dev-reload>Obnovit verziu</button>
+<div class="dev-build-badge" aria-live="polite">Verzia 20260319-224058</div>
+
+<script src="/assets/js/app.js?v=1773569219" defer></script>
+<script src="/assets/js/admin.js?v=1773482673&amp;copyfix=20260314b" defer></script>
+</body>
+</html>
+
+
+
+
+

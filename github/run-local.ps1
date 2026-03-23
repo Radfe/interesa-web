@@ -25,7 +25,7 @@ if (-not $php) {
 
 Push-Location $PSScriptRoot
 try {
-    & $php -S 127.0.0.1:5000 -t public public/router.php
+    & $php -S 127.0.0.1:5001 -t public public/router.php
 } finally {
     Pop-Location
 }

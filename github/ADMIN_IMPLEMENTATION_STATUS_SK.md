@@ -70,6 +70,16 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsi category auto-pick krok:
+- pri vybranom clanku v admine uz existuje jednoduchy backend vyber produktov podla kategorie clanku
+- pribudol helper `getProductsForArticle(articleId)`, ktory:
+  - zoberie kategoriu clanku
+  - premapuje ju na jednoduche produktove kategorie
+  - vrati prvych 5 produktov s nazvom, obrazkom a affiliate linkom alebo placeholderom
+- admin v `Clanky` teraz tento automaticky vyber zobrazuje len ako pomocny navrhovy box
+- explicitne `article_product` a `product_plan` ostavaju jediny source of truth pre clanok
+- category-based vyber sa nesmie tvarit ako realne priradenie a nesmie predvyplnat sloty
+
 Najnovsi shell unification krok:
 - core sekcie v `/admin` uz bezia cez jeden stabilny shell
 - root wrapper uz pri `Produkty` ani `Logo a ikonka` neprepina admin do ineho layout rezimu

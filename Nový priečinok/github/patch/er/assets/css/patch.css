@@ -1,0 +1,29 @@
+/* === PATCH v2 === */
+.skip-link{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
+.skip-link:focus{position:static;width:auto;height:auto;padding:8px 12px;background:#0ea5e9;color:#fff;border-radius:8px}
+.site-header{border-bottom:1px solid #e5e7eb}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.nav-inline{display:flex;gap:20px}
+.nav-inline a{text-decoration:none;color:#0f172a;padding:6px 4px}
+.menu-toggle{display:none;background:transparent;border:0;width:40px;height:32px}
+.menu-toggle .bar{display:block;height:2px;margin:6px 6px;background:#0f172a}
+@media (max-width: 900px){
+  .nav-inline{display:none}
+  .menu-toggle{display:block}
+  #site-nav{position:fixed;top:0;right:-100%;width:78%;max-width:360px;height:100vh;background:#fff;box-shadow:-12px 0 24px rgba(0,0,0,.08);padding:16px;display:flex;flex-direction:column;gap:14px;transition:right .25s ease;z-index:60}
+  #site-nav.open{right:0}
+  #site-nav a{padding:10px 6px;border-bottom:1px solid #f1f5f9;text-decoration:none;color:#0f172a}
+  #site-nav .search-form{display:flex;gap:8px;padding-top:8px}
+  #site-nav input[type="search"]{flex:1;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px}
+  #site-nav button{padding:8px 12px;border-radius:8px;border:0;background:#0ea5e9;color:#fff}
+}
+.sidebar{position:sticky;top:24px}
+.card-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.card{border:1px solid #e2e8f0;border-radius:16px;padding:14px;background:#fff}
+.card h3{margin:8px 0 6px;font-size:1.05rem}
+.cta-row{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 18px}
+.cta{display:inline-block;padding:10px 14px;border-radius:10px;background:#0ea5e9;color:#fff;text-decoration:none}
+.faq{margin-top:24px;border-top:1px solid #e2e8f0;padding-top:16px}
+.faq dt{font-weight:700;margin-top:10px}
+.faq dd{margin:4px 0 12px 0;color:#334155}
+.hero{margin:10px 0 6px}

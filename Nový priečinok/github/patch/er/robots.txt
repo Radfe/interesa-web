@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /tools/
+Disallow: /go/
+Disallow: /search.php
+
+Sitemap: https://interesa.sk/sitemap.xml

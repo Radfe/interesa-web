@@ -1,0 +1,9 @@
+/* Jemné zjednotenie vzhľadu Heureka iframeov v sidebare */
+.heureka-affiliate-searchpanel iframe,
+.heureka-affiliate-category iframe{
+  width:100% !important;
+  border:0 !important;
+  border-radius:12px !important;
+  background:#fff;
+  overflow:hidden;
+}

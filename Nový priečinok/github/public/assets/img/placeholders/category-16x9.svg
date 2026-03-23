@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Interesa category placeholder</title>
+  <desc id="desc">Minimalistický ilustračný placeholder v jemných zelených tónoch.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eaf7f1" />
+      <stop offset="100%" stop-color="#d9efe5" />
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)" rx="36" />
+  <circle cx="1150" cy="190" r="96" fill="#cbe9da" />
+  <circle cx="1260" cy="260" r="34" fill="#b7dfcf" />
+  <rect x="220" y="610" width="1160" height="74" rx="37" fill="#d2e8de" />
+  <rect x="510" y="260" width="570" height="300" rx="150" fill="#f7fbf9" stroke="#d3e9df" stroke-width="8" />
+  <g fill="#5ca07b">
+    <path d="M640 325c-44-38-96-44-143-22 39 17 70 48 90 93 33-15 53-38 53-71z" />
+    <path d="M748 286c-9 62 9 113 48 154 34-44 43-100 21-163-32 6-55 11-69 9z" />
+    <path d="M848 297c28 56 76 95 140 118 16-59 3-112-35-160-51 7-84 22-105 42z" />
+    <path d="M973 356c51 10 96 40 136 88 28-50 33-98 15-144-62 1-111 19-151 56z" />
+  </g>
+  <g fill="#79b997">
+    <circle cx="676" cy="442" r="56" />
+    <circle cx="812" cy="420" r="68" />
+    <circle cx="936" cy="446" r="52" />
+  </g>
+</svg>
