@@ -2096,6 +2096,7 @@ if (!function_exists('interessa_admin_fetch_remote_html_via_curl_exe')) {
 
         $curlExecutable = interessa_admin_windows_curl_executable();
         $command = escapeshellarg($curlExecutable) . ' -L --fail --silent --show-error '
+            . '--connect-timeout 10 --max-time 20 '
             . '--output ' . escapeshellarg($tempFile) . ' '
             . escapeshellarg($url) . ' 2>&1';
 
