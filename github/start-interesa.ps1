@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $stateDir = Join-Path $projectRoot '.codex-local'
 $markerFile = Join-Path $stateDir 'local-build.json'
-$stopScript = Join-Path $projectRoot 'stop-local-site.ps1'
+$stopScript = Join-Path $projectRoot 'stop-interesa.ps1'
 $openScript = Join-Path $projectRoot 'open-local-site.ps1'
 $siteUrl = 'http://127.0.0.1:5001/'
 $adminUrl = 'http://127.0.0.1:5001/admin'
@@ -40,7 +40,9 @@ function New-LocalBuildMarker {
     return $payload
 }
 
-& $stopScript
+if (Test-Path $stopScript) {
+    & $stopScript
+}
 $buildMarker = New-LocalBuildMarker
 & $openScript
 Start-Sleep -Milliseconds 500

@@ -941,7 +941,7 @@ function interessa_admin_article_slot_relevance_preset(string $articleSlug): arr
         return [
             'strict_filter' => true,
             'recommended_filters' => ['pre-workout', 'predtrening', 'stim', 'pump', 'citrulline', 'citrulin', 'beta-alanine', 'beta alanine', 'caffeine', 'kofein', 'nitric oxide', 'pump support', 'arginine', 'aakg', 'no booster'],
-            'exclude_terms' => ['creatine', 'kreatin', 'magnesium', 'horcik', 'zinc', 'zinok', 'probiotic', 'probiotik', 'whey', 'protein', 'collagen', 'kolagen', 'klby', 'joint', 'imunita', 'immunity', 'vitamin', 'multivitamin', 'minerals', 'mineraly'],
+            'exclude_terms' => ['creatine', 'kreatin', 'magnesium', 'horcik', 'zinc', 'zinok', 'probiotic', 'probiotik', 'probiotics', 'whey', 'protein', 'collagen', 'kolagen', 'klby', 'joint', 'joint support', 'imunita', 'immunity', 'vitamin', 'vitamins', 'multivitamin', 'minerals', 'mineraly'],
             'preferred_categories' => ['pre-workout'],
         ];
     }
@@ -3029,14 +3029,14 @@ foreach ($articleSelectedProductSlugs as $articleSelectedSlug) {
               $articleSelectedActionHref = '/admin?section=affiliates&prefill_code=' . rawurlencode($articleSelectedSlug) . '&prefill_merchant=' . rawurlencode((string) ($articleSelectedRow['merchant'] ?? '')) . '&prefill_merchant_slug=' . rawurlencode(interessa_admin_slugify((string) ($articleSelectedRow['merchant'] ?? ''))) . '&prefill_product_slug=' . rawurlencode($articleSelectedSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug);
           }
           $articleSelectedActionLabel = 'Doplnit odkaz';
-          $articleSelectedActionNote = 'Obrazok je hotovy. Chyba uz len klik do obchodu.';
+          $articleSelectedActionNote = 'Obrazok je hotovy. Produkt potrebuje uz len funkcny odkaz.';
       } elseif ($articleSelectedExists && !$articleSelectedPackshotReady) {
         $articleSelectedActionLabel = 'Doplnit obrazok';
-        $articleSelectedActionNote = 'Produkt uz existuje. Treba este doplnit obrazok.';
+        $articleSelectedActionNote = 'Produkt uz existuje. Treba doplnit obrazok produktu.';
     } elseif ($articleSelectedExists && $articleSelectedPackshotReady && $articleSelectedAffiliateReady) {
         $articleSelectedActionHref = '/admin?section=affiliates&code=' . rawurlencode((string) ($articleSelectedRow['affiliate_code'] ?? '')) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug);
         $articleSelectedActionLabel = 'Hotovo';
-        $articleSelectedActionNote = 'Tento produkt je pripraveny.';
+        $articleSelectedActionNote = 'Tento produkt je pripraveny pre clanok.';
     }
     $articleSelectedActionRows[] = [
         'slug' => $articleSelectedSlug,
@@ -3071,7 +3071,7 @@ $articleAddScopedProductOption = static function (string $slug, string $source) 
     $articleScopedProductOptionSources[$slug][$source] = true;
 };
 foreach ($articleSelectedProductSlugs as $selectedSlug) {
-    $articleAddScopedProductOption((string) $selectedSlug, 'selected');
+    $articleAddScopedProductOption((string) $selectedSlug, 'explicit');
 }
 foreach (interessa_admin_product_candidates() as $candidateRow) {
     if (!is_array($candidateRow)) {
@@ -3094,7 +3094,7 @@ if (count($articleScopedProductOptionSlugs) < 12) {
         $relevance = interessa_admin_article_slot_product_relevance($normalizedCatalogRow, $selectedArticleSlug);
         if ($articleSlotStrictFilter) {
             if (!empty($relevance['passes_strict'])) {
-                $articleAddScopedProductOption($catalogSlug, 'relevant');
+                $articleAddScopedProductOption($catalogSlug, 'strict_catalog');
             }
         } elseif (($relevance['score'] ?? 0) > 0) {
             $articleAddScopedProductOption($catalogSlug, 'relevant');
@@ -3129,11 +3129,14 @@ foreach ($articleScopedProductOptionSlugs as $optionSlug) {
     $optionRelevance = interessa_admin_article_slot_product_relevance($optionProduct, $selectedArticleSlug);
     $optionSources = $articleScopedProductOptionSources[$optionSlug] ?? [];
     $optionRank = (int) ($optionRelevance['score'] ?? 0);
-    if (!empty($optionSources['selected'])) {
+    if (!empty($optionSources['explicit'])) {
         $optionRank += 1000;
     }
     if (!empty($optionSources['candidate'])) {
         $optionRank += 320;
+    }
+    if (!empty($optionSources['strict_catalog'])) {
+        $optionRank += 120;
     }
     if (!empty($optionSources['relevant'])) {
         $optionRank += 80;
@@ -3148,13 +3151,13 @@ foreach ($articleScopedProductOptionSlugs as $optionSlug) {
         $optionStateLabel = 'Hotovo';
         $optionStateClass = ' is-good';
     } elseif ($optionPackshotReady && !$optionAffiliateReady) {
-        $optionStateLabel = 'Chyba konkretny produktovy odkaz';
+        $optionStateLabel = 'Treba vlozit priamy odkaz na konkretny produkt';
         $optionStateClass = ' is-warning';
     } elseif (!$optionPackshotReady && $optionAffiliateReady) {
-        $optionStateLabel = 'Chyba obrazok';
+        $optionStateLabel = 'Treba doplnit obrazok produktu';
         $optionStateClass = ' is-warning';
     } else {
-        $optionStateLabel = 'Chyba obrazok a konkretny produktovy odkaz';
+        $optionStateLabel = 'Treba doplnit obrazok produktu a priamy odkaz';
         $optionStateClass = ' is-warning';
     }
     $optionNextHref = '/admin?section=products&product=' . rawurlencode((string) $optionSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug) . '&focus=product_edit#product-edit-form';
@@ -3169,6 +3172,18 @@ foreach ($articleScopedProductOptionSlugs as $optionSlug) {
     } elseif ($optionPackshotReady && $optionAffiliateReady) {
         $optionNextLabel = 'Hotovo';
     }
+    $optionDebugSource = 'strict_catalog';
+    if (!empty($optionSources['explicit'])) {
+        $optionDebugSource = 'explicit';
+    } elseif (!empty($optionSources['candidate'])) {
+        $optionDebugSource = 'candidate';
+    } elseif (!empty($optionSources['strict_catalog']) || !empty($optionSources['relevant'])) {
+        $optionDebugSource = 'strict_catalog';
+    } elseif (!empty($optionSources['category'])) {
+        $optionDebugSource = 'category';
+    } elseif (!empty($optionSources['fallback'])) {
+        $optionDebugSource = 'fallback';
+    }
     $articleScopedProductOptions[$optionSlug] = [
         'slug' => (string) $optionSlug,
         'name' => (string) ($catalog[$optionSlug]['name'] ?? $optionSlug),
@@ -3178,6 +3193,7 @@ foreach ($articleScopedProductOptionSlugs as $optionSlug) {
         'next_label' => $optionNextLabel,
         'rank' => $optionRank,
         'role' => (string) ($articleProductPlanMap[$optionSlug]['role'] ?? 'standard'),
+        'debug_source' => $optionDebugSource,
         'placement' => !empty($articleProductPlanMap[$optionSlug]['show_in_top']) && !empty($articleProductPlanMap[$optionSlug]['show_in_comparison'])
             ? 'both'
             : (!empty($articleProductPlanMap[$optionSlug]['show_in_top'])
@@ -3905,8 +3921,8 @@ require dirname(__DIR__) . '/inc/head.php';
                           <p><?= esc((string) ($articleActionRow['slug'] ?? '')) ?></p>
                           <div class="admin-status-pills">
                             <span class="admin-status-pill<?= !empty($articleActionRow['exists']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['exists']) ? 'Produkt hotovy' : 'Produkt chyba' ?></span>
-                            <span class="admin-status-pill<?= !empty($articleActionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['packshot_ready']) ? 'Obrazok hotovy' : 'Obrazok chyba' ?></span>
-                            <span class="admin-status-pill<?= !empty($articleActionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['affiliate_ready']) ? 'Odkaz hotovy' : 'Chyba konkretny produktovy odkaz' ?></span>
+                            <span class="admin-status-pill<?= !empty($articleActionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['packshot_ready']) ? 'Obrazok hotovy' : 'Treba doplnit obrazok produktu' ?></span>
+                            <span class="admin-status-pill<?= !empty($articleActionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['affiliate_ready']) ? 'Produkt ma funkcny odkaz' : 'Treba vlozit priamy odkaz na konkretny produkt' ?></span>
                           </div>
                           <small class="admin-note"><?= esc((string) ($articleActionRow['next_note'] ?? '')) ?></small>
                         </div>
@@ -3967,10 +3983,13 @@ require dirname(__DIR__) . '/inc/head.php';
                         <select name="article_product_slot[<?= esc((string) $slotIndex) ?>]">
                           <option value="">Nechat prazdny slot</option>
                           <?php foreach ($articleScopedProductOptions as $optionSlug => $optionRow): ?>
-                            <option value="<?= esc((string) $optionSlug) ?>" <?= $slotSlug === (string) $optionSlug ? 'selected' : '' ?>><?= esc((string) ($optionRow['name'] ?? $optionSlug)) ?></option>
+                            <option value="<?= esc((string) $optionSlug) ?>" <?= $slotSlug === (string) $optionSlug ? 'selected' : '' ?>><?= esc((string) ($optionRow['name'] ?? $optionSlug)) ?> [<?= esc((string) ($optionRow['debug_source'] ?? 'unknown')) ?>]</option>
                           <?php endforeach; ?>
                         </select>
                       </label>
+                      <?php if (is_array($slotRow)): ?>
+                        <p class="admin-meta"><strong>Debug zdroj moznosti:</strong> <?= esc((string) ($slotRow['debug_source'] ?? 'unknown')) ?></p>
+                      <?php endif; ?>
                       <?php if (is_array($slotRow)): ?>
                         <input type="hidden" name="article_product_role[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['role'] ?? 'standard')) ?>" />
                         <input type="hidden" name="article_product_placement[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['placement'] ?? 'recommended')) ?>" />
@@ -4138,8 +4157,8 @@ require dirname(__DIR__) . '/inc/head.php';
                           <span><strong><?= esc((string) ($productRow['name'] ?? $productSlug)) ?></strong><small><?= esc((string) $productSlug) ?></small></span>
                         </label>
                         <div class="admin-status-pills">
-                          <span class="admin-status-pill<?= $productAffiliateReady ? ' is-good' : ' is-warning' ?>"><?= $productAffiliateReady ? 'Odkaz hotovy' : 'Chyba konkretny produktovy odkaz' ?></span>
-                          <span class="admin-status-pill<?= $productPackshotReady ? ' is-good' : ' is-warning' ?>"><?= $productPackshotReady ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
+                <span class="admin-status-pill<?= $productAffiliateReady ? ' is-good' : ' is-warning' ?>"><?= $productAffiliateReady ? 'Produkt ma funkcny odkaz' : 'Treba vlozit priamy odkaz na konkretny produkt' ?></span>
+                <span class="admin-status-pill<?= $productPackshotReady ? ' is-good' : ' is-warning' ?>"><?= $productPackshotReady ? 'Obrazok pripraveny' : 'Treba doplnit obrazok produktu' ?></span>
                         </div>
                         <div class="admin-inline-actions admin-check-card__actions">
                           <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $productSlug) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Doplnit produkt</a>
@@ -4434,7 +4453,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <span>Obrazok produktu</span>
               </article>
               <article class="admin-status-card">
-                <strong><?= $selectedProductClickReady ? 'Odkaz hotovy' : 'Chyba konkretny produktovy odkaz' ?></strong>
+                <strong><?= $selectedProductClickReady ? 'Produkt ma funkcny odkaz' : 'Treba vlozit priamy odkaz na konkretny produkt' ?></strong>
                 <span>Klik do obchodu</span>
               </article>
             </div>
@@ -4873,8 +4892,8 @@ require dirname(__DIR__) . '/inc/head.php';
                         <p><?= esc((string) ($productPageActionRow['slug'] ?? '')) ?></p>
                         <div class="admin-status-pills">
                           <span class="admin-status-pill<?= !empty($productPageActionRow['exists']) ? ' is-good' : ' is-warning' ?>"><?= !empty($productPageActionRow['exists']) ? 'Produkt hotovy' : 'Produkt chyba' ?></span>
-                          <span class="admin-status-pill<?= !empty($productPageActionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($productPageActionRow['packshot_ready']) ? 'Obrazok hotovy' : 'Obrazok chyba' ?></span>
-                          <span class="admin-status-pill<?= !empty($productPageActionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($productPageActionRow['affiliate_ready']) ? 'Klik hotovy' : 'Klik chyba' ?></span>
+                          <span class="admin-status-pill<?= !empty($productPageActionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($productPageActionRow['packshot_ready']) ? 'Obrazok hotovy' : 'Treba doplnit obrazok produktu' ?></span>
+                          <span class="admin-status-pill<?= !empty($productPageActionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($productPageActionRow['affiliate_ready']) ? 'Produkt ma funkcny odkaz' : 'Treba vlozit priamy odkaz na konkretny produkt' ?></span>
                         </div>
                         <small class="admin-note"><?= esc((string) ($productPageActionRow['next_note'] ?? '')) ?></small>
                       </div>
