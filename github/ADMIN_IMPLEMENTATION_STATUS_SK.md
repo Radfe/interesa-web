@@ -87,6 +87,11 @@ Najnovsie spresnenie slotov a klikov:
 - za hotovy klik sa ma pocitat len konkretna produktova URL alebo validny affiliate link veduci na konkretny produkt
 - homepage obchodu ani genericka shop URL sa uz nemaju tvarit ako hotovy klik
 
+Najnovsie sprisnenie pre uzke temy:
+- pri uzkej teme ako `pre-workout-ako-vybrat` sa slotovy select uz nema skladat zo zmiesaneho katalogu
+- po explicitnych produktoch a kandidatoch pre clanok sa maju doplnat len tematicky relevantne produkty z katalogu
+- ak katalog nema dost relevantnych produktov, admin ma radsej ukazat menej moznosti nez miesat magnesium, probiotika alebo whey do `pre-workout` vyberu
+
 Najnovsi shell unification krok:
 - core sekcie v `/admin` uz bezia cez jeden stabilny shell
 - root wrapper uz pri `Produkty` ani `Logo a ikonka` neprepina admin do ineho layout rezimu

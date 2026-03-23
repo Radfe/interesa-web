@@ -939,13 +939,15 @@ function interessa_admin_article_slot_relevance_preset(string $articleSlug): arr
 
     if (str_contains($articleSlug, 'pre-workout')) {
         return [
-            'recommended_filters' => ['pre-workout', 'predtrening', 'stim', 'pump', 'citrulline', 'citrulin', 'beta-alanine', 'beta alanine', 'caffeine', 'kofein'],
-            'exclude_terms' => ['creatine', 'kreatin', 'magnesium', 'horcik', 'zinc', 'zinok', 'probiotic', 'probiotik', 'whey', 'protein', 'collagen', 'kolagen'],
+            'strict_filter' => true,
+            'recommended_filters' => ['pre-workout', 'predtrening', 'stim', 'pump', 'citrulline', 'citrulin', 'beta-alanine', 'beta alanine', 'caffeine', 'kofein', 'nitric oxide', 'pump support', 'arginine', 'aakg', 'no booster'],
+            'exclude_terms' => ['creatine', 'kreatin', 'magnesium', 'horcik', 'zinc', 'zinok', 'probiotic', 'probiotik', 'whey', 'protein', 'collagen', 'kolagen', 'klby', 'joint', 'imunita', 'immunity', 'vitamin', 'multivitamin', 'minerals', 'mineraly'],
             'preferred_categories' => ['pre-workout'],
         ];
     }
 
     return [
+        'strict_filter' => false,
         'recommended_filters' => array_values(array_unique(array_map('strval', (array) ($preset['recommended_filters'] ?? [])))),
         'exclude_terms' => array_values(array_unique(array_map('strval', (array) ($preset['exclude_terms'] ?? [])))),
         'preferred_categories' => array_values(array_unique(array_map('strval', $preferredCategories))),
@@ -970,19 +972,34 @@ function interessa_admin_article_slot_product_relevance(array $product, string $
     $blockedHits = interessa_admin_text_keyword_hits($text, (array) ($preset['exclude_terms'] ?? []));
     $preferredCategories = array_values(array_filter(array_map('strval', (array) ($preset['preferred_categories'] ?? []))));
     $categoryPriority = array_search($productCategory, $preferredCategories, true);
+    $strictFilter = !empty($preset['strict_filter']);
+    $passesStrict = $blockedHits === [] && ($categoryPriority !== false || $hits !== []);
 
     $score = 0;
-    if ($categoryPriority !== false) {
-        $score += 220 - (((int) $categoryPriority) * 40);
+    if ($strictFilter) {
+        if ($passesStrict) {
+            if ($categoryPriority !== false) {
+                $score += 320 - (((int) $categoryPriority) * 40);
+            }
+            $score += count($hits) * 55;
+        } else {
+            $score -= 1000;
+        }
+    } else {
+        if ($categoryPriority !== false) {
+            $score += 220 - (((int) $categoryPriority) * 40);
+        }
+        $score += count($hits) * 35;
+        $score -= count($blockedHits) * 120;
     }
-    $score += count($hits) * 35;
-    $score -= count($blockedHits) * 120;
 
     return [
         'score' => $score,
         'hits' => $hits,
         'blocked_hits' => $blockedHits,
         'category_match' => $categoryPriority !== false,
+        'strict_filter' => $strictFilter,
+        'passes_strict' => $passesStrict,
         'preferred_categories' => $preferredCategories,
     ];
 }
@@ -3048,9 +3065,6 @@ $articleAddScopedProductOption = static function (string $slug, string $source) 
 foreach ($articleSelectedProductSlugs as $selectedSlug) {
     $articleAddScopedProductOption((string) $selectedSlug, 'selected');
 }
-foreach (interessa_admin_article_default_products($selectedArticleSlug, $catalog) as $defaultSlug) {
-    $articleAddScopedProductOption((string) $defaultSlug, 'legacy');
-}
 foreach (interessa_admin_product_candidates() as $candidateRow) {
     if (!is_array($candidateRow)) {
         continue;
@@ -3064,12 +3078,17 @@ foreach (interessa_admin_product_candidates() as $candidateRow) {
 }
 $articleSlotRelevancePreset = interessa_admin_article_slot_relevance_preset($selectedArticleSlug);
 $articleSlotPreferredCategories = array_values(array_filter(array_map('strval', (array) ($articleSlotRelevancePreset['preferred_categories'] ?? []))));
+$articleSlotStrictFilter = !empty($articleSlotRelevancePreset['strict_filter']);
 if (count($articleScopedProductOptionSlugs) < 12) {
     foreach ($catalog as $catalogSlug => $catalogRow) {
         $catalogSlug = (string) $catalogSlug;
         $normalizedCatalogRow = interessa_normalize_product(is_array($catalogRow) ? $catalogRow : []);
         $relevance = interessa_admin_article_slot_product_relevance($normalizedCatalogRow, $selectedArticleSlug);
-        if (($relevance['score'] ?? 0) > 0) {
+        if ($articleSlotStrictFilter) {
+            if (!empty($relevance['passes_strict'])) {
+                $articleAddScopedProductOption($catalogSlug, 'relevant');
+            }
+        } elseif (($relevance['score'] ?? 0) > 0) {
             $articleAddScopedProductOption($catalogSlug, 'relevant');
         } elseif ($articleSlotPreferredCategories !== []) {
             $catalogCategory = normalize_category_slug((string) ($normalizedCatalogRow['category'] ?? ''));
@@ -3083,7 +3102,7 @@ if (count($articleScopedProductOptionSlugs) < 12) {
         }
     }
 }
-if ($articleScopedProductOptionSlugs === []) {
+if ($articleScopedProductOptionSlugs === [] && !$articleSlotStrictFilter) {
     foreach (array_slice(array_keys($catalog), 0, 12) as $fallbackSlug) {
         $articleAddScopedProductOption((string) $fallbackSlug, 'fallback');
     }
@@ -3108,9 +3127,6 @@ foreach ($articleScopedProductOptionSlugs as $optionSlug) {
     if (!empty($optionSources['candidate'])) {
         $optionRank += 320;
     }
-    if (!empty($optionSources['legacy'])) {
-        $optionRank += 120;
-    }
     if (!empty($optionSources['relevant'])) {
         $optionRank += 80;
     }
@@ -3124,13 +3140,13 @@ foreach ($articleScopedProductOptionSlugs as $optionSlug) {
         $optionStateLabel = 'Hotovo';
         $optionStateClass = ' is-good';
     } elseif ($optionPackshotReady && !$optionAffiliateReady) {
-        $optionStateLabel = 'Chyba odkaz';
+        $optionStateLabel = 'Chyba konkretny produktovy odkaz';
         $optionStateClass = ' is-warning';
     } elseif (!$optionPackshotReady && $optionAffiliateReady) {
         $optionStateLabel = 'Chyba obrazok';
         $optionStateClass = ' is-warning';
     } else {
-        $optionStateLabel = 'Chyba obrazok a odkaz';
+        $optionStateLabel = 'Chyba obrazok a konkretny produktovy odkaz';
         $optionStateClass = ' is-warning';
     }
     $optionNextHref = '/admin?section=products&product=' . rawurlencode((string) $optionSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug) . '&focus=product_edit#product-edit-form';
@@ -3882,7 +3898,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <div class="admin-status-pills">
                             <span class="admin-status-pill<?= !empty($articleActionRow['exists']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['exists']) ? 'Produkt hotovy' : 'Produkt chyba' ?></span>
                             <span class="admin-status-pill<?= !empty($articleActionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['packshot_ready']) ? 'Obrazok hotovy' : 'Obrazok chyba' ?></span>
-                            <span class="admin-status-pill<?= !empty($articleActionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['affiliate_ready']) ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
+                            <span class="admin-status-pill<?= !empty($articleActionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['affiliate_ready']) ? 'Odkaz hotovy' : 'Chyba konkretny produktovy odkaz' ?></span>
                           </div>
                           <small class="admin-note"><?= esc((string) ($articleActionRow['next_note'] ?? '')) ?></small>
                         </div>
@@ -3972,7 +3988,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
                 <details class="admin-subsection is-compact">
                   <summary><strong>Zdroj produktov pre tieto sloty</strong> - otvor len ked chces skontrolovat kandidatov</summary>
-                  <p class="admin-note">Na vyber mas <?= esc((string) count($articleScopedProductOptions)) ?> produktov. Hore su explicitne vybrane produkty, kandidati pre tento clanok a najrelevantnejsie produkty podla temy clanku. Menej relevantne polozky su nizsie.</p>
+                  <p class="admin-note">Na vyber mas <?= esc((string) count($articleScopedProductOptions)) ?> produktov. Zoznam sa sklada z explicitnych produktov clanku, kandidatov pre tento clanok a tematicky relevantnych produktov z katalogu. Pri uzkych temach ako pre-workout sa nerelevantny katalogovy fallback neukazuje.</p>
                 </details>
               </div>
 
@@ -4114,7 +4130,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <span><strong><?= esc((string) ($productRow['name'] ?? $productSlug)) ?></strong><small><?= esc((string) $productSlug) ?></small></span>
                         </label>
                         <div class="admin-status-pills">
-                          <span class="admin-status-pill<?= $productAffiliateReady ? ' is-good' : ' is-warning' ?>"><?= $productAffiliateReady ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
+                          <span class="admin-status-pill<?= $productAffiliateReady ? ' is-good' : ' is-warning' ?>"><?= $productAffiliateReady ? 'Odkaz hotovy' : 'Chyba konkretny produktovy odkaz' ?></span>
                           <span class="admin-status-pill<?= $productPackshotReady ? ' is-good' : ' is-warning' ?>"><?= $productPackshotReady ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
                         </div>
                         <div class="admin-inline-actions admin-check-card__actions">
@@ -4198,7 +4214,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <p><?= esc((string) ($actionRow['slug'] ?? '')) ?><?php if (trim((string) ($actionRow['merchant'] ?? '')) !== ''): ?> / <?= esc((string) ($actionRow['merchant'] ?? '')) ?><?php endif; ?></p>
                           <div class="admin-status-pills">
                             <span class="admin-status-pill<?= !empty($actionRow['exists']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['exists']) ? 'V katalogu' : 'Mimo katalogu' ?></span>
-                            <span class="admin-status-pill<?= !empty($actionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['affiliate_ready']) ? 'Odkaz hotovy' : 'Odkaz chyba' ?></span>
+                            <span class="admin-status-pill<?= !empty($actionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['affiliate_ready']) ? 'Odkaz hotovy' : 'Chyba konkretny produktovy odkaz' ?></span>
                             <span class="admin-status-pill<?= !empty($actionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($actionRow['packshot_ready']) ? 'Obrazok pripraveny' : 'Obrazok chyba' ?></span>
                           </div>
                             <small class="admin-note">Pripravenost: <?= esc((string) ($actionRow['checklist_percent'] ?? 0)) ?>% / chybaju <?= esc((string) count($actionRow['issues'] ?? [])) ?> oblasti</small>
@@ -4410,7 +4426,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <span>Obrazok produktu</span>
               </article>
               <article class="admin-status-card">
-                <strong><?= $selectedProductClickReady ? 'Hotovo' : 'Chyba' ?></strong>
+                <strong><?= $selectedProductClickReady ? 'Odkaz hotovy' : 'Chyba konkretny produktovy odkaz' ?></strong>
                 <span>Klik do obchodu</span>
               </article>
             </div>
