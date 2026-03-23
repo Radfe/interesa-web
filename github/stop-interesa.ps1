@@ -51,12 +51,12 @@ function Stop-ByPortFallback {
             Sort-Object -Unique)
     }
 
-    foreach ($pid in $listenerIds) {
-        $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
+    foreach ($processId in $listenerIds) {
+        $proc = Get-Process -Id $processId -ErrorAction SilentlyContinue
         if ($proc) {
             Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
-            if (Get-Process -Id $pid -ErrorAction SilentlyContinue) {
-                & taskkill /PID $pid /F | Out-Null
+            if (Get-Process -Id $processId -ErrorAction SilentlyContinue) {
+                & taskkill /PID $processId /F | Out-Null
             }
             $stopped = $true
         }
