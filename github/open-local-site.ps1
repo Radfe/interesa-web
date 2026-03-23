@@ -35,6 +35,31 @@ function Test-SiteReady {
     }
 }
 
+function Get-ListenerPids {
+    $pids = @(netstat -ano |
+        Select-String '^\s*TCP\s+127\.0\.0\.1:5001\s+\S+\s+LISTENING\s+(\d+)\s*$' |
+        ForEach-Object {
+            $match = [regex]::Match($_.Line, 'LISTENING\s+(\d+)\s*$')
+            if ($match.Success) {
+                [string]$match.Groups[1].Value
+            }
+        } |
+        Where-Object { $_ -ne '' } |
+        Sort-Object -Unique)
+
+    return $pids
+}
+
+function New-PortBlockedMessage {
+    $listenerPids = @(Get-ListenerPids)
+    $pidSuffix = ''
+    if ($listenerPids.Count -gt 0) {
+        $pidSuffix = ' PID: ' + ($listenerPids -join ', ')
+    }
+
+    return 'Port 5001 je stale blokovany starym lokalnym serverom. Zavri stare okna servera alebo restartuj pocitac a spusti start-interesa znova.' + $pidSuffix
+}
+
 function Get-SavedServerPid {
     if (-not (Test-Path $pidFile)) {
         return $null
@@ -86,6 +111,11 @@ function Start-LocalServer {
 }
 
 if (-not (Test-SiteReady)) {
+    $listenerPids = @(Get-ListenerPids)
+    if ($listenerPids.Count -gt 0) {
+        throw (New-PortBlockedMessage)
+    }
+
     $startedPid = Start-LocalServer
 
     for ($attempt = 0; $attempt -lt 20; $attempt++) {
@@ -101,11 +131,19 @@ if (-not (Test-SiteReady)) {
     }
 
     if (-not (Test-SiteReady)) {
+        $listenerPids = @(Get-ListenerPids)
+        if ($listenerPids.Count -gt 0 -and -not (Get-Process -Id $startedPid -ErrorAction SilentlyContinue)) {
+            throw (New-PortBlockedMessage)
+        }
+
         $stderr = ''
         if (Test-Path $stderrLog) {
             $stderr = Get-Content -Path $stderrLog -Raw
         }
-        $stderrText = [string]($stderr ?? '')
+        $stderrText = ''
+        if ($null -ne $stderr) {
+            $stderrText = [string]$stderr
+        }
 
         if (-not [string]::IsNullOrWhiteSpace($stderrText)) {
             throw "Local server did not start.`n`n$stderrText"

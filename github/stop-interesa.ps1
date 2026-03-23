@@ -27,11 +27,37 @@ function Stop-ByPidFile {
 
 function Stop-ByPortFallback {
     $stopped = $false
-    $connections = Get-NetTCPConnection -LocalPort 5001 -State Listen -ErrorAction SilentlyContinue
-    foreach ($connection in $connections) {
-        $proc = Get-Process -Id $connection.OwningProcess -ErrorAction SilentlyContinue
+    $listenerIds = @()
+
+    try {
+        $connections = Get-NetTCPConnection -LocalPort 5001 -State Listen -ErrorAction SilentlyContinue
+        foreach ($connection in $connections) {
+            if ($connection.OwningProcess) {
+                $listenerIds += [int]$connection.OwningProcess
+            }
+        }
+    } catch {
+    }
+
+    if ($listenerIds.Count -eq 0) {
+        $listenerIds = @(netstat -ano |
+            Select-String '^\s*TCP\s+127\.0\.0\.1:5001\s+\S+\s+LISTENING\s+(\d+)\s*$' |
+            ForEach-Object {
+                $match = [regex]::Match($_.Line, 'LISTENING\s+(\d+)\s*$')
+                if ($match.Success) {
+                    [int]$match.Groups[1].Value
+                }
+            } |
+            Sort-Object -Unique)
+    }
+
+    foreach ($pid in $listenerIds) {
+        $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
         if ($proc) {
             Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+            if (Get-Process -Id $pid -ErrorAction SilentlyContinue) {
+                & taskkill /PID $pid /F | Out-Null
+            }
             $stopped = $true
         }
     }
