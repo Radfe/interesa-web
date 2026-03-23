@@ -2806,30 +2806,18 @@ $selectedArticleProductState = $selectedArticleSlug !== ''
 $articleProductPlan = is_array($selectedArticleProductState['product_plan'] ?? null)
     ? array_values($selectedArticleProductState['product_plan'])
     : [];
-if ($articleProductPlan === []) {
-    $articleProductPlan = interessa_admin_article_default_product_plan($selectedArticleSlug, $catalog);
-}
 $articleProductPlanHasExplicitSource = !empty($selectedArticleProductState['product_plan']);
 $articleEditorProductSlugs = [];
-if ($articleProductPlanHasExplicitSource) {
-    foreach ($articleProductPlan as $planRow) {
-        if (!is_array($planRow)) {
-            continue;
-        }
-        $planSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
-        if ($planSlug !== '') {
-            $articleEditorProductSlugs[] = $planSlug;
-        }
+foreach ($articleProductPlan as $planRow) {
+    if (!is_array($planRow)) {
+        continue;
     }
-    $articleEditorProductSlugs = array_values(array_unique($articleEditorProductSlugs));
-} else {
-    $articleEditorProductSlugs = is_array($selectedArticleProductState['recommended_products'] ?? null)
-        ? array_values(array_unique(array_map('strval', $selectedArticleProductState['recommended_products'])))
-        : [];
-    if ($articleEditorProductSlugs === []) {
-        $articleEditorProductSlugs = interessa_admin_article_default_products($selectedArticleSlug, $catalog);
+    $planSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
+    if ($planSlug !== '') {
+        $articleEditorProductSlugs[] = $planSlug;
     }
 }
+$articleEditorProductSlugs = array_values(array_unique($articleEditorProductSlugs));
 $articleProductPlanMap = [];
 $articleSlotSelections = [
     1 => '',
@@ -2889,22 +2877,6 @@ $recommendedAffiliateReadyCount = (int) ($recommendedDiagnosticsSummary['affilia
 $recommendedPackshotReadyCount = (int) ($recommendedDiagnosticsSummary['packshot_ready'] ?? 0);
 $recommendedMoneyReadyCount = (int) ($recommendedDiagnosticsSummary['money_ready'] ?? 0);
 $recommendedCardReadyCount = (int) ($recommendedDiagnosticsSummary['card_ready'] ?? 0);
-if (!$articleProductPlanHasExplicitSource) {
-    $fallbackSlotIndex = 1;
-    foreach ($articleEditorProductSlugs as $fallbackSlug) {
-        $fallbackSlug = interessa_admin_slugify((string) $fallbackSlug);
-        if ($fallbackSlug === '' || in_array($fallbackSlug, $articleSlotSelections, true)) {
-            continue;
-        }
-        while ($fallbackSlotIndex <= 3 && (string) ($articleSlotSelections[$fallbackSlotIndex] ?? '') !== '') {
-            $fallbackSlotIndex++;
-        }
-        if ($fallbackSlotIndex > 3) {
-            break;
-        }
-        $articleSlotSelections[$fallbackSlotIndex] = $fallbackSlug;
-    }
-}
 $articleSelectedProductSlugs = array_values(array_filter($articleSlotSelections, static fn(string $slug): bool => $slug !== ''));
 $articleSelectedSlotBySlug = [];
 foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
@@ -3081,30 +3053,18 @@ $selectedProductArticleState = $selectedProductArticleSlug !== ''
 $productPageArticleProductPlan = is_array($selectedProductArticleState['product_plan'] ?? null)
     ? array_values($selectedProductArticleState['product_plan'])
     : [];
-if ($productPageArticleProductPlan === []) {
-    $productPageArticleProductPlan = interessa_admin_article_default_product_plan($selectedProductArticleSlug, $catalog);
-}
 $productPageHasExplicitPlan = !empty($selectedProductArticleState['product_plan']);
 $productPageArticleProductSlugs = [];
-if ($productPageHasExplicitPlan) {
-    foreach ($productPageArticleProductPlan as $planRow) {
-        if (!is_array($planRow)) {
-            continue;
-        }
-        $planSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
-        if ($planSlug !== '') {
-            $productPageArticleProductSlugs[] = $planSlug;
-        }
+foreach ($productPageArticleProductPlan as $planRow) {
+    if (!is_array($planRow)) {
+        continue;
     }
-    $productPageArticleProductSlugs = array_values(array_unique($productPageArticleProductSlugs));
-} else {
-    $productPageArticleProductSlugs = is_array($selectedProductArticleState['recommended_products'] ?? null)
-        ? array_values(array_unique(array_map('strval', $selectedProductArticleState['recommended_products'])))
-        : [];
-    if ($productPageArticleProductSlugs === []) {
-        $productPageArticleProductSlugs = interessa_admin_article_default_products($selectedProductArticleSlug, $catalog);
+    $planSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
+    if ($planSlug !== '') {
+        $productPageArticleProductSlugs[] = $planSlug;
     }
 }
+$productPageArticleProductSlugs = array_values(array_unique($productPageArticleProductSlugs));
 $productPageArticlePlanMap = [];
 foreach ($productPageArticleProductPlan as $planRow) {
     if (!is_array($planRow)) {
@@ -3802,7 +3762,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php endforeach; ?>
                   </div>
                 <?php else: ?>
-                  <p class="admin-note">Tento clanok este nema vybrate ziadne produkty. Nizsie vypln 3 sloty v casti <strong>Produkty v tomto clanku</strong>.</p>
+                  <p class="admin-note">Clanok zatial nema explicitne priradene produkty. Nizsie vypln 3 sloty v casti <strong>Produkty v tomto clanku</strong>.</p>
                 <?php endif; ?>
               </section>
 
@@ -3811,7 +3771,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   <h3>Produkty v tomto clanku</h3>
                 </div>
                 <p class="admin-note">Tento clanok ma pevne 3 sloty. Vyber do nich produkty, oznac hlavny produkt a potom uloz produkty v clanku.</p>
-                <p class="admin-meta"><strong>Debug zdroj slotov:</strong> <?= esc((string) ($selectedArticleProductState['source'] ?? 'unknown')) ?></p>
+                <?php if ($articleProductPlanHasExplicitSource === false): ?>
+                  <p class="admin-note">Clanok zatial nema explicitne priradene produkty.</p>
+                <?php endif; ?>
+                <p class="admin-meta"><strong>Debug zdroj slotov:</strong> <?= $articleProductPlanHasExplicitSource ? 'explicit' : 'none' ?></p>
                 <?php
                   $articleFeaturedSlot = 1;
                   foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
@@ -3841,7 +3804,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <div>
                           <h4>Slot <?= esc((string) $slotIndex) ?></h4>
                           <p class="admin-meta"><?= $slotIndex === $articleFeaturedSlot && $slotSlug !== '' ? 'Hlavny produkt' : 'Vyber 1 produkt pre tento slot' ?></p>
-                          <p class="admin-meta"><strong>Debug:</strong> <?= $slotSlug !== '' ? esc($slotSlug) : 'prazdny slot' ?> / source <?= esc((string) ($selectedArticleProductState['source'] ?? 'unknown')) ?></p>
+                          <p class="admin-meta"><strong>Debug:</strong> slot <?= esc((string) $slotIndex) ?> / <?= $slotSlug !== '' ? esc($slotSlug) : 'NULL' ?> / source <?= $slotSlug !== '' ? 'explicit' : 'none' ?></p>
                         </div>
                       </div>
                       <label>
@@ -3868,7 +3831,10 @@ require dirname(__DIR__) . '/inc/head.php';
                           <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $slotSlug) ?>&amp;article=<?= esc($selectedArticleSlug) ?>&amp;slot=<?= esc((string) $slotIndex) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Vybrat produkt pre slot</a>
                         </div>
                       <?php else: ?>
-                        <p class="admin-note">Tento slot je prazdny. Vyber produkt zo zoznamu vyssie a uloz produkty v clanku.</p>
+                        <p class="admin-note">Ziadny produkt nie je priradeny.</p>
+                        <div class="admin-inline-actions">
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;article=<?= esc($selectedArticleSlug) ?>&amp;slot=<?= esc((string) $slotIndex) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vybrat produkt pre slot</a>
+                        </div>
                       <?php endif; ?>
                     </section>
                   <?php endfor; ?>
@@ -4267,19 +4233,37 @@ require dirname(__DIR__) . '/inc/head.php';
               $selectedProductNextStepNote = 'Produkt uz ma obrazok aj klik do obchodu. Tu uz netreba nic robit.';
             }
           ?>
-          <?php if ($articleSlotMode && $selectedProductSlug !== ''): ?>
+          <?php if ($articleSlotMode): ?>
           <section class="admin-card">
             <div class="admin-card-head">
               <div>
                 <p class="admin-kicker">Clanok je hlavny kontext</p>
                 <h2>Slot <?= esc((string) $returnArticleSlotPrefill) ?> pre clanok <?= esc($articleSlotModeTitle) ?></h2>
                 <p class="admin-note">Tu doplnas len jeden produkt pre konkretny slot. Po ulozeni sa vratis spat na clanok.</p>
+                <p class="admin-meta">article: <?= esc($returnArticlePrefill) ?> / slot: <?= esc((string) $returnArticleSlotPrefill) ?> / mode: article-slot</p>
               </div>
               <div class="admin-inline-actions">
+                <form method="get" action="/admin" class="admin-inline-form">
+                  <input type="hidden" name="section" value="products" />
+                  <input type="hidden" name="article" value="<?= esc($returnArticlePrefill) ?>" />
+                  <input type="hidden" name="slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" />
+                  <input type="hidden" name="return_section" value="articles" />
+                  <input type="hidden" name="return_slug" value="<?= esc($returnArticlePrefill) ?>" />
+                  <label class="admin-inline-select">
+                    <span>Produkt pre tento slot</span>
+                    <select name="product" onchange="this.form.submit()">
+                      <option value="">Vyber produkt</option>
+                      <?php foreach ($productSlugs as $slug): ?>
+                        <option value="<?= esc($slug) ?>" <?= $slug === $selectedProductSlug ? 'selected' : '' ?>><?= esc((string) ($catalog[$slug]['name'] ?? $slug)) ?></option>
+                      <?php endforeach; ?>
+                    </select>
+                  </label>
+                </form>
                 <a class="btn btn-secondary" href="<?= esc($articleSlotBackHref) ?>">Spat na clanok</a>
                 <a class="btn btn-secondary" href="<?= esc(article_url($returnArticlePrefill)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
               </div>
             </div>
+            <?php if ($selectedProductSlug !== ''): ?>
             <div class="admin-status-grid">
               <article class="admin-status-card">
                 <strong><?= esc((string) $returnArticleSlotPrefill) ?></strong>
@@ -4298,6 +4282,9 @@ require dirname(__DIR__) . '/inc/head.php';
                 <span>Klik do obchodu</span>
               </article>
             </div>
+            <?php else: ?>
+            <p class="admin-note">Najprv vyber produkt pre tento slot. Az potom sa otvori editor produktu pre clanok a slot.</p>
+            <?php endif; ?>
           </section>
           <?php endif; ?>
           <?php if (!$articleSlotMode): ?>
