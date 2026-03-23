@@ -2557,6 +2557,8 @@ if ($isAuthed) {
             $candidateId = trim((string) ($_POST['candidate_id'] ?? ''));
             $returnSection = trim((string) ($_POST['return_section'] ?? ''));
             $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
+            $returnArticleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? $returnSlug)));
+            $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
             $query = [
                 'error' => $error,
             ];
@@ -2582,6 +2584,12 @@ if ($isAuthed) {
             if ($returnSection !== '' && $returnSlug !== '') {
                 $query['return_section'] = $returnSection;
                 $query['return_slug'] = $returnSlug;
+            }
+            if ($productSlug !== '' && $returnArticleSlug !== '' && $targetSlot > 0) {
+                interessa_admin_redirect('products', interessa_admin_product_article_slot_query($productSlug, $returnArticleSlug, $targetSlot, '', 'product_link') + [
+                    'error' => $error,
+                    'focus_product' => $productSlug,
+                ]);
             }
             interessa_admin_redirect('products', $query);
         }
