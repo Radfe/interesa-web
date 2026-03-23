@@ -3015,13 +3015,18 @@ foreach ($articleSelectedProductSlugs as $articleSelectedSlug) {
     if ($articleSelectedExists && $articleSelectedPackshotReady && $articleSelectedAffiliateReady) {
         $articleSelectedReadyCount++;
     }
-      $articleSelectedActionSlot = (int) ($articleSelectedSlotBySlug[$articleSelectedSlug] ?? 0);
-      $articleSelectedActionHref = '/admin?section=products&product=' . rawurlencode($articleSelectedSlug)
-          . ($articleSelectedActionSlot > 0 ? '&article=' . rawurlencode($selectedArticleSlug) . '&slot=' . rawurlencode((string) $articleSelectedActionSlot) : '')
-          . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug) . '&focus=product_edit#product-edit-form';
-      $articleSelectedActionLabel = 'Doplnit produkt';
-      $articleSelectedActionNote = 'Tomuto produktu este chyba doplnenie.';
-      if ($articleSelectedExists && $articleSelectedPackshotReady && !$articleSelectedAffiliateReady) {
+    $articleSelectedActionSlot = (int) ($articleSelectedSlotBySlug[$articleSelectedSlug] ?? 0);
+    $articleSelectedActionHref = '/admin?section=products&product=' . rawurlencode($articleSelectedSlug)
+        . ($articleSelectedActionSlot > 0 ? '&article=' . rawurlencode($selectedArticleSlug) . '&slot=' . rawurlencode((string) $articleSelectedActionSlot) : '')
+        . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug) . '&focus=product_edit#product-edit-form';
+    $articleSelectedActionLabel = 'Dokoncit produkt';
+    $articleSelectedActionNote = 'Tomuto produktu este chyba doplnenie.';
+    $articleSelectedActionEnabled = true;
+    if ($articleSelectedExists && !$articleSelectedPackshotReady && !$articleSelectedAffiliateReady) {
+        $articleSelectedActionHref = '/admin?' . http_build_query(interessa_admin_product_article_slot_query($articleSelectedSlug, $selectedArticleSlug, $articleSelectedActionSlot, '', 'product_edit')) . '#product-link-form';
+        $articleSelectedActionLabel = 'Doplnit odkaz a obrazok';
+        $articleSelectedActionNote = 'Tomuto produktu chyba funkcny odkaz aj obrazok. Najprv dopln odkaz, potom obrazok.';
+    } elseif ($articleSelectedExists && $articleSelectedPackshotReady && !$articleSelectedAffiliateReady) {
           $articleSelectedCode = trim((string) ($articleSelectedRow['affiliate_code'] ?? ''));
           if ($articleSelectedCode !== '') {
               $articleSelectedActionHref = '/dognet-helper?code=' . rawurlencode($articleSelectedCode)
@@ -3034,13 +3039,14 @@ foreach ($articleSelectedProductSlugs as $articleSelectedSlug) {
           }
           $articleSelectedActionLabel = 'Doplnit odkaz';
           $articleSelectedActionNote = 'Obrazok je hotovy. Produkt potrebuje uz len funkcny odkaz.';
-      } elseif ($articleSelectedExists && !$articleSelectedPackshotReady) {
+    } elseif ($articleSelectedExists && !$articleSelectedPackshotReady) {
+        $articleSelectedActionHref = '/admin?' . http_build_query(interessa_admin_product_article_slot_query($articleSelectedSlug, $selectedArticleSlug, $articleSelectedActionSlot, '', 'product_image')) . '#product-image-preview';
         $articleSelectedActionLabel = 'Doplnit obrazok';
         $articleSelectedActionNote = 'Produkt uz existuje. Treba doplnit obrazok produktu.';
     } elseif ($articleSelectedExists && $articleSelectedPackshotReady && $articleSelectedAffiliateReady) {
-        $articleSelectedActionHref = '/admin?section=affiliates&code=' . rawurlencode((string) ($articleSelectedRow['affiliate_code'] ?? '')) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug);
         $articleSelectedActionLabel = 'Hotovo';
         $articleSelectedActionNote = 'Tento produkt je pripraveny pre clanok.';
+        $articleSelectedActionEnabled = false;
     }
     $articleSelectedActionRows[] = [
         'slug' => $articleSelectedSlug,
@@ -3051,6 +3057,7 @@ foreach ($articleSelectedProductSlugs as $articleSelectedSlug) {
         'next_href' => $articleSelectedActionHref,
         'next_label' => $articleSelectedActionLabel,
         'next_note' => $articleSelectedActionNote,
+        'next_enabled' => $articleSelectedActionEnabled,
     ];
 }
 $articleSelectedActionRowsBySlug = [];
@@ -3951,7 +3958,9 @@ require dirname(__DIR__) . '/inc/head.php';
                           <small class="admin-note"><?= esc((string) ($articleActionRow['next_note'] ?? '')) ?></small>
                         </div>
                         <div class="admin-inline-actions">
-                          <a class="btn btn-secondary btn-small" href="<?= esc((string) ($articleActionRow['next_href'] ?? '#')) ?>"><?= esc((string) ($articleActionRow['next_label'] ?? 'Otvorit')) ?></a>
+                          <?php if (!empty($articleActionRow['next_enabled'])): ?>
+                            <a class="btn btn-secondary btn-small" href="<?= esc((string) ($articleActionRow['next_href'] ?? '#')) ?>"><?= esc((string) ($articleActionRow['next_label'] ?? 'Otvorit')) ?></a>
+                          <?php endif; ?>
                           <?php if (!empty($articleActionRow['exists']) && !empty($articleActionRow['packshot_ready']) && !empty($articleActionRow['affiliate_ready'])): ?>
                             <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Pozriet na webe</a>
                           <?php endif; ?>
@@ -4023,7 +4032,9 @@ require dirname(__DIR__) . '/inc/head.php';
                           <span><strong><?= $slotIndex === $articleFeaturedSlot ? 'Toto je hlavny produkt' : 'Nastavit ako hlavny produkt' ?></strong></span>
                         </label>
                         <div class="admin-inline-actions">
-                          <a class="btn btn-secondary btn-small" href="<?= esc((string) ($slotActionRow['next_href'] ?? ($slotRow['next_href'] ?? '#'))) ?>"><?= esc((string) ($slotActionRow['next_label'] ?? ($slotRow['next_label'] ?? 'Doplnit produkt'))) ?></a>
+                          <?php if (!empty($slotActionRow['next_enabled'])): ?>
+                            <a class="btn btn-secondary btn-small" href="<?= esc((string) ($slotActionRow['next_href'] ?? ($slotRow['next_href'] ?? '#'))) ?>"><?= esc((string) ($slotActionRow['next_label'] ?? ($slotRow['next_label'] ?? 'Doplnit produkt'))) ?></a>
+                          <?php endif; ?>
                           <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc((string) $slotSlug) ?>&amp;article=<?= esc($selectedArticleSlug) ?>&amp;slot=<?= esc((string) $slotIndex) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Vybrat produkt pre slot</a>
                           <?php if (!empty($slotActionRow['exists']) && !empty($slotActionRow['packshot_ready']) && !empty($slotActionRow['affiliate_ready'])): ?>
                             <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Pozriet na webe</a>
@@ -4945,7 +4956,11 @@ require dirname(__DIR__) . '/inc/head.php';
               $productCurrentStepTitle = 'Produkt je pripraveny';
               $productCurrentStepText = 'Produkt je pripraveny pre clanok';
               $productCurrentStepClass = 'is-done';
-              if (!$selectedProductClickReady) {
+              if (!$selectedProductClickReady && !$selectedProductPackshotReady) {
+                  $productCurrentStepTitle = 'Dopln odkaz a obrazok produktu';
+                  $productCurrentStepText = 'Najprv vloz priamy odkaz na konkretny produkt a potom dopln obrazok produktu';
+                  $productCurrentStepClass = 'is-link';
+              } elseif (!$selectedProductClickReady) {
                   $productCurrentStepTitle = 'Dopln link produktu';
                   $productCurrentStepText = 'Vloz priamy odkaz na konkretny produkt';
                   $productCurrentStepClass = 'is-link';
