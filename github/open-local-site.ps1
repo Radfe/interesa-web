@@ -105,9 +105,10 @@ if (-not (Test-SiteReady)) {
         if (Test-Path $stderrLog) {
             $stderr = Get-Content -Path $stderrLog -Raw
         }
+        $stderrText = [string]($stderr ?? '')
 
-        if ($stderr.Trim() -ne '') {
-            throw "Local server did not start.`n`n$stderr"
+        if (-not [string]::IsNullOrWhiteSpace($stderrText)) {
+            throw "Local server did not start.`n`n$stderrText"
         }
 
         throw 'Local server did not start.'

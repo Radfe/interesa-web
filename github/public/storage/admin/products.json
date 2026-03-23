@@ -29,7 +29,7 @@
         "merchant_slug": "aktin",
         "category": "kreatin",
         "affiliate_code": "kreatin-porovnanie-aktin",
-        "fallback_url": "https://www.aktin.sk/",
+        "fallback_url": "http://127.0.0.1:5001/admin?product=aktin-creatine-monohydrate&article=pre-workout-ako-vybrat&slot=2&return_section=articles&return_slug=pre-workout-ako-vybrat&focus=product_link#product-link-form",
         "summary": "Najistejšia forma kreatínu z pohľadu dát aj dlhodobého používania.",
         "rating": 0,
         "pros": [

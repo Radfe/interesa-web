@@ -3023,7 +3023,7 @@ foreach ($articleSelectedProductSlugs as $articleSelectedSlug) {
     $articleSelectedActionNote = 'Tomuto produktu este chyba doplnenie.';
     $articleSelectedActionEnabled = true;
     if ($articleSelectedExists && !$articleSelectedPackshotReady && !$articleSelectedAffiliateReady) {
-        $articleSelectedActionHref = '/admin?' . http_build_query(interessa_admin_product_article_slot_query($articleSelectedSlug, $selectedArticleSlug, $articleSelectedActionSlot, '', 'product_edit')) . '#product-link-form';
+        $articleSelectedActionHref = '/admin?' . http_build_query(interessa_admin_product_article_slot_query($articleSelectedSlug, $selectedArticleSlug, $articleSelectedActionSlot, '', 'product_link')) . '#product-link-form';
         $articleSelectedActionLabel = 'Doplnit odkaz a obrazok';
         $articleSelectedActionNote = 'Tomuto produktu chyba funkcny odkaz aj obrazok. Najprv dopln odkaz, potom obrazok.';
     } elseif ($articleSelectedExists && $articleSelectedPackshotReady && !$articleSelectedAffiliateReady) {
@@ -4956,24 +4956,50 @@ require dirname(__DIR__) . '/inc/head.php';
               $productCurrentStepTitle = 'Produkt je pripraveny';
               $productCurrentStepText = 'Produkt je pripraveny pre clanok';
               $productCurrentStepClass = 'is-done';
+              $productCurrentSteps = [];
               if (!$selectedProductClickReady && !$selectedProductPackshotReady) {
                   $productCurrentStepTitle = 'Dopln odkaz a obrazok produktu';
                   $productCurrentStepText = 'Najprv vloz priamy odkaz na konkretny produkt a potom dopln obrazok produktu';
                   $productCurrentStepClass = 'is-link';
+                  $productCurrentSteps = [
+                      'KROK 1: Dopln odkaz produktu',
+                      'KROK 2: Dopln obrazok produktu',
+                      'KROK 3: Uloz a vrat sa do clanku',
+                  ];
               } elseif (!$selectedProductClickReady) {
                   $productCurrentStepTitle = 'Dopln link produktu';
                   $productCurrentStepText = 'Vloz priamy odkaz na konkretny produkt';
                   $productCurrentStepClass = 'is-link';
+                  $productCurrentSteps = [
+                      'KROK 1: Dopln odkaz produktu',
+                      'KROK 2: Uloz a vrat sa do clanku',
+                  ];
               } elseif (!$selectedProductPackshotReady) {
                   $productCurrentStepTitle = 'Dopln obrazok produktu';
                   $productCurrentStepText = 'Dopln obrazok produktu';
                   $productCurrentStepClass = 'is-image';
+                  $productCurrentSteps = [
+                      'KROK 1: Dopln obrazok produktu',
+                      'KROK 2: Uloz a vrat sa do clanku',
+                  ];
+              } else {
+                  $productCurrentSteps = [
+                      'KROK 1: Produkt je pripraveny pre clanok',
+                      'KROK 2: Uloz a vrat sa do clanku',
+                  ];
               }
             ?>
             <section class="admin-current-step <?= esc($productCurrentStepClass) ?>">
               <span class="admin-current-step__eyebrow">KROK</span>
               <strong><?= esc($productCurrentStepTitle) ?></strong>
               <p><?= esc($productCurrentStepText) ?></p>
+              <?php if ($articleSlotMode && $productCurrentSteps !== []): ?>
+                <div class="admin-note">
+                  <?php foreach ($productCurrentSteps as $productCurrentStepLine): ?>
+                    <div><strong><?= esc($productCurrentStepLine) ?></strong></div>
+                  <?php endforeach; ?>
+                </div>
+              <?php endif; ?>
             </section>
 
             <section class="admin-subsection is-compact" id="product-main-flow">
@@ -5030,7 +5056,7 @@ require dirname(__DIR__) . '/inc/head.php';
             </section>
             <?php endif; ?>
 
-            <section id="product-link-form" class="admin-subsection is-compact">
+            <section id="product-link-form" class="admin-subsection is-compact<?= $focusPanel === 'product_link' ? ' is-focused' : '' ?>">
               <div class="admin-subsection-head">
                 <div>
                   <h3><?= $articleSlotMode ? 'Link produktu a klik do obchodu' : '1. Vloz link produktu' ?></h3>
@@ -7060,7 +7086,8 @@ require dirname(__DIR__) . '/inc/head.php';
   }
 
   .admin-asset-preview.is-focused,
-  #product-edit-form.is-focused {
+  #product-edit-form.is-focused,
+  #product-link-form.is-focused {
     outline: 3px solid #34d399;
     box-shadow: 0 20px 40px rgba(52, 211, 153, 0.18);
     border-radius: 20px;
@@ -7877,6 +7904,13 @@ require dirname(__DIR__) . '/inc/head.php';
     if (focusedPanel instanceof HTMLElement && focusedPanel.classList.contains('is-focused')) {
       window.setTimeout(function () {
         focusedPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 80);
+    }
+
+    const focusedProductLink = document.getElementById('product-link-form');
+    if (focusedProductLink instanceof HTMLElement && focusedProductLink.classList.contains('is-focused')) {
+      window.setTimeout(function () {
+        focusedProductLink.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 80);
     }
 

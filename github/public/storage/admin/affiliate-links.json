@@ -62,6 +62,15 @@
         "link_type": "affiliate",
         "source": "candidate-product"
     },
+    "kreatin-porovnanie-aktin": {
+        "code": "kreatin-porovnanie-aktin",
+        "url": "http://127.0.0.1:5001/admin?product=aktin-creatine-monohydrate&article=pre-workout-ako-vybrat&slot=2&return_section=articles&return_slug=pre-workout-ako-vybrat&focus=product_link#product-link-form",
+        "merchant": "Aktin",
+        "merchant_slug": "aktin",
+        "product_slug": "aktin-creatine-monohydrate",
+        "link_type": "affiliate",
+        "source": "admin-quick-link"
+    },
     "protein-na-chudnutie-gymbeam": {
         "code": "protein-na-chudnutie-gymbeam",
         "url": "https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Ftrue-whey-gymbeam.html",
