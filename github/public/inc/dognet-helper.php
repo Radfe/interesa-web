@@ -279,8 +279,7 @@ if (!function_exists('dognet_helper_save_deeplink')) {
         dognet_helper_sync_overrides($rows);
 
         if ($productSlug !== '') {
-            $product = interessa_product($productSlug);
-            $product = is_array($product) ? $product : [];
+            $product = interessa_admin_product_record($productSlug) ?? [];
 
             $resolvedProductUrl = trim((string) aff_product_url_for_code($code));
             $existingFallbackUrl = trim((string) ($product['fallback_url'] ?? ''));
