@@ -80,6 +80,13 @@ Najnovsi category auto-pick krok:
 - explicitne `article_product` a `product_plan` ostavaju jediny source of truth pre clanok
 - category-based vyber sa nesmie tvarit ako realne priradenie a nesmie predvyplnat sloty
 
+Najnovsie spresnenie slotov a klikov:
+- vyber produktov pre slot sa v `Clanky` uz triedi viac podla temy konkretneho clanku, nie len podla sirokej kategorie
+- pri clanku o `pre-workout` maju ist relevantne `pre-workout` produkty vyssie a nesuvisiace produkty nizsie
+- `klik hotovy` uz nema znamenat hocijaky vyrieseny link
+- za hotovy klik sa ma pocitat len konkretna produktova URL alebo validny affiliate link veduci na konkretny produkt
+- homepage obchodu ani genericka shop URL sa uz nemaju tvarit ako hotovy klik
+
 Najnovsi shell unification krok:
 - core sekcie v `/admin` uz bezia cez jeden stabilny shell
 - root wrapper uz pri `Produkty` ani `Logo a ikonka` neprepina admin do ineho layout rezimu

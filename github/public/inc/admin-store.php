@@ -2188,6 +2188,41 @@ if (!function_exists('interessa_admin_looks_like_product_url')) {
             return false;
         }
 
+        $segments = array_values(array_filter(array_map(
+            static fn($segment): string => strtolower(trim((string) $segment)),
+            explode('/', trim($path, '/'))
+        )));
+        if ($segments === []) {
+            return false;
+        }
+
+        $genericSegments = [
+            'shop',
+            'eshop',
+            'produkty',
+            'produkt',
+            'products',
+            'product',
+            'kategoria',
+            'kategorie',
+            'category',
+            'categories',
+            'catalog',
+            'katalog',
+            'brand',
+            'brands',
+            'znacky',
+            'vyhladavanie',
+            'search',
+            'sale',
+            'akcie',
+            'novinky',
+        ];
+
+        if (count($segments) === 1 && in_array($segments[0], $genericSegments, true)) {
+            return false;
+        }
+
         return true;
     }
 }
