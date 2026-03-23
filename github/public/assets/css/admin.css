@@ -89,6 +89,52 @@
   margin-bottom: 1rem;
 }
 
+.admin-current-step {
+  margin-bottom: 1rem;
+  padding: 1.1rem 1.2rem;
+  border-radius: 18px;
+  border: 1px solid rgba(21, 49, 75, 0.12);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.admin-current-step.is-link {
+  background: linear-gradient(135deg, rgba(198, 68, 37, 0.08), rgba(255, 214, 102, 0.18));
+  border-color: rgba(198, 68, 37, 0.16);
+}
+
+.admin-current-step.is-image {
+  background: linear-gradient(135deg, rgba(192, 132, 18, 0.08), rgba(250, 204, 21, 0.2));
+  border-color: rgba(192, 132, 18, 0.18);
+}
+
+.admin-current-step.is-done {
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.08), rgba(134, 239, 172, 0.22));
+  border-color: rgba(22, 163, 74, 0.18);
+}
+
+.admin-current-step__eyebrow {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #15314b;
+}
+
+.admin-current-step strong {
+  display: block;
+  font-size: clamp(1.35rem, 1.1vw + 1rem, 1.9rem);
+  line-height: 1.15;
+  color: #15314b;
+}
+
+.admin-current-step p {
+  margin: 0.45rem 0 0;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #314255;
+}
+
 .admin-article-context {
   margin-bottom: 1.1rem;
   padding: 1.15rem 1.2rem;

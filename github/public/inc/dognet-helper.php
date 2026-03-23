@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/affiliates.php';
+require_once __DIR__ . '/admin-store.php';
 
 if (!function_exists('dognet_helper_csv_path')) {
     function dognet_helper_csv_path(): string {
@@ -239,9 +240,10 @@ if (!function_exists('dognet_helper_sync_overrides')) {
 }
 
 if (!function_exists('dognet_helper_save_deeplink')) {
-    function dognet_helper_save_deeplink(string $code, string $deeplinkUrl): void {
+    function dognet_helper_save_deeplink(string $code, string $deeplinkUrl, string $productSlug = ''): void {
         $code = trim($code);
         $deeplinkUrl = trim($deeplinkUrl);
+        $productSlug = interessa_admin_slugify($productSlug);
 
         if ($code === '') {
             throw new RuntimeException('Chyba kod produktu.');
@@ -275,6 +277,21 @@ if (!function_exists('dognet_helper_save_deeplink')) {
         $rows = dognet_helper_propagate_shared_product_links($rows);
         dognet_helper_write_rows($headers, $rows);
         dognet_helper_sync_overrides($rows);
+
+        if ($productSlug !== '') {
+            $product = interessa_product($productSlug);
+            $product = is_array($product) ? $product : [];
+
+            $resolvedProductUrl = trim((string) aff_product_url_for_code($code));
+            $existingFallbackUrl = trim((string) ($product['fallback_url'] ?? ''));
+            $fallbackUrl = $existingFallbackUrl !== '' ? $existingFallbackUrl : $resolvedProductUrl;
+
+            interessa_admin_save_product_record($productSlug, array_replace($product, [
+                'slug' => $productSlug,
+                'affiliate_code' => $code,
+                'fallback_url' => $fallbackUrl,
+            ]));
+        }
     }
 }
 

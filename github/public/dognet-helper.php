@@ -12,6 +12,36 @@ $page_robots = 'noindex,nofollow';
 $page_styles = [asset('css/dognet-helper.css')];
 $page_scripts = [asset('js/dognet-helper.js')];
 
+$currentProductSlug = trim((string) ($_REQUEST['product'] ?? ''));
+$currentArticleSlug = canonical_article_slug(trim((string) ($_REQUEST['article'] ?? '')));
+$currentSlot = max(0, min(3, (int) ($_REQUEST['slot'] ?? 0)));
+$returnSection = trim((string) ($_REQUEST['return_section'] ?? ''));
+$returnSlug = canonical_article_slug(trim((string) ($_REQUEST['return_slug'] ?? '')));
+
+$dognetQuery = static function (array $extra = []) use ($currentProductSlug, $currentArticleSlug, $currentSlot, $returnSection, $returnSlug): string {
+    $query = [];
+    if ($currentProductSlug !== '') {
+        $query['product'] = $currentProductSlug;
+    }
+    if ($currentArticleSlug !== '') {
+        $query['article'] = $currentArticleSlug;
+    }
+    if ($currentSlot > 0) {
+        $query['slot'] = (string) $currentSlot;
+    }
+    if ($returnSection !== '') {
+        $query['return_section'] = $returnSection;
+    }
+    if ($returnSlug !== '') {
+        $query['return_slug'] = $returnSlug;
+    }
+    foreach ($extra as $key => $value) {
+        $query[$key] = (string) $value;
+    }
+    $query = array_filter($query, static fn($value): bool => (string) $value !== '');
+    return $query === [] ? '' : ('?' . http_build_query($query));
+};
+
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = trim((string) ($_POST['action'] ?? ''));
@@ -19,13 +49,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $code = trim((string) ($_POST['code'] ?? ''));
             $deeplinkUrl = trim((string) ($_POST['deeplink_url'] ?? ''));
-            dognet_helper_save_deeplink($code, $deeplinkUrl);
+            dognet_helper_save_deeplink($code, $deeplinkUrl, $currentProductSlug);
+
+            if ($currentProductSlug !== '' && $currentArticleSlug !== '' && $currentSlot > 0) {
+                $target = '/admin?section=articles&slug=' . rawurlencode($currentArticleSlug) . '&saved=affiliate#slot-' . rawurlencode((string) $currentSlot);
+                header('Location: ' . $target, true, 303);
+                exit;
+            }
 
             $table = dognet_helper_load_rows();
             $nextCode = dognet_helper_next_pending_code($table['rows'], $code);
-            $target = '/dognet-helper?saved=' . rawurlencode($code);
+            $target = '/dognet-helper' . $dognetQuery(['saved' => $code, 'code' => '']);
             if ($nextCode !== null && $nextCode !== '') {
-                $target .= '&code=' . rawurlencode($nextCode);
+                $target = '/dognet-helper' . $dognetQuery(['saved' => $code, 'code' => $nextCode]);
             }
 
             header('Location: ' . $target, true, 303);
@@ -95,9 +131,14 @@ require __DIR__ . '/inc/head.php';
         Pouzi full version deeplinku. Helper po ulozeni prepne interny <code>/go/</code> odkaz rovno na Dognet.
       </div>
 
-      <form class="dognet-helper-form" method="post" action="/dognet-helper<?= $currentCode !== '' ? '?code=' . rawurlencode($currentCode) : '' ?>">
+      <form class="dognet-helper-form" method="post" action="/dognet-helper<?= esc($dognetQuery($currentCode !== '' ? ['code' => $currentCode] : [])) ?>">
         <input type="hidden" name="action" value="save_deeplink" />
         <input type="hidden" name="code" value="<?= esc((string) ($current['code'] ?? '')) ?>" />
+        <?php if ($currentProductSlug !== ''): ?><input type="hidden" name="product" value="<?= esc($currentProductSlug) ?>" /><?php endif; ?>
+        <?php if ($currentArticleSlug !== ''): ?><input type="hidden" name="article" value="<?= esc($currentArticleSlug) ?>" /><?php endif; ?>
+        <?php if ($currentSlot > 0): ?><input type="hidden" name="slot" value="<?= esc((string) $currentSlot) ?>" /><?php endif; ?>
+        <?php if ($returnSection !== ''): ?><input type="hidden" name="return_section" value="<?= esc($returnSection) ?>" /><?php endif; ?>
+        <?php if ($returnSlug !== ''): ?><input type="hidden" name="return_slug" value="<?= esc($returnSlug) ?>" /><?php endif; ?>
         <label for="deeplink_url">Dognet deeplink</label>
         <textarea id="deeplink_url" name="deeplink_url" rows="4" placeholder="Sem vloz full Dognet deeplink"><?= esc((string) ($current['deeplink_url'] ?? '')) ?></textarea>
         <button class="btn btn-cta" type="submit">Ulozit deeplink a pokracovat</button>

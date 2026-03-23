@@ -3024,7 +3024,11 @@ foreach ($articleSelectedProductSlugs as $articleSelectedSlug) {
       if ($articleSelectedExists && $articleSelectedPackshotReady && !$articleSelectedAffiliateReady) {
           $articleSelectedCode = trim((string) ($articleSelectedRow['affiliate_code'] ?? ''));
           if ($articleSelectedCode !== '') {
-              $articleSelectedActionHref = '/dognet-helper?code=' . rawurlencode($articleSelectedCode);
+              $articleSelectedActionHref = '/dognet-helper?code=' . rawurlencode($articleSelectedCode)
+                  . '&product=' . rawurlencode($articleSelectedSlug)
+                  . '&article=' . rawurlencode($selectedArticleSlug)
+                  . '&slot=' . rawurlencode((string) $articleSelectedActionSlot)
+                  . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug);
           } else {
               $articleSelectedActionHref = '/admin?section=affiliates&prefill_code=' . rawurlencode($articleSelectedSlug) . '&prefill_merchant=' . rawurlencode((string) ($articleSelectedRow['merchant'] ?? '')) . '&prefill_merchant_slug=' . rawurlencode(interessa_admin_slugify((string) ($articleSelectedRow['merchant'] ?? ''))) . '&prefill_product_slug=' . rawurlencode($articleSelectedSlug) . '&return_section=articles&return_slug=' . rawurlencode($selectedArticleSlug);
           }
@@ -4936,11 +4940,31 @@ require dirname(__DIR__) . '/inc/head.php';
               </section>
             <?php endif; ?>
 
+            <?php
+              $productCurrentStepTitle = 'Produkt je pripraveny';
+              $productCurrentStepText = 'Produkt je pripraveny pre clanok';
+              $productCurrentStepClass = 'is-done';
+              if (!$selectedProductClickReady) {
+                  $productCurrentStepTitle = 'Dopln link produktu';
+                  $productCurrentStepText = 'Vloz priamy odkaz na konkretny produkt';
+                  $productCurrentStepClass = 'is-link';
+              } elseif (!$selectedProductPackshotReady) {
+                  $productCurrentStepTitle = 'Dopln obrazok produktu';
+                  $productCurrentStepText = 'Dopln obrazok produktu';
+                  $productCurrentStepClass = 'is-image';
+              }
+            ?>
+            <section class="admin-current-step <?= esc($productCurrentStepClass) ?>">
+              <span class="admin-current-step__eyebrow">KROK</span>
+              <strong><?= esc($productCurrentStepTitle) ?></strong>
+              <p><?= esc($productCurrentStepText) ?></p>
+            </section>
+
             <section class="admin-subsection is-compact" id="product-main-flow">
               <div class="admin-subsection-head">
                 <div>
                   <h3>Stav tohto produktu</h3>
-                  <p class="admin-meta"><?= $articleSlotMode ? 'Toto je produkt, ktory sa po ulozeni priradi do vybraneho slotu.' : 'Tu vidis len vybrany produkt. Ked kliknes na produkt z clanku vyssie, otvoris prave tuto cast.' ?></p>
+                  <p class="admin-meta"><?= $articleSlotMode ? 'Toto je produkt pre vybrany slot.' : 'Tu vidis stav vybraneho produktu.' ?></p>
                 </div>
               </div>
               <div class="admin-status-grid">
@@ -4961,7 +4985,6 @@ require dirname(__DIR__) . '/inc/head.php';
                   <span>Klik do obchodu je hotovy</span>
                 </article>
               </div>
-              <p class="admin-note"><strong>Co spravit dalej:</strong> <?= esc($selectedProductNextStepNote) ?></p>
             </section>
 
             <?php if (!$articleSlotMode): ?>
@@ -4982,7 +5005,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <p class="admin-note">Dolezite: bezny start je uz tu v Produktoch. Cast Odkazy do obchodov otvor len vtedy, ked chces neskor vymenit obycajny klik za Dognet link.</p>
               <div class="admin-inline-actions">
                 <?php if ($selectedAffiliateCode !== ''): ?>
-                  <a class="btn btn-secondary btn-small" href="/dognet-helper?code=<?= esc($selectedAffiliateCode) ?>">Otvorit Dognet pomocnika</a>
+                  <a class="btn btn-secondary btn-small" href="/dognet-helper?code=<?= esc($selectedAffiliateCode) ?><?= $articleSlotMode ? '&amp;product=' . esc($selectedProductSlug) . '&amp;article=' . esc($returnArticlePrefill) . '&amp;slot=' . esc((string) $returnArticleSlotPrefill) . '&amp;return_section=articles&amp;return_slug=' . esc($returnArticlePrefill) : '' ?>">Otvorit Dognet pomocnika</a>
                 <?php else: ?>
                   <a class="btn btn-secondary btn-small" href="#product-link-form">Najprv vlozit link produktu</a>
                 <?php endif; ?>
@@ -5063,7 +5086,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <?php elseif ($selectedProductNextStep === 'affiliate'): ?>
                     <a class="btn btn-secondary btn-small" href="/admin?section=affiliates&amp;prefill_code=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>&amp;prefill_merchant=<?= esc((string) ($selectedProduct['merchant'] ?? '')) ?>&amp;prefill_merchant_slug=<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>&amp;prefill_product_slug=<?= esc((string) ($selectedProduct['slug'] ?? '')) ?>">4. Dokoncit odkaz do obchodu</a>
                   <?php elseif ($selectedProductNextStep === 'dognet'): ?>
-                    <a class="btn btn-secondary btn-small" href="/dognet-helper?code=<?= esc($selectedProductAffiliateCode) ?>">Otvorit Dognet pomocnika</a>
+                    <a class="btn btn-secondary btn-small" href="/dognet-helper?code=<?= esc($selectedProductAffiliateCode) ?><?= $articleSlotMode ? '&amp;product=' . esc($selectedProductSlug) . '&amp;article=' . esc($returnArticlePrefill) . '&amp;slot=' . esc((string) $returnArticleSlotPrefill) . '&amp;return_section=articles&amp;return_slug=' . esc($returnArticlePrefill) : '' ?>">Otvorit Dognet pomocnika</a>
                   <?php else: ?>
                     <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProductTarget['href'] ?? '#')) ?>" target="_blank" rel="noopener">Otvorit aktualny produkt na webe</a>
                   <?php endif; ?>
