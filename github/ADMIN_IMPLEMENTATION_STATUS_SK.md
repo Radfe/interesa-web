@@ -84,6 +84,13 @@ Najnovsia stabilizacia Dognet importu a deeplink vrstvy:
   tak sa deeplink a affiliate data doplnia automaticky
 - ak sa nic spolahlive neda najst, system nic neblokuje a ponecha direct fallback URL
 - Dognet helper teraz pri ulozeni deeplinku synchronizuje zapis nielen do `links_overrides.php`, ale aj do admin affiliate storage, aby ho novy resolver vedel hned pouzit
+- pri URL-based pridani produktu sa teraz po zisteni:
+  - merchanta
+  - fallback URL
+  - product slugu
+  automaticky skusa affiliate lookup cez resolver
+- ak uz system pozna vhodny deeplink pre ten isty produkt alebo merchant/URL match, pouzije ho hned bez dalsieho rucneho kroku
+- ak sa nic nenajde, produkt sa neblokuje a ostane direct fallback URL
 
 Menene subory:
 - [public/inc/affiliates.php](C:/data/praca/webova_stranka/github/public/inc/affiliates.php)

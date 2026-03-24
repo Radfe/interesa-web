@@ -2472,6 +2472,16 @@ if (!function_exists('interessa_admin_extract_product_page_data')) {
 
 if (!function_exists('interessa_admin_guess_merchant_from_url')) {
     function interessa_admin_guess_merchant_from_url(string $url): array {
+        if (function_exists('aff_resolve_merchant_meta')) {
+            $resolved = aff_resolve_merchant_meta('', '', $url);
+            if (is_array($resolved)) {
+                return [
+                    'merchant' => trim((string) ($resolved['name'] ?? '')),
+                    'merchant_slug' => trim((string) ($resolved['merchant_slug'] ?? '')),
+                ];
+            }
+        }
+
         $host = strtolower(trim((string) parse_url($url, PHP_URL_HOST)));
         $host = preg_replace('~^www\.~', '', $host) ?? $host;
 
@@ -2554,18 +2564,41 @@ if (!function_exists('interessa_admin_prepare_product_from_input_link')) {
         if ($affiliateCode === '') {
             $merchantPart = interessa_admin_slugify((string) ($payload['merchant_slug'] ?? ''));
             $affiliateCode = $merchantPart !== '' ? ($slug . '-' . $merchantPart) : ($slug . '-link');
-            $payload['affiliate_code'] = $affiliateCode;
         }
+        $payload['affiliate_code'] = $affiliateCode;
 
         $payload['fallback_url'] = $finalUrl;
 
+        $affiliateTarget = function_exists('aff_resolve_click_target')
+            ? aff_resolve_click_target([
+                'affiliate_code' => $affiliateCode,
+                'product_slug' => $slug,
+                'merchant' => (string) ($payload['merchant'] ?? ''),
+                'merchant_slug' => (string) ($payload['merchant_slug'] ?? ''),
+                'fallback_url' => $finalUrl,
+                'product_url' => $finalUrl,
+                'prefer_registry' => true,
+            ])
+            : [];
+
+        $resolvedAffiliateUrl = trim((string) ($affiliateTarget['affiliate_url'] ?? ''));
+        $resolvedAffiliateCode = trim((string) ($affiliateTarget['code'] ?? ''));
+        if ($resolvedAffiliateCode !== '') {
+            $affiliateCode = $resolvedAffiliateCode;
+            $payload['affiliate_code'] = $resolvedAffiliateCode;
+        }
+
+        $affiliateRecordUrl = $resolvedAffiliateUrl !== '' ? $resolvedAffiliateUrl : $inputUrl;
+        $affiliateRecordType = $resolvedAffiliateUrl !== '' ? 'affiliate' : $linkType;
+        $affiliateRecordSource = $resolvedAffiliateUrl !== '' ? 'admin-quick-link-auto' : 'admin-quick-link';
+
         interessa_admin_save_affiliate_record($affiliateCode, [
-            'url' => $inputUrl,
+            'url' => $affiliateRecordUrl,
             'merchant' => (string) ($payload['merchant'] ?? ''),
             'merchant_slug' => (string) ($payload['merchant_slug'] ?? ''),
             'product_slug' => $slug,
-            'link_type' => $linkType,
-            'source' => 'admin-quick-link',
+            'link_type' => $affiliateRecordType,
+            'source' => $affiliateRecordSource,
         ]);
 
         interessa_admin_save_product_record($slug, $payload);

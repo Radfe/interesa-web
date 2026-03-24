@@ -347,6 +347,7 @@ if (!function_exists('dognet_helper_save_deeplink')) {
         if ($productSlug !== '') {
             $product = interessa_admin_product_record($productSlug) ?? [];
             $clickTarget = aff_resolve_click_target([
+                'prefer_registry' => true,
                 'affiliate_code' => $code,
                 'product_slug' => $productSlug,
                 'merchant' => (string) ($product['merchant'] ?? ''),

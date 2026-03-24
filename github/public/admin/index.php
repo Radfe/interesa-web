@@ -4112,6 +4112,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Produkty v tomto clanku</h3>
+                    <p class="admin-meta">Odporucany postup: najprv vyber z navrhnutych produktov a az potom dolad konkretne sloty.</p>
                   </div>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;suggest_products=1#article-product-suggestions">Navrhnut produkty</a>
@@ -4126,7 +4127,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <div class="admin-subsection-head">
                       <div>
                         <h4>Navrhnute produkty pre tento clanok</h4>
-                        <p class="admin-meta">Jednym klikom vies zobrazit tematicky vhodne produkty a priradit ich do slotu.</p>
+                        <p class="admin-meta">Toto je hlavny workflow. System najprv navrhne tematicky vhodne produkty a editor si z nich vybera alebo ich predvyplni do slotov.</p>
                       </div>
                       <div class="admin-inline-actions">
                         <form method="post" class="admin-inline-form">
@@ -5316,8 +5317,8 @@ require dirname(__DIR__) . '/inc/head.php';
             <section id="product-link-form" class="admin-subsection is-compact<?= $focusPanel === 'product_link' ? ' is-focused' : '' ?>">
               <div class="admin-subsection-head">
                 <div>
-                  <h3><?= $articleSlotMode ? 'URL produktu' : '1. Vloz link produktu' ?></h3>
-                  <p class="admin-meta"><?= $articleSlotMode ? 'Zadaj priamy odkaz na konkretny produkt. Homepage alebo kategoria neprejdu. Tento krok pripravi produkt pre vybrany slot.' : 'Sem vloz priamu stranku produktu. Admin sa pokusi sam doplnit zvysok.' ?></p>
+                  <h3><?= $articleSlotMode ? 'Rucne pridanie produktu' : '1. Rucne pridanie produktu' ?></h3>
+                  <p class="admin-meta"><?= $articleSlotMode ? 'Rucne doplnenie konkretneho produktu pre tento slot. Pouzi len ked navrhy nestacia alebo opravujes konkretny slot.' : 'Rucny import produktu. Pouzi ho len ked navrhy nestacia alebo potrebujes doplnit konkretny produkt.' ?></p>
                 </div>
               </div>
               <form method="post" class="admin-form admin-form-stack">
@@ -5331,7 +5332,7 @@ require dirname(__DIR__) . '/inc/head.php';
                   <span>URL produktu</span>
                   <input type="url" name="source_link" value="<?= esc($selectedProductQuickInputUrl) ?>" placeholder="https://go.dognet.com/... alebo https://obchod.sk/konkretny-produkt" />
                 </label>
-                <p class="admin-note">Sem patri priamy odkaz na konkretny produkt. Homepage, kategoria alebo ina neproduktova URL sa odmietnu.</p>
+                <p class="admin-note">Sem patri priamy odkaz na konkretny produkt. Homepage, kategoria alebo ina neproduktova URL sa odmietnu. Toto je rucny fallback/import, nie hlavny sposob prace.</p>
                 <div class="admin-actions">
                   <button class="btn btn-cta" type="submit"><?= $articleSlotMode ? 'Pridat produkt' : '1. Vlozit link a pripravit produkt aj klik' ?></button>
                 </div>
@@ -5794,13 +5795,13 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3><?= $articleSlotMode ? 'Ulozit produkt pre tento slot' : 'Tu doplnis produkt' ?></h3>
-                    <p class="admin-meta"><?= $articleSlotMode ? 'Tu ulozis produktove udaje. Po ulozeni sa vratis priamo naspat na clanok a slot sa hned aktualizuje.' : 'Sem ta posielaju tlacidla vyssie. Najprv sem vlozis URL konkretneho produktu. Admin sa potom pokusi sam doplnit zvysok.' ?></p>
+                    <p class="admin-meta"><?= $articleSlotMode ? 'Tu ulozis produktove udaje. Po ulozeni sa vratis priamo naspat na clanok a slot sa hned aktualizuje.' : 'Toto je rucna uprava jedneho produktu. Hlavny workflow je vyber z navrhnutych produktov pri clanku.' ?></p>
                     <?php if ($returnArticlePrefill !== '' && $returnArticleSlotPrefill > 0): ?>
                       <p class="admin-note"><strong>Po ulozeni sa tento produkt priradi do clanku <?= esc($returnArticlePrefill) ?> / Slot <?= esc((string) $returnArticleSlotPrefill) ?>.</strong></p>
                     <?php endif; ?>
                   </div>
                 </div>
-                <div class="admin-flash is-success" style="margin-bottom:16px;"><?= $articleSlotMode ? 'Odporucany postup: zadaj URL konkretneho produktu, nechaj admin doplnit data a potom skontroluj slot v clanku.' : 'Bezny postup: 1. vloz URL konkretneho produktu -> 2. klikni Ulozit produkt -> 3. klikni Nacitat udaje z obchodu -> 4. klikni Ulozit obrazok z e-shopu.' ?></div>
+                <div class="admin-flash is-success" style="margin-bottom:16px;"><?= $articleSlotMode ? 'Rucne doplnenie produktu pre slot: pouzi len ked navrhy nestacia alebo opravujes konkretny produkt.' : 'Rucny produktovy workflow: pouzi len ked automaticke navrhy pri clanku nestacia.' ?></div>
                 <input type="hidden" name="product_slug" value="<?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?>" />
                 <input type="hidden" name="merchant_slug" value="<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>" />
                 <p class="admin-note"><strong>Kod produktu:</strong> <?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?><?php if (trim((string) ($selectedProduct['merchant_slug'] ?? '')) !== ''): ?> / <strong>Kod obchodu:</strong> <?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?><?php endif; ?></p>

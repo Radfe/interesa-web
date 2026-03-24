@@ -24,12 +24,12 @@
     "aktin-creatine-monohydrate": {
         "slug": "aktin-creatine-monohydrate",
         "name": "Creatine Monohydrate / osvedčený základ",
-        "brand": "",
+        "brand": "Vilgain",
         "merchant": "Aktin",
         "merchant_slug": "aktin",
         "category": "kreatin",
         "affiliate_code": "kreatin-porovnanie-aktin",
-        "fallback_url": "http://127.0.0.1:5001/admin?product=aktin-creatine-monohydrate&article=pre-workout-ako-vybrat&slot=2&return_section=articles&return_slug=pre-workout-ako-vybrat&focus=product_link#product-link-form",
+        "fallback_url": "https://aktin.sk/vilgain-kreatin/bez-prichute-500-g-41573",
         "summary": "Najistejšia forma kreatínu z pohľadu dát aj dlhodobého používania.",
         "rating": 0,
         "pros": [

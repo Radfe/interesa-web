@@ -73,6 +73,43 @@ function aff_extract_host_from_url(string $url): string {
     return aff_normalize_host($host);
 }
 
+function aff_normalize_compare_url(string $url): string {
+    $url = trim($url);
+    if ($url === '' || !preg_match('~^https?://~i', $url)) {
+        return '';
+    }
+
+    $parts = parse_url($url);
+    if (!is_array($parts)) {
+        return rtrim($url, '/');
+    }
+
+    $scheme = strtolower((string) ($parts['scheme'] ?? 'https'));
+    $host = aff_normalize_host((string) ($parts['host'] ?? ''));
+    $path = trim((string) ($parts['path'] ?? ''));
+    $path = $path === '' ? '/' : '/' . ltrim($path, '/');
+    $path = rtrim($path, '/');
+    if ($path === '') {
+        $path = '/';
+    }
+
+    $query = '';
+    if (!empty($parts['query'])) {
+        $queryParams = [];
+        parse_str((string) $parts['query'], $queryParams);
+        ksort($queryParams);
+        $query = http_build_query($queryParams);
+    }
+
+    return $scheme . '://' . $host . $path . ($query !== '' ? '?' . $query : '');
+}
+
+function aff_urls_match(string $left, string $right): bool {
+    $left = aff_normalize_compare_url($left);
+    $right = aff_normalize_compare_url($right);
+    return $left !== '' && $right !== '' && $left === $right;
+}
+
 function aff_merchant_lookup_map(): array {
     static $cache = null;
     if (is_array($cache)) {
@@ -437,6 +474,18 @@ if (!function_exists('aff_is_valid_http_url')) {
     }
 }
 
+if (!function_exists('aff_has_full_url_path')) {
+    function aff_has_full_url_path(string $url): bool {
+        $url = trim($url);
+        if (!aff_is_valid_http_url($url)) {
+            return false;
+        }
+
+        $path = trim((string) parse_url($url, PHP_URL_PATH));
+        return $path !== '' && $path !== '/';
+    }
+}
+
 if (!function_exists('aff_context_product_slug')) {
     function aff_context_product_slug(array $context): string {
         $productSlug = trim((string) ($context['product_slug'] ?? $context['slug'] ?? ''));
@@ -468,19 +517,9 @@ function aff_context_merchant_slug(array $context): string {
 
 if (!function_exists('aff_context_direct_url')) {
     function aff_context_direct_url(array $context): string {
-        $candidates = [
-            $context['fallback_url'] ?? '',
-            $context['product_url'] ?? '',
-            $context['url'] ?? '',
-        ];
-
-        foreach ($candidates as $candidate) {
-            $candidate = trim((string) $candidate);
-            if (!aff_is_valid_http_url($candidate)) {
-                continue;
-            }
-
-            return $candidate;
+        $fallbackUrl = trim((string) ($context['fallback_url'] ?? ''));
+        if (aff_has_full_url_path($fallbackUrl)) {
+            return $fallbackUrl;
         }
 
         return '';
@@ -518,12 +557,10 @@ if (!function_exists('aff_find_best_record_for_context')) {
         }
 
         $productSlug = aff_context_product_slug($context);
-        if ($productSlug === '') {
-            return null;
-        }
-
+        $directUrl = aff_context_direct_url($context);
         $merchantSlug = aff_context_merchant_slug($context);
         $merchant = trim((string) ($context['merchant'] ?? ''));
+        $directHost = aff_extract_host_from_url($directUrl);
         $bestRecord = null;
         $bestScore = -1;
         $normalizeText = static function (string $value): string {
@@ -543,19 +580,33 @@ if (!function_exists('aff_find_best_record_for_context')) {
             }
 
             $recordProductSlug = trim((string) ($record['product_slug'] ?? ''));
-            if ($recordProductSlug === '' || $recordProductSlug !== $productSlug) {
+            $recordMerchantSlug = trim((string) ($record['merchant_slug'] ?? ''));
+            $recordMerchant = trim((string) ($record['merchant'] ?? ''));
+            $recordUrl = trim((string) ($record['url'] ?? ''));
+            if (!aff_is_valid_http_url($recordUrl)) {
                 continue;
             }
 
-            $recordMerchantSlug = trim((string) ($record['merchant_slug'] ?? ''));
-            $recordMerchant = trim((string) ($record['merchant'] ?? ''));
-            $score = 10;
+            $recordDirectUrl = aff_extract_final_url($recordUrl);
+            $recordMatchUrl = $recordDirectUrl !== '' ? $recordDirectUrl : $recordUrl;
+            $recordHost = aff_extract_host_from_url($recordMatchUrl);
+            $score = -1;
+
+            if ($directUrl !== '' && aff_urls_match($recordMatchUrl, $directUrl)) {
+                $score = 30;
+            } elseif ($productSlug !== '' && $recordProductSlug !== '' && $recordProductSlug === $productSlug) {
+                $score = 20;
+            } else {
+                continue;
+            }
 
             if ($merchantSlug !== '') {
                 if ($recordMerchantSlug !== '' && $recordMerchantSlug === $merchantSlug) {
                     $score += 5;
                 } elseif ($recordMerchantSlug !== '') {
                     continue;
+                } elseif ($recordHost !== '' && $directHost !== '' && $recordHost === $directHost) {
+                    $score += 3;
                 }
             }
 
@@ -565,10 +616,6 @@ if (!function_exists('aff_find_best_record_for_context')) {
                 } elseif ($merchantSlug === '' && $recordMerchant !== '') {
                     continue;
                 }
-            }
-
-            if (!aff_is_valid_http_url($record['url'] ?? '')) {
-                continue;
             }
 
             if ($score <= $bestScore) {
@@ -606,42 +653,78 @@ if (!function_exists('aff_build_click_target')) {
     }
 }
 
+if (!function_exists('aff_debug_click_target')) {
+    function aff_debug_click_target(array $context, array $target): void {
+        $status = trim((string) ($target['status'] ?? ''));
+        $source = trim((string) ($target['source'] ?? ''));
+        $fallbackUrl = trim((string) ($context['fallback_url'] ?? ''));
+        $hasExplicitClick = trim((string) ($context['click_url'] ?? '')) !== '';
+        $hasExplicitAffiliate = trim((string) ($context['affiliate_url'] ?? '')) !== '';
+
+        $shouldLog = $status === 'direct_fallback'
+            || $status === 'missing'
+            || ($fallbackUrl !== '' && trim((string) ($target['href'] ?? '')) !== '' && trim((string) ($target['href'] ?? '')) !== $fallbackUrl && !$hasExplicitClick && !$hasExplicitAffiliate);
+        if (!$shouldLog) {
+            return;
+        }
+
+        $payload = [
+            'product_slug' => trim((string) ($context['product_slug'] ?? $context['slug'] ?? '')),
+            'affiliate_code' => trim((string) ($context['affiliate_code'] ?? $context['code'] ?? '')),
+            'click_url' => trim((string) ($context['click_url'] ?? '')),
+            'affiliate_url' => trim((string) ($context['affiliate_url'] ?? '')),
+            'fallback_url' => $fallbackUrl,
+            'fallback_has_full_path' => aff_has_full_url_path($fallbackUrl),
+            'status' => $status,
+            'source' => $source,
+            'href' => trim((string) ($target['href'] ?? '')),
+            'direct_url' => trim((string) ($target['direct_url'] ?? '')),
+            'affiliate_target' => trim((string) ($target['affiliate_url'] ?? '')),
+        ];
+
+        error_log('[affiliate-resolve] ' . json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+    }
+}
+
 if (!function_exists('aff_resolve_click_target')) {
     function aff_resolve_click_target(array $context): array {
         $contextCode = trim((string) ($context['code'] ?? $context['affiliate_code'] ?? ''));
         $directUrl = aff_context_direct_url($context);
-        $explicit = aff_context_explicit_click_url($context);
-        $explicitUrl = trim((string) ($explicit['url'] ?? ''));
-
-        if ($explicitUrl !== '') {
-            $explicitField = trim((string) ($explicit['field'] ?? ''));
-            $explicitDirectUrl = aff_extract_final_url($explicitUrl);
-            $explicitLooksAffiliate = $explicitField === 'affiliate_url'
-                || aff_detect_link_type_from_url($explicitUrl, 'product') === 'affiliate';
-
-            $href = $explicitUrl;
-            if ($contextCode !== '') {
-                $record = aff_record($contextCode);
-                $resolved = $record !== null ? aff_resolve($contextCode) : null;
-                if ($resolved !== null && trim($resolved) === $explicitUrl) {
-                    $href = '/go/' . rawurlencode($contextCode);
-                }
-            }
-
-            return aff_build_click_target([
-                'href' => $href,
-                'resolved_url' => $explicitUrl,
-                'direct_url' => $directUrl !== '' ? $directUrl : $explicitDirectUrl,
-                'affiliate_url' => $explicitLooksAffiliate ? $explicitUrl : '',
-                'code' => $href !== $explicitUrl ? $contextCode : '',
-                'status' => $explicitLooksAffiliate ? 'affiliate_ready' : 'direct_fallback',
-                'is_affiliate' => $explicitLooksAffiliate,
-                'source' => 'explicit-' . ($explicitField !== '' ? $explicitField : 'click-url'),
+        $clickUrl = trim((string) ($context['click_url'] ?? ''));
+        if (aff_is_valid_http_url($clickUrl)) {
+            $target = aff_build_click_target([
+                'href' => $clickUrl,
+                'resolved_url' => $clickUrl,
+                'direct_url' => $directUrl,
+                'affiliate_url' => $clickUrl,
+                'code' => $contextCode,
+                'status' => 'affiliate_ready',
+                'is_affiliate' => true,
+                'source' => 'explicit-click_url',
             ]);
+            aff_debug_click_target($context, $target);
+            return $target;
         }
 
-        $record = aff_find_best_record_for_context($context);
-        if ($record !== null) {
+        $affiliateUrl = trim((string) ($context['affiliate_url'] ?? ''));
+        if (aff_is_valid_http_url($affiliateUrl)) {
+            $target = aff_build_click_target([
+                'href' => $affiliateUrl,
+                'resolved_url' => $affiliateUrl,
+                'direct_url' => $directUrl !== '' ? $directUrl : aff_extract_final_url($affiliateUrl),
+                'affiliate_url' => $affiliateUrl,
+                'code' => $contextCode,
+                'status' => 'affiliate_ready',
+                'is_affiliate' => true,
+                'source' => 'explicit-affiliate_url',
+            ]);
+            aff_debug_click_target($context, $target);
+            return $target;
+        }
+
+        $preferRegistry = !empty($context['prefer_registry']);
+        $record = $preferRegistry ? aff_find_best_record_for_context($context) : null;
+        if ($preferRegistry && $record !== null) {
             $recordCode = trim((string) ($record['code'] ?? $contextCode));
             $resolvedUrl = $recordCode !== '' ? (aff_resolve($recordCode) ?? '') : trim((string) ($record['url'] ?? ''));
             $resolvedUrl = trim((string) $resolvedUrl);
@@ -649,7 +732,7 @@ if (!function_exists('aff_resolve_click_target')) {
             $affiliateReady = $resolvedUrl !== '' && aff_link_type($record) === 'affiliate';
 
             if ($affiliateReady) {
-                return aff_build_click_target([
+                $target = aff_build_click_target([
                     'href' => $recordCode !== '' ? '/go/' . rawurlencode($recordCode) : $resolvedUrl,
                     'resolved_url' => $resolvedUrl,
                     'direct_url' => $directUrl !== '' ? $directUrl : $recordDirectUrl,
@@ -659,10 +742,12 @@ if (!function_exists('aff_resolve_click_target')) {
                     'is_affiliate' => true,
                     'source' => $contextCode !== '' ? 'registry-code' : 'registry-product-merchant',
                 ]);
+                aff_debug_click_target($context, $target);
+                return $target;
             }
 
-            if ($recordDirectUrl !== '' && aff_is_valid_http_url($recordDirectUrl)) {
-                return aff_build_click_target([
+            if ($recordDirectUrl !== '' && aff_has_full_url_path($recordDirectUrl)) {
+                $target = aff_build_click_target([
                     'href' => $recordDirectUrl,
                     'resolved_url' => $recordDirectUrl,
                     'direct_url' => $directUrl !== '' ? $directUrl : $recordDirectUrl,
@@ -672,11 +757,13 @@ if (!function_exists('aff_resolve_click_target')) {
                     'is_affiliate' => false,
                     'source' => 'registry-direct',
                 ]);
+                aff_debug_click_target($context, $target);
+                return $target;
             }
         }
 
         if ($directUrl !== '') {
-            return aff_build_click_target([
+            $target = aff_build_click_target([
                 'href' => $directUrl,
                 'resolved_url' => $directUrl,
                 'direct_url' => $directUrl,
@@ -686,9 +773,11 @@ if (!function_exists('aff_resolve_click_target')) {
                 'is_affiliate' => false,
                 'source' => 'fallback-url',
             ]);
+            aff_debug_click_target($context, $target);
+            return $target;
         }
 
-        return aff_build_click_target([
+        $target = aff_build_click_target([
             'href' => '',
             'resolved_url' => '',
             'direct_url' => '',
@@ -700,6 +789,8 @@ if (!function_exists('aff_resolve_click_target')) {
             'rel' => '',
             'label' => 'Coskoro',
         ]);
+        aff_debug_click_target($context, $target);
+        return $target;
     }
 }
 

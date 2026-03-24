@@ -717,13 +717,10 @@ if (!function_exists('interessa_is_valid_product_image_url')) {
         $path = strtolower(trim((string) parse_url($url, PHP_URL_PATH)));
         $query = strtolower(trim((string) parse_url($url, PHP_URL_QUERY)));
         $haystack = $path . ($query !== '' ? '?' . $query : '');
+        $baseName = strtolower(basename($path));
 
         $blockedNeedles = [
             'placeholder',
-            'logo',
-            'icon',
-            'favicon',
-            'sprite',
             'spacer',
             'default-image',
             'default_image',
@@ -745,12 +742,34 @@ if (!function_exists('interessa_is_valid_product_image_url')) {
             }
         }
 
+        if ($baseName !== '' && preg_match('~(?:^|[-_\.])(logo|icon|favicon|sprite)(?:[-_\.]|$)~i', $baseName) === 1) {
+            return false;
+        }
+
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         if ($extension !== '' && !in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'], true)) {
             return false;
         }
 
         return true;
+    }
+}
+
+if (!function_exists('interessa_build_product_debug_log')) {
+    function interessa_build_product_debug_log(string $event, array $context = []): void {
+        $payload = [];
+        foreach ($context as $key => $value) {
+            if (is_scalar($value) || $value === null) {
+                $payload[$key] = $value;
+            }
+        }
+
+        $encoded = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        if ($encoded === false) {
+            $encoded = '{}';
+        }
+
+        error_log('[interessa_build_product] ' . $event . ' ' . $encoded);
     }
 }
 
@@ -953,6 +972,16 @@ if (!function_exists('interessa_clean_product_name')) {
 
 if (!function_exists('interessa_build_product_from_url_merchant')) {
     function interessa_build_product_from_url_merchant(string $url): array {
+        if (function_exists('aff_resolve_merchant_meta')) {
+            $resolved = aff_resolve_merchant_meta('', '', $url);
+            if (is_array($resolved)) {
+                return [
+                    'merchant' => trim((string) ($resolved['name'] ?? '')),
+                    'merchant_slug' => trim((string) ($resolved['merchant_slug'] ?? '')),
+                ];
+            }
+        }
+
         if (function_exists('interessa_admin_guess_merchant_from_url')) {
             $merchant = interessa_admin_guess_merchant_from_url($url);
             if (is_array($merchant)) {
@@ -972,6 +1001,28 @@ if (!function_exists('interessa_build_product_from_url_merchant')) {
             'merchant' => $label !== '' ? ucwords($label) : '',
             'merchant_slug' => $host !== '' ? interessa_guess_slug_from_text($label !== '' ? $label : $host) : '',
         ];
+    }
+}
+
+if (!function_exists('interessa_build_product_from_url_affiliate_target')) {
+    function interessa_build_product_from_url_affiliate_target(string $url, array $merchant, string $slug): array {
+        if (!function_exists('aff_resolve_click_target')) {
+            return [
+                'affiliate_url' => '',
+                'code' => '',
+                'status' => 'missing',
+                'source' => 'resolver-missing',
+            ];
+        }
+
+        return aff_resolve_click_target([
+            'product_slug' => trim($slug),
+            'merchant' => trim((string) ($merchant['merchant'] ?? '')),
+            'merchant_slug' => trim((string) ($merchant['merchant_slug'] ?? '')),
+            'fallback_url' => trim($url),
+            'product_url' => trim($url),
+            'prefer_registry' => true,
+        ]);
     }
 }
 
@@ -1028,18 +1079,20 @@ if (!function_exists('interessa_build_product_image_download')) {
     function interessa_build_product_image_download(string $url): array {
         $url = trim($url);
         if ($url === '' || !preg_match('~^https?://~i', $url)) {
-            return ['body' => '', 'content_type' => ''];
+            return ['success' => false, 'body' => '', 'content_type' => '', 'error' => 'invalid-url'];
         }
 
         if (function_exists('interessa_admin_fetch_remote_image_bytes')) {
             try {
                 $download = interessa_admin_fetch_remote_image_bytes($url);
                 return [
+                    'success' => trim((string) ($download['body'] ?? '')) !== '',
                     'body' => (string) ($download['body'] ?? ''),
                     'content_type' => trim((string) ($download['content_type'] ?? '')),
+                    'error' => '',
                 ];
-            } catch (Throwable) {
-                return ['body' => '', 'content_type' => ''];
+            } catch (Throwable $e) {
+                return ['success' => false, 'body' => '', 'content_type' => '', 'error' => trim($e->getMessage())];
             }
         }
 
@@ -1092,8 +1145,10 @@ if (!function_exists('interessa_build_product_image_download')) {
         }
 
         return [
+            'success' => is_string($body) && $body !== '',
             'body' => is_string($body) ? $body : '',
             'content_type' => $contentType,
+            'error' => is_string($body) && $body !== '' ? '' : 'download-empty',
         ];
     }
 }
@@ -1151,10 +1206,22 @@ if (!function_exists('interessa_build_product_image_local_copy')) {
         $merchantSlug = trim($merchantSlug);
         $remoteUrl = trim($remoteUrl);
         if ($slug === '' || !interessa_is_valid_product_image_url($remoteUrl)) {
+            interessa_build_product_debug_log('image-local-copy-skip', [
+                'remote_src' => $remoteUrl,
+                'download_success' => false,
+                'local_path' => '',
+                'reason' => 'invalid-input',
+            ]);
             return [];
         }
 
         $download = interessa_build_product_image_download($remoteUrl);
+        interessa_build_product_debug_log('image-download', [
+            'remote_src' => $remoteUrl,
+            'download_success' => !empty($download['success']),
+            'local_path' => '',
+            'error' => (string) ($download['error'] ?? ''),
+        ]);
         $body = (string) ($download['body'] ?? '');
         if ($body === '') {
             return [];
@@ -1176,12 +1243,30 @@ if (!function_exists('interessa_build_product_image_local_copy')) {
 
         $dir = dirname($targetPath);
         if (!is_dir($dir) && !@mkdir($dir, 0777, true) && !is_dir($dir)) {
+            interessa_build_product_debug_log('image-local-copy-failed', [
+                'remote_src' => $remoteUrl,
+                'download_success' => !empty($download['success']),
+                'local_path' => $targetPath,
+                'reason' => 'mkdir-failed',
+            ]);
             return [];
         }
 
         if (@file_put_contents($targetPath, $body) === false) {
+            interessa_build_product_debug_log('image-local-copy-failed', [
+                'remote_src' => $remoteUrl,
+                'download_success' => !empty($download['success']),
+                'local_path' => $targetPath,
+                'reason' => 'write-failed',
+            ]);
             return [];
         }
+
+        interessa_build_product_debug_log('image-local-copy-saved', [
+            'remote_src' => $remoteUrl,
+            'download_success' => !empty($download['success']),
+            'local_path' => $targetPath,
+        ]);
 
         return [
             'asset' => $targetAsset,
@@ -1250,18 +1335,33 @@ if (!function_exists('interessa_build_product_from_url')) {
             $imagePublicUrl = $localUrl;
         }
 
+        if ($imagePublicUrl === '' && $imageRemoteSrc !== '') {
+            $imagePublicUrl = $imageRemoteSrc;
+            $imageSource = 'remote';
+        }
+
         $image['remote_src'] = $imageRemoteSrc;
         $image['local_path'] = $localPath;
         $image['local_url'] = $localUrl;
         $image['source'] = $imageSource;
+        $image['source_type'] = $imageSource;
+        $image['download_success'] = !empty($imageLocal) || $imageRemoteSrc !== '';
         if ($imageSource === 'local') {
             $image['src'] = $localUrl;
         } elseif ($imageRemoteSrc !== '') {
             $image['src'] = $imageRemoteSrc;
         }
 
-        $affiliateUrl = '';
-        if (function_exists('aff_extract_final_url')) {
+        interessa_build_product_debug_log('image-result', [
+            'remote_src' => $imageRemoteSrc,
+            'download_success' => !empty($imageLocal),
+            'local_path' => $localPath,
+        ]);
+
+        $affiliateTarget = interessa_build_product_from_url_affiliate_target($url, $merchant, $slug);
+        $affiliateUrl = trim((string) ($affiliateTarget['affiliate_url'] ?? ''));
+        $affiliateCode = trim((string) ($affiliateTarget['code'] ?? ''));
+        if ($affiliateUrl === '' && function_exists('aff_extract_final_url')) {
             $finalUrl = trim((string) aff_extract_final_url($url));
             if ($finalUrl !== '' && $finalUrl !== $url) {
                 $affiliateUrl = $url;
@@ -1276,8 +1376,11 @@ if (!function_exists('interessa_build_product_from_url')) {
             'merchant_slug' => $merchant['merchant_slug'],
             'fallback_url' => $url,
             'affiliate_url' => $affiliateUrl,
+            'affiliate_code' => $affiliateCode,
+            'affiliate_status' => trim((string) ($affiliateTarget['status'] ?? ($affiliateUrl !== '' ? 'affiliate_ready' : 'missing'))),
             'image' => $image,
             'image_url' => $imagePublicUrl,
+            'image_mode' => $imageSource,
             'html_fetched' => $html !== '',
             'is_valid_product_url' => true,
         ];
