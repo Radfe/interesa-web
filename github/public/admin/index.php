@@ -74,6 +74,35 @@ function interessa_admin_product_article_slot_query(string $productSlug, string 
     return $query;
 }
 
+function interessa_build_product_from_url(string $slug, string $url): array {
+    $url = trim($url);
+    if ($url === '' || !preg_match('~^https?://~i', $url)) {
+        throw new RuntimeException('Zadaj priamy odkaz na konkretny produkt');
+    }
+
+    $linkType = function_exists('aff_detect_link_type_from_url') ? aff_detect_link_type_from_url($url, 'affiliate') : 'affiliate';
+    $finalUrl = $linkType === 'affiliate' && function_exists('aff_extract_final_url')
+        ? trim((string) aff_extract_final_url($url))
+        : $url;
+    if ($finalUrl === '' || !interessa_admin_looks_like_product_url($finalUrl)) {
+        throw new RuntimeException('Zadaj priamy odkaz na konkretny produkt');
+    }
+
+    $result = interessa_admin_prepare_product_from_input_link($slug, $url);
+    $product = interessa_product($slug);
+    $normalized = is_array($product) ? interessa_normalize_product($product) : interessa_admin_empty_product_stub($slug);
+    $clickState = interessa_admin_product_click_state($normalized);
+
+    return [
+        'slug' => $slug,
+        'name' => (string) ($normalized['name'] ?? ''),
+        'image' => $normalized['image'] ?? null,
+        'affiliate_url' => trim((string) ($clickState['href'] ?? '')),
+        'merchant' => (string) ($normalized['merchant'] ?? ''),
+        'result' => $result,
+    ];
+}
+
 function interessa_admin_decode_json_textarea(string $value, string $label): array {
     $value = trim($value);
     if ($value === '') {
@@ -2100,7 +2129,8 @@ if ($isAuthed) {
                 $returnSlug = canonical_article_slug(trim((string) ($_POST['return_slug'] ?? '')));
                 $returnArticleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? $returnSlug)));
                 $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
-                $result = interessa_admin_prepare_product_from_input_link($slug, (string) ($_POST['source_link'] ?? ''));
+                $builtProduct = interessa_build_product_from_url($slug, (string) ($_POST['source_link'] ?? ''));
+                $result = (array) ($builtProduct['result'] ?? []);
                 $savedKey = 'product-link-ready';
 
                 $preparedProduct = interessa_product($slug);
@@ -2118,7 +2148,12 @@ if ($isAuthed) {
                 }
 
                 if ($returnArticleSlug !== '' && $targetSlot > 0) {
-                    interessa_admin_redirect('products', interessa_admin_product_article_slot_query((string) ($result['slug'] ?? $slug), $returnArticleSlug, $targetSlot, $savedKey, 'product_image'));
+                    interessa_admin_assign_product_to_article_slot($returnArticleSlug, (string) ($builtProduct['slug'] ?? $slug), $targetSlot);
+                    interessa_admin_redirect_fragment('articles', [
+                        'slug' => $returnArticleSlug,
+                        'saved' => 'product',
+                        'slot_ready' => (string) $targetSlot,
+                    ], 'slot-' . $targetSlot);
                 }
                 if ($returnSection === 'images' && $returnSlug !== '') {
                     interessa_admin_redirect('products', interessa_admin_product_image_redirect_query((string) ($result['slug'] ?? $slug), $savedKey, 'images', $returnSlug));
@@ -2992,6 +3027,7 @@ foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
         $articleSelectedSlotBySlug[$slotSlug] = (int) $slotIndex;
     }
 }
+$articleReadySlot = max(0, min(3, (int) ($_GET['slot_ready'] ?? 0)));
 $articleSelectedCount = count($articleSelectedProductSlugs);
 $articleSelectedImageMissingCount = 0;
 $articleSelectedClickMissingCount = 0;
@@ -3198,6 +3234,15 @@ foreach ($articleScopedProductOptionSlugs as $optionSlug) {
     $articleScopedProductOptions[$optionSlug] = [
         'slug' => (string) $optionSlug,
         'name' => (string) ($catalog[$optionSlug]['name'] ?? $optionSlug),
+        'merchant' => (string) ($optionProduct['merchant'] ?? ''),
+        'image' => $optionProduct['image'] ?? null,
+        'image_local_url' => !empty($optionProduct['has_local_image']) && trim((string) ($optionProduct['image_local_asset'] ?? '')) !== ''
+            ? asset((string) $optionProduct['image_local_asset'])
+            : '',
+        'image_remote_src' => trim((string) ($optionProduct['image_remote_src'] ?? '')),
+        'click_url' => trim((string) ($optionClickState['href'] ?? '')),
+        'fallback_url' => trim((string) ($optionProduct['fallback_url'] ?? '')),
+        'click_status_label' => $optionAffiliateReady ? 'Affiliate link pripraveny' : 'Pouzity priamy link',
         'state_label' => $optionStateLabel,
         'state_class' => $optionStateClass,
         'next_href' => $optionNextHref,
@@ -4024,6 +4069,30 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php if (is_array($slotRow)): ?>
                         <input type="hidden" name="article_product_role[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['role'] ?? 'standard')) ?>" />
                         <input type="hidden" name="article_product_placement[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['placement'] ?? 'recommended')) ?>" />
+                        <?php if ($articleReadySlot === $slotIndex && $flash === 'product'): ?>
+                          <?php
+                            $slotPreviewClickUrl = trim((string) ($slotRow['click_url'] ?? ''));
+                            if ($slotPreviewClickUrl === '') {
+                                $slotPreviewClickUrl = trim((string) ($slotRow['fallback_url'] ?? ''));
+                            }
+                            $slotPreviewImageLocalUrl = trim((string) ($slotRow['image_local_url'] ?? ''));
+                            $slotPreviewImageRemoteSrc = trim((string) ($slotRow['image_remote_src'] ?? ''));
+                          ?>
+                          <div class="admin-check-card" style="margin:12px 0;">
+                            <strong>Produkt pripraveny</strong>
+                            <p class="admin-note" style="margin-top:6px;"><?= esc((string) ($slotRow['name'] ?? $slotSlug)) ?></p>
+                            <?php if ($slotPreviewImageLocalUrl !== ''): ?>
+                              <p><strong>Obrazok:</strong> <a href="<?= esc($slotPreviewImageLocalUrl) ?>" target="_blank" rel="noopener">lokalny obrazok</a></p>
+                            <?php elseif ($slotPreviewImageRemoteSrc !== ''): ?>
+                              <p><strong>Obrazok:</strong> <a href="<?= esc($slotPreviewImageRemoteSrc) ?>" target="_blank" rel="noopener">remote obrazok</a></p>
+                            <?php else: ?>
+                              <p><strong>Obrazok:</strong> Obrazok chyba</p>
+                            <?php endif; ?>
+                            <p><strong>Merchant:</strong> <?= esc((string) ($slotRow['merchant'] ?? '')) !== '' ? (string) ($slotRow['merchant'] ?? '') : 'neznamy' ?></p>
+                            <p><strong>Link pre klik:</strong> <?= $slotPreviewClickUrl !== '' ? esc($slotPreviewClickUrl) : 'chyba' ?></p>
+                            <p><strong>Stav linku:</strong> <?= esc((string) ($slotRow['click_status_label'] ?? 'Pouzity priamy link')) ?></p>
+                          </div>
+                        <?php endif; ?>
                         <div class="admin-status-pills">
                           <span class="admin-status-pill<?= esc((string) ($slotRow['state_class'] ?? ' is-warning')) ?>"><?= esc((string) ($slotRow['state_label'] ?? 'Chyba')) ?></span>
                         </div>
@@ -5074,12 +5143,12 @@ require dirname(__DIR__) . '/inc/head.php';
                 <?php if ($articleSlotMode): ?><input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" /><?php endif; ?>
                 <?php if ($articleSlotMode): ?><input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" /><?php endif; ?>
                 <label>
-                  <span>Link produktu alebo Dognet link</span>
+                  <span>URL produktu</span>
                   <input type="url" name="source_link" value="<?= esc($selectedProductQuickInputUrl) ?>" placeholder="https://go.dognet.com/... alebo https://obchod.sk/konkretny-produkt" />
                 </label>
                 <p class="admin-note">Sem patri bud Dognet link pre tento produkt, alebo priamo stranka produktu v obchode. Aj obycajny link produktu staci na rozbehnutie. Dognet mozes doplnit neskor.</p>
                 <div class="admin-actions">
-                  <button class="btn btn-cta" type="submit"><?= $articleSlotMode ? 'Pripravit produkt pre tento slot' : '1. Vlozit link a pripravit produkt aj klik' ?></button>
+                  <button class="btn btn-cta" type="submit"><?= $articleSlotMode ? 'Pridat produkt' : '1. Vlozit link a pripravit produkt aj klik' ?></button>
                 </div>
               </form>
             </section>
@@ -5096,7 +5165,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <p><?= esc($selectedProductNextStepNote) ?></p>
                 <div class="admin-inline-actions">
                   <?php if ($selectedProductNextStep === 'enter_link'): ?>
-                    <a class="btn btn-secondary btn-small" href="#product-link-form">1. Vlozit link produktu alebo Dognet link</a>
+                    <a class="btn btn-secondary btn-small" href="#product-link-form">URL produktu</a>
                   <?php elseif ($selectedProductNextStep === 'prepare'): ?>
                     <form method="post" class="admin-inline-form">
                       <input type="hidden" name="action" value="prepare_product_from_link" />
