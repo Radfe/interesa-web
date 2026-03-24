@@ -70,6 +70,28 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsia stabilizacia Dognet importu a deeplink vrstvy:
+- merchant matching sa uz nespolieha len na jeden vstup, ale zjednocuje:
+  - merchant slug
+  - merchant nazov
+  - host/domenu URL
+  - aliasy z merchant registry
+- feed import, Dognet helper aj affiliate resolver teraz pouzivaju rovnaky merchant resolve helper
+- ak sa pri kandidátovi alebo helper riadku da spolahlivo najst affiliate zaznam podla:
+  - merchanta
+  - produktu
+  - alebo affiliate kodu
+  tak sa deeplink a affiliate data doplnia automaticky
+- ak sa nic spolahlive neda najst, system nic neblokuje a ponecha direct fallback URL
+- Dognet helper teraz pri ulozeni deeplinku synchronizuje zapis nielen do `links_overrides.php`, ale aj do admin affiliate storage, aby ho novy resolver vedel hned pouzit
+
+Menene subory:
+- [public/inc/affiliates.php](C:/data/praca/webova_stranka/github/public/inc/affiliates.php)
+- [public/content/affiliates/merchants.php](C:/data/praca/webova_stranka/github/public/content/affiliates/merchants.php)
+- [public/inc/admin-feed-import.php](C:/data/praca/webova_stranka/github/public/inc/admin-feed-import.php)
+- [public/inc/dognet-helper.php](C:/data/praca/webova_stranka/github/public/inc/dognet-helper.php)
+- [public/tools/import-dognet-feed.php](C:/data/praca/webova_stranka/github/public/tools/import-dognet-feed.php)
+
 Najnovsi lokalny start a verzia krok:
 - lokalny workflow ma mat jeden oficialny start:
   - `start-interesa.cmd`
@@ -891,3 +913,21 @@ Viditelna verzia v lokalnom prostredi:
     - `Hlavne logo`
     - `Ikonka stranky`
     - `Obrazok pri zdielani`
+
+## 2026-03-24 - finalny manualny checklist pre admin flow
+
+Pred hostingom treba manualne overit tieto scenare:
+- rucne pridanie produktu cez URL produktu
+- blokovanie homepage alebo neproduktovej URL
+- nacitanie nazvu produktu
+- nacitanie obrazka produktu
+- ulozenie lokalneho obrazka produktu
+- preview produktu priamo v slote po pridani URL
+- navrh produktov k clanku
+- predvyplnenie prazdnych slotov z navrhov
+- quality status slotu: pripraveny na web / chyba obrazok / chyba link / chyba nazov / chyba merchant
+- affiliate resolve
+- direct fallback pri zlyhani affiliate
+- Dognet alebo deeplink dohladanie pri znamom merchantovi
+
+Admin UI teraz obsahuje aj maly blok `Pripravenost systemu`, ktory tento checklist skracuje priamo pri clanku bez zmeny workflowu.

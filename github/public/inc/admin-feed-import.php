@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/affiliates.php';
+
 if (!function_exists('interessa_admin_feed_detect_delimiter')) {
     function interessa_admin_feed_detect_delimiter(string $line): string {
         if (str_contains($line, ';')) {
@@ -103,6 +105,29 @@ if (!function_exists('interessa_admin_feed_row_matches_filter')) {
         }
 
         return false;
+    }
+}
+
+if (!function_exists('interessa_admin_feed_merchant_identity')) {
+    function interessa_admin_feed_merchant_identity(string $merchantSlug, string $url = '', string $merchant = ''): array {
+        $resolved = function_exists('aff_resolve_merchant_meta')
+            ? aff_resolve_merchant_meta($merchantSlug, $merchant, $url)
+            : null;
+
+        $resolvedSlug = trim((string) ($resolved['merchant_slug'] ?? $merchantSlug));
+        $resolvedName = trim((string) ($resolved['name'] ?? $merchant));
+
+        if ($resolvedSlug === '') {
+            $resolvedSlug = interessa_admin_feed_slugify($merchantSlug);
+        }
+        if ($resolvedName === '') {
+            $resolvedName = $resolvedSlug !== '' ? ucfirst($resolvedSlug) : ucfirst(trim($merchantSlug));
+        }
+
+        return [
+            'merchant_slug' => $resolvedSlug,
+            'merchant' => $resolvedName,
+        ];
     }
 }
 
@@ -289,13 +314,16 @@ if (!function_exists('interessa_admin_parse_xml_feed')) {
                 continue;
             }
 
-            $slug = $merchantSlug . '-' . interessa_admin_feed_slugify($name);
             $url = interessa_admin_feed_xml_value($item, 'URL');
+            $merchantMeta = interessa_admin_feed_merchant_identity($merchantSlug, $url);
+            $resolvedMerchantSlug = (string) ($merchantMeta['merchant_slug'] ?? $merchantSlug);
+            $resolvedMerchant = (string) ($merchantMeta['merchant'] ?? ucfirst($merchantSlug));
+            $slug = $resolvedMerchantSlug . '-' . interessa_admin_feed_slugify($name);
             $row = [
                 'slug' => $slug,
                 'name' => $name,
-                'merchant' => ucfirst($merchantSlug),
-                'merchant_slug' => $merchantSlug,
+                'merchant' => $resolvedMerchant,
+                'merchant_slug' => $resolvedMerchantSlug,
                 'category' => interessa_admin_feed_xml_value($item, 'CATEGORYTEXT'),
                 'product_type' => interessa_admin_feed_xml_value($item, 'CATEGORYNAME'),
                 'price' => interessa_admin_feed_xml_value($item, 'PRICE_VAT'),
@@ -355,17 +383,21 @@ if (!function_exists('interessa_admin_parse_csv_feed')) {
                 continue;
             }
 
-            $slug = $merchantSlug . '-' . interessa_admin_feed_slugify($name);
+            $url = trim((string) ($record['deeplink'] ?? $record['url'] ?? ''));
+            $merchantMeta = interessa_admin_feed_merchant_identity($merchantSlug, $url);
+            $resolvedMerchantSlug = (string) ($merchantMeta['merchant_slug'] ?? $merchantSlug);
+            $resolvedMerchant = (string) ($merchantMeta['merchant'] ?? ucfirst($merchantSlug));
+            $slug = $resolvedMerchantSlug . '-' . interessa_admin_feed_slugify($name);
             $rowData = [
                 'slug' => $slug,
                 'name' => $name,
-                'merchant' => ucfirst($merchantSlug),
-                'merchant_slug' => $merchantSlug,
+                'merchant' => $resolvedMerchant,
+                'merchant_slug' => $resolvedMerchantSlug,
                 'category' => trim((string) ($record['category'] ?? $record['category_text'] ?? '')),
                 'product_type' => trim((string) ($record['product_type'] ?? $record['type'] ?? '')),
                 'price' => trim((string) ($record['price'] ?? $record['price_vat'] ?? '')),
-                'url' => trim((string) ($record['deeplink'] ?? $record['url'] ?? '')),
-                'fallback_url' => trim((string) ($record['deeplink'] ?? $record['url'] ?? '')),
+                'url' => $url,
+                'fallback_url' => $url,
                 'image_remote_src' => trim((string) ($record['image'] ?? $record['image_url'] ?? '')),
                 'summary' => trim((string) ($record['category'] ?? $record['category_text'] ?? '')),
                 'merchant_product_id' => trim((string) ($record['id'] ?? $record['product_id'] ?? '')),
@@ -416,13 +448,16 @@ if (!function_exists('interessa_admin_parse_json_feed')) {
                 continue;
             }
 
-            $slug = $merchantSlug . '-' . interessa_admin_feed_slugify($name);
             $url = trim((string) ($item['url'] ?? $item['product_url'] ?? $item['link'] ?? ''));
+            $merchantMeta = interessa_admin_feed_merchant_identity($merchantSlug, $url);
+            $resolvedMerchantSlug = (string) ($merchantMeta['merchant_slug'] ?? $merchantSlug);
+            $resolvedMerchant = (string) ($merchantMeta['merchant'] ?? ucfirst($merchantSlug));
+            $slug = $resolvedMerchantSlug . '-' . interessa_admin_feed_slugify($name);
             $rowData = [
                 'slug' => $slug,
                 'name' => $name,
-                'merchant' => ucfirst($merchantSlug),
-                'merchant_slug' => $merchantSlug,
+                'merchant' => $resolvedMerchant,
+                'merchant_slug' => $resolvedMerchantSlug,
                 'category' => trim((string) ($item['category'] ?? $item['category_text'] ?? '')),
                 'product_type' => trim((string) ($item['product_type'] ?? $item['type'] ?? '')),
                 'price' => trim((string) ($item['price'] ?? $item['price_vat'] ?? '')),

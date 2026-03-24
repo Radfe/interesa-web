@@ -42,6 +42,65 @@ if (!function_exists('dognet_helper_mark_row_status')) {
     }
 }
 
+if (!function_exists('dognet_helper_normalize_row_identity')) {
+    function dognet_helper_normalize_row_identity(array $row): array {
+        $resolved = aff_resolve_merchant_meta(
+            (string) ($row['merchant_slug'] ?? ''),
+            (string) ($row['merchant'] ?? ''),
+            (string) ($row['product_url'] ?? $row['deeplink_url'] ?? '')
+        );
+
+        if (is_array($resolved)) {
+            $row['merchant_slug'] = trim((string) ($resolved['merchant_slug'] ?? ($row['merchant_slug'] ?? '')));
+            $row['merchant'] = trim((string) ($resolved['name'] ?? ($row['merchant'] ?? '')));
+        } else {
+            $row['merchant_slug'] = trim((string) ($row['merchant_slug'] ?? aff_slugify_merchant((string) ($row['merchant'] ?? ''))));
+            $row['merchant'] = trim((string) ($row['merchant'] ?? ''));
+        }
+
+        $row['product_slug'] = trim((string) ($row['product_slug'] ?? ''));
+        $row['code'] = trim((string) ($row['code'] ?? ''));
+        $row['product_url'] = trim((string) ($row['product_url'] ?? ''));
+        $row['deeplink_url'] = trim((string) ($row['deeplink_url'] ?? ''));
+        return $row;
+    }
+}
+
+if (!function_exists('dognet_helper_enrich_row_with_registry')) {
+    function dognet_helper_enrich_row_with_registry(array $row): array {
+        $row = dognet_helper_normalize_row_identity($row);
+        $context = [
+            'code' => (string) ($row['code'] ?? ''),
+            'affiliate_code' => (string) ($row['code'] ?? ''),
+            'product_slug' => (string) ($row['product_slug'] ?? ''),
+            'merchant_slug' => (string) ($row['merchant_slug'] ?? ''),
+            'merchant' => (string) ($row['merchant'] ?? ''),
+            'fallback_url' => (string) ($row['product_url'] ?? ''),
+            'product_url' => (string) ($row['product_url'] ?? ''),
+            'click_url' => (string) ($row['deeplink_url'] ?? ''),
+            'affiliate_url' => (string) ($row['deeplink_url'] ?? ''),
+        ];
+
+        $target = aff_resolve_click_target($context);
+        $resolvedAffiliateUrl = trim((string) ($target['affiliate_url'] ?? ''));
+        $resolvedDirectUrl = trim((string) ($target['direct_url'] ?? ''));
+        $resolvedCode = trim((string) ($target['code'] ?? ''));
+
+        if ($row['deeplink_url'] === '' && aff_is_valid_http_url($resolvedAffiliateUrl)) {
+            $row['deeplink_url'] = $resolvedAffiliateUrl;
+            $row['link_type'] = 'affiliate';
+        }
+        if ($row['product_url'] === '' && aff_is_valid_http_url($resolvedDirectUrl)) {
+            $row['product_url'] = $resolvedDirectUrl;
+        }
+        if ($row['code'] === '' && $resolvedCode !== '') {
+            $row['code'] = $resolvedCode;
+        }
+
+        return dognet_helper_mark_row_status($row);
+    }
+}
+
 if (!function_exists('dognet_helper_propagate_shared_product_links')) {
     function dognet_helper_propagate_shared_product_links(array $rows): array {
         $deeplinksByProduct = [];
@@ -107,14 +166,7 @@ if (!function_exists('dognet_helper_load_rows')) {
                 $assoc[$key] = trim((string) $value);
             }
 
-            $code = trim((string) ($assoc['code'] ?? ''));
-            $record = $code !== '' ? aff_record($code) : null;
-            if (($assoc['deeplink_url'] ?? '') === '' && aff_is_affiliate_record($record)) {
-                $assoc['deeplink_url'] = trim((string) ($record['url'] ?? ''));
-                $assoc['link_type'] = 'affiliate';
-            }
-
-            $rows[] = dognet_helper_mark_row_status($assoc);
+            $rows[] = dognet_helper_enrich_row_with_registry($assoc);
         }
 
         fclose($handle);
@@ -183,6 +235,7 @@ if (!function_exists('dognet_helper_ensure_row')) {
         foreach ($headers as $header) {
             $normalized[$header] = trim((string) ($row[$header] ?? ''));
         }
+        $normalized = dognet_helper_enrich_row_with_registry($normalized);
 
         $found = false;
         foreach ($rows as $index => $existing) {
@@ -190,13 +243,13 @@ if (!function_exists('dognet_helper_ensure_row')) {
                 continue;
             }
 
-            $rows[$index] = dognet_helper_mark_row_status(array_replace($existing, $normalized));
+            $rows[$index] = dognet_helper_enrich_row_with_registry(array_replace($existing, $normalized));
             $found = true;
             break;
         }
 
         if (!$found) {
-            $rows[] = dognet_helper_mark_row_status($normalized);
+            $rows[] = dognet_helper_enrich_row_with_registry($normalized);
         }
 
         $rows = dognet_helper_propagate_shared_product_links($rows);
@@ -214,6 +267,7 @@ if (!function_exists('dognet_helper_sync_overrides')) {
         }
 
         foreach ($rows as $row) {
+            $row = dognet_helper_normalize_row_identity($row);
             $code = trim((string) ($row['code'] ?? ''));
             $deeplink = trim((string) ($row['deeplink_url'] ?? ''));
             if ($code === '' || $deeplink === '' || !preg_match('~^https?://~i', $deeplink)) {
@@ -229,6 +283,15 @@ if (!function_exists('dognet_helper_sync_overrides')) {
                 'link_type' => 'affiliate',
                 'source' => 'dognet-helper',
             ];
+
+            interessa_admin_save_affiliate_record($code, [
+                'url' => $deeplink,
+                'merchant' => trim((string) ($row['merchant'] ?? ($existing['merchant'] ?? ''))),
+                'merchant_slug' => trim((string) ($row['merchant_slug'] ?? ($existing['merchant_slug'] ?? ''))),
+                'product_slug' => trim((string) ($row['product_slug'] ?? ($existing['product_slug'] ?? ''))),
+                'link_type' => 'affiliate',
+                'source' => 'dognet-helper',
+            ]);
         }
 
         ksort($overrides);
@@ -264,7 +327,10 @@ if (!function_exists('dognet_helper_save_deeplink')) {
 
             $row['deeplink_url'] = $deeplinkUrl;
             $row['link_type'] = 'affiliate';
-            $row = dognet_helper_mark_row_status($row);
+            if ($productSlug !== '' && trim((string) ($row['product_slug'] ?? '')) === '') {
+                $row['product_slug'] = $productSlug;
+            }
+            $row = dognet_helper_enrich_row_with_registry($row);
             $found = true;
             break;
         }
@@ -280,10 +346,14 @@ if (!function_exists('dognet_helper_save_deeplink')) {
 
         if ($productSlug !== '') {
             $product = interessa_admin_product_record($productSlug) ?? [];
-
-            $resolvedProductUrl = trim((string) aff_product_url_for_code($code));
-            $existingFallbackUrl = trim((string) ($product['fallback_url'] ?? ''));
-            $fallbackUrl = $existingFallbackUrl !== '' ? $existingFallbackUrl : $resolvedProductUrl;
+            $clickTarget = aff_resolve_click_target([
+                'affiliate_code' => $code,
+                'product_slug' => $productSlug,
+                'merchant' => (string) ($product['merchant'] ?? ''),
+                'merchant_slug' => (string) ($product['merchant_slug'] ?? ''),
+                'fallback_url' => (string) ($product['fallback_url'] ?? ''),
+            ]);
+            $fallbackUrl = trim((string) ($clickTarget['direct_url'] ?? ''));
 
             interessa_admin_save_product_record($productSlug, array_replace($product, [
                 'slug' => $productSlug,

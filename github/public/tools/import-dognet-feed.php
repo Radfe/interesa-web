@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/../inc/affiliates.php';
+
 if (PHP_SAPI !== 'cli') {
     fwrite(STDERR, "This tool is intended for CLI usage only.\n");
     exit(1);
@@ -34,6 +36,27 @@ function dognet_slugify(string $value): string {
 
     $slug = preg_replace('~[^a-z0-9]+~i', '-', $ascii) ?? '';
     return strtolower(trim($slug, '-'));
+}
+
+function dognet_merchant_identity(string $merchantSlug, string $url = '', string $merchant = ''): array {
+    $resolved = function_exists('aff_resolve_merchant_meta')
+        ? aff_resolve_merchant_meta($merchantSlug, $merchant, $url)
+        : null;
+
+    $resolvedSlug = trim((string) ($resolved['merchant_slug'] ?? $merchantSlug));
+    $resolvedName = trim((string) ($resolved['name'] ?? $merchant));
+
+    if ($resolvedSlug === '') {
+        $resolvedSlug = dognet_slugify($merchantSlug);
+    }
+    if ($resolvedName === '') {
+        $resolvedName = $resolvedSlug !== '' ? ucfirst($resolvedSlug) : ucfirst(trim($merchantSlug));
+    }
+
+    return [
+        'merchant_slug' => $resolvedSlug,
+        'merchant' => $resolvedName,
+    ];
 }
 
 function dognet_is_xml_feed(string $path): bool {
@@ -81,13 +104,16 @@ function dognet_import_xml(string $source, string $merchant, int $limit = 0): ar
             continue;
         }
 
-        $productSlug = $merchant . '-' . dognet_slugify($name);
         $url = dognet_xml_value($item, 'URL');
+        $merchantMeta = dognet_merchant_identity($merchant, $url, dognet_xml_value($item, 'MANUFACTURER'));
+        $resolvedMerchantSlug = (string) ($merchantMeta['merchant_slug'] ?? $merchant);
+        $resolvedMerchant = (string) ($merchantMeta['merchant'] ?? ucfirst($merchant));
+        $productSlug = $resolvedMerchantSlug . '-' . dognet_slugify($name);
         $rows[] = [
             'name' => $name,
             'slug' => $productSlug,
-            'merchant_slug' => $merchant,
-            'merchant' => dognet_xml_value($item, 'MANUFACTURER') ?: ucfirst($merchant),
+            'merchant_slug' => $resolvedMerchantSlug,
+            'merchant' => $resolvedMerchant,
             'image_url' => dognet_xml_value($item, 'IMGURL'),
             'affiliate_url' => $url,
             'raw_url' => $url,
@@ -138,14 +164,18 @@ function dognet_import_csv(string $source, string $merchant, int $limit = 0): ar
             continue;
         }
 
+        $url = trim((string) ($record['deeplink'] ?? $record['url'] ?? ''));
+        $merchantMeta = dognet_merchant_identity($merchant, $url);
+        $resolvedMerchantSlug = (string) ($merchantMeta['merchant_slug'] ?? $merchant);
+        $resolvedMerchant = (string) ($merchantMeta['merchant'] ?? ucfirst($merchant));
         $slug = dognet_slugify($name);
         $rows[] = [
             'name' => $name,
-            'slug' => $merchant . '-' . $slug,
-            'merchant_slug' => $merchant,
-            'merchant' => ucfirst($merchant),
+            'slug' => $resolvedMerchantSlug . '-' . $slug,
+            'merchant_slug' => $resolvedMerchantSlug,
+            'merchant' => $resolvedMerchant,
             'image_url' => trim((string) ($record['image'] ?? $record['image_url'] ?? '')),
-            'affiliate_url' => trim((string) ($record['deeplink'] ?? $record['url'] ?? '')),
+            'affiliate_url' => $url,
             'raw_url' => trim((string) ($record['url'] ?? '')),
             'merchant_product_id' => trim((string) ($record['id'] ?? $record['product_id'] ?? '')),
             'ean' => trim((string) ($record['ean'] ?? '')),

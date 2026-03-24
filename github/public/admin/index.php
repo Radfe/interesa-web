@@ -2170,6 +2170,80 @@ if ($isAuthed) {
                 ]);
             }
 
+            if ($action === 'assign_suggested_product_to_slot') {
+                $articleSlug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
+                $productSlug = trim((string) ($_POST['product_slug'] ?? ''));
+                $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
+                if ($articleSlug === '' || $productSlug === '' || $targetSlot < 1) {
+                    throw new RuntimeException('Nepodarilo sa priradit navrhnuty produkt do slotu.');
+                }
+
+                interessa_admin_assign_product_to_article_slot($articleSlug, $productSlug, $targetSlot);
+                interessa_admin_redirect_fragment('articles', [
+                    'slug' => $articleSlug,
+                    'saved' => 'product',
+                    'slot_ready' => (string) $targetSlot,
+                    'suggest_products' => '1',
+                ], 'slot-' . $targetSlot);
+            }
+
+            if ($action === 'prefill_suggested_product_slots') {
+                $articleSlug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
+                if ($articleSlug === '') {
+                    throw new RuntimeException('Nepodarilo sa predvyplnit sloty pre clanok.');
+                }
+
+                $state = interessa_admin_article_product_state($articleSlug);
+                $existingPlan = array_values(array_filter((array) ($state['product_plan'] ?? []), static fn($row): bool => is_array($row)));
+                $occupiedSlots = [];
+                $usedProductSlugs = [];
+                foreach ($existingPlan as $row) {
+                    $slot = max(0, min(3, (int) ($row['order'] ?? 0)));
+                    $productSlug = trim((string) ($row['product_slug'] ?? ''));
+                    if ($slot > 0) {
+                        $occupiedSlots[$slot] = true;
+                    }
+                    if ($productSlug !== '') {
+                        $usedProductSlugs[$productSlug] = true;
+                    }
+                }
+
+                $suggested = function_exists('interessa_get_products_for_article')
+                    ? array_values(array_slice(interessa_get_products_for_article($articleSlug, 5), 0, 5))
+                    : [];
+
+                $filledSlots = [];
+                $skippedSlots = [];
+                $suggestedIndex = 0;
+                for ($slot = 1; $slot <= 3; $slot++) {
+                    if (!empty($occupiedSlots[$slot])) {
+                        $skippedSlots[] = (string) $slot;
+                        continue;
+                    }
+
+                    while (isset($suggested[$suggestedIndex])) {
+                        $candidateSlug = trim((string) ($suggested[$suggestedIndex]['product_slug'] ?? ''));
+                        $suggestedIndex++;
+                        if ($candidateSlug === '' || isset($usedProductSlugs[$candidateSlug])) {
+                            continue;
+                        }
+
+                        interessa_admin_assign_product_to_article_slot($articleSlug, $candidateSlug, $slot);
+                        $usedProductSlugs[$candidateSlug] = true;
+                        $filledSlots[] = (string) $slot;
+                        continue 2;
+                    }
+                }
+
+                interessa_admin_redirect_fragment('articles', [
+                    'slug' => $articleSlug,
+                    'saved' => 'product',
+                    'suggest_products' => '1',
+                    'prefill_filled' => implode(',', $filledSlots),
+                    'prefill_skipped' => implode(',', $skippedSlots),
+                ], 'article-product-suggestions');
+            }
+
             if ($action === 'delete_affiliate_override') {
                 $code = trim((string) ($_POST['code'] ?? ''));
                 interessa_admin_delete_affiliate_record($code);
@@ -3028,6 +3102,18 @@ foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
     }
 }
 $articleReadySlot = max(0, min(3, (int) ($_GET['slot_ready'] ?? 0)));
+$showSuggestedProducts = trim((string) ($_GET['suggest_products'] ?? '')) === '1';
+$articleSuggestedProducts = $showSuggestedProducts && $selectedArticleSlug !== '' && function_exists('interessa_get_products_for_article')
+    ? array_values(array_slice(interessa_get_products_for_article($selectedArticleSlug, 5), 0, 5))
+    : [];
+$prefillFilledSlots = array_values(array_filter(array_map(
+    static fn(string $value): string => trim($value),
+    explode(',', (string) ($_GET['prefill_filled'] ?? ''))
+), static fn(string $value): bool => $value !== ''));
+$prefillSkippedSlots = array_values(array_filter(array_map(
+    static fn(string $value): string => trim($value),
+    explode(',', (string) ($_GET['prefill_skipped'] ?? ''))
+), static fn(string $value): bool => $value !== ''));
 $articleSelectedCount = count($articleSelectedProductSlugs);
 $articleSelectedImageMissingCount = 0;
 $articleSelectedClickMissingCount = 0;
@@ -3931,6 +4017,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p class="admin-note"><?= esc((string) ($categoryOptions[$selectedCategory]['title'] ?? ($selectedCategory !== '' ? $selectedCategory : 'Bez kategorie'))) ?></p>
                 </div>
               </div>
+              <div class="admin-check-card" style="margin-top:12px;">
+                <strong>Pripravenost systemu</strong>
+                <p class="admin-note" style="margin-top:6px;">Pred hostingom manualne over: URL produktu, blokovanie homepage URL, nacitanie nazvu, nacitanie a ulozenie obrazka, preview v slote, navrhy produktov, predvyplnenie slotov, quality status slotu, affiliate resolve, direct fallback a Dognet dohldanie pri znamom merchantovi.</p>
+              </div>
               </section>
 
               <details class="admin-subsection is-compact">
@@ -4020,11 +4110,74 @@ require dirname(__DIR__) . '/inc/head.php';
 
               <div class="admin-subsection" id="article-products-block">
                 <div class="admin-subsection-head">
-                  <h3>Produkty v tomto clanku</h3>
+                  <div>
+                    <h3>Produkty v tomto clanku</h3>
+                  </div>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;suggest_products=1#article-product-suggestions">Navrhnut produkty</a>
+                  </div>
                 </div>
                 <p class="admin-note">Tento clanok ma pevne 3 sloty. Vyber do nich produkty, oznac hlavny produkt a potom uloz produkty v clanku.</p>
                 <?php if ($articleProductPlanHasExplicitSource === false): ?>
                   <p class="admin-note">Clanok zatial nema explicitne priradene produkty.</p>
+                <?php endif; ?>
+                <?php if ($showSuggestedProducts): ?>
+                  <section class="admin-subsection is-compact" id="article-product-suggestions" style="margin-bottom:16px;">
+                    <div class="admin-subsection-head">
+                      <div>
+                        <h4>Navrhnute produkty pre tento clanok</h4>
+                        <p class="admin-meta">Jednym klikom vies zobrazit tematicky vhodne produkty a priradit ich do slotu.</p>
+                      </div>
+                      <div class="admin-inline-actions">
+                        <form method="post" class="admin-inline-form">
+                          <input type="hidden" name="action" value="prefill_suggested_product_slots" />
+                          <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
+                          <button class="btn btn-secondary btn-small" type="submit">Predvyplnit sloty</button>
+                        </form>
+                      </div>
+                    </div>
+                    <?php if ($prefillFilledSlots !== [] || $prefillSkippedSlots !== []): ?>
+                      <p class="admin-note">
+                        Vyplnene sloty: <?= $prefillFilledSlots !== [] ? esc(implode(', ', $prefillFilledSlots)) : '0' ?>.
+                        Preskocene sloty: <?= $prefillSkippedSlots !== [] ? esc(implode(', ', $prefillSkippedSlots)) : 'ziadne' ?>.
+                      </p>
+                    <?php endif; ?>
+                    <?php if ($articleSuggestedProducts !== []): ?>
+                      <div class="admin-queue-list">
+                        <?php foreach ($articleSuggestedProducts as $suggestedProduct): ?>
+                          <?php
+                            $suggestedSlug = trim((string) ($suggestedProduct['product_slug'] ?? ''));
+                            $suggestedName = trim((string) ($suggestedProduct['name'] ?? $suggestedSlug));
+                            $suggestedMerchant = trim((string) ($suggestedProduct['merchant'] ?? ''));
+                          ?>
+                          <article class="admin-queue-item">
+                            <div>
+                              <div style="max-width:120px; margin-bottom:8px;">
+                                <?= interessa_render_image($suggestedProduct['image'] ?? null, ['class' => 'admin-mini-product-card__image']) ?>
+                              </div>
+                              <strong><?= esc($suggestedName) ?></strong>
+                              <?php if ($suggestedMerchant !== ''): ?>
+                                <p><?= esc($suggestedMerchant) ?></p>
+                              <?php endif; ?>
+                            </div>
+                            <div class="admin-inline-actions">
+                              <?php for ($suggestedSlot = 1; $suggestedSlot <= 3; $suggestedSlot++): ?>
+                                <form method="post" class="admin-inline-form">
+                                  <input type="hidden" name="action" value="assign_suggested_product_to_slot" />
+                                  <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
+                                  <input type="hidden" name="product_slug" value="<?= esc($suggestedSlug) ?>" />
+                                  <input type="hidden" name="target_slot" value="<?= esc((string) $suggestedSlot) ?>" />
+                                  <button class="btn btn-secondary btn-small" type="submit">Do slotu <?= esc((string) $suggestedSlot) ?></button>
+                                </form>
+                              <?php endfor; ?>
+                            </div>
+                          </article>
+                        <?php endforeach; ?>
+                      </div>
+                    <?php else: ?>
+                      <p class="admin-note">Pre tento clanok sa zatial nenasli vhodne automaticke navrhy.</p>
+                    <?php endif; ?>
+                  </section>
                 <?php endif; ?>
                 <?php
                   $articleFeaturedSlot = 1;
@@ -4049,6 +4202,35 @@ require dirname(__DIR__) . '/inc/head.php';
                       $slotSlug = (string) ($articleSlotSelections[$slotIndex] ?? '');
                       $slotRow = $slotSlug !== '' ? ($articleScopedProductOptions[$slotSlug] ?? null) : null;
                       $slotActionRow = $slotSlug !== '' ? ($articleSelectedActionRowsBySlug[$slotSlug] ?? []) : [];
+                      $slotStatusLabel = 'Slot je prazdny';
+                      $slotStatusClass = ' is-warning';
+                      if (is_array($slotRow)) {
+                          $slotNameReady = trim((string) ($slotRow['name'] ?? '')) !== '';
+                          $slotImageReady = trim((string) ($slotRow['image_local_url'] ?? '')) !== '' || trim((string) ($slotRow['image_remote_src'] ?? '')) !== '';
+                          $slotClickReady = trim((string) ($slotRow['click_url'] ?? '')) !== '' || trim((string) ($slotRow['fallback_url'] ?? '')) !== '';
+                          $slotMerchantReady = trim((string) ($slotRow['merchant'] ?? '')) !== '';
+                          $slotWarnings = [];
+                          if (!$slotNameReady) {
+                              $slotWarnings[] = 'Chyba nazov';
+                          }
+                          if (!$slotImageReady) {
+                              $slotWarnings[] = 'Chyba obrazok';
+                          }
+                          if (!$slotClickReady) {
+                              $slotWarnings[] = 'Chyba link';
+                          }
+                          if (!$slotMerchantReady) {
+                              $slotWarnings[] = 'Chyba merchant';
+                          }
+
+                          if ($slotWarnings === []) {
+                              $slotStatusLabel = 'Pripravene na web';
+                              $slotStatusClass = ' is-good';
+                          } else {
+                              $slotStatusLabel = implode(' / ', $slotWarnings);
+                              $slotStatusClass = ' is-warning';
+                          }
+                      }
                     ?>
                     <section class="admin-subsection is-compact article-product-slot" id="slot-<?= esc((string) $slotIndex) ?>">
                       <div class="admin-subsection-head">
@@ -4066,6 +4248,9 @@ require dirname(__DIR__) . '/inc/head.php';
                           <?php endforeach; ?>
                         </select>
                       </label>
+                      <div class="admin-status-pills">
+                        <span class="admin-status-pill<?= esc($slotStatusClass) ?>"><?= esc($slotStatusLabel) ?></span>
+                      </div>
                       <?php if (is_array($slotRow)): ?>
                         <input type="hidden" name="article_product_role[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['role'] ?? 'standard')) ?>" />
                         <input type="hidden" name="article_product_placement[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['placement'] ?? 'recommended')) ?>" />
