@@ -1,6 +1,5 @@
 param(
-    [switch]$ElevatedRetry,
-    [int]$PreferredPort = 5001
+    [switch]$ElevatedRetry
 )
 
 $ErrorActionPreference = 'Stop'
@@ -13,25 +12,12 @@ $pidFile = Join-Path $stateDir 'php-server.pid'
 $runtimeFile = Join-Path $stateDir 'local-runtime.json'
 $script:ActivePort = 5001
 
-function Set-ActivePort {
-    param([int]$Port)
-    $script:ActivePort = $Port
-}
-
 function Get-SiteUrl {
-    param([int]$Port = 0)
-    if ($Port -le 0) {
-        $Port = $script:ActivePort
-    }
-    return 'http://127.0.0.1:' + $Port + '/'
+    return 'http://127.0.0.1:5001/'
 }
 
 function Get-AdminUrl {
-    param([int]$Port = 0)
-    if ($Port -le 0) {
-        $Port = $script:ActivePort
-    }
-    return 'http://127.0.0.1:' + $Port + '/admin'
+    return 'http://127.0.0.1:5001/admin'
 }
 
 function Test-IsAdministrator {
@@ -46,11 +32,7 @@ function Get-PhpPath {
         return $phpCommand.Source
     }
 
-    $fallbacks = @(
-        'C:\php\php.exe'
-    )
-
-    foreach ($candidate in $fallbacks) {
+    foreach ($candidate in @('C:\php\php.exe')) {
         if (Test-Path $candidate) {
             return $candidate
         }
@@ -60,9 +42,8 @@ function Get-PhpPath {
 }
 
 function Test-SiteReady {
-    param([int]$Port = 0)
     try {
-        $resp = Invoke-WebRequest -Uri (Get-SiteUrl $Port) -UseBasicParsing -TimeoutSec 2
+        $resp = Invoke-WebRequest -Uri (Get-SiteUrl) -UseBasicParsing -TimeoutSec 2
         return $resp.StatusCode -eq 200
     } catch {
         return $false
@@ -70,9 +51,8 @@ function Test-SiteReady {
 }
 
 function Test-AdminReady {
-    param([int]$Port = 0)
     try {
-        $resp = Invoke-WebRequest -Uri (Get-AdminUrl $Port) -UseBasicParsing -TimeoutSec 2
+        $resp = Invoke-WebRequest -Uri (Get-AdminUrl) -UseBasicParsing -TimeoutSec 2
         return $resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400
     } catch {
         return $false
@@ -80,109 +60,115 @@ function Test-AdminReady {
 }
 
 function Test-SiteProbe {
-    param([int]$Port = 0)
     try {
-        $resp = Invoke-WebRequest -Uri (Get-SiteUrl $Port) -UseBasicParsing -TimeoutSec 2
+        $resp = Invoke-WebRequest -Uri (Get-SiteUrl) -UseBasicParsing -TimeoutSec 2
         return @{
             ready = ($resp.StatusCode -eq 200)
-            status = [string]$resp.StatusCode
             message = 'HTTP ' + [string]$resp.StatusCode
         }
     } catch {
         return @{
             ready = $false
-            status = ''
             message = $_.Exception.Message
         }
     }
 }
 
 function Test-AdminProbe {
-    param([int]$Port = 0)
     try {
-        $resp = Invoke-WebRequest -Uri (Get-AdminUrl $Port) -UseBasicParsing -TimeoutSec 2
+        $resp = Invoke-WebRequest -Uri (Get-AdminUrl) -UseBasicParsing -TimeoutSec 2
         return @{
             ready = ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400)
-            status = [string]$resp.StatusCode
             message = 'HTTP ' + [string]$resp.StatusCode
         }
     } catch {
         return @{
             ready = $false
-            status = ''
             message = $_.Exception.Message
         }
     }
 }
 
 function Get-ListenerPids {
-    param([int]$Port = 0)
-    if ($Port -le 0) {
-        $Port = $script:ActivePort
+    $pids = @()
+
+    try {
+        $connections = Get-NetTCPConnection -LocalPort 5001 -State Listen -ErrorAction SilentlyContinue
+        foreach ($connection in $connections) {
+            if ($connection.OwningProcess) {
+                $pids += [string]([int]$connection.OwningProcess)
+            }
+        }
+    } catch {
     }
 
-    $pids = @(netstat -ano |
-        Select-String ('^\s*TCP\s+\S+:' + [regex]::Escape([string]$Port) + '\s+\S+\s+LISTENING\s+(\d+)\s*$') |
-        ForEach-Object {
-            $match = [regex]::Match($_.Line, 'LISTENING\s+(\d+)\s*$')
-            if ($match.Success) {
-                [string]$match.Groups[1].Value
-            }
-        } |
-        Where-Object { $_ -ne '' } |
-        Sort-Object -Unique)
+    if ($pids.Count -eq 0) {
+        $pids = @(netstat -ano |
+            Select-String '^\s*TCP\s+\S+:5001\s+\S+\s+LISTENING\s+(\d+)\s*$' |
+            ForEach-Object {
+                $match = [regex]::Match($_.Line, 'LISTENING\s+(\d+)\s*$')
+                if ($match.Success) {
+                    [string]$match.Groups[1].Value
+                }
+            } |
+            Where-Object { $_ -ne '' } |
+            Sort-Object -Unique)
+    }
 
-    return $pids
+    return @($pids | Sort-Object -Unique)
 }
 
 function New-PortBlockedMessage {
-    param([int]$Port = 0)
-    if ($Port -le 0) {
-        $Port = $script:ActivePort
-    }
-
-    $listenerPids = @(Get-ListenerPids $Port)
+    $listenerPids = @(Get-ListenerPids)
     $pidSuffix = ''
     if ($listenerPids.Count -gt 0) {
         $pidSuffix = ' PID: ' + ($listenerPids -join ', ')
     }
 
-    return 'Port ' + $Port + ' je stale blokovany starym lokalnym serverom. Zavri stare okna servera alebo restartuj pocitac a spusti start-interesa znova.' + $pidSuffix
+    return 'Port 5001 je stale blokovany. Zavri stare okna servera alebo restartuj pocitac a spusti start-interesa znova.' + $pidSuffix
 }
 
 function Stop-ListenerPids {
-    param([int]$Port = 0)
-    if ($Port -le 0) {
-        $Port = $script:ActivePort
-    }
-
-    $listenerPids = @(Get-ListenerPids $Port)
+    $listenerPids = @(Get-ListenerPids)
     foreach ($processId in $listenerPids) {
         if ([string]::IsNullOrWhiteSpace([string]$processId)) {
             continue
         }
+
         Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
         Start-Sleep -Milliseconds 300
+
         if (Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue) {
             & taskkill /PID ([int]$processId) /F /T | Out-Null
-            Start-Sleep -Milliseconds 300
+            Start-Sleep -Milliseconds 400
         }
     }
 }
 
-function Invoke-ElevatedRetry {
-    param([int]$Port = 0)
-    if ($Port -le 0) {
-        $Port = $script:ActivePort
+function Wait-ForPortRelease {
+    param(
+        [int]$Attempts = 10,
+        [int]$DelayMs = 500
+    )
+
+    for ($attempt = 0; $attempt -lt $Attempts; $attempt++) {
+        if (@(Get-ListenerPids).Count -eq 0) {
+            return $true
+        }
+        Stop-ListenerPids
+        Start-Sleep -Milliseconds $DelayMs
     }
 
+    return (@(Get-ListenerPids).Count -eq 0)
+}
+
+function Invoke-ElevatedRetry {
     $scriptPath = $MyInvocation.MyCommand.Path
     $args = @(
         '-NoProfile',
         '-ExecutionPolicy', 'Bypass',
         '-File', ('"' + $scriptPath + '"'),
-        '-ElevatedRetry',
-        '-PreferredPort', $Port
+        '-ElevatedRetry'
     )
 
     $process = Start-Process -FilePath 'powershell.exe' -ArgumentList $args -Verb RunAs -Wait -PassThru
@@ -190,40 +176,28 @@ function Invoke-ElevatedRetry {
         throw 'Nepodarilo sa spustit elevated retry pre uvolnenie portu.'
     }
     if ($process.ExitCode -ne 0) {
-        throw (New-PortBlockedMessage $Port)
+        throw (New-PortBlockedMessage)
     }
-}
-
-function Get-SavedServerPid {
-    if (-not (Test-Path $pidFile)) {
-        return $null
-    }
-
-    $savedPid = Get-Content -Path $pidFile -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $savedPid) {
-        return $null
-    }
-
-    return [int] $savedPid
 }
 
 function Remove-StalePid {
-    $savedPid = Get-SavedServerPid
+    if (-not (Test-Path $pidFile)) {
+        return
+    }
+
+    $savedPid = Get-Content -Path $pidFile -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $savedPid) {
         Remove-Item -Path $pidFile -Force -ErrorAction SilentlyContinue
         return
     }
 
-    $existing = Get-Process -Id $savedPid -ErrorAction SilentlyContinue
-    if (-not $existing) {
+    if (-not (Get-Process -Id ([int]$savedPid) -ErrorAction SilentlyContinue)) {
         Remove-Item -Path $pidFile -Force -ErrorAction SilentlyContinue
     }
 }
 
 function Get-LogText {
-    param(
-        [string]$Path
-    )
+    param([string]$Path)
 
     if (-not (Test-Path $Path)) {
         return ''
@@ -256,16 +230,12 @@ function Get-MapValue {
 }
 
 function Start-LocalServer {
-    param([int]$Port = 0)
-    if ($Port -le 0) {
-        $Port = $script:ActivePort
-    }
-
     $php = Get-PhpPath
     New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
     Remove-StalePid
     Set-Content -Path $stdoutLog -Value '' -Encoding UTF8
     Set-Content -Path $stderrLog -Value '' -Encoding UTF8
+
     $publicRoot = Join-Path $projectRoot 'public'
     $routerPath = Join-Path $publicRoot 'router.php'
     $psi = New-Object System.Diagnostics.ProcessStartInfo
@@ -275,7 +245,7 @@ function Start-LocalServer {
     $psi.CreateNoWindow = $true
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
-    $psi.Arguments = ('-S 127.0.0.1:{2} -t "{0}" "{1}"' -f $publicRoot, $routerPath, $Port)
+    $psi.Arguments = ('-S 127.0.0.1:5001 -t "{0}" "{1}"' -f $publicRoot, $routerPath)
 
     $proc = New-Object System.Diagnostics.Process
     $proc.StartInfo = $psi
@@ -293,73 +263,57 @@ function Start-LocalServer {
         php = $php
         public_root = $publicRoot
         router_path = $routerPath
-        port = $Port
     }
 }
 
 function Save-RuntimeInfo {
-    param([int]$Port)
     $payload = [ordered]@{
-        port = $Port
-        site_url = (Get-SiteUrl $Port)
-        admin_url = (Get-AdminUrl $Port)
+        port = 5001
+        site_url = (Get-SiteUrl)
+        admin_url = (Get-AdminUrl)
     }
     $payload | ConvertTo-Json -Depth 2 | Set-Content -Path $runtimeFile -Encoding UTF8
 }
 
-$port = 5001
-Set-ActivePort $port
-$lastFailureDetails = ''
-
-$listenerPids = @(Get-ListenerPids $port)
+$listenerPids = @(Get-ListenerPids)
 if ($listenerPids.Count -gt 0) {
-    Write-Output ('Nasiel som stary proces na ' + $port + ', ukoncujem...')
-    Stop-ListenerPids $port
-    $released = $false
-    for ($attempt = 0; $attempt -lt 10; $attempt++) {
-        Start-Sleep -Milliseconds 500
-        if (@(Get-ListenerPids $port).Count -eq 0) {
-            $released = $true
-            break
-        }
-        Stop-ListenerPids $port
-    }
-    if (-not $released) {
+    Write-Output 'Nasiel som stary proces na 5001, ukoncujem...'
+    Stop-ListenerPids
+    if (-not (Wait-ForPortRelease -Attempts 10 -DelayMs 500)) {
         if (-not (Test-IsAdministrator) -and -not $ElevatedRetry) {
             Write-Output 'Potrebujem admin prava na uvolnenie portu, spustam znova ako admin...'
-            Invoke-ElevatedRetry $port
+            Invoke-ElevatedRetry
             exit 0
         }
-        throw (New-PortBlockedMessage $port)
+        throw (New-PortBlockedMessage)
     }
     Write-Output 'Stary server ukonceny, pokracujem...'
 }
 
-if (@(Get-ListenerPids $port).Count -gt 0) {
-    throw (New-PortBlockedMessage $port)
+if (@(Get-ListenerPids).Count -gt 0) {
+    throw (New-PortBlockedMessage)
 }
 
 Write-Output 'Spustam novy server...'
-$started = Start-LocalServer $port
+$started = Start-LocalServer
 $startedPid = [int](Get-MapValue -Map $started -Key 'pid' -Default '0')
-$selectedPort = 0
+$serverReady = $false
 
 for ($attempt = 0; $attempt -lt 20; $attempt++) {
     Start-Sleep -Milliseconds 500
-    if (Test-SiteReady $port -and Test-AdminReady $port) {
-        $selectedPort = $port
+    if (Test-SiteReady -and Test-AdminReady) {
+        $serverReady = $true
         break
     }
 
-    $running = Get-Process -Id $startedPid -ErrorAction SilentlyContinue
-    if (-not $running) {
+    if (-not (Get-Process -Id $startedPid -ErrorAction SilentlyContinue)) {
         break
     }
 }
 
-if ($selectedPort -le 0) {
-    $probe = Test-SiteProbe $port
-    $adminProbe = Test-AdminProbe $port
+if (-not $serverReady) {
+    $probe = Test-SiteProbe
+    $adminProbe = Test-AdminProbe
     $running = $false
     if ($startedPid -gt 0 -and (Get-Process -Id $startedPid -ErrorAction SilentlyContinue)) {
         $running = $true
@@ -368,10 +322,10 @@ if ($selectedPort -le 0) {
 
     $stderrText = Get-LogText -Path $stderrLog
     $stdoutText = Get-LogText -Path $stdoutLog
-    $portListening = (@(Get-ListenerPids $port).Count -gt 0)
-    $lastFailureDetails = @(
+    $portListening = (@(Get-ListenerPids).Count -gt 0)
+    $failureDetails = @(
         'Local server did not start.'
-        ('Port: ' + $port)
+        'Port: 5001'
         ('PHP process started: ' + ($startedPid -gt 0))
         ('PID: ' + $startedPid)
         ('PHP path: ' + (Get-MapValue -Map $started -Key 'php'))
@@ -388,14 +342,15 @@ if ($selectedPort -le 0) {
         'STDOUT:'
         $stdoutText
     ) -join "`n"
-    throw $lastFailureDetails
+
+    throw $failureDetails
 }
 
-Save-RuntimeInfo $selectedPort
-Write-Output ('Server bezi na 127.0.0.1:' + $selectedPort)
+Save-RuntimeInfo
+Write-Output 'Server bezi na 127.0.0.1:5001'
 
 try {
-    Start-Process (Get-SiteUrl $selectedPort) | Out-Null
+    Start-Process (Get-SiteUrl) | Out-Null
 } catch {
-    Write-Warning "Local server is running, but browser could not be opened automatically."
+    Write-Warning 'Local server is running, but browser could not be opened automatically.'
 }

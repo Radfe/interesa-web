@@ -1,3 +1,7 @@
+param(
+    [switch]$Repair
+)
+
 $ErrorActionPreference = 'Stop'
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -88,7 +92,12 @@ function New-LocalBuildMarker {
 }
 
 if (Test-Path $stopScript) {
-    & $stopScript
+    if ($Repair) {
+        Write-Host 'Repair mode: cistim stary listener na porte 5001...' -ForegroundColor Yellow
+        & $stopScript -Aggressive
+    } else {
+        & $stopScript
+    }
 }
 & $openScript
 Start-Sleep -Milliseconds 500
