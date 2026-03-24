@@ -3930,7 +3930,276 @@ require dirname(__DIR__) . '/inc/head.php';
         </details>
         <?php endif; ?>
 
-        <?php if ($section === 'articles'): ?>
+        <?php if ($section === 'brand'): ?>
+          <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Logo a ikonka stranky</p>
+                <h2>Logo a ikonka</h2>
+                <p class="admin-note">Tu vyriesis tri veci: hlavne logo, malu ikonku stranky a obrazok pri zdielani. Vzdy najprv skopiruj zadanie do Canvy, potom nahraj hotovy subor.</p>
+              </div>
+            </div>
+
+            <section class="admin-subsection">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Hlavne logo</h3>
+                  <p class="admin-meta">Toto je logo v hlavicke webu. Nahraj sem hotove logo z Canvy alebo od grafika.</p>
+                </div>
+              </div>
+              <div class="admin-brief-grid">
+                <div class="admin-brief-card">
+                  <h3>Aktualne logo</h3>
+                  <div class="admin-asset-preview__media">
+                    <?= interessa_render_image($brandLogoImage, ['class' => 'admin-asset-preview__image']) ?>
+                  </div>
+                  <p><strong>Aktivny subor:</strong><br><code><?= esc((string) ($brandLogoImage['asset'] ?? 'img/brand/logo-full.svg')) ?></code></p>
+                </div>
+                <div class="admin-brief-card">
+                  <h3>Text pre Canvu</h3>
+                  <p><?= esc((string) ($brandPromptLibrary['logo']['note'] ?? '')) ?></p>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($brandPromptLibrary['logo']['note'] ?? '')) ?>">Skopirovat zadanie</button>
+                  </div>
+                  <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack admin-inline-upload">
+                    <input type="hidden" name="action" value="save_brand_logo" />
+                    <label>
+                      <span>Vyber hotove logo</span>
+                      <input type="file" name="brand_logo_file" accept=".svg,image/svg+xml,image/png,image/jpeg,image/webp" required />
+                    </label>
+                    <div class="admin-actions">
+                      <button class="btn btn-cta" type="submit">Nahraj hlavne logo</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-subsection">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Ikonka stranky</h3>
+                  <p class="admin-meta">Sem nahraj jeden zdrojovy obrazok. Admin z neho sam pripravi malu ikonku pre prehliadac aj mobil.</p>
+                </div>
+              </div>
+              <div class="admin-brief-grid">
+                <div class="admin-brief-card">
+                  <h3>Aktualne male verzie</h3>
+                  <div class="admin-brand-preview-grid">
+                    <div class="admin-brand-preview-tile">
+                      <strong>Logo icon</strong>
+                      <div class="admin-asset-preview__media">
+                        <?= interessa_render_image($brandIconImage, ['class' => 'admin-asset-preview__image']) ?>
+                      </div>
+                    </div>
+                    <div class="admin-brand-preview-tile">
+                      <strong>Favicon 32</strong>
+                      <div class="admin-asset-preview__media">
+                        <?php if ($brandFaviconAsset !== ''): ?>
+                          <img class="admin-asset-preview__image" src="<?= esc(asset($brandFaviconAsset)) ?>" alt="Favicon 32" />
+                        <?php else: ?>
+                          <div class="admin-note">Zatial chyba</div>
+                        <?php endif; ?>
+                      </div>
+                    </div>
+                    <div class="admin-brand-preview-tile">
+                      <strong>Ikona pre mobil</strong>
+                      <div class="admin-asset-preview__media">
+                        <?php if ($brandAppleTouchAsset !== ''): ?>
+                          <img class="admin-asset-preview__image" src="<?= esc(asset($brandAppleTouchAsset)) ?>" alt="Apple touch icon" />
+                        <?php else: ?>
+                          <div class="admin-note">Zatial chyba</div>
+                        <?php endif; ?>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="admin-brief-card">
+                  <h3>Text pre Canvu</h3>
+                  <p><?= esc((string) ($brandPromptLibrary['icon']['note'] ?? '')) ?></p>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($brandPromptLibrary['icon']['note'] ?? '')) ?>">Skopirovat zadanie</button>
+                  </div>
+                  <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack" data-brand-icon-form="true">
+                    <input type="hidden" name="action" value="save_brand_icon_bundle" />
+                    <label>
+                      <span>Vyber zdrojovy obrazok pre ikonku</span>
+                      <input type="file" name="brand_icon_source" accept="image/png,image/jpeg,image/webp" required />
+                    </label>
+                    <p class="admin-note">Staci jeden cisty stvorcovy obrazok. Admin z neho pripravi male verzie automaticky.</p>
+                    <div class="admin-actions">
+                      <button class="btn btn-cta" type="submit">Nahraj ikonku a priprav male verzie</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </section>
+
+            <section class="admin-subsection">
+              <div class="admin-subsection-head">
+                <div>
+                  <h3>Obrazok pri zdielani</h3>
+                  <p class="admin-meta">Toto je obrazok, ktory sa ukaze pri zdielani webu. Hodil sa aj ako zaklad pre uvodny obrazok hlavnej stranky.</p>
+                </div>
+              </div>
+              <div class="admin-brief-grid">
+                <div class="admin-brief-card">
+                  <h3>Aktualny obrazok</h3>
+                  <div class="admin-asset-preview__media">
+                    <?= interessa_render_image($brandOgImage, ['class' => 'admin-asset-preview__image']) ?>
+                  </div>
+                  <p><strong>Aktivny subor:</strong><br><code><?= esc((string) ($brandOgImage['asset'] ?? 'img/brand/og-default.svg')) ?></code></p>
+                </div>
+                <div class="admin-brief-card">
+                  <h3>Text pre Canvu</h3>
+                  <p><?= esc((string) ($brandPromptLibrary['og']['note'] ?? '')) ?></p>
+                  <div class="admin-inline-actions">
+                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($brandPromptLibrary['og']['note'] ?? '')) ?>">Skopirovat zadanie</button>
+                  </div>
+                  <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack admin-inline-upload">
+                    <input type="hidden" name="action" value="save_brand_og_default" />
+                    <label>
+                      <span>Vyber hotovy obrazok pri zdielani</span>
+                      <input type="file" name="brand_og_file" accept=".svg,image/svg+xml,image/png,image/jpeg,image/webp" required />
+                    </label>
+                    <div class="admin-actions">
+                      <button class="btn btn-cta" type="submit">Nahraj obrazok pri zdielani</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </section>
+          </section>
+
+        <?php elseif ($section === 'tools'): ?>
+          <section class="admin-card">
+            <div class="admin-card-head">
+              <div>
+                <p class="admin-kicker">Import / export workflow</p>
+                <h2>Admin bundle, feed import a batch briefy</h2>
+              </div>
+            </div>
+            <div class="admin-tools-grid">
+              <section class="admin-subsection">
+                <h3>Export admin balika</h3>
+                <p>Stiahne aktualne article, product a affiliate override data v jednom JSON subore.</p>
+                <form method="post" class="admin-form">
+                  <input type="hidden" name="action" value="export_bundle" />
+                  <button class="btn btn-cta" type="submit">Exportovat JSON balik</button>
+                </form>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Export image backlog CSV</h3>
+                <p>Stiahne zoznam chybajucich hero obrazkov a obrazkov produktov aj s cielovymi asset cestami.</p>
+                <form method="post" class="admin-form">
+                  <input type="hidden" name="action" value="export_image_backlog_csv" />
+                  <button class="btn btn-secondary" type="submit">Exportovat image backlog</button>
+                </form>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Money page image gaps</h3>
+                <p>
+                  Sledujeme <?= esc((string) ($moneyPageImageGapReport['tracked_pages'] ?? 0)) ?> hlavnych money pages.
+                  Aktualne chyba <?= esc((string) ($moneyPageImageGapReport['missing_products'] ?? 0)) ?> realnych produktovych obrazkov<?= ($moneyPageImageGapReport['merchant_filter'] ?? 'all') !== 'all' ? ' pre vybraneho merchanta' : '' ?>.
+                </p>
+                <p class="admin-note">Najrychlejsia cesta je otvorit image workflow konkretneho clanku a doplnat obrazky po clankoch.</p>
+                <div class="admin-inline-actions">
+                  <form method="post" class="admin-inline-form">
+                    <input type="hidden" name="action" value="export_money_page_image_gap_csv" />
+                    <input type="hidden" name="merchant_filter" value="<?= esc((string) ($moneyPageImageGapReport['merchant_filter'] ?? 'all')) ?>" />
+                    <button class="btn btn-secondary" type="submit">Exportovat gaps + briefy CSV</button>
+                  </form>
+                  <form method="post" class="admin-inline-form">
+                    <input type="hidden" name="action" value="autofill_gap_products_by_filter" />
+                    <input type="hidden" name="merchant_filter" value="<?= esc((string) ($moneyPageImageGapReport['merchant_filter'] ?? 'all')) ?>" />
+                    <button class="btn btn-secondary" type="submit">Skusit doplnit z produktu</button>
+                  </form>
+                </div>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Import admin balika</h3>
+                <p>Nahraj skor exportovany JSON balik a admin ho sluci s aktualnymi override datami.</p>
+                <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
+                  <input type="hidden" name="action" value="import_bundle" />
+                  <label>
+                    <span>JSON balik</span>
+                    <input type="file" name="bundle_file" accept="application/json,.json" required />
+                  </label>
+                  <button class="btn btn-cta" type="submit">Importovat balik</button>
+                </form>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Import affiliate produktov</h3>
+                <p>Tu spustis canonical feed import len pre 5 podporovanych Dognet merchantov. Nepodporovane obchody sem nepatria.</p>
+                <div class="admin-stack">
+                  <?php foreach ($supportedAffiliateMerchants as $supportedMerchantSlug => $supportedMerchantMeta): ?>
+                    <?php $supportedStatus = $supportedAffiliateMerchantStatuses[$supportedMerchantSlug] ?? ['product_count' => 0, 'affiliate_count' => 0, 'state' => 'missing', 'label' => 'Zatial neimportovane']; ?>
+                    <div class="admin-card">
+                      <div class="admin-card-head">
+                        <div>
+                          <h4><?= esc((string) ($supportedMerchantMeta['name'] ?? $supportedMerchantSlug)) ?></h4>
+                          <p class="admin-meta"><?= esc($supportedMerchantSlug) ?> · campaign <?= esc((string) ($supportedMerchantMeta['campaign_id'] ?? 0)) ?></p>
+                        </div>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill <?= (($supportedStatus['state'] ?? 'missing') === 'imported') ? 'is-good' : 'is-warning' ?>"><?= esc((string) ($supportedStatus['label'] ?? 'Zatial neimportovane')) ?></span>
+                          <span class="admin-status-pill"><?= esc((string) (($supportedStatus['affiliate_count'] ?? 0))) ?> affiliate</span>
+                        </div>
+                      </div>
+                      <p class="admin-note"><strong>Feed URL:</strong> <?= esc((string) ($supportedMerchantMeta['feed_url'] ?? '')) ?></p>
+                      <form method="post" class="admin-form admin-inline-form">
+                        <input type="hidden" name="action" value="supported_affiliate_feed_import" />
+                        <input type="hidden" name="supported_affiliate_merchant_slug" value="<?= esc($supportedMerchantSlug) ?>" />
+                        <input type="hidden" name="supported_affiliate_limit" value="0" />
+                        <button class="btn btn-cta" type="submit"><?= (($supportedStatus['state'] ?? 'missing') === 'imported') ? 'Obnovit import' : 'Importovat' ?></button>
+                      </form>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Feed import produktov</h3>
+                <p>Nahraj XML alebo CSV feed a admin z neho vytvori alebo aktualizuje produkty v admin override vrstve.</p>
+                <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
+                  <input type="hidden" name="action" value="feed_import" />
+                  <div class="admin-grid two-up">
+                    <label>
+                      <span>Merchant slug</span>
+                      <input type="text" name="feed_merchant_slug" value="gymbeam" required />
+                    </label>
+                    <label>
+                      <span>Limit (0 = vsetko)</span>
+                      <input type="number" name="feed_limit" min="0" step="1" value="25" />
+                    </label>
+                  </div>
+                  <label>
+                    <span>Feed subor</span>
+                    <input type="file" name="feed_file" accept=".xml,.csv,.txt" required />
+                  </label>
+                  <button class="btn btn-cta" type="submit">Importovat produkty z feedu</button>
+                </form>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Affiliate CSV import</h3>
+                <p>Nahraj CSV s code/url alebo deeplink_url a admin ho pripoji do centralnej affiliate override vrstvy.</p>
+                <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
+                  <input type="hidden" name="action" value="affiliate_csv_import" />
+                  <label>
+                    <span>Affiliate CSV</span>
+                    <input type="file" name="affiliate_csv_file" accept=".csv,.txt" required />
+                  </label>
+                  <button class="btn btn-cta" type="submit">Importovat affiliate CSV</button>
+                </form>
+              </section>
+            </div>
+          </section>
+
+        <?php elseif ($section === 'articles'): ?>
           <section class="admin-card">
             <?php
               $articleContextTitle = (string) ($selectedArticleOverride['title'] ?: $selectedArticleMeta['title']);
@@ -6495,7 +6764,7 @@ require dirname(__DIR__) . '/inc/head.php';
           </section>
         <?php endif; ?>
 
-        <?php if ($section === 'brand'): ?>
+        <?php if (false && $section === 'brand'): ?>
           <section class="admin-card">
             <div class="admin-card-head">
               <div>
@@ -7055,7 +7324,7 @@ require dirname(__DIR__) . '/inc/head.php';
           </section>
         <?php endif; ?>
 
-        <?php if ($section === 'tools'): ?>
+        <?php if (false && $section === 'tools'): ?>
           <section class="admin-card">
             <div class="admin-card-head">
               <div>
