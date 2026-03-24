@@ -293,11 +293,31 @@ if (!function_exists('interessa_article_product_rule')) {
     }
 }
 
+if (!function_exists('interessa_supported_affiliate_merchants')) {
+    function interessa_supported_affiliate_merchants(): array {
+        return [
+            'symprove',
+            'protein',
+            'gymbeam',
+            'ironaesthetics',
+            'imunoklub',
+        ];
+    }
+}
+
+if (!function_exists('interessa_is_supported_affiliate_merchant')) {
+    function interessa_is_supported_affiliate_merchant(string $merchantSlug): bool {
+        $merchantSlug = interessa_guess_slug_from_text($merchantSlug);
+        return $merchantSlug !== '' && in_array($merchantSlug, interessa_supported_affiliate_merchants(), true);
+    }
+}
+
 if (!function_exists('interessa_product_article_match_score')) {
     function interessa_product_article_match_score(array $normalizedProduct, array $rule): ?array {
         $slug = trim((string) ($normalizedProduct['slug'] ?? ''));
         $category = normalize_category_slug((string) ($normalizedProduct['category'] ?? ''));
-        if ($slug === '' || $category === '') {
+        $merchantSlug = trim((string) ($normalizedProduct['merchant_slug'] ?? ''));
+        if ($slug === '' || $category === '' || !interessa_is_supported_affiliate_merchant($merchantSlug)) {
             return null;
         }
 
@@ -405,6 +425,7 @@ if (!function_exists('interessa_get_products_for_article')) {
                 'affiliate_link' => $affiliateLink !== '' ? $affiliateLink : '#',
                 'affiliate_label' => trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu',
                 'merchant' => trim((string) ($normalized['merchant'] ?? '')),
+                'merchant_slug' => trim((string) ($normalized['merchant_slug'] ?? '')),
                 'category' => $productCategory,
                 'category_label' => trim((string) ($categoryMeta['title'] ?? humanize_slug($productCategory))),
                 'summary' => trim((string) ($normalized['summary'] ?? '')),
