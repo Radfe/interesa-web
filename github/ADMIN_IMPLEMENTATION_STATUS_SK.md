@@ -103,6 +103,16 @@ Najnovsia stabilizacia Dognet importu a deeplink vrstvy:
   - `feed_url`
 - merchant mimo tohto setu sa uz nema tvarit ako automaticky Dognet affiliate-supported merchant
 - direct fallback kompatibilita ostava aj pre ostatne obchody, ale bez predstierania canonical Dognet podpory
+- v import/export casti adminu pribudol jednoduchy blok `Import affiliate produktov`
+- pre 5 podporovanych merchantov tam admin vidi:
+  - nazov
+  - campaign id
+  - canonical feed URL
+  - stav importu podla poctu produktov v internom katalogu
+  - tlacidlo `Importovat` alebo `Obnovit import`
+- import ide cez canonical merchant registry, nacita feed a ulozi:
+  - produkty do interneho katalogu
+  - affiliate zaznamy kompatibilne s resolverom
 
 Menene subory:
 - [public/inc/affiliates.php](C:/data/praca/webova_stranka/github/public/inc/affiliates.php)

@@ -2498,6 +2498,22 @@ if ($isAuthed) {
                 $flash = 'feed-import';
             }
 
+            if ($action === 'supported_affiliate_feed_import') {
+                $merchantSlug = interessa_admin_slugify((string) ($_POST['supported_affiliate_merchant_slug'] ?? ''));
+                if ($merchantSlug === '') {
+                    throw new RuntimeException('Vyber podporovaneho affiliate merchanta.');
+                }
+
+                $limit = max(0, (int) ($_POST['supported_affiliate_limit'] ?? 0));
+                $importResult = interessa_admin_import_supported_affiliate_feed($merchantSlug, $limit);
+                $importSummary = 'Affiliate import: merchant ' . (string) ($importResult['merchant'] ?? $merchantSlug)
+                    . ' (' . (string) ($importResult['merchant_slug'] ?? $merchantSlug) . ')'
+                    . ', campaign ' . (int) ($importResult['campaign_id'] ?? 0)
+                    . ', produkty ' . (int) ($importResult['product_count'] ?? 0)
+                    . ', affiliate zaznamy ' . (int) ($importResult['affiliate_count'] ?? 0) . '.';
+                $flash = 'affiliate-feed-import';
+            }
+
             if ($action === 'import_product_candidates') {
                 $candidateTargetArticleSlug = canonical_article_slug(trim((string) ($_POST['candidate_target_article_slug'] ?? '')));
                 if ($candidateTargetArticleSlug === '' || !isset($articleOptions[$candidateTargetArticleSlug])) {
@@ -2794,6 +2810,15 @@ $selectedArticleHeroSource = is_array($selectedArticleHero) ? (string) ($selecte
 $catalog = interessa_product_catalog();
 $productSlugs = array_keys($catalog);
 sort($productSlugs);
+$supportedAffiliateMerchants = function_exists('interessa_admin_supported_affiliate_merchants')
+    ? interessa_admin_supported_affiliate_merchants()
+    : [];
+$supportedAffiliateMerchantStatuses = [];
+foreach ($supportedAffiliateMerchants as $supportedMerchantSlug => $supportedMerchantMeta) {
+    $supportedAffiliateMerchantStatuses[$supportedMerchantSlug] = function_exists('interessa_admin_supported_affiliate_import_status')
+        ? interessa_admin_supported_affiliate_import_status((string) $supportedMerchantSlug)
+        : ['product_count' => 0, 'affiliate_count' => 0, 'state' => 'missing', 'label' => 'Zatial neimportovane'];
+}
 $manualProductRequested = trim((string) ($_GET['product'] ?? '')) !== '';
 $selectedProductSlug = trim((string) ($_GET['product'] ?? ''));
 $selectedProduct = $selectedProductSlug !== '' ? interessa_product($selectedProductSlug) : null;
@@ -7089,6 +7114,35 @@ require dirname(__DIR__) . '/inc/head.php';
                   </label>
                   <button class="btn btn-cta" type="submit">Importovat balik</button>
                 </form>
+              </section>
+
+              <section class="admin-subsection">
+                <h3>Import affiliate produktov</h3>
+                <p>Tu spustis canonical feed import len pre 5 podporovanych Dognet merchantov. Nepodporovane obchody sem nepatria.</p>
+                <div class="admin-stack">
+                  <?php foreach ($supportedAffiliateMerchants as $supportedMerchantSlug => $supportedMerchantMeta): ?>
+                    <?php $supportedStatus = $supportedAffiliateMerchantStatuses[$supportedMerchantSlug] ?? ['product_count' => 0, 'affiliate_count' => 0, 'state' => 'missing', 'label' => 'Zatial neimportovane']; ?>
+                    <div class="admin-card">
+                      <div class="admin-card-head">
+                        <div>
+                          <h4><?= esc((string) ($supportedMerchantMeta['name'] ?? $supportedMerchantSlug)) ?></h4>
+                          <p class="admin-meta"><?= esc($supportedMerchantSlug) ?> · campaign <?= esc((string) ($supportedMerchantMeta['campaign_id'] ?? 0)) ?></p>
+                        </div>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill <?= (($supportedStatus['state'] ?? 'missing') === 'imported') ? 'is-good' : 'is-warning' ?>"><?= esc((string) ($supportedStatus['label'] ?? 'Zatial neimportovane')) ?></span>
+                          <span class="admin-status-pill"><?= esc((string) (($supportedStatus['affiliate_count'] ?? 0))) ?> affiliate</span>
+                        </div>
+                      </div>
+                      <p class="admin-note"><strong>Feed URL:</strong> <?= esc((string) ($supportedMerchantMeta['feed_url'] ?? '')) ?></p>
+                      <form method="post" class="admin-form admin-inline-form">
+                        <input type="hidden" name="action" value="supported_affiliate_feed_import" />
+                        <input type="hidden" name="supported_affiliate_merchant_slug" value="<?= esc($supportedMerchantSlug) ?>" />
+                        <input type="hidden" name="supported_affiliate_limit" value="0" />
+                        <button class="btn btn-cta" type="submit"><?= (($supportedStatus['state'] ?? 'missing') === 'imported') ? 'Obnovit import' : 'Importovat' ?></button>
+                      </form>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
               </section>
 
               <section class="admin-subsection">

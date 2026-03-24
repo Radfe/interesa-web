@@ -560,6 +560,130 @@ if (!function_exists('interessa_admin_import_feed_products')) {
     }
 }
 
+if (!function_exists('interessa_admin_feed_rows_to_affiliate_records')) {
+    function interessa_admin_feed_rows_to_affiliate_records(array $rows): array {
+        $records = [];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $productSlug = interessa_admin_slugify((string) ($row['slug'] ?? ''));
+            $merchantSlug = interessa_admin_slugify((string) ($row['merchant_slug'] ?? ''));
+            $url = trim((string) ($row['url'] ?? $row['fallback_url'] ?? ''));
+            if ($productSlug === '' || $merchantSlug === '' || $url === '') {
+                continue;
+            }
+
+            $code = $productSlug . '-' . $merchantSlug;
+            $records[$code] = [
+                'url' => $url,
+                'merchant' => (string) ($row['merchant'] ?? ''),
+                'merchant_slug' => $merchantSlug,
+                'product_slug' => $productSlug,
+                'link_type' => aff_detect_link_type_from_url($url, 'product'),
+                'source' => !empty($row['affiliate_supported']) ? 'supported-affiliate-feed' : 'feed-import',
+            ];
+        }
+
+        ksort($records);
+        return $records;
+    }
+}
+
+if (!function_exists('interessa_admin_supported_affiliate_merchants')) {
+    function interessa_admin_supported_affiliate_merchants(): array {
+        return function_exists('aff_supported_affiliate_merchants')
+            ? aff_supported_affiliate_merchants()
+            : [];
+    }
+}
+
+if (!function_exists('interessa_admin_supported_affiliate_import_status')) {
+    function interessa_admin_supported_affiliate_import_status(string $merchantSlug): array {
+        $merchantSlug = interessa_admin_slugify($merchantSlug);
+        $products = interessa_admin_products();
+        $productCount = 0;
+        $affiliateCount = 0;
+
+        foreach ($products as $slug => $product) {
+            if (!is_array($product)) {
+                continue;
+            }
+
+            $normalizedMerchantSlug = interessa_admin_slugify((string) ($product['merchant_slug'] ?? ''));
+            if ($normalizedMerchantSlug !== $merchantSlug) {
+                continue;
+            }
+
+            $productCount++;
+        }
+
+        foreach (interessa_admin_affiliate_links() as $code => $record) {
+            if (!is_array($record)) {
+                continue;
+            }
+
+            $normalizedMerchantSlug = interessa_admin_slugify((string) ($record['merchant_slug'] ?? ''));
+            if ($normalizedMerchantSlug !== $merchantSlug) {
+                continue;
+            }
+
+            $affiliateCount++;
+        }
+
+        return [
+            'product_count' => $productCount,
+            'affiliate_count' => $affiliateCount,
+            'state' => $productCount > 0 ? 'imported' : 'missing',
+            'label' => $productCount > 0
+                ? ('Naimportovane: ' . $productCount . ' produktov')
+                : 'Zatial neimportovane',
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_import_supported_affiliate_feed')) {
+    function interessa_admin_import_supported_affiliate_feed(string $merchantSlug, int $limit = 0): array {
+        $merchantSlug = interessa_admin_slugify($merchantSlug);
+        $merchantMeta = interessa_admin_supported_affiliate_merchants()[$merchantSlug] ?? null;
+        if (!is_array($merchantMeta)) {
+            throw new RuntimeException('Tento merchant nie je v podporovanom Dognet affiliate sete.');
+        }
+
+        $feedUrl = trim((string) ($merchantMeta['feed_url'] ?? ''));
+        if ($feedUrl === '') {
+            throw new RuntimeException('Merchant nema nastaveny canonical feed URL.');
+        }
+
+        $rows = interessa_admin_parse_feed_url($feedUrl, $merchantSlug, $limit);
+        if ($rows === []) {
+            return [
+                'merchant_slug' => $merchantSlug,
+                'merchant' => (string) ($merchantMeta['name'] ?? $merchantSlug),
+                'campaign_id' => (int) ($merchantMeta['campaign_id'] ?? 0),
+                'feed_url' => $feedUrl,
+                'product_count' => 0,
+                'affiliate_count' => 0,
+            ];
+        }
+
+        $imported = interessa_admin_import_feed_products($rows);
+        $affiliateRows = interessa_admin_feed_rows_to_affiliate_records($rows);
+        $affiliateCount = interessa_admin_import_affiliate_rows($affiliateRows);
+
+        return [
+            'merchant_slug' => $merchantSlug,
+            'merchant' => (string) ($merchantMeta['name'] ?? $merchantSlug),
+            'campaign_id' => (int) ($merchantMeta['campaign_id'] ?? 0),
+            'feed_url' => $feedUrl,
+            'product_count' => count($imported),
+            'affiliate_count' => $affiliateCount,
+        ];
+    }
+}
+
 if (!function_exists('interessa_admin_parse_affiliate_csv_file')) {
     function interessa_admin_parse_affiliate_csv_file(string $path): array {
         $handle = fopen($path, 'r');

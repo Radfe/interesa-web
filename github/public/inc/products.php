@@ -405,7 +405,8 @@ if (!function_exists('interessa_get_products_for_article')) {
             $normalized = interessa_normalize_product(is_array($product) ? $product : []);
             $normalizedSlug = trim((string) ($normalized['slug'] ?? $productSlug));
             $productCategory = normalize_category_slug((string) ($normalized['category'] ?? ''));
-            if ($normalizedSlug === '' || $productCategory === '') {
+            $merchantSlug = trim((string) ($normalized['merchant_slug'] ?? ''));
+            if ($normalizedSlug === '' || $productCategory === '' || !interessa_is_supported_affiliate_merchant($merchantSlug)) {
                 continue;
             }
 
@@ -417,6 +418,17 @@ if (!function_exists('interessa_get_products_for_article')) {
             $target = interessa_affiliate_target($normalized);
             $categoryMeta = function_exists('category_meta') ? category_meta($productCategory) : null;
             $affiliateLink = trim((string) ($target['href'] ?? ''));
+            $imageMeta = is_array($normalized['image'] ?? null) ? $normalized['image'] : [];
+            $imageSourceType = trim((string) ($imageMeta['source_type'] ?? 'placeholder'));
+            $hasReadyClick = $affiliateLink !== '' && $affiliateLink !== '#';
+            $hasReadyImage = $imageSourceType !== '' && $imageSourceType !== 'placeholder';
+            $readinessScore = 0;
+            if ($hasReadyClick) {
+                $readinessScore += 100;
+            }
+            if ($hasReadyImage) {
+                $readinessScore += 60;
+            }
 
             $matches[] = [
                 'product_slug' => $normalizedSlug,
@@ -432,6 +444,9 @@ if (!function_exists('interessa_get_products_for_article')) {
                 '_match_score' => (int) ($matchMeta['score'] ?? 0),
                 '_category_priority' => (int) ($matchMeta['category_priority'] ?? 999),
                 '_prefer_hits' => (int) ($matchMeta['prefer_hits'] ?? 0),
+                '_readiness_score' => $readinessScore,
+                '_has_ready_click' => $hasReadyClick ? 1 : 0,
+                '_has_ready_image' => $hasReadyImage ? 1 : 0,
                 '_quality_score' => (int) ($matchMeta['quality_score'] ?? 0),
             ];
         }
@@ -452,6 +467,11 @@ if (!function_exists('interessa_get_products_for_article')) {
                 return $preferCompare;
             }
 
+            $readinessCompare = ((int) ($right['_readiness_score'] ?? 0)) <=> ((int) ($left['_readiness_score'] ?? 0));
+            if ($readinessCompare !== 0) {
+                return $readinessCompare;
+            }
+
             $qualityCompare = ((int) ($right['_quality_score'] ?? 0)) <=> ((int) ($left['_quality_score'] ?? 0));
             if ($qualityCompare !== 0) {
                 return $qualityCompare;
@@ -462,7 +482,7 @@ if (!function_exists('interessa_get_products_for_article')) {
 
         $matches = array_slice($matches, 0, $limit);
         foreach ($matches as &$row) {
-            unset($row['_match_score'], $row['_category_priority'], $row['_prefer_hits'], $row['_quality_score']);
+            unset($row['_match_score'], $row['_category_priority'], $row['_prefer_hits'], $row['_readiness_score'], $row['_has_ready_click'], $row['_has_ready_image'], $row['_quality_score']);
         }
         unset($row);
 
