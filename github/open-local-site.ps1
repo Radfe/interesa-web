@@ -1,3 +1,7 @@
+param(
+    [switch]$ElevatedRetry
+)
+
 $ErrorActionPreference = 'Stop'
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -7,6 +11,12 @@ $stateDir = Join-Path $projectRoot '.codex-local'
 $stdoutLog = Join-Path $stateDir 'php-server.out.log'
 $stderrLog = Join-Path $stateDir 'php-server.err.log'
 $pidFile = Join-Path $stateDir 'php-server.pid'
+
+function Test-IsAdministrator {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
 
 function Get-PhpPath {
     $phpCommand = Get-Command php -ErrorAction SilentlyContinue
@@ -116,6 +126,24 @@ function Stop-ListenerPids {
             & taskkill /PID ([int]$processId) /F /T | Out-Null
             Start-Sleep -Milliseconds 300
         }
+    }
+}
+
+function Invoke-ElevatedRetry {
+    $scriptPath = $MyInvocation.MyCommand.Path
+    $args = @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', ('"' + $scriptPath + '"'),
+        '-ElevatedRetry'
+    )
+
+    $process = Start-Process -FilePath 'powershell.exe' -ArgumentList $args -Verb RunAs -Wait -PassThru
+    if ($null -eq $process) {
+        throw 'Nepodarilo sa spustit elevated retry pre uvolnenie portu.'
+    }
+    if ($process.ExitCode -ne 0) {
+        throw (New-PortBlockedMessage)
     }
 }
 
@@ -231,6 +259,11 @@ if (-not (Test-SiteReady)) {
             Stop-ListenerPids
         }
         if (-not $released) {
+            if (-not (Test-IsAdministrator) -and -not $ElevatedRetry) {
+                Write-Output 'Potrebujem admin prava na uvolnenie portu, spustam znova ako admin...'
+                Invoke-ElevatedRetry
+                exit 0
+            }
             throw (New-PortBlockedMessage)
         }
         Write-Output 'Stary server ukonceny, pokracujem...'
