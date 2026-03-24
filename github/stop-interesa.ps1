@@ -3,6 +3,7 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $stateDir = Join-Path $projectRoot '.codex-local'
 $pidFile = Join-Path $stateDir 'php-server.pid'
+$runtimeFile = Join-Path $stateDir 'local-runtime.json'
 
 function Stop-ByPidFile {
     if (-not (Test-Path $pidFile)) {
@@ -19,6 +20,10 @@ function Stop-ByPidFile {
     if ($proc) {
         Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
         Start-Sleep -Milliseconds 500
+        if (Get-Process -Id ([int] $savedPid) -ErrorAction SilentlyContinue) {
+            & taskkill /PID ([int] $savedPid) /F /T | Out-Null
+            Start-Sleep -Milliseconds 500
+        }
     }
 
     Remove-Item -Path $pidFile -Force -ErrorAction SilentlyContinue
@@ -41,7 +46,7 @@ function Stop-ByPortFallback {
 
     if ($listenerIds.Count -eq 0) {
         $listenerIds = @(netstat -ano |
-            Select-String '^\s*TCP\s+127\.0\.0\.1:5001\s+\S+\s+LISTENING\s+(\d+)\s*$' |
+            Select-String '^\s*TCP\s+\S+:5001\s+\S+\s+LISTENING\s+(\d+)\s*$' |
             ForEach-Object {
                 $match = [regex]::Match($_.Line, 'LISTENING\s+(\d+)\s*$')
                 if ($match.Success) {
@@ -72,4 +77,7 @@ if (-not $stopped) {
 
 if (Test-Path $pidFile) {
     Remove-Item -Path $pidFile -Force -ErrorAction SilentlyContinue
+}
+if (Test-Path $runtimeFile) {
+    Remove-Item -Path $runtimeFile -Force -ErrorAction SilentlyContinue
 }

@@ -11,11 +11,7 @@ $stdoutLog = Join-Path $stateDir 'php-server.out.log'
 $stderrLog = Join-Path $stateDir 'php-server.err.log'
 $pidFile = Join-Path $stateDir 'php-server.pid'
 $runtimeFile = Join-Path $stateDir 'local-runtime.json'
-$candidatePorts = @(5001, 5002, 5003, 5004)
-if ($PreferredPort -gt 0) {
-    $candidatePorts = @($PreferredPort) + @($candidatePorts | Where-Object { $_ -ne $PreferredPort })
-}
-$script:ActivePort = $candidatePorts[0]
+$script:ActivePort = 5001
 
 function Set-ActivePort {
     param([int]$Port)
@@ -126,7 +122,7 @@ function Get-ListenerPids {
     }
 
     $pids = @(netstat -ano |
-        Select-String ('^\s*TCP\s+127\.0\.0\.1:' + [regex]::Escape([string]$Port) + '\s+\S+\s+LISTENING\s+(\d+)\s*$') |
+        Select-String ('^\s*TCP\s+\S+:' + [regex]::Escape([string]$Port) + '\s+\S+\s+LISTENING\s+(\d+)\s*$') |
         ForEach-Object {
             $match = [regex]::Match($_.Line, 'LISTENING\s+(\d+)\s*$')
             if ($match.Success) {
@@ -311,69 +307,59 @@ function Save-RuntimeInfo {
     $payload | ConvertTo-Json -Depth 2 | Set-Content -Path $runtimeFile -Encoding UTF8
 }
 
+$port = 5001
+Set-ActivePort $port
 $lastFailureDetails = ''
+
+$listenerPids = @(Get-ListenerPids $port)
+if ($listenerPids.Count -gt 0) {
+    Write-Output ('Nasiel som stary proces na ' + $port + ', ukoncujem...')
+    Stop-ListenerPids $port
+    $released = $false
+    for ($attempt = 0; $attempt -lt 10; $attempt++) {
+        Start-Sleep -Milliseconds 500
+        if (@(Get-ListenerPids $port).Count -eq 0) {
+            $released = $true
+            break
+        }
+        Stop-ListenerPids $port
+    }
+    if (-not $released) {
+        if (-not (Test-IsAdministrator) -and -not $ElevatedRetry) {
+            Write-Output 'Potrebujem admin prava na uvolnenie portu, spustam znova ako admin...'
+            Invoke-ElevatedRetry $port
+            exit 0
+        }
+        throw (New-PortBlockedMessage $port)
+    }
+    Write-Output 'Stary server ukonceny, pokracujem...'
+}
+
+if (@(Get-ListenerPids $port).Count -gt 0) {
+    throw (New-PortBlockedMessage $port)
+}
+
+Write-Output 'Spustam novy server...'
+$started = Start-LocalServer $port
+$startedPid = [int](Get-MapValue -Map $started -Key 'pid' -Default '0')
 $selectedPort = 0
 
-foreach ($port in $candidatePorts) {
-    Set-ActivePort $port
-
+for ($attempt = 0; $attempt -lt 20; $attempt++) {
+    Start-Sleep -Milliseconds 500
     if (Test-SiteReady $port -and Test-AdminReady $port) {
         $selectedPort = $port
         break
     }
 
-    $listenerPids = @(Get-ListenerPids $port)
-    if ($listenerPids.Count -gt 0) {
-        Write-Output ('Nasiel som stary proces na ' + $port + ', ukoncujem...')
-        Stop-ListenerPids $port
-        $released = $false
-        for ($attempt = 0; $attempt -lt 10; $attempt++) {
-            Start-Sleep -Milliseconds 500
-            if (@(Get-ListenerPids $port).Count -eq 0) {
-                $released = $true
-                break
-            }
-            Stop-ListenerPids $port
-        }
-        if (-not $released) {
-            if ($port -ne $candidatePorts[-1]) {
-                Write-Output ('Port ' + $port + ' je problematicky, pouzivam ' + ($candidatePorts[[array]::IndexOf($candidatePorts, $port) + 1]))
-                continue
-            }
-            if (-not (Test-IsAdministrator) -and -not $ElevatedRetry) {
-                Write-Output 'Potrebujem admin prava na uvolnenie portu, spustam znova ako admin...'
-                Invoke-ElevatedRetry $port
-                exit 0
-            }
-            throw (New-PortBlockedMessage $port)
-        }
-        Write-Output 'Stary server ukonceny, pokracujem...'
-    }
-
-    Write-Output 'Spustam novy server...'
-    $started = Start-LocalServer $port
-    $startedPid = [int](Get-MapValue -Map $started -Key 'pid' -Default '0')
-
-    for ($attempt = 0; $attempt -lt 20; $attempt++) {
-        Start-Sleep -Milliseconds 500
-        if (Test-SiteReady $port -and Test-AdminReady $port) {
-            $selectedPort = $port
-            break
-        }
-
-        $running = Get-Process -Id $startedPid -ErrorAction SilentlyContinue
-        if (-not $running) {
-            break
-        }
-    }
-
-    if ($selectedPort -eq $port) {
+    $running = Get-Process -Id $startedPid -ErrorAction SilentlyContinue
+    if (-not $running) {
         break
     }
+}
 
+if ($selectedPort -le 0) {
     $probe = Test-SiteProbe $port
     $adminProbe = Test-AdminProbe $port
-    $listenerPids = @(Get-ListenerPids $port)
     $running = $false
     if ($startedPid -gt 0 -and (Get-Process -Id $startedPid -ErrorAction SilentlyContinue)) {
         $running = $true
@@ -402,18 +388,7 @@ foreach ($port in $candidatePorts) {
         'STDOUT:'
         $stdoutText
     ) -join "`n"
-
-    if ($port -ne $candidatePorts[-1]) {
-        Write-Output ('Port ' + $port + ' je problematicky, pouzivam ' + ($candidatePorts[[array]::IndexOf($candidatePorts, $port) + 1]))
-        continue
-    }
-}
-
-if ($selectedPort -le 0) {
-    if ($lastFailureDetails -ne '') {
-        throw $lastFailureDetails
-    }
-    throw 'Local server did not start.'
+    throw $lastFailureDetails
 }
 
 Save-RuntimeInfo $selectedPort
