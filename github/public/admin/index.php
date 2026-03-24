@@ -4409,7 +4409,11 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($section === 'products'): ?>
           <?php
             $selectedProductAffiliateCode = trim((string) ($selectedProduct['affiliate_code'] ?? ''));
-            $selectedProductRemoteSrc = trim((string) ($selectedProduct['image_remote_src'] ?? ''));
+            $selectedProductRemoteSrcRaw = trim((string) ($selectedProduct['image_remote_src'] ?? ''));
+            $selectedProductRemoteSrc = function_exists('interessa_admin_valid_remote_shop_image_url')
+              ? interessa_admin_valid_remote_shop_image_url($selectedProductRemoteSrcRaw)
+              : $selectedProductRemoteSrcRaw;
+            $selectedProductHasInvalidRemotePlaceholder = $selectedProductRemoteSrcRaw !== '' && $selectedProductRemoteSrc === '';
             $selectedProductAffiliateInputUrl = is_array($selectedProductAffiliate) ? trim((string) ($selectedProductAffiliate['url'] ?? '')) : '';
             $selectedProductClickReady = !empty($selectedProductClickState['ready']);
             $selectedProductHasDognetLink = $selectedProductAffiliateInputUrl !== '' && str_contains(strtolower($selectedProductAffiliateInputUrl), 'dognet');
@@ -5359,8 +5363,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p><strong>Kam sa ulozi hotovy obrazok:</strong> <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></p>
                   <?php if ($selectedProductPackshotReady): ?>
                     <p class="admin-note">Toto je hotovy obrazok produktu, ktory sa zobrazi na webe.</p>
-                  <?php elseif (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
+                  <?php elseif ($selectedProductRemoteSrc !== ''): ?>
                       <p class="admin-note">Nasiel sa obrazok z obchodu. Teraz klikni <strong>3. Ulozit obrazok z e-shopu</strong>.</p>
+                    <?php elseif ($selectedProductHasInvalidRemotePlaceholder): ?>
+                      <p class="admin-note">Nenasiel sa pouzitelny obrazok z e-shopu. Najdeny URL bol len lokalny placeholder, preto ho admin ignoruje.</p>
                     <?php elseif (!$selectedProductHasUsableSourceUrl): ?>
                       <p class="admin-note">Najprv hore vloz <strong>link produktu alebo Dognet link</strong>. Az potom bude admin vediet hladat obrazok.</p>
                     <?php else: ?>
@@ -5386,10 +5392,10 @@ require dirname(__DIR__) . '/inc/head.php';
                     </div>
                     <?php endif; ?>
                   <?php endif; ?>
-                  <p><strong>Najdeny obrazok z obchodu:</strong> <?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?></p>
-                  <?php if (trim((string) ($selectedProduct['image_remote_src'] ?? '')) !== ''): ?>
+                  <?php if ($selectedProductRemoteSrc !== ''): ?>
+                    <p><strong>Najdeny obrazok z obchodu:</strong> <?= esc($selectedProductRemoteSrc) ?></p>
                     <div class="admin-inline-actions">
-                      <a class="btn btn-secondary btn-small" href="<?= esc((string) ($selectedProduct['image_remote_src'] ?? '')) ?>" target="_blank" rel="noopener">Otvorit obrazok z e-shopu</a>
+                      <a class="btn btn-secondary btn-small" href="<?= esc($selectedProductRemoteSrc) ?>" target="_blank" rel="noopener">Otvorit obrazok z e-shopu</a>
                       <?php if (!$selectedProductPackshotReady): ?>
                         <form method="post" class="admin-inline-form" data-remote-packshot-form="true">
                           <input type="hidden" name="action" value="mirror_packshot_from_remote" />
@@ -5431,6 +5437,8 @@ require dirname(__DIR__) . '/inc/head.php';
                         </form>
                       <?php endif; ?>
                     </div>
+                  <?php elseif ($selectedProductHasInvalidRemotePlaceholder): ?>
+                    <p><strong>Najdeny obrazok z obchodu:</strong> nenasiel sa pouzitelny shop image</p>
                   <?php endif; ?>
                   <details class="admin-subsection is-compact">
                     <summary><strong>Viac detailov o odkaze a produkte</strong> - otvor len ked to naozaj potrebujes</summary>

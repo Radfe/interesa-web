@@ -1835,6 +1835,52 @@ if (!function_exists('interessa_admin_detect_remote_image_extension')) {
     }
 }
 
+if (!function_exists('interessa_admin_is_localhost_url')) {
+    function interessa_admin_is_localhost_url(string $url): bool {
+        $host = strtolower(trim((string) parse_url($url, PHP_URL_HOST)));
+        if ($host === '') {
+            return false;
+        }
+
+        return in_array($host, ['127.0.0.1', 'localhost', '::1'], true);
+    }
+}
+
+if (!function_exists('interessa_admin_is_placeholder_image_url')) {
+    function interessa_admin_is_placeholder_image_url(string $url): bool {
+        $path = strtolower(trim((string) parse_url($url, PHP_URL_PATH)));
+        if ($path === '') {
+            return false;
+        }
+
+        if (str_contains($path, '/assets/img/og-default.')) {
+            return true;
+        }
+
+        $baseName = basename($path);
+        return in_array($baseName, ['og-default.jpg', 'og-default.jpeg', 'og-default.png', 'og-default.webp'], true);
+    }
+}
+
+if (!function_exists('interessa_admin_valid_remote_shop_image_url')) {
+    function interessa_admin_valid_remote_shop_image_url(string $url): string {
+        $url = trim($url);
+        if ($url === '' || !preg_match('~^https?://~i', $url)) {
+            return '';
+        }
+
+        if (interessa_admin_is_localhost_url($url)) {
+            return '';
+        }
+
+        if (interessa_admin_is_placeholder_image_url($url)) {
+            return '';
+        }
+
+        return $url;
+    }
+}
+
 if (!function_exists('interessa_admin_product_image_target_asset_for_ext')) {
     function interessa_admin_product_image_target_asset_for_ext(string $productSlug, string $merchantSlug, string $ext): string {
         $productSlug = trim($productSlug);
@@ -2014,8 +2060,12 @@ if (!function_exists('interessa_admin_mirror_remote_product_image')) {
     function interessa_admin_mirror_remote_product_image(string $productSlug, string $merchantSlug, string $remoteUrl): string {
         $productSlug = trim($productSlug);
         $merchantSlug = trim($merchantSlug);
+        $remoteUrl = interessa_admin_valid_remote_shop_image_url($remoteUrl);
         if ($productSlug === '') {
             throw new RuntimeException('Chyba slug produktu.');
+        }
+        if ($remoteUrl === '') {
+            throw new RuntimeException('Produkt nema pouzitelny remote obrazok z e-shopu.');
         }
 
         $download = interessa_admin_fetch_remote_image_bytes($remoteUrl);
@@ -2047,7 +2097,7 @@ if (!function_exists('interessa_admin_prepare_remote_product_image_download')) {
         }
 
         $normalized = interessa_normalize_product($product);
-        $remoteUrl = trim((string) ($normalized['image_remote_src'] ?? ''));
+        $remoteUrl = interessa_admin_valid_remote_shop_image_url((string) ($normalized['image_remote_src'] ?? ''));
         $enriched = false;
 
         if ($remoteUrl === '' && trim((string) ($normalized['fallback_url'] ?? '')) !== '') {
@@ -2055,7 +2105,7 @@ if (!function_exists('interessa_admin_prepare_remote_product_image_download')) {
             $enriched = !empty($result['saved']);
             $product = interessa_product($slug);
             $normalized = is_array($product) ? interessa_normalize_product($product) : $normalized;
-            $remoteUrl = trim((string) ($normalized['image_remote_src'] ?? ''));
+            $remoteUrl = interessa_admin_valid_remote_shop_image_url((string) ($normalized['image_remote_src'] ?? ''));
         }
 
         if ($remoteUrl === '') {
@@ -2404,7 +2454,7 @@ if (!function_exists('interessa_admin_extract_product_page_data')) {
             'name' => $clean($name),
             'summary' => $clean($summary),
             'brand' => $clean($brand),
-            'image_remote_src' => interessa_admin_url_join($url, $image),
+            'image_remote_src' => interessa_admin_valid_remote_shop_image_url(interessa_admin_url_join($url, $image)),
             'source_url' => $url,
         ];
     }
