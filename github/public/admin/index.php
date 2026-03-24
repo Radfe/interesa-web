@@ -4673,8 +4673,8 @@ require dirname(__DIR__) . '/inc/head.php';
             $selectedProductHasDognetLink = $selectedProductAffiliateInputUrl !== '' && str_contains(strtolower($selectedProductAffiliateInputUrl), 'dognet');
             $selectedProductQuickInputUrl = $selectedProductAffiliateInputUrl !== '' ? $selectedProductAffiliateInputUrl : $selectedProductSourceUrl;
             $selectedProductNextStep = 'enter_link';
-            $selectedProductNextStepLabel = '1. VLOZIT LINK PRODUKTU ALEBO DOGNET LINK';
-            $selectedProductNextStepNote = 'Sem vloz obycajny link produktu alebo Dognet link. Admin z neho pripravi produkt a hned vytvori fungujuci klik.';
+            $selectedProductNextStepLabel = 'URL PRODUKTU';
+            $selectedProductNextStepNote = 'Zadaj priamy odkaz na konkretny produkt. Homepage alebo kategoria neprejdu.';
 
             if ($selectedProductHasUsableSourceUrl && !$selectedProductClickReady) {
               $selectedProductNextStep = 'prepare';
@@ -5316,8 +5316,8 @@ require dirname(__DIR__) . '/inc/head.php';
             <section id="product-link-form" class="admin-subsection is-compact<?= $focusPanel === 'product_link' ? ' is-focused' : '' ?>">
               <div class="admin-subsection-head">
                 <div>
-                  <h3><?= $articleSlotMode ? 'Link produktu a klik do obchodu' : '1. Vloz link produktu' ?></h3>
-                  <p class="admin-meta"><?= $articleSlotMode ? 'Sem vloz priamy link produktu alebo Dognet link. Tento krok pripravi produkt pre vybrany slot.' : 'Sem vloz bud priamu stranku produktu, alebo Dognet link. Admin sa pokusi sam doplnit zvysok.' ?></p>
+                  <h3><?= $articleSlotMode ? 'URL produktu' : '1. Vloz link produktu' ?></h3>
+                  <p class="admin-meta"><?= $articleSlotMode ? 'Zadaj priamy odkaz na konkretny produkt. Homepage alebo kategoria neprejdu. Tento krok pripravi produkt pre vybrany slot.' : 'Sem vloz priamu stranku produktu. Admin sa pokusi sam doplnit zvysok.' ?></p>
                 </div>
               </div>
               <form method="post" class="admin-form admin-form-stack">
@@ -5331,13 +5331,14 @@ require dirname(__DIR__) . '/inc/head.php';
                   <span>URL produktu</span>
                   <input type="url" name="source_link" value="<?= esc($selectedProductQuickInputUrl) ?>" placeholder="https://go.dognet.com/... alebo https://obchod.sk/konkretny-produkt" />
                 </label>
-                <p class="admin-note">Sem patri bud Dognet link pre tento produkt, alebo priamo stranka produktu v obchode. Aj obycajny link produktu staci na rozbehnutie. Dognet mozes doplnit neskor.</p>
+                <p class="admin-note">Sem patri priamy odkaz na konkretny produkt. Homepage, kategoria alebo ina neproduktova URL sa odmietnu.</p>
                 <div class="admin-actions">
                   <button class="btn btn-cta" type="submit"><?= $articleSlotMode ? 'Pridat produkt' : '1. Vlozit link a pripravit produkt aj klik' ?></button>
                 </div>
               </form>
             </section>
 
+            <?php if (!$articleSlotMode): ?>
             <section class="admin-subsection is-compact">
               <div class="admin-subsection-head">
                 <div>
@@ -5622,7 +5623,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php elseif ($selectedProductHasInvalidRemotePlaceholder): ?>
                       <p class="admin-note">Nenasiel sa pouzitelny obrazok z e-shopu. Najdeny URL bol len lokalny placeholder, preto ho admin ignoruje.</p>
                     <?php elseif (!$selectedProductHasUsableSourceUrl): ?>
-                      <p class="admin-note">Najprv hore vloz <strong>link produktu alebo Dognet link</strong>. Az potom bude admin vediet hladat obrazok.</p>
+                      <p class="admin-note">Najprv hore zadaj <strong>URL konkretneho produktu</strong>. Az potom bude admin vediet hladat obrazok.</p>
                     <?php else: ?>
                       <p class="admin-note">Produkt este nema obrazok ulozeny u nas. Najprv klikni <strong>2. Nacitat udaje z obchodu</strong>.</p>
                     <?php endif; ?>
@@ -5721,6 +5722,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               </div>
             </section>
+            <?php endif; ?>
 
             <?php if (!$selectedProductPackshotReady && $selectedProductImageBrief !== []): ?>
               <section class="admin-subsection">
@@ -5792,13 +5794,13 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3><?= $articleSlotMode ? 'Ulozit produkt pre tento slot' : 'Tu doplnis produkt' ?></h3>
-                    <p class="admin-meta"><?= $articleSlotMode ? 'Tu ulozis produktove udaje. Po ulozeni sa vratis priamo naspat na clanok a slot sa hned aktualizuje.' : 'Sem ta posielaju tlacidla vyssie. Najprv sem vlozis link produktu alebo Dognet link. Admin sa potom pokusi sam doplnit zvysok.' ?></p>
+                    <p class="admin-meta"><?= $articleSlotMode ? 'Tu ulozis produktove udaje. Po ulozeni sa vratis priamo naspat na clanok a slot sa hned aktualizuje.' : 'Sem ta posielaju tlacidla vyssie. Najprv sem vlozis URL konkretneho produktu. Admin sa potom pokusi sam doplnit zvysok.' ?></p>
                     <?php if ($returnArticlePrefill !== '' && $returnArticleSlotPrefill > 0): ?>
                       <p class="admin-note"><strong>Po ulozeni sa tento produkt priradi do clanku <?= esc($returnArticlePrefill) ?> / Slot <?= esc((string) $returnArticleSlotPrefill) ?>.</strong></p>
                     <?php endif; ?>
                   </div>
                 </div>
-                <div class="admin-flash is-success" style="margin-bottom:16px;"><?= $articleSlotMode ? 'Odporucany postup: dopln link produktu, nacitaj udaje z obchodu, uloz obrazok a potom produkt uloz naspat do clanku.' : 'Bezny postup: 1. vloz link produktu alebo Dognet link -> 2. klikni Ulozit produkt -> 3. klikni Nacitat udaje z obchodu -> 4. klikni Ulozit obrazok z e-shopu.' ?></div>
+                <div class="admin-flash is-success" style="margin-bottom:16px;"><?= $articleSlotMode ? 'Odporucany postup: zadaj URL konkretneho produktu, nechaj admin doplnit data a potom skontroluj slot v clanku.' : 'Bezny postup: 1. vloz URL konkretneho produktu -> 2. klikni Ulozit produkt -> 3. klikni Nacitat udaje z obchodu -> 4. klikni Ulozit obrazok z e-shopu.' ?></div>
                 <input type="hidden" name="product_slug" value="<?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?>" />
                 <input type="hidden" name="merchant_slug" value="<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>" />
                 <p class="admin-note"><strong>Kod produktu:</strong> <?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?><?php if (trim((string) ($selectedProduct['merchant_slug'] ?? '')) !== ''): ?> / <strong>Kod obchodu:</strong> <?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?><?php endif; ?></p>
