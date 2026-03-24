@@ -1,5 +1,13 @@
 <?php declare(strict_types=1);
 
+$interessaAdminDebugLog = dirname(__DIR__, 2) . '/.codex-local/admin-request-debug.log';
+$interessaAdminDebugWrite = static function (string $message) use ($interessaAdminDebugLog): void {
+    $line = '[' . date('Y-m-d H:i:s') . '] admin ' . $message . PHP_EOL;
+    @file_put_contents($interessaAdminDebugLog, $line, FILE_APPEND);
+};
+
+$interessaAdminDebugWrite('index hit request_uri=' . (string) ($_SERVER['REQUEST_URI'] ?? ''));
+
 require_once dirname(__DIR__) . '/inc/functions.php';
 require_once dirname(__DIR__) . '/inc/products.php';
 require_once dirname(__DIR__) . '/inc/hero-prompts.php';
@@ -1895,6 +1903,7 @@ $focusPanel = trim((string) ($_GET['focus'] ?? ''));
 $error = trim((string) ($_GET['error'] ?? ''));
 
 interessa_admin_session_boot();
+$interessaAdminDebugWrite('after session boot');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = trim((string) ($_POST['action'] ?? ''));
@@ -1915,9 +1924,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $isAuthed = interessa_admin_is_authenticated();
+$interessaAdminDebugWrite('after auth check isAuthed=' . ($isAuthed ? 'true' : 'false'));
 $config = interessa_admin_auth_config();
 $importSummary = '';
-$articleOptions = interessa_admin_article_options();
+$articleOptions = [];
 
 if ($isAuthed) {
     $proxyAction = trim((string) ($_GET['action'] ?? ''));
@@ -2740,6 +2750,8 @@ if ($isAuthed) {
         }
     }
 }
+if ($isAuthed) {
+$interessaAdminDebugWrite('entering heavy authed bootstrap');
 $articleOptions = interessa_admin_article_options();
 $priorityArticleSlugs = array_values(array_filter([
     'najlepsie-proteiny-2026',
@@ -3760,12 +3772,16 @@ $selectedCandidateCanUseSimpleAssignment = $selectedCandidateHasClick
     && !$selectedCandidateHasArticle
     && $selectedCandidateArticleSlug !== ''
     && ($selectedCandidateArticleFit['status'] ?? 'no-fit') === 'fit';
+}
 
+$interessaAdminDebugWrite('before head render');
 
 require dirname(__DIR__) . '/inc/head.php';
+$interessaAdminDebugWrite('after head render');
 ?>
 <section class="container admin-page">
   <?php if (!$isAuthed): ?>
+    <?php $interessaAdminDebugWrite('rendering login branch'); ?>
     <div class="admin-login-wrap">
       <section class="admin-login-card">
         <p class="admin-kicker">Protected admin</p>
@@ -3792,6 +3808,7 @@ require dirname(__DIR__) . '/inc/head.php';
       </section>
     </div>
   <?php else: ?>
+    <?php $interessaAdminDebugWrite('rendering authed branch'); ?>
     <div class="admin-shell">
       <?php if ($flashMessage !== ''): ?>
         <div class="admin-flash is-success">

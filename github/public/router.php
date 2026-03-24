@@ -2,8 +2,17 @@
 
 declare(strict_types=1);
 
+$interessaAdminDebugLog = dirname(__DIR__) . '/.codex-local/admin-request-debug.log';
+$interessaAdminDebugWrite = static function (string $message) use ($interessaAdminDebugLog): void {
+    $line = '[' . date('Y-m-d H:i:s') . '] router ' . $message . PHP_EOL;
+    @file_put_contents($interessaAdminDebugLog, $line, FILE_APPEND);
+};
+
 if (PHP_SAPI === 'cli-server') {
     $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+    if (str_starts_with($uriPath, '/admin')) {
+        $interessaAdminDebugWrite('hit request_uri=' . (string) ($_SERVER['REQUEST_URI'] ?? '') . ' path=' . $uriPath);
+    }
     $resolved = realpath(__DIR__ . $uriPath);
     $docroot = realpath(__DIR__) ?: __DIR__;
 
@@ -45,6 +54,7 @@ if ($path === '/dognet-helper') {
 }
 
 if ($path === '/admin') {
+    $interessaAdminDebugWrite('dispatch /admin to admin/index.php');
     require __DIR__ . '/admin/index.php';
     exit;
 }
