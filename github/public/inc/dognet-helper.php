@@ -17,8 +17,14 @@ if (!function_exists('dognet_helper_overrides_path')) {
 }
 
 if (!function_exists('dognet_helper_campaign_url')) {
-    function dognet_helper_campaign_url(): string {
-        return 'https://app.dognet.com/campaigns/detail/4101';
+    function dognet_helper_campaign_url(string $merchantSlug = 'gymbeam'): string {
+        $campaignId = function_exists('aff_supported_affiliate_campaign_id')
+            ? aff_supported_affiliate_campaign_id($merchantSlug)
+            : 0;
+
+        return $campaignId > 0
+            ? 'https://app.dognet.com/campaigns/detail/' . $campaignId
+            : '';
     }
 }
 
@@ -79,6 +85,7 @@ if (!function_exists('dognet_helper_enrich_row_with_registry')) {
             'product_url' => (string) ($row['product_url'] ?? ''),
             'click_url' => (string) ($row['deeplink_url'] ?? ''),
             'affiliate_url' => (string) ($row['deeplink_url'] ?? ''),
+            'prefer_registry' => true,
         ];
 
         $target = aff_resolve_click_target($context);

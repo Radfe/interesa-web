@@ -13,8 +13,18 @@ $merchant = $argv[2] ?? 'merchant';
 $limitArg = $argv[3] ?? '';
 $limit = is_numeric($limitArg) ? max(0, (int) $limitArg) : 0;
 
-if (!is_string($source) || trim($source) === '' || !is_file($source)) {
-    fwrite(STDERR, "Usage: php public/tools/import-dognet-feed.php <feed-file> <merchant-slug> [limit]\n");
+if (!is_string($source) || trim($source) === '') {
+    $source = 'auto';
+}
+
+if ($source === 'auto') {
+    $source = function_exists('aff_supported_affiliate_feed_url')
+        ? aff_supported_affiliate_feed_url($merchant)
+        : '';
+}
+
+if (!is_string($source) || trim($source) === '' || (!is_file($source) && !preg_match('~^https?://~i', $source))) {
+    fwrite(STDERR, "Usage: php public/tools/import-dognet-feed.php <feed-file|feed-url|auto> <merchant-slug> [limit]\n");
     exit(1);
 }
 
@@ -39,12 +49,22 @@ function dognet_slugify(string $value): string {
 }
 
 function dognet_merchant_identity(string $merchantSlug, string $url = '', string $merchant = ''): array {
-    $resolved = function_exists('aff_resolve_merchant_meta')
-        ? aff_resolve_merchant_meta($merchantSlug, $merchant, $url)
+    $resolved = function_exists('aff_supported_affiliate_merchant_meta')
+        ? aff_supported_affiliate_merchant_meta($merchantSlug, $merchant, $url)
         : null;
+
+    if (!is_array($resolved) && function_exists('aff_resolve_merchant_meta')) {
+        $resolved = aff_resolve_merchant_meta($merchantSlug, $merchant, $url);
+    }
 
     $resolvedSlug = trim((string) ($resolved['merchant_slug'] ?? $merchantSlug));
     $resolvedName = trim((string) ($resolved['name'] ?? $merchant));
+    $feedUrl = trim((string) ($resolved['feed_url'] ?? ''));
+    $campaignId = (int) ($resolved['campaign_id'] ?? 0);
+    $affiliateSupported = !empty($resolved['affiliate_supported'])
+        && trim((string) ($resolved['network'] ?? '')) === 'dognet'
+        && $feedUrl !== ''
+        && $campaignId > 0;
 
     if ($resolvedSlug === '') {
         $resolvedSlug = dognet_slugify($merchantSlug);
@@ -56,7 +76,46 @@ function dognet_merchant_identity(string $merchantSlug, string $url = '', string
     return [
         'merchant_slug' => $resolvedSlug,
         'merchant' => $resolvedName,
+        'campaign_id' => $campaignId,
+        'feed_url' => $feedUrl,
+        'affiliate_supported' => $affiliateSupported,
     ];
+}
+
+function dognet_download_source_if_needed(string $source): string {
+    $source = trim($source);
+    if ($source === '' || !preg_match('~^https?://~i', $source)) {
+        return $source;
+    }
+
+    $tempFile = tempnam(sys_get_temp_dir(), 'dognet-tool-');
+    if ($tempFile === false) {
+        fwrite(STDERR, "Unable to prepare temp feed file.\n");
+        exit(1);
+    }
+
+    $body = @file_get_contents($source);
+    if (!is_string($body) || trim($body) === '') {
+        @unlink($tempFile);
+        fwrite(STDERR, "Unable to download feed URL.\n");
+        exit(1);
+    }
+
+    file_put_contents($tempFile, $body);
+    return $tempFile;
+}
+
+function dognet_cleanup_source(string $originalSource, string $workingSource): void {
+    if ($workingSource !== $originalSource && is_file($workingSource)) {
+        @unlink($workingSource);
+    }
+}
+
+function dognet_with_canonical_source(array $row, array $merchantMeta): array {
+    $row['campaign_id'] = (int) ($merchantMeta['campaign_id'] ?? 0);
+    $row['feed_url'] = trim((string) ($merchantMeta['feed_url'] ?? ''));
+    $row['affiliate_supported'] = !empty($merchantMeta['affiliate_supported']);
+    return $row;
 }
 
 function dognet_is_xml_feed(string $path): bool {
@@ -123,6 +182,7 @@ function dognet_import_xml(string $source, string $merchant, int $limit = 0): ar
             'feed_source' => 'heureka-xml',
             'affiliate_candidate' => str_contains($url, 'dognet'),
         ];
+        $rows[array_key_last($rows)] = dognet_with_canonical_source($rows[array_key_last($rows)], $merchantMeta);
 
         if ($limit > 0 && count($rows) >= $limit) {
             break;
@@ -183,6 +243,7 @@ function dognet_import_csv(string $source, string $merchant, int $limit = 0): ar
             'feed_source' => 'csv',
             'affiliate_candidate' => true,
         ];
+        $rows[array_key_last($rows)] = dognet_with_canonical_source($rows[array_key_last($rows)], $merchantMeta);
 
         if ($limit > 0 && count($rows) >= $limit) {
             break;
@@ -193,8 +254,13 @@ function dognet_import_csv(string $source, string $merchant, int $limit = 0): ar
     return $rows;
 }
 
-$rows = dognet_is_xml_feed($source)
-    ? dognet_import_xml($source, $merchant, $limit)
-    : dognet_import_csv($source, $merchant, $limit);
+$workingSource = dognet_download_source_if_needed($source);
+try {
+    $rows = dognet_is_xml_feed($workingSource)
+        ? dognet_import_xml($workingSource, $merchant, $limit)
+        : dognet_import_csv($workingSource, $merchant, $limit);
+} finally {
+    dognet_cleanup_source($source, $workingSource);
+}
 
 echo json_encode($rows, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL;

@@ -64,12 +64,12 @@
     },
     "kreatin-porovnanie-aktin": {
         "code": "kreatin-porovnanie-aktin",
-        "url": "https://aktin.sk/vilgain-kreatin/bez-prichute-500-g-41573",
+        "url": "https://www.aktin.sk/",
         "merchant": "Aktin",
         "merchant_slug": "aktin",
         "product_slug": "aktin-creatine-monohydrate",
         "link_type": "affiliate",
-        "source": "admin-quick-link"
+        "source": "admin-quick-link-auto"
     },
     "protein-na-chudnutie-gymbeam": {
         "code": "protein-na-chudnutie-gymbeam",

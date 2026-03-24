@@ -205,8 +205,63 @@ function aff_merchant(string $slug): ?array {
         return null;
     }
 
+    $resolved = aff_resolve_merchant_meta($slug);
+    if (is_array($resolved)) {
+        return $resolved;
+    }
+
     $merchants = aff_load_merchants();
     return $merchants[$slug] ?? null;
+}
+
+function aff_is_supported_affiliate_merchant(string $merchantSlug = '', string $merchant = '', string $url = ''): bool {
+    $resolved = aff_resolve_merchant_meta($merchantSlug, $merchant, $url);
+    if (!is_array($resolved)) {
+        return false;
+    }
+
+    return !empty($resolved['affiliate_supported'])
+        && trim((string) ($resolved['network'] ?? '')) === 'dognet'
+        && trim((string) ($resolved['feed_url'] ?? '')) !== ''
+        && (int) ($resolved['campaign_id'] ?? 0) > 0;
+}
+
+function aff_supported_affiliate_merchant_meta(string $merchantSlug = '', string $merchant = '', string $url = ''): ?array {
+    $resolved = aff_resolve_merchant_meta($merchantSlug, $merchant, $url);
+    if (!is_array($resolved) || !aff_is_supported_affiliate_merchant($merchantSlug, $merchant, $url)) {
+        return null;
+    }
+
+    return $resolved;
+}
+
+function aff_supported_affiliate_merchants(): array {
+    $supported = [];
+    foreach (aff_load_merchants() as $merchantSlug => $merchantMeta) {
+        if (!is_array($merchantMeta)) {
+            continue;
+        }
+
+        $resolved = aff_supported_affiliate_merchant_meta((string) $merchantSlug);
+        if (!is_array($resolved)) {
+            continue;
+        }
+
+        $supported[trim((string) ($resolved['merchant_slug'] ?? $merchantSlug))] = $resolved;
+    }
+
+    ksort($supported);
+    return $supported;
+}
+
+function aff_supported_affiliate_feed_url(string $merchantSlug = '', string $merchant = '', string $url = ''): string {
+    $resolved = aff_supported_affiliate_merchant_meta($merchantSlug, $merchant, $url);
+    return trim((string) ($resolved['feed_url'] ?? ''));
+}
+
+function aff_supported_affiliate_campaign_id(string $merchantSlug = '', string $merchant = '', string $url = ''): int {
+    $resolved = aff_supported_affiliate_merchant_meta($merchantSlug, $merchant, $url);
+    return (int) ($resolved['campaign_id'] ?? 0);
 }
 
 function aff_merge_merchant_meta(array $record): array {
@@ -560,6 +615,10 @@ if (!function_exists('aff_find_best_record_for_context')) {
         $directUrl = aff_context_direct_url($context);
         $merchantSlug = aff_context_merchant_slug($context);
         $merchant = trim((string) ($context['merchant'] ?? ''));
+        if ($code === '' && !aff_is_supported_affiliate_merchant($merchantSlug, $merchant, $directUrl)) {
+            return null;
+        }
+
         $directHost = aff_extract_host_from_url($directUrl);
         $bestRecord = null;
         $bestScore = -1;

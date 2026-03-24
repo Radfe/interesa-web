@@ -110,12 +110,22 @@ if (!function_exists('interessa_admin_feed_row_matches_filter')) {
 
 if (!function_exists('interessa_admin_feed_merchant_identity')) {
     function interessa_admin_feed_merchant_identity(string $merchantSlug, string $url = '', string $merchant = ''): array {
-        $resolved = function_exists('aff_resolve_merchant_meta')
-            ? aff_resolve_merchant_meta($merchantSlug, $merchant, $url)
+        $resolved = function_exists('aff_supported_affiliate_merchant_meta')
+            ? aff_supported_affiliate_merchant_meta($merchantSlug, $merchant, $url)
             : null;
+
+        if (!is_array($resolved) && function_exists('aff_resolve_merchant_meta')) {
+            $resolved = aff_resolve_merchant_meta($merchantSlug, $merchant, $url);
+        }
 
         $resolvedSlug = trim((string) ($resolved['merchant_slug'] ?? $merchantSlug));
         $resolvedName = trim((string) ($resolved['name'] ?? $merchant));
+        $feedUrl = trim((string) ($resolved['feed_url'] ?? ''));
+        $campaignId = (int) ($resolved['campaign_id'] ?? 0);
+        $affiliateSupported = !empty($resolved['affiliate_supported'])
+            && trim((string) ($resolved['network'] ?? '')) === 'dognet'
+            && $feedUrl !== ''
+            && $campaignId > 0;
 
         if ($resolvedSlug === '') {
             $resolvedSlug = interessa_admin_feed_slugify($merchantSlug);
@@ -127,7 +137,33 @@ if (!function_exists('interessa_admin_feed_merchant_identity')) {
         return [
             'merchant_slug' => $resolvedSlug,
             'merchant' => $resolvedName,
+            'campaign_id' => $campaignId,
+            'feed_url' => $feedUrl,
+            'affiliate_supported' => $affiliateSupported,
         ];
+    }
+}
+
+if (!function_exists('interessa_admin_feed_with_canonical_source')) {
+    function interessa_admin_feed_with_canonical_source(array $row, array $merchantMeta): array {
+        $row['campaign_id'] = (int) ($merchantMeta['campaign_id'] ?? 0);
+        $row['feed_url'] = trim((string) ($merchantMeta['feed_url'] ?? ''));
+        $row['affiliate_supported'] = !empty($merchantMeta['affiliate_supported']);
+        return $row;
+    }
+}
+
+if (!function_exists('interessa_admin_feed_canonical_source_url')) {
+    function interessa_admin_feed_canonical_source_url(string $url, string $merchantSlug): string {
+        $url = trim($url);
+        if ($url !== '') {
+            return $url;
+        }
+
+        $resolvedFeedUrl = function_exists('aff_supported_affiliate_feed_url')
+            ? aff_supported_affiliate_feed_url($merchantSlug)
+            : null;
+        return trim((string) $resolvedFeedUrl);
     }
 }
 
@@ -273,6 +309,7 @@ if (!function_exists('interessa_admin_download_remote_feed_to_temp_file')) {
 
 if (!function_exists('interessa_admin_parse_feed_url')) {
     function interessa_admin_parse_feed_url(string $url, string $merchantSlug, int $limit = 0, string $filter = ''): array {
+        $url = interessa_admin_feed_canonical_source_url($url, $merchantSlug);
         $tempFile = interessa_admin_download_remote_feed_to_temp_file($url);
         try {
             return interessa_admin_parse_feed_file($tempFile, $merchantSlug, $limit, $filter);
@@ -335,6 +372,7 @@ if (!function_exists('interessa_admin_parse_xml_feed')) {
                 'ean' => interessa_admin_feed_xml_value($item, 'EAN'),
                 'feed_source' => 'xml',
             ];
+            $row = interessa_admin_feed_with_canonical_source($row, $merchantMeta);
 
             if (!interessa_admin_feed_row_matches_filter($row, $terms)) {
                 continue;
@@ -404,6 +442,7 @@ if (!function_exists('interessa_admin_parse_csv_feed')) {
                 'ean' => trim((string) ($record['ean'] ?? '')),
                 'feed_source' => 'csv',
             ];
+            $rowData = interessa_admin_feed_with_canonical_source($rowData, $merchantMeta);
 
             if (!interessa_admin_feed_row_matches_filter($rowData, $terms)) {
                 continue;
@@ -469,6 +508,7 @@ if (!function_exists('interessa_admin_parse_json_feed')) {
                 'ean' => trim((string) ($item['ean'] ?? '')),
                 'feed_source' => 'json',
             ];
+            $rowData = interessa_admin_feed_with_canonical_source($rowData, $merchantMeta);
 
             if (!interessa_admin_feed_row_matches_filter($rowData, $terms)) {
                 continue;

@@ -91,6 +91,18 @@ Najnovsia stabilizacia Dognet importu a deeplink vrstvy:
   automaticky skusa affiliate lookup cez resolver
 - ak uz system pozna vhodny deeplink pre ten isty produkt alebo merchant/URL match, pouzije ho hned bez dalsieho rucneho kroku
 - ak sa nic nenajde, produkt sa neblokuje a ostane direct fallback URL
+- canonical affiliate merchant set je teraz zúzeny na 5 podporovanych Dognet merchantov:
+  - `symprove`
+  - `protein`
+  - `gymbeam`
+  - `ironaesthetics`
+  - `imunoklub`
+- pre tieto merchanty je source of truth:
+  - `merchant_slug`
+  - `campaign_id`
+  - `feed_url`
+- merchant mimo tohto setu sa uz nema tvarit ako automaticky Dognet affiliate-supported merchant
+- direct fallback kompatibilita ostava aj pre ostatne obchody, ale bez predstierania canonical Dognet podpory
 
 Menene subory:
 - [public/inc/affiliates.php](C:/data/praca/webova_stranka/github/public/inc/affiliates.php)
