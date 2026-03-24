@@ -2,6 +2,7 @@ $ErrorActionPreference = 'Stop'
 
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $siteUrl = 'http://127.0.0.1:5001/'
+$adminUrl = 'http://127.0.0.1:5001/admin'
 $stateDir = Join-Path $projectRoot '.codex-local'
 $stdoutLog = Join-Path $stateDir 'php-server.out.log'
 $stderrLog = Join-Path $stateDir 'php-server.err.log'
@@ -35,11 +36,37 @@ function Test-SiteReady {
     }
 }
 
+function Test-AdminReady {
+    try {
+        $resp = Invoke-WebRequest -Uri $adminUrl -UseBasicParsing -TimeoutSec 2
+        return $resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400
+    } catch {
+        return $false
+    }
+}
+
 function Test-SiteProbe {
     try {
         $resp = Invoke-WebRequest -Uri $siteUrl -UseBasicParsing -TimeoutSec 2
         return @{
             ready = ($resp.StatusCode -eq 200)
+            status = [string]$resp.StatusCode
+            message = 'HTTP ' + [string]$resp.StatusCode
+        }
+    } catch {
+        return @{
+            ready = $false
+            status = ''
+            message = $_.Exception.Message
+        }
+    }
+}
+
+function Test-AdminProbe {
+    try {
+        $resp = Invoke-WebRequest -Uri $adminUrl -UseBasicParsing -TimeoutSec 2
+        return @{
+            ready = ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 400)
             status = [string]$resp.StatusCode
             message = 'HTTP ' + [string]$resp.StatusCode
         }
@@ -84,6 +111,11 @@ function Stop-ListenerPids {
             continue
         }
         Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Milliseconds 300
+        if (Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue) {
+            & taskkill /PID ([int]$processId) /F /T | Out-Null
+            Start-Sleep -Milliseconds 300
+        }
     }
 }
 
@@ -187,20 +219,30 @@ function Start-LocalServer {
 if (-not (Test-SiteReady)) {
     $listenerPids = @(Get-ListenerPids)
     if ($listenerPids.Count -gt 0) {
+        Write-Output 'Nasiel som stary proces na 5001, ukoncujem...'
         Stop-ListenerPids
-        Start-Sleep -Milliseconds 500
-        if (@(Get-ListenerPids).Count -gt 0) {
+        $released = $false
+        for ($attempt = 0; $attempt -lt 10; $attempt++) {
+            Start-Sleep -Milliseconds 500
+            if (@(Get-ListenerPids).Count -eq 0) {
+                $released = $true
+                break
+            }
+            Stop-ListenerPids
+        }
+        if (-not $released) {
             throw (New-PortBlockedMessage)
         }
         Write-Output 'Stary server ukonceny, pokracujem...'
     }
 
+    Write-Output 'Spustam novy server...'
     $started = Start-LocalServer
     $startedPid = [int](Get-MapValue -Map $started -Key 'pid' -Default '0')
 
     for ($attempt = 0; $attempt -lt 20; $attempt++) {
         Start-Sleep -Milliseconds 500
-        if (Test-SiteReady) {
+        if (Test-SiteReady -and Test-AdminReady) {
             break
         }
 
@@ -210,8 +252,9 @@ if (-not (Test-SiteReady)) {
         }
     }
 
-    if (-not (Test-SiteReady)) {
+    if (-not (Test-SiteReady) -or -not (Test-AdminReady)) {
         $probe = Test-SiteProbe
+        $adminProbe = Test-AdminProbe
         $listenerPids = @(Get-ListenerPids)
         if ($listenerPids.Count -gt 0 -and -not (Get-Process -Id $startedPid -ErrorAction SilentlyContinue)) {
             throw (New-PortBlockedMessage)
@@ -235,6 +278,7 @@ if (-not (Test-SiteReady)) {
             ('Process still running: ' + $running)
             ('Port 5001 listening: ' + $portListening)
             ('Site probe: ' + (Get-MapValue -Map $probe -Key 'message'))
+            ('Admin probe: ' + (Get-MapValue -Map $adminProbe -Key 'message'))
             ''
             'STDERR:'
             $stderrText
@@ -250,6 +294,8 @@ if (-not (Test-SiteReady)) {
         throw $failureDetails
     }
 }
+
+Write-Output 'Server bezi na 127.0.0.1:5001'
 
 try {
     Start-Process $siteUrl | Out-Null
