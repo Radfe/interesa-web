@@ -2819,6 +2819,13 @@ foreach ($supportedAffiliateMerchants as $supportedMerchantSlug => $supportedMer
         ? interessa_admin_supported_affiliate_import_status((string) $supportedMerchantSlug)
         : ['product_count' => 0, 'affiliate_count' => 0, 'state' => 'missing', 'label' => 'Zatial neimportovane'];
 }
+$supportedAffiliateMerchantDescriptions = [
+    'gymbeam' => 'doplnky vyzivy a sportova vyziva',
+    'protein' => 'proteiny, gainery a sportova vyziva',
+    'symprove' => 'travenie a starostlivost o creva',
+    'ironaesthetics' => 'fitness doplnky a aktivny zivotny styl',
+    'imunoklub' => 'imunita, zdravie a doplnky vyzivy',
+];
 $manualProductRequested = trim((string) ($_GET['product'] ?? '')) !== '';
 $selectedProductSlug = trim((string) ($_GET['product'] ?? ''));
 $selectedProduct = $selectedProductSlug !== '' ? interessa_product($selectedProductSlug) : null;
@@ -4072,29 +4079,30 @@ require dirname(__DIR__) . '/inc/head.php';
           </section>
 
         <?php elseif ($section === 'tools'): ?>
-          <section class="admin-card">
+          <section class="admin-card admin-card--wide admin-tools-root">
             <div class="admin-card-head">
               <div>
                 <p class="admin-kicker">Import / export workflow</p>
-                <h2>Admin bundle, feed import a batch briefy</h2>
+                <h2>Import a export dat</h2>
+                <p class="admin-note">Najprv importuj produkty od podporovanych merchantov. Exporty pouzi len vtedy, ked potrebujes odovzdat data alebo skontrolovat chybajuce obrazky.</p>
               </div>
             </div>
             <div class="admin-tools-grid">
               <section class="admin-subsection">
-                <h3>Export admin balika</h3>
+                <h3>Export dat webu</h3>
                 <p>Stiahne aktualne article, product a affiliate override data v jednom JSON subore.</p>
                 <form method="post" class="admin-form">
                   <input type="hidden" name="action" value="export_bundle" />
-                  <button class="btn btn-cta" type="submit">Exportovat JSON balik</button>
+                  <button class="btn btn-cta" type="submit">Exportovat data webu</button>
                 </form>
               </section>
 
               <section class="admin-subsection">
-                <h3>Export image backlog CSV</h3>
+                <h3>Chybajuce obrazky</h3>
                 <p>Stiahne zoznam chybajucich hero obrazkov a obrazkov produktov aj s cielovymi asset cestami.</p>
                 <form method="post" class="admin-form">
                   <input type="hidden" name="action" value="export_image_backlog_csv" />
-                  <button class="btn btn-secondary" type="submit">Exportovat image backlog</button>
+                  <button class="btn btn-secondary" type="submit">Exportovat zoznam obrazkov</button>
                 </form>
               </section>
 
@@ -4134,29 +4142,36 @@ require dirname(__DIR__) . '/inc/head.php';
 
               <section class="admin-subsection">
                 <h3>Import affiliate produktov</h3>
-                <p>Tu spustis canonical feed import len pre 5 podporovanych Dognet merchantov. Nepodporovane obchody sem nepatria.</p>
-                <div class="admin-stack">
+                <p>Tu zacni ako prve. System importuje len merchantov, ktorych vieme realne pouzit v affiliate workflowe.</p>
+                <div class="admin-tools-merchant-grid">
                   <?php foreach ($supportedAffiliateMerchants as $supportedMerchantSlug => $supportedMerchantMeta): ?>
                     <?php $supportedStatus = $supportedAffiliateMerchantStatuses[$supportedMerchantSlug] ?? ['product_count' => 0, 'affiliate_count' => 0, 'state' => 'missing', 'label' => 'Zatial neimportovane']; ?>
-                    <div class="admin-card">
+                    <?php
+                      $merchantImported = (($supportedStatus['state'] ?? 'missing') === 'imported');
+                      $merchantProductCount = (int) ($supportedStatus['product_count'] ?? 0);
+                      $merchantDescription = (string) ($supportedAffiliateMerchantDescriptions[$supportedMerchantSlug] ?? 'produkty pre tento obchod');
+                      $merchantStatusLabel = $merchantImported
+                        ? 'Importovane (' . $merchantProductCount . ' produktov)'
+                        : 'Neimportovane';
+                    ?>
+                    <article class="admin-card admin-tools-merchant-card">
                       <div class="admin-card-head">
                         <div>
                           <h4><?= esc((string) ($supportedMerchantMeta['name'] ?? $supportedMerchantSlug)) ?></h4>
-                          <p class="admin-meta"><?= esc($supportedMerchantSlug) ?> · campaign <?= esc((string) ($supportedMerchantMeta['campaign_id'] ?? 0)) ?></p>
+                          <p class="admin-meta"><?= esc($merchantDescription) ?></p>
                         </div>
                         <div class="admin-status-pills">
-                          <span class="admin-status-pill <?= (($supportedStatus['state'] ?? 'missing') === 'imported') ? 'is-good' : 'is-warning' ?>"><?= esc((string) ($supportedStatus['label'] ?? 'Zatial neimportovane')) ?></span>
-                          <span class="admin-status-pill"><?= esc((string) (($supportedStatus['affiliate_count'] ?? 0))) ?> affiliate</span>
+                          <span class="admin-status-pill <?= $merchantImported ? 'is-good' : 'is-warning' ?>"><?= esc($merchantStatusLabel) ?></span>
                         </div>
                       </div>
-                      <p class="admin-note"><strong>Feed URL:</strong> <?= esc((string) ($supportedMerchantMeta['feed_url'] ?? '')) ?></p>
+                      <p class="admin-note">Import vytvori alebo obnovi produkty pre tento obchod bez potreby rucneho feed workflowu.</p>
                       <form method="post" class="admin-form admin-inline-form">
                         <input type="hidden" name="action" value="supported_affiliate_feed_import" />
                         <input type="hidden" name="supported_affiliate_merchant_slug" value="<?= esc($supportedMerchantSlug) ?>" />
                         <input type="hidden" name="supported_affiliate_limit" value="0" />
-                        <button class="btn btn-cta" type="submit"><?= (($supportedStatus['state'] ?? 'missing') === 'imported') ? 'Obnovit import' : 'Importovat' ?></button>
+                        <button class="btn btn-cta admin-tools-merchant-card__cta" type="submit"><?= $merchantImported ? 'Obnovit produkty' : 'Importovat produkty' ?></button>
                       </form>
-                    </div>
+                    </article>
                   <?php endforeach; ?>
                 </div>
               </section>
