@@ -1949,11 +1949,11 @@ if (!function_exists('interessa_admin_fetch_remote_image_bytes')) {
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_CONNECTTIMEOUT => 10,
-                CURLOPT_TIMEOUT => 20,
-                CURLOPT_USERAGENT => 'InteresaAdmin/1.0',
-                CURLOPT_SSL_VERIFYPEER => true,
-                CURLOPT_SSL_VERIFYHOST => 2,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT => 10,
+                CURLOPT_USERAGENT => 'Mozilla/5.0',
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => 0,
             ]);
             $body = curl_exec($ch);
             if ($body === false) {

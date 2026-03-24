@@ -40,7 +40,8 @@
             "treba pravidelnosť, nie jednorazové použitie"
         ],
         "image": {
-            "asset": "img/products/aktin/aktin-creatine-monohydrate/main.webp"
+            "asset": "img/products/aktin/aktin-creatine-monohydrate/main.webp",
+            "remote_src": "http://127.0.0.1:5001/assets/img/og-default.jpg?v=1773125880"
         }
     }
 }
