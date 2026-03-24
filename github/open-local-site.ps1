@@ -233,11 +233,21 @@ function Start-LocalServer {
     $php = Get-PhpPath
     New-Item -ItemType Directory -Force -Path $stateDir | Out-Null
     Remove-StalePid
-    Set-Content -Path $stdoutLog -Value '' -Encoding UTF8
-    Set-Content -Path $stderrLog -Value '' -Encoding UTF8
-
     $publicRoot = Join-Path $projectRoot 'public'
     $routerPath = Join-Path $publicRoot 'router.php'
+    $argumentList = @('-S', '127.0.0.1:5001', '-t', $publicRoot, $routerPath)
+    $escapedArgs = @($argumentList | ForEach-Object {
+        if ([string]$_ -match '\s') {
+            '"' + [string]$_ + '"'
+        } else {
+            [string]$_
+        }
+    })
+    $commandLine = '"' + $php + '" ' + ($escapedArgs -join ' ')
+
+    Set-Content -Path $stdoutLog -Value ("Spawn command: " + $commandLine + "`r`nWorking directory: " + $projectRoot + "`r`nDocument root: " + $publicRoot + "`r`nRouter path: " + $routerPath + "`r`n---`r`n") -Encoding UTF8
+    Set-Content -Path $stderrLog -Value ("Spawn command: " + $commandLine + "`r`nWorking directory: " + $projectRoot + "`r`nDocument root: " + $publicRoot + "`r`nRouter path: " + $routerPath + "`r`n---`r`n") -Encoding UTF8
+
     $psi = New-Object System.Diagnostics.ProcessStartInfo
     $psi.FileName = $php
     $psi.WorkingDirectory = $projectRoot
@@ -245,10 +255,26 @@ function Start-LocalServer {
     $psi.CreateNoWindow = $true
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
-    $psi.Arguments = ('-S 127.0.0.1:5001 -t "{0}" "{1}"' -f $publicRoot, $routerPath)
+    $psi.Arguments = ($argumentList -join ' ')
 
     $proc = New-Object System.Diagnostics.Process
     $proc.StartInfo = $psi
+    $proc.EnableRaisingEvents = $true
+
+    $stdoutPath = $stdoutLog
+    $stderrPath = $stderrLog
+    $proc.add_OutputDataReceived({
+        param($sender, $eventArgs)
+        if ($null -ne $eventArgs.Data) {
+            Add-Content -Path $stdoutPath -Value $eventArgs.Data -Encoding UTF8
+        }
+    })
+    $proc.add_ErrorDataReceived({
+        param($sender, $eventArgs)
+        if ($null -ne $eventArgs.Data) {
+            Add-Content -Path $stderrPath -Value $eventArgs.Data -Encoding UTF8
+        }
+    })
 
     if (-not $proc.Start()) {
         throw 'Local PHP server process could not be started.'
@@ -263,6 +289,9 @@ function Start-LocalServer {
         php = $php
         public_root = $publicRoot
         router_path = $routerPath
+        working_directory = $projectRoot
+        command_line = $commandLine
+        process = $proc
     }
 }
 
@@ -329,6 +358,8 @@ if (-not $serverReady) {
         ('PHP process started: ' + ($startedPid -gt 0))
         ('PID: ' + $startedPid)
         ('PHP path: ' + (Get-MapValue -Map $started -Key 'php'))
+        ('Spawn command: ' + (Get-MapValue -Map $started -Key 'command_line'))
+        ('Working directory: ' + (Get-MapValue -Map $started -Key 'working_directory'))
         ('Document root: ' + (Get-MapValue -Map $started -Key 'public_root'))
         ('Router: ' + (Get-MapValue -Map $started -Key 'router_path'))
         ('Process still running: ' + $running)

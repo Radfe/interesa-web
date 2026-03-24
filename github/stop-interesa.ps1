@@ -1,6 +1,7 @@
 param(
     [switch]$Aggressive,
-    [switch]$Quiet
+    [switch]$Quiet,
+    [switch]$ElevatedRetry
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,6 +16,12 @@ function Write-Status {
     if (-not $Quiet) {
         Write-Output $Message
     }
+}
+
+function Test-IsAdministrator {
+    $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
 function Get-ListenerPids {
@@ -43,6 +50,56 @@ function Get-ListenerPids {
     }
 
     return @($pids | Sort-Object -Unique)
+}
+
+function Get-BlockingProcessInfo {
+    param([int]$ProcessId)
+
+    $info = [ordered]@{
+        ProcessId = $ProcessId
+        ProcessName = ''
+        Path = ''
+        CommandLine = ''
+        ParentProcessId = 0
+        Access = 'ok'
+        IsPhp = $false
+        IsInteresa = $false
+    }
+
+    try {
+        $proc = Get-Process -Id $ProcessId -ErrorAction Stop
+        $info.ProcessName = [string]$proc.ProcessName
+        if ($null -ne $proc.Path) {
+            $info.Path = [string]$proc.Path
+        }
+        $info.IsPhp = ($info.ProcessName -ieq 'php')
+    } catch {
+        $info.Access = 'process-access-denied'
+    }
+
+    try {
+        $cim = Get-CimInstance Win32_Process -Filter "ProcessId = $ProcessId" -ErrorAction Stop
+        if ($null -ne $cim) {
+            $info.ProcessName = if ([string]::IsNullOrWhiteSpace($info.ProcessName)) { [string]$cim.Name } else { $info.ProcessName }
+            $info.Path = if ([string]::IsNullOrWhiteSpace($info.Path)) { [string]$cim.ExecutablePath } else { $info.Path }
+            $info.CommandLine = [string]$cim.CommandLine
+            $info.ParentProcessId = [int]$cim.ParentProcessId
+            if (-not $info.IsPhp) {
+                $info.IsPhp = (([string]$cim.Name) -ieq 'php.exe')
+            }
+        }
+    } catch {
+        if ($info.Access -eq 'ok') {
+            $info.Access = 'cim-access-denied'
+        }
+    }
+
+    $haystack = (($info.Path + ' ' + $info.CommandLine) | Out-String).ToLowerInvariant()
+    if ($haystack.Contains($projectRoot.ToLowerInvariant()) -or $haystack.Contains('router.php') -or $haystack.Contains('\public')) {
+        $info.IsInteresa = $true
+    }
+
+    return $info
 }
 
 function Get-PidFilePid {
@@ -80,6 +137,8 @@ function Stop-TargetProcess {
         return $false
     }
 
+    $processInfo = Get-BlockingProcessInfo -ProcessId $ProcessId
+
     Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue
     Start-Sleep -Milliseconds 300
 
@@ -93,7 +152,38 @@ function Stop-TargetProcess {
         Start-Sleep -Milliseconds 500
     }
 
+    if ((Test-ProcessExists -ProcessId $ProcessId) -and $processInfo.IsInteresa -and $processInfo.ParentProcessId -gt 0) {
+        Stop-Process -Id $processInfo.ParentProcessId -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Milliseconds 300
+        if (Test-ProcessExists -ProcessId $processInfo.ParentProcessId) {
+            & taskkill /PID $processInfo.ParentProcessId /F /T | Out-Null
+            Start-Sleep -Milliseconds 500
+        }
+    }
+
     return -not (Test-ProcessExists -ProcessId $ProcessId)
+}
+
+function Invoke-ElevatedRetry {
+    $scriptPath = $MyInvocation.MyCommand.Path
+    $args = @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', ('"' + $scriptPath + '"'),
+        '-Aggressive',
+        '-ElevatedRetry'
+    )
+
+    if ($Quiet) {
+        $args += '-Quiet'
+    }
+
+    $process = Start-Process -FilePath 'powershell.exe' -ArgumentList $args -Verb RunAs -Wait -PassThru
+    if ($null -eq $process) {
+        throw 'Nepodarilo sa spustit repair stop ako admin.'
+    }
+
+    return ($process.ExitCode -eq 0)
 }
 
 function Wait-ForPortRelease {
@@ -146,12 +236,29 @@ foreach ($processId in $targets) {
 $attempts = if ($Aggressive) { 16 } else { 8 }
 $released = Wait-ForPortRelease -Attempts $attempts -DelayMs 500
 
+if (-not $released -and $Aggressive -and -not (Test-IsAdministrator) -and -not $ElevatedRetry) {
+    Write-Status 'Potrebujem admin prava na uvolnenie portu, spustam znova ako admin...'
+    $released = Invoke-ElevatedRetry
+}
+
 Remove-Item -Path $pidFile -Force -ErrorAction SilentlyContinue
 Remove-Item -Path $runtimeFile -Force -ErrorAction SilentlyContinue
 
 if (-not $released) {
     $listenerPids = @(Get-ListenerPids)
-    $suffix = if ($listenerPids.Count -gt 0) { ' PID: ' + ($listenerPids -join ', ') } else { '' }
+    $suffix = ''
+    if ($listenerPids.Count -gt 0) {
+        $details = @()
+        foreach ($listenerPid in $listenerPids) {
+            $info = Get-BlockingProcessInfo -ProcessId $listenerPid
+            $processName = if ($info.ProcessName -ne '') { $info.ProcessName } else { 'nedostupne' }
+            $path = if ($info.Path -ne '') { $info.Path } else { 'nedostupne' }
+            $commandLine = if ($info.CommandLine -ne '') { $info.CommandLine } else { 'nedostupne' }
+            $parentPid = if ($info.ParentProcessId -gt 0) { [string]$info.ParentProcessId } else { 'nedostupne' }
+            $details += "PID: $listenerPid ProcessName: $processName Path: $path CommandLine: $commandLine ParentPID: $parentPid Access: $($info.Access)"
+        }
+        $suffix = "`n" + ($details -join "`n")
+    }
     throw ('Port 5001 je stale blokovany.' + $suffix)
 }
 
