@@ -2234,8 +2234,18 @@ if (!function_exists('interessa_admin_looks_like_product_url')) {
             return false;
         }
 
+        $host = strtolower(trim((string) parse_url($url, PHP_URL_HOST)));
+        if (in_array($host, ['127.0.0.1', 'localhost', '::1'], true)) {
+            return false;
+        }
+
         $path = trim((string) parse_url($url, PHP_URL_PATH));
         if ($path === '' || $path === '/') {
+            return false;
+        }
+
+        $pathLower = strtolower($path);
+        if ($pathLower === '/admin' || str_starts_with($pathLower, '/admin/') || $pathLower === '/dognet-helper' || str_starts_with($pathLower, '/dognet-helper/')) {
             return false;
         }
 
