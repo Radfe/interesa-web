@@ -77,6 +77,16 @@ function New-PortBlockedMessage {
     return 'Port 5001 je stale blokovany starym lokalnym serverom. Zavri stare okna servera alebo restartuj pocitac a spusti start-interesa znova.' + $pidSuffix
 }
 
+function Stop-ListenerPids {
+    $listenerPids = @(Get-ListenerPids)
+    foreach ($processId in $listenerPids) {
+        if ([string]::IsNullOrWhiteSpace([string]$processId)) {
+            continue
+        }
+        Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
+    }
+}
+
 function Get-SavedServerPid {
     if (-not (Test-Path $pidFile)) {
         return $null
@@ -177,7 +187,12 @@ function Start-LocalServer {
 if (-not (Test-SiteReady)) {
     $listenerPids = @(Get-ListenerPids)
     if ($listenerPids.Count -gt 0) {
-        throw (New-PortBlockedMessage)
+        Stop-ListenerPids
+        Start-Sleep -Milliseconds 500
+        if (@(Get-ListenerPids).Count -gt 0) {
+            throw (New-PortBlockedMessage)
+        }
+        Write-Output 'Stary server ukonceny, pokracujem...'
     }
 
     $started = Start-LocalServer
