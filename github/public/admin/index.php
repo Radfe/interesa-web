@@ -1,5 +1,8 @@
 <?php declare(strict_types=1);
 
+echo 'ADMIN START';
+flush();
+
 $interessaAdminDebugLog = dirname(__DIR__, 2) . '/.codex-local/admin-request-debug.log';
 $interessaAdminDebugWrite = static function (string $message) use ($interessaAdminDebugLog): void {
     $line = '[' . date('Y-m-d H:i:s') . '] admin ' . $message . PHP_EOL;
@@ -3781,6 +3784,7 @@ $interessaAdminDebugWrite('after head render');
 ?>
 <section class="container admin-page">
   <?php if (!$isAuthed): ?>
+    <?php echo 'BEFORE LOGIN HTML'; flush(); ?>
     <?php $interessaAdminDebugWrite('rendering login branch'); ?>
     <div class="admin-login-wrap">
       <section class="admin-login-card">
@@ -8589,6 +8593,7 @@ $interessaAdminDebugWrite('after head render');
 </script>
 <?php endif; ?>
 <?php require dirname(__DIR__) . '/inc/footer.php'; ?>
+<?php echo 'ADMIN END'; flush(); ?>
 
 
 
