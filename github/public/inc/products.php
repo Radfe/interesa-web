@@ -105,6 +105,37 @@ if (!function_exists('interessa_product')) {
     }
 }
 
+if (!function_exists('interessa_product_has_web_ready_image')) {
+    function interessa_product_has_web_ready_image(array $product): bool {
+        $normalized = array_key_exists('image', $product) && array_key_exists('has_local_image', $product)
+            ? $product
+            : interessa_normalize_product($product);
+
+        if (!empty($normalized['has_local_image'])) {
+            return true;
+        }
+
+        $image = is_array($normalized['image'] ?? null) ? $normalized['image'] : null;
+        $src = trim((string) ($image['src'] ?? ''));
+        $sourceType = trim((string) ($image['source_type'] ?? $normalized['image_mode'] ?? 'placeholder'));
+        if ($src === '' || $sourceType === 'placeholder') {
+            return false;
+        }
+
+        $host = strtolower(trim((string) parse_url($src, PHP_URL_HOST)));
+        if ($host !== '' && in_array($host, ['127.0.0.1', 'localhost', '::1'], true)) {
+            return false;
+        }
+
+        $path = strtolower(trim((string) parse_url($src, PHP_URL_PATH)));
+        if ($path !== '' && (str_contains($path, '/assets/img/og-default.') || in_array(basename($path), ['og-default.jpg', 'og-default.jpeg', 'og-default.png', 'og-default.webp'], true))) {
+            return false;
+        }
+
+        return true;
+    }
+}
+
 if (!function_exists('interessa_article_product_category_map')) {
     function interessa_article_product_category_map(): array {
         return [

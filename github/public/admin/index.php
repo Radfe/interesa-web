@@ -316,7 +316,7 @@ function interessa_admin_recommended_diagnostics(array $slugs): array {
         $affiliateReady = !empty($clickState['ready']);
         $hasClickTarget = !empty($clickState['ready']);
         $imageMode = trim((string) ($normalized['image_mode'] ?? 'placeholder'));
-        $packshotReady = !empty($normalized['has_local_image']);
+        $packshotReady = interessa_product_has_web_ready_image($normalized);
         $moneyReady = $affiliateReady && $packshotReady;
         $pros = array_values(array_filter(array_map('trim', (array) ($normalized['pros'] ?? []))));
         $cons = array_values(array_filter(array_map('trim', (array) ($normalized['cons'] ?? []))));
@@ -2021,7 +2021,7 @@ function interessa_admin_product_quality_queue(array $catalog, int $limit = 12):
         $affiliateCode = trim((string) ($normalized['affiliate_code'] ?? ''));
         $clickState = interessa_admin_product_click_state($normalized);
         $affiliateReady = !empty($clickState['ready']);
-        $packshotReady = !empty($normalized['has_local_image']);
+        $packshotReady = interessa_product_has_web_ready_image($normalized);
 
         $issues = [];
         if (trim((string) ($normalized['summary'] ?? '')) === '') {
@@ -3705,7 +3705,7 @@ foreach ($articleScopedProductOptionSlugs as $optionSlug) {
     }
     $optionProduct = interessa_normalize_product(is_array($catalog[$optionSlug]) ? $catalog[$optionSlug] : []);
     $optionAffiliateCode = trim((string) ($optionProduct['affiliate_code'] ?? ''));
-    $optionPackshotReady = !empty($optionProduct['has_local_image']);
+    $optionPackshotReady = interessa_product_has_web_ready_image($optionProduct);
     $optionClickState = interessa_admin_product_click_state($optionProduct);
     $optionAffiliateReady = !empty($optionClickState['ready']);
     $optionProductUrl = trim((string) ($optionClickState['product_url'] ?? ''));
@@ -5008,6 +5008,38 @@ require dirname(__DIR__) . '/inc/head.php';
                 </label>
               </details>
 
+              <section class="admin-subsection is-compact" id="article-hero-block">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Hero obrazok clanku</h3>
+                    <p class="admin-meta">Odporucany postup: 1. skopiruj Canva prompt, 2. priprav hero obrazok, 3. nahraj ho sem, 4. az potom ries produkty.</p>
+                  </div>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit obrazky</a>
+                    <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
+                  </div>
+                </div>
+                <div class="admin-asset-preview__grid">
+                  <div class="admin-asset-preview__media">
+                    <?= interessa_render_image($selectedArticleHero, ['class' => 'admin-asset-preview__image']) ?>
+                  </div>
+                  <div class="admin-asset-preview__body">
+                    <p><strong>Aktualny stav:</strong> <?= esc($selectedArticleHeroSource) ?></p>
+                    <p><strong>Kam sa ulozi:</strong> <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></p>
+                    <p><strong>Text pre Canvu:</strong><br><?= esc((string) ($articlePrompt['prompt'] ?? '')) ?></p>
+                    <div class="admin-inline-actions">
+                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['prompt'] ?? '')) ?>">1. Kopirovat Canva prompt</button>
+                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?>">Kopirovat cestu</button>
+                    </div>
+                    <label>
+                      <span>2. Nahraj hotovy hero obrazok</span>
+                      <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" />
+                    </label>
+                    <small class="admin-note">Po ulozeni sa hero obrazok ulozi ako finalny asset pre clanok. Produkty ries nizsie az po tomto kroku.</small>
+                  </div>
+                </div>
+              </section>
+
               <section class="admin-subsection is-compact" id="article-check-block">
                 <div class="admin-subsection-head">
                   <div>
@@ -5384,11 +5416,12 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               </div>
 
-              <div class="admin-grid two-up">
+              <details class="admin-subsection is-compact">
+                <summary><strong>Starsie odporucane produkty (pokrocile)</strong> - otvor len ked opravujes legacy data</summary>
                 <label>
                   <span>Odporucane produkty (pokrocile)</span>
                   <textarea name="recommended_products" rows="6"><?= esc($recommendedProductsText) ?></textarea>
-                  <span>Bezny postup je vyssie v bloku Produkty v tomto clanku. Toto otvor len ked opravujes starsie data.</span>
+                  <span>Bezny workflow je vyssie: hero obrazok clanku a potom Produkty v tomto clanku. Toto otvor len ked opravujes starsie data.</span>
                   <div class="admin-inline-actions">
                     <button class="btn btn-secondary btn-small" type="button" data-select-card-ready-products>Oznacit karty ready</button>
                     <button class="btn btn-secondary btn-small" type="button" data-select-money-ready-products>Oznacit money-page ready</button>
@@ -5400,8 +5433,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <?php $productNormalized = interessa_normalize_product(interessa_product((string) $productSlug) ?? (is_array($productRow) ? $productRow : [])); ?>
                       <?php $productTarget = interessa_affiliate_target($productNormalized); ?>
                       <?php $productAffiliateCode = trim((string) ($productNormalized['affiliate_code'] ?? '')); ?>
-                      <?php $productImageMode = trim((string) ($productNormalized['image_mode'] ?? 'placeholder')); ?>
-                      <?php $productPackshotReady = !empty($productNormalized['has_local_image']); ?>
+                      <?php $productPackshotReady = interessa_product_has_web_ready_image($productNormalized); ?>
                       <?php $productClickState = interessa_admin_product_click_state($productNormalized); ?>
                       <?php $productAffiliateReady = !empty($productClickState['ready']); ?>
                       <div class="admin-check-card-wrap">
@@ -5427,36 +5459,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php endforeach; ?>
                   </div>
                 </label>
-                <label>
-                  <span>Nahrat hlavny obrazok clanku</span>
-                  <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" />
-                  <small class="admin-note">Kam sa ulozi hlavny obrazok: <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></small>
-                  <div class="admin-inline-actions">
-                    <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit obrazky</a>
-                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?>">Kopirovat cestu</button>
-                  </div>
-                </label>
-              </div>
-
-              <section class="admin-subsection is-compact">
-                <div class="admin-subsection-head">
-                  <h3>Aktualny hlavny obrazok</h3>
-                </div>
-                <div class="admin-mini-product-card admin-mini-hero-card">
-                  <div class="admin-mini-product-card__media">
-                    <?= interessa_render_image($selectedArticleHero, ['class' => 'admin-mini-product-card__image']) ?>
-                  </div>
-                  <div class="admin-mini-product-card__body">
-                    <strong><?= esc((string) ($selectedArticleMeta['title'] ?? $selectedArticleSlug)) ?></strong>
-                    <small>Zdroj: <?= esc($selectedArticleHeroSource) ?></small>
-                    <small><code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></small>
-                    <div class="admin-inline-actions admin-mini-product-card__actions">
-                      <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Image workflow</a>
-                      <a class="btn btn-secondary btn-small" href="/hero-helper" target="_blank" rel="noopener">Pomocnik pre obrazok</a>
-                    </div>
-                  </div>
-                </div>
-              </section>
+              </details>
 
               <section class="admin-subsection is-compact">
                 <div class="admin-subsection-head">
@@ -7251,7 +7254,8 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php $previewSlug = trim((string) ($previewRow['slug'] ?? '')); ?>
                     <?php $previewStatus = $recommendedDiagnosticsBySlug[$previewSlug] ?? []; ?>
                     <?php $previewImageAsset = trim((string) ($previewStatus['image_local_asset'] ?? '')); ?>
-                    <?php $previewImageUrl = (!empty($previewStatus['packshot_ready']) && $previewImageAsset !== '') ? asset($previewImageAsset) : ''; ?>
+                    <?php $previewImageRemoteUrl = trim((string) ($previewStatus['image_remote_src'] ?? '')); ?>
+                    <?php $previewImageUrl = $previewImageAsset !== '' ? asset($previewImageAsset) : $previewImageRemoteUrl; ?>
                     <article id="image-product-<?= esc($previewSlug) ?>" class="admin-mini-product-card<?= $focusProductSlug === $previewSlug ? ' is-focused' : '' ?>" data-focus-product="<?= $focusProductSlug === $previewSlug ? 'true' : 'false' ?>">
                       <div class="admin-mini-product-card__media">
                         <?= interessa_render_image($previewRow['image'] ?? null, ['class' => 'admin-mini-product-card__image']) ?>
@@ -7270,7 +7274,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <div class="admin-inline-actions admin-mini-product-card__actions">
                         <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_edit#product-edit-form">Otvorit produkt</a>
                         <?php if ($previewImageUrl !== ''): ?>
-                          <a class="btn btn-secondary btn-small" href="<?= esc($previewImageUrl) ?>" target="_blank" rel="noopener">Otvorit ulozeny obrazok</a>
+                          <a class="btn btn-secondary btn-small" href="<?= esc($previewImageUrl) ?>" target="_blank" rel="noopener"><?= $previewImageAsset !== '' ? 'Otvorit ulozeny obrazok' : 'Otvorit aktualny obrazok' ?></a>
                         <?php else: ?>
                           <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;product=<?= esc($previewSlug) ?>&amp;product_image_filter=missing&amp;return_section=images&amp;return_slug=<?= esc($selectedArticleSlug) ?>&amp;focus=product_image">Otvorit doplnenie obrazka</a>
                         <?php endif; ?>

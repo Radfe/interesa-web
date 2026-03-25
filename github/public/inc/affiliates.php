@@ -922,16 +922,13 @@ if (!function_exists('interessa_affiliate_target')) {
 
         $target = aff_resolve_click_target($row);
         $merchant = trim((string) ($row['merchant_slug'] ?? $row['merchant'] ?? ''));
-        $affiliateUrl = trim((string) ($target['affiliate_url'] ?? ''));
         $directUrl = trim((string) ($target['direct_url'] ?? ''));
+        $targetCode = trim((string) ($target['code'] ?? ''));
 
-        if ($affiliateUrl !== '') {
-            $wrappedHref = interessa_affiliate_link($affiliateUrl, $merchant);
-            if ($wrappedHref !== '') {
-                $target['href'] = $wrappedHref;
-                $target['rel'] = 'nofollow sponsored';
-                $target['label'] = trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu';
-            }
+        if (!empty($target['is_affiliate']) && $targetCode !== '') {
+            $target['href'] = '/go/' . rawurlencode($targetCode);
+            $target['rel'] = 'nofollow sponsored';
+            $target['label'] = trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu';
         } elseif ($directUrl !== '') {
             $wrappedHref = interessa_affiliate_link($directUrl, $merchant);
             if ($wrappedHref !== '') {

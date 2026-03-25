@@ -70,6 +70,16 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsi UX a click-layer cleanup:
+- verejne CTA `Do obchodu` maju ist cez interni route `/go/<code>` namiesto priameho zobrazenia dlheho Dognet URL
+- admin image readiness uz nema hlasit `Obrazok chyba`, ak web realne renderuje validny remote/feed obrazok produktu
+- v `section=articles` je znova hore hlavny workflow:
+  - vyber clanku
+  - hero obrazok clanku
+  - Canva prompt / upload
+  - az potom produktove sloty
+- starsie pokrocile polia pre odporucane produkty ostavaju dostupne len ako legacy fallback
+
 Stabilizacia article slot save flow:
 - `Ulozit produkty v clanku` stale deduplikuje rovnaky produkt napriec slotmi
 - article-slot selecty teraz pre kazdy slot skryju produkty, ktore su uz vybrate v inom slote
