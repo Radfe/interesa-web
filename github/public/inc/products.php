@@ -716,26 +716,39 @@ if (!function_exists('interessa_product_packshot_brief')) {
 if (!function_exists('interessa_affiliate_target')) {
     function interessa_affiliate_target(array $row): array {
         $row = interessa_resolve_product_reference($row);
+        $merchant = trim((string) ($row['merchant_slug'] ?? $row['merchant'] ?? ''));
         $resolvedTarget = function_exists('aff_resolve_click_target')
             ? aff_resolve_click_target(array_replace($row, [
                 'prefer_registry' => true,
             ]))
             : [];
         if (trim((string) ($resolvedTarget['href'] ?? '')) !== '') {
+            $resolvedHref = trim((string) ($resolvedTarget['href'] ?? ''));
+            $resolvedAffiliateUrl = trim((string) ($resolvedTarget['affiliate_url'] ?? ''));
+            $resolvedDirectUrl = trim((string) ($resolvedTarget['direct_url'] ?? ''));
+            $finalHref = $resolvedHref;
+            if ($resolvedAffiliateUrl !== '' && function_exists('interessa_affiliate_link')) {
+                $finalHref = interessa_affiliate_link($resolvedAffiliateUrl, $merchant);
+            } elseif ($resolvedDirectUrl !== '' && function_exists('interessa_affiliate_link')) {
+                $finalHref = interessa_affiliate_link($resolvedDirectUrl, $merchant);
+            }
             return [
-                'href' => trim((string) ($resolvedTarget['href'] ?? '')),
-                'rel' => trim((string) ($resolvedTarget['rel'] ?? 'nofollow')),
-                'label' => trim((string) ($resolvedTarget['label'] ?? 'Pozriet produkt')),
+                'href' => $finalHref,
+                'rel' => trim((string) ($resolvedTarget['rel'] ?? 'nofollow sponsored')),
+                'label' => trim((string) ($resolvedTarget['label'] ?? 'Do obchodu')),
                 'note' => trim((string) ($resolvedTarget['note'] ?? '')),
             ];
         }
 
         $fallback = trim((string) ($row['fallback_url'] ?? $row['url'] ?? ''));
         if ($fallback !== '') {
+            $finalHref = function_exists('interessa_affiliate_link')
+                ? interessa_affiliate_link($fallback, $merchant)
+                : $fallback;
             return [
-                'href' => $fallback,
-                'rel' => 'nofollow',
-                'label' => 'Pozriet produkt',
+                'href' => $finalHref,
+                'rel' => 'nofollow sponsored',
+                'label' => 'Do obchodu',
                 'note' => '',
             ];
         }
