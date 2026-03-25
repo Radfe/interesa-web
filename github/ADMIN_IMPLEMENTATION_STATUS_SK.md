@@ -70,6 +70,11 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Stabilizacia article slot save flow:
+- `Ulozit produkty v clanku` stale deduplikuje rovnaky produkt napriec slotmi
+- article-slot selecty teraz pre kazdy slot skryju produkty, ktore su uz vybrate v inom slote
+- tym sa odstrani stav, ked dropdown vizualne ukazoval produkt, ale backend ho pri save zahodil ako duplicitu a slot po reloade ostal prazdny
+
 Najnovsia stabilizacia Dognet importu a deeplink vrstvy:
 - merchant matching sa uz nespolieha len na jeden vstup, ale zjednocuje:
   - merchant slug

@@ -3810,7 +3810,25 @@ uasort($articleScopedProductOptions, static function (array $left, array $right)
 $articleScopedProductOptionsBySlot = [];
     foreach (range(1, 3) as $slotIndex) {
     $slotSelectedSlug = trim((string) ($articleSlotSelections[$slotIndex] ?? ''));
-    $slotOptions = $articleScopedProductOptions;
+    $slotBlockedSlugs = [];
+    foreach ($articleSlotSelections as $otherSlotIndex => $otherSlotSlug) {
+        $otherSlotSlug = trim((string) $otherSlotSlug);
+        if ((int) $otherSlotIndex === $slotIndex || $otherSlotSlug === '') {
+            continue;
+        }
+        $slotBlockedSlugs[$otherSlotSlug] = true;
+    }
+    $slotOptions = array_filter(
+        $articleScopedProductOptions,
+        static function (array $optionRow, string $optionSlug) use ($slotSelectedSlug, $slotBlockedSlugs): bool {
+            if ($optionSlug === $slotSelectedSlug) {
+                return true;
+            }
+
+            return !isset($slotBlockedSlugs[$optionSlug]);
+        },
+        ARRAY_FILTER_USE_BOTH
+    );
     uasort($slotOptions, static function (array $left, array $right) use ($selectedArticleSlug, $slotIndex): int {
         $leftScore = (int) ($left['rank'] ?? 0) + interessa_admin_article_slot_option_slot_bonus((array) $left, $selectedArticleSlug, $slotIndex);
         $rightScore = (int) ($right['rank'] ?? 0) + interessa_admin_article_slot_option_slot_bonus((array) $right, $selectedArticleSlug, $slotIndex);
@@ -4929,7 +4947,7 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </details>
 
-            <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
+            <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack" autocomplete="off">
               <input type="hidden" name="action" value="save_article" />
               <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
 
@@ -5177,8 +5195,8 @@ require dirname(__DIR__) . '/inc/head.php';
                       <label>
                         <span>Produkt pre slot <?= esc((string) $slotIndex) ?></span>
                         <?php $slotSelectOptions = $articleScopedProductOptionsBySlot[$slotIndex] ?? $articleScopedProductOptions; ?>
-                        <select name="article_product_slot[<?= esc((string) $slotIndex) ?>]">
-                          <option value="">Nechat prazdny slot</option>
+                        <select name="article_product_slot[<?= esc((string) $slotIndex) ?>]" autocomplete="off">
+                          <option value="" <?= $slotSlug === '' ? 'selected' : '' ?>>Nechat prazdny slot</option>
                           <?php foreach ($slotSelectOptions as $optionSlug => $optionRow): ?>
                             <option value="<?= esc((string) $optionSlug) ?>" <?= $slotSlug === (string) $optionSlug ? 'selected' : '' ?>><?= esc((string) ($optionRow['name'] ?? $optionSlug)) ?></option>
                           <?php endforeach; ?>
