@@ -2453,6 +2453,21 @@ if ($isAuthed) {
                 ]);
             }
 
+            if ($action === 'open_product_for_article_slot') {
+                $articleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? '')));
+                $productSlug = trim((string) ($_POST['product_slug'] ?? ''));
+                $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
+                if ($articleSlug === '' || $targetSlot < 1) {
+                    throw new RuntimeException('Nepodarilo sa otvorit produkt pre slot.');
+                }
+                if ($productSlug === '') {
+                    interessa_admin_redirect_fragment('articles', ['slug' => $articleSlug], 'slot-' . $targetSlot);
+                }
+
+                interessa_admin_assign_product_to_article_slot($articleSlug, $productSlug, $targetSlot);
+                interessa_admin_redirect('products', interessa_admin_product_article_slot_query($productSlug, $articleSlug, $targetSlot, 'product', 'product_edit'));
+            }
+
             if ($action === 'assign_suggested_product_to_slot') {
                 $articleSlug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
                 $productSlug = trim((string) ($_POST['product_slug'] ?? ''));
@@ -5642,15 +5657,13 @@ require dirname(__DIR__) . '/inc/head.php';
                 <p class="admin-meta">article: <?= esc($returnArticlePrefill) ?> / slot: <?= esc((string) $returnArticleSlotPrefill) ?> / mode: article-slot</p>
               </div>
               <div class="admin-inline-actions">
-                <form method="get" action="/admin" class="admin-inline-form">
-                  <input type="hidden" name="section" value="products" />
-                  <input type="hidden" name="article" value="<?= esc($returnArticlePrefill) ?>" />
-                  <input type="hidden" name="slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" />
-                  <input type="hidden" name="return_section" value="articles" />
-                  <input type="hidden" name="return_slug" value="<?= esc($returnArticlePrefill) ?>" />
+                <form method="post" action="/admin" class="admin-inline-form">
+                  <input type="hidden" name="action" value="open_product_for_article_slot" />
+                  <input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" />
+                  <input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" />
                   <label class="admin-inline-select">
                     <span>Produkt pre tento slot</span>
-                    <select name="product" onchange="this.form.submit()">
+                    <select name="product_slug" onchange="this.form.submit()">
                       <option value="">Vyber produkt</option>
                       <?php foreach ($productSlugs as $slug): ?>
                         <option value="<?= esc($slug) ?>" <?= $slug === $selectedProductSlug ? 'selected' : '' ?>><?= esc((string) ($catalog[$slug]['name'] ?? $slug)) ?></option>

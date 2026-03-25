@@ -125,6 +125,9 @@ Najnovsia stabilizacia Dognet importu a deeplink vrstvy:
 - `Ulozit produkty v clanku` teraz pri article slotoch nesmie zapisovat len do article override:
   - po save sa musi synchronizovat aj `article-products.json`, lebo tato vrstva ma pri reloade prednost ako source of truth
   - inak sa zmena v slote tvari ako ulozena, ale po reload-e sa vrati stary explicitny produkt
+- v article-slot editore uz horny vyber produktu nesmie len menit query string:
+  - po vybere produktu pre slot sa ma hned prepisat aj source-of-truth slot assignment
+  - nasledne redirecty a dalsie kroky musia niesť novy `product` slug, nie stary produkt zo slot fallbacku
 
 Menene subory:
 - [public/inc/affiliates.php](C:/data/praca/webova_stranka/github/public/inc/affiliates.php)
