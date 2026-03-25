@@ -546,14 +546,12 @@ if (!function_exists('interessa_brand_image_meta')) {
         }
 
         if ($name === 'logo-full') {
-            $webVariants = interessa_collect_asset_candidates([
-                'img/brand/logo-full-web',
+            $variants = interessa_collect_asset_candidates([
+                'img/brand/' . $name,
             ]);
-            if ($webVariants !== []) {
-                $variants = $webVariants;
-            } else {
+            if ($variants === []) {
                 $variants = interessa_collect_asset_candidates([
-                    'img/brand/' . $name,
+                    'img/brand/logo-full-web',
                 ]);
             }
         } else {

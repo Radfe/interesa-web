@@ -1063,6 +1063,26 @@ function interessa_admin_candidate_matches_article_preset(array $row, string $ar
     return canonical_article_slug((string) ($fit['slug'] ?? '')) === canonical_article_slug($articleSlug);
 }
 
+function interessa_admin_candidate_row_article_relevance(array $row, string $articleSlug): array {
+    $preset = interessa_admin_article_slot_relevance_preset($articleSlug);
+    $text = interessa_admin_candidate_row_text($row);
+    $candidateCategory = normalize_category_slug((string) ($row['category'] ?? $row['product_type'] ?? ''));
+    $hits = interessa_admin_text_keyword_hits($text, (array) ($preset['recommended_filters'] ?? []));
+    $blockedHits = interessa_admin_text_keyword_hits($text, (array) ($preset['exclude_terms'] ?? []));
+    $preferredCategories = array_values(array_filter(array_map('strval', (array) ($preset['preferred_categories'] ?? []))));
+    $categoryPriority = array_search($candidateCategory, $preferredCategories, true);
+    $strictFilter = !empty($preset['strict_filter']);
+    $passesStrict = $blockedHits === [] && ($categoryPriority !== false || $hits !== []);
+
+    return [
+        'hits' => $hits,
+        'blocked_hits' => $blockedHits,
+        'category_match' => $categoryPriority !== false,
+        'strict_filter' => $strictFilter,
+        'passes_strict' => $passesStrict,
+    ];
+}
+
 function interessa_admin_clean_label(string $value): string {
     $value = trim($value);
     if ($value === '') {
@@ -3296,6 +3316,16 @@ $articleAddScopedProductOption = static function (string $slug, string $source) 
         return;
     }
 
+    if ($source !== 'explicit') {
+        $normalizedCatalogRow = interessa_normalize_product(is_array($catalog[$slug]) ? $catalog[$slug] : []);
+        $merchantSlug = trim((string) ($normalizedCatalogRow['merchant_slug'] ?? ''));
+        $merchantName = trim((string) ($normalizedCatalogRow['merchant'] ?? ''));
+        $merchantUrl = trim((string) ($normalizedCatalogRow['fallback_url'] ?? ''));
+        if (!aff_is_supported_affiliate_merchant($merchantSlug, $merchantName, $merchantUrl)) {
+            return;
+        }
+    }
+
     $articleScopedProductOptionSlugs[] = $slug;
     if (!isset($articleScopedProductOptionSources[$slug])) {
         $articleScopedProductOptionSources[$slug] = [];
@@ -3314,6 +3344,10 @@ foreach (interessa_admin_product_candidates() as $candidateRow) {
         continue;
     }
     $candidateProductSlug = interessa_admin_slugify((string) ($candidateRow['product_slug'] ?? $candidateRow['slug'] ?? ''));
+    $candidateRelevance = interessa_admin_candidate_row_article_relevance($candidateRow, $selectedArticleSlug);
+    if (!empty($candidateRelevance['strict_filter']) && empty($candidateRelevance['passes_strict'])) {
+        continue;
+    }
     $articleAddScopedProductOption($candidateProductSlug, 'candidate');
 }
 $articleSlotRelevancePreset = interessa_admin_article_slot_relevance_preset($selectedArticleSlug);

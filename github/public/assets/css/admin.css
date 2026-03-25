@@ -599,17 +599,24 @@
 }
 
 .admin-asset-preview__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 1rem;
+  min-height: 220px;
   border-radius: 16px;
   background: #fff;
   border: 1px solid rgba(15, 23, 42, 0.08);
+  overflow: visible;
 }
 
 .admin-asset-preview__image {
-  width: 100%;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
   height: auto;
   object-fit: contain;
-  aspect-ratio: 3 / 2;
 }
 
 .admin-asset-preview__body {

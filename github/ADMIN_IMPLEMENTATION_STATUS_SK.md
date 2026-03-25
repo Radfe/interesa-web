@@ -113,6 +113,11 @@ Najnovsia stabilizacia Dognet importu a deeplink vrstvy:
 - import ide cez canonical merchant registry, nacita feed a ulozi:
   - produkty do interneho katalogu
   - affiliate zaznamy kompatibilne s resolverom
+- article-slot select a candidate vrstva teraz maju tvrdy merchant whitelist cez canonical merchant registry:
+  - produkt mimo `affiliate_supported === true` sa v article-slot selecte nema zobrazovat, ak nejde o explicitne uz priradeny produkt
+- pre strict clanok typu `pre-workout` sa strict topic filter uz aplikuje aj na candidate rows:
+  - nerelevantni kandidati sa nemaju dostat do slot selectu
+  - category fallback a generic fallback ostavaju vypnute
 
 Menene subory:
 - [public/inc/affiliates.php](C:/data/praca/webova_stranka/github/public/inc/affiliates.php)

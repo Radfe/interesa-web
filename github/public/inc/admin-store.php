@@ -165,7 +165,15 @@ if (!function_exists('interessa_admin_generate_brand_logo_web_svg_derivative')) 
 
         $bounds = interessa_admin_extract_canva_svg_bounds($svg);
         if ($bounds === null) {
-            return null;
+            $target = interessa_admin_brand_dir() . '/' . interessa_admin_slugify($derivativeBaseName) . '.svg';
+            $written = @copy($sourcePath, $target);
+            return $written ? 'img/brand/' . interessa_admin_slugify($derivativeBaseName) . '.svg' : null;
+        }
+
+        if (($bounds['width'] ?? 0.0) <= ($bounds['height'] ?? 0.0)) {
+            $target = interessa_admin_brand_dir() . '/' . interessa_admin_slugify($derivativeBaseName) . '.svg';
+            $written = @copy($sourcePath, $target);
+            return $written ? 'img/brand/' . interessa_admin_slugify($derivativeBaseName) . '.svg' : null;
         }
 
         $x = rtrim(rtrim(number_format($bounds['x'], 6, '.', ''), '0'), '.');
