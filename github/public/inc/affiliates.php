@@ -712,36 +712,64 @@ if (!function_exists('aff_build_click_target')) {
     }
 }
 
-if (!function_exists('interessa_affiliate_link')) {
-    function interessa_affiliate_link(string $url, string $merchant): string {
+if (!function_exists('interessa_dognet_dt_map')) {
+    function interessa_dognet_dt_map(): array {
+        return [
+            'gymbeam' => 'lpejamq',
+            'protein' => '3dDnWjP6',
+            'imunoklub' => 'htqL0IFR',
+            'ironaesthetics' => 'ilmqYrP6',
+            'symprove' => 'tuohKPmo',
+        ];
+    }
+}
+
+if (!function_exists('interessa_affiliate_clean_url')) {
+    function interessa_affiliate_clean_url(string $url): string {
         $url = trim($url);
-        $merchant = trim($merchant);
         if ($url === '' || !aff_is_valid_http_url($url)) {
             return '';
         }
 
-        $merchantSlug = interessa_admin_slugify($merchant);
-        $host = strtolower(trim((string) parse_url($url, PHP_URL_HOST)));
-        $host = preg_replace('~^www\.~', '', $host) ?? $host;
-
-        if ($merchantSlug === 'gymbeam' || $host === 'gymbeam.sk') {
-            $parts = parse_url($url);
-            $basePath = '';
-            if (!empty($parts['scheme']) && !empty($parts['host'])) {
-                $basePath = $parts['scheme'] . '://' . $parts['host'] . (string) ($parts['path'] ?? '');
-            }
-            $query = [];
-            parse_str((string) ($parts['query'] ?? ''), $query);
-            unset($query['utm_term']);
-            if ($basePath !== '' && $query !== []) {
-                $url = $basePath . '?' . http_build_query($query);
-            } elseif ($basePath !== '') {
-                $url = $basePath;
-            }
-            return 'https://go.dognet.com/?chid=AJ1P2&url=' . rawurlencode($url);
+        $cleanUrl = trim(aff_extract_final_url($url));
+        if ($cleanUrl === '' || !aff_is_valid_http_url($cleanUrl)) {
+            $cleanUrl = $url;
         }
 
-        return $url;
+        $parts = parse_url($cleanUrl);
+        if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
+            return '';
+        }
+
+        $scheme = strtolower((string) $parts['scheme']);
+        $host = (string) $parts['host'];
+        $path = (string) ($parts['path'] ?? '');
+        $queryParams = [];
+        parse_str((string) ($parts['query'] ?? ''), $queryParams);
+        unset($queryParams['utm_term']);
+        $query = $queryParams !== [] ? http_build_query($queryParams) : '';
+
+        return $scheme . '://' . $host . $path . ($query !== '' ? '?' . $query : '');
+    }
+}
+
+if (!function_exists('interessa_affiliate_link')) {
+    function interessa_affiliate_link(string $url, string $merchant): string {
+        $merchant = trim($merchant);
+        $cleanUrl = interessa_affiliate_clean_url($url);
+        if ($cleanUrl === '') {
+            return '';
+        }
+
+        $merchantMeta = aff_supported_affiliate_merchant_meta($merchant, $merchant, $cleanUrl);
+        $merchantSlug = trim((string) ($merchantMeta['merchant_slug'] ?? ''));
+        $dtMap = interessa_dognet_dt_map();
+        $dtCode = trim((string) ($dtMap[$merchantSlug] ?? ''));
+        if ($dtCode !== '') {
+            return 'https://go.dognet.com/?dt=' . rawurlencode($dtCode) . '&url=' . rawurlencode($cleanUrl);
+        }
+
+        return $cleanUrl;
     }
 }
 
@@ -892,6 +920,27 @@ if (!function_exists('interessa_affiliate_target')) {
             $row = interessa_resolve_product_reference($row);
         }
 
-        return aff_resolve_click_target($row);
+        $target = aff_resolve_click_target($row);
+        $merchant = trim((string) ($row['merchant_slug'] ?? $row['merchant'] ?? ''));
+        $affiliateUrl = trim((string) ($target['affiliate_url'] ?? ''));
+        $directUrl = trim((string) ($target['direct_url'] ?? ''));
+
+        if ($affiliateUrl !== '') {
+            $wrappedHref = interessa_affiliate_link($affiliateUrl, $merchant);
+            if ($wrappedHref !== '') {
+                $target['href'] = $wrappedHref;
+                $target['rel'] = 'nofollow sponsored';
+                $target['label'] = trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu';
+            }
+        } elseif ($directUrl !== '') {
+            $wrappedHref = interessa_affiliate_link($directUrl, $merchant);
+            if ($wrappedHref !== '') {
+                $target['href'] = $wrappedHref;
+                $target['rel'] = 'nofollow sponsored';
+                $target['label'] = 'Do obchodu';
+            }
+        }
+
+        return $target;
     }
 }

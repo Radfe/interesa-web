@@ -15,8 +15,8 @@
     },
     "recommended_products": [
         "aktin-balanced-preworkout",
-        "gymbeam-activlab-black-wolf-multifruit",
-        "gymbeam-bsn-n-o-xplode-legendary-pre-workout-green-burst"
+        "gymbeam-beastpink-pink-drive-jahodov-a-limon-ada",
+        "gymbeam-amix-cellzoom-hardcore-ovocn-y-punc"
     ],
     "product_plan": [
         {
@@ -27,19 +27,19 @@
             "show_in_comparison": false
         },
         {
-            "product_slug": "gymbeam-activlab-black-wolf-multifruit",
+            "product_slug": "gymbeam-beastpink-pink-drive-jahodov-a-limon-ada",
             "order": 2,
             "role": "standard",
             "show_in_top": true,
             "show_in_comparison": false
         },
         {
-            "product_slug": "gymbeam-bsn-n-o-xplode-legendary-pre-workout-green-burst",
+            "product_slug": "gymbeam-amix-cellzoom-hardcore-ovocn-y-punc",
             "order": 3,
             "role": "standard",
             "show_in_top": true,
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-25T16:47:33+00:00"
+    "updated_at": "2026-03-25T19:01:21+00:00"
 }
