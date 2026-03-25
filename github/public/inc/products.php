@@ -716,20 +716,21 @@ if (!function_exists('interessa_product_packshot_brief')) {
 if (!function_exists('interessa_affiliate_target')) {
     function interessa_affiliate_target(array $row): array {
         $row = interessa_resolve_product_reference($row);
-        $code = trim((string) ($row['code'] ?? $row['affiliate_code'] ?? ''));
-        $fallback = trim((string) ($row['fallback_url'] ?? $row['url'] ?? ''));
-        $record = $code !== '' ? aff_record($code) : null;
-
-        if ($record !== null && aff_resolve($code) !== null) {
-            $linkType = aff_link_type($record);
+        $resolvedTarget = function_exists('aff_resolve_click_target')
+            ? aff_resolve_click_target(array_replace($row, [
+                'prefer_registry' => true,
+            ]))
+            : [];
+        if (trim((string) ($resolvedTarget['href'] ?? '')) !== '') {
             return [
-                'href' => '/go/' . rawurlencode($code),
-                'rel' => $linkType === 'affiliate' ? 'nofollow sponsored' : 'nofollow',
-                'label' => $linkType === 'affiliate' ? 'Do obchodu' : 'Pozriet produkt',
-                'note' => '',
+                'href' => trim((string) ($resolvedTarget['href'] ?? '')),
+                'rel' => trim((string) ($resolvedTarget['rel'] ?? 'nofollow')),
+                'label' => trim((string) ($resolvedTarget['label'] ?? 'Pozriet produkt')),
+                'note' => trim((string) ($resolvedTarget['note'] ?? '')),
             ];
         }
 
+        $fallback = trim((string) ($row['fallback_url'] ?? $row['url'] ?? ''));
         if ($fallback !== '') {
             return [
                 'href' => $fallback,

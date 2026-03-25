@@ -1,10 +1,10 @@
 {
     "slug": "pre-workout-ako-vybrat",
     "title": "Ako vybrat pre-workout - stimulanty, pumpa a realne davky",
-    "intro": "",
+    "intro": "Kofein, citrulin, beta-alanin a ich kombinacie: kedy dava pre-workout zmysel a kedy je lepsi non-stim pristup.",
     "meta_title": "",
     "meta_description": "",
-    "category": "nakopavace-a-pre-workout",
+    "category": "",
     "hero_asset": "",
     "sections": [],
     "comparison": {
@@ -15,7 +15,7 @@
     },
     "recommended_products": [
         "aktin-balanced-preworkout",
-        "gymbeam-balanced-stim-pre-workout"
+        "gymbeam-activlab-black-wolf-multifruit"
     ],
     "product_plan": [
         {
@@ -26,12 +26,12 @@
             "show_in_comparison": false
         },
         {
-            "product_slug": "gymbeam-balanced-stim-pre-workout",
+            "product_slug": "gymbeam-activlab-black-wolf-multifruit",
             "order": 2,
             "role": "standard",
             "show_in_top": true,
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-25T15:32:33+00:00"
+    "updated_at": "2026-03-25T15:43:28+00:00"
 }

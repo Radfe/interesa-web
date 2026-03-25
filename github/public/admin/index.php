@@ -233,20 +233,29 @@ function interessa_admin_missing_product_rows(array $slugs, string $defaultCateg
 function interessa_admin_product_click_state(array $product): array {
     $normalized = interessa_normalize_product($product);
     $affiliateCode = trim((string) ($normalized['affiliate_code'] ?? ''));
-    $affiliateHref = $affiliateCode !== '' ? trim((string) (aff_resolve($affiliateCode) ?? '')) : '';
     $directUrl = trim((string) ($normalized['fallback_url'] ?? ''));
-    $derivedProductUrl = $affiliateCode !== '' ? trim((string) aff_product_url_for_code($affiliateCode)) : '';
+    $resolvedTarget = function_exists('aff_resolve_click_target')
+        ? aff_resolve_click_target(array_replace($normalized, [
+            'prefer_registry' => true,
+        ]))
+        : [];
+    $affiliateHref = trim((string) ($resolvedTarget['affiliate_url'] ?? ($affiliateCode !== '' ? (aff_resolve($affiliateCode) ?? '') : '')));
+    $resolvedHref = trim((string) ($resolvedTarget['href'] ?? ''));
+    $resolvedDirectUrl = trim((string) ($resolvedTarget['direct_url'] ?? ''));
+    $derivedProductUrl = $resolvedDirectUrl !== ''
+        ? $resolvedDirectUrl
+        : ($affiliateCode !== '' ? trim((string) aff_product_url_for_code($affiliateCode)) : '');
 
     $directReady = $directUrl !== '' && interessa_admin_looks_like_product_url($directUrl);
     $affiliateProductReady = $derivedProductUrl !== '' && interessa_admin_looks_like_product_url($derivedProductUrl);
-    $affiliateReady = $affiliateHref !== '' && $affiliateProductReady;
+    $affiliateReady = $affiliateHref !== '' && !empty($resolvedTarget['is_affiliate']) && $affiliateProductReady;
     $ready = $directReady || $affiliateReady;
 
     return [
         'ready' => $ready,
         'direct_ready' => $directReady,
         'affiliate_ready' => $affiliateReady,
-        'href' => $affiliateReady ? $affiliateHref : ($directReady ? $directUrl : ''),
+        'href' => $affiliateReady ? ($resolvedHref !== '' ? $resolvedHref : $affiliateHref) : ($directReady ? $directUrl : $resolvedHref),
         'product_url' => $directReady ? $directUrl : ($affiliateProductReady ? $derivedProductUrl : ''),
         'affiliate_href' => $affiliateHref,
     ];
