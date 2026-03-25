@@ -725,6 +725,19 @@ if (!function_exists('interessa_affiliate_link')) {
         $host = preg_replace('~^www\.~', '', $host) ?? $host;
 
         if ($merchantSlug === 'gymbeam' || $host === 'gymbeam.sk') {
+            $parts = parse_url($url);
+            $basePath = '';
+            if (!empty($parts['scheme']) && !empty($parts['host'])) {
+                $basePath = $parts['scheme'] . '://' . $parts['host'] . (string) ($parts['path'] ?? '');
+            }
+            $query = [];
+            parse_str((string) ($parts['query'] ?? ''), $query);
+            unset($query['utm_term']);
+            if ($basePath !== '' && $query !== []) {
+                $url = $basePath . '?' . http_build_query($query);
+            } elseif ($basePath !== '') {
+                $url = $basePath;
+            }
             return 'https://go.dognet.com/?chid=AJ1P2&url=' . rawurlencode($url);
         }
 
