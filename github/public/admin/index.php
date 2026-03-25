@@ -4267,6 +4267,100 @@ if ($section === 'products') {
         && $selectedCandidateArticleSlug !== ''
         && ($selectedCandidateArticleFit['status'] ?? 'no-fit') === 'fit';
 }
+
+if ($section === 'products') {
+    $scopedProductSlugs = array_values(array_unique(array_filter(array_map('strval', array_merge(
+        $productPageSelectedSlugs,
+        $selectedProductSlug !== '' ? [$selectedProductSlug] : []
+    )))));
+    if ($scopedProductSlugs === []) {
+        $scopedProductSlugs = array_slice(array_map('strval', array_keys($catalog)), 0, 50);
+    }
+    $scopedProductSlugs = array_slice($scopedProductSlugs, 0, 50);
+    $scopedCatalog = [];
+    foreach ($scopedProductSlugs as $scopedProductSlug) {
+        if (isset($catalog[$scopedProductSlug])) {
+            $scopedCatalog[$scopedProductSlug] = $catalog[$scopedProductSlug];
+        }
+    }
+    if ($scopedCatalog !== []) {
+        $productImageSnapshot = interessa_admin_product_image_queue_snapshot($scopedCatalog, $productImageFilter, max(count($scopedCatalog), 1));
+        $productImageQueue = is_array($productImageSnapshot['rows'] ?? null) ? array_values($productImageSnapshot['rows']) : [];
+        $productImageQueueCounts = is_array($productImageSnapshot['counts'] ?? null) ? $productImageSnapshot['counts'] : $productImageQueueCounts;
+        $missingPackshotSlugs = array_values(array_filter(array_map('strval', (array) ($productImageSnapshot['missing_slugs'] ?? []))));
+        $selectedPackshotQueueIndex = array_search($selectedProductSlug, $missingPackshotSlugs, true);
+        $prevMissingPackshotSlug = $selectedPackshotQueueIndex !== false && $selectedPackshotQueueIndex > 0 ? (string) $missingPackshotSlugs[$selectedPackshotQueueIndex - 1] : '';
+        $nextMissingPackshotSlug = $selectedPackshotQueueIndex !== false && $selectedPackshotQueueIndex < count($missingPackshotSlugs) - 1 ? (string) $missingPackshotSlugs[$selectedPackshotQueueIndex + 1] : '';
+        $selectedPackshotQueuePosition = $selectedPackshotQueueIndex !== false ? ($selectedPackshotQueueIndex + 1) : 0;
+        $productAffiliateQueueAll = interessa_admin_product_affiliate_queue($scopedCatalog, max(count($scopedCatalog), 1));
+        $productAffiliateQueue = array_slice($productAffiliateQueueAll, 0, 12);
+        $productAffiliateQueueCount = count($productAffiliateQueueAll);
+        $productQualityQueueAll = interessa_admin_product_quality_queue($scopedCatalog, max(count($scopedCatalog), 1));
+        $productQualityQueue = array_slice($productQualityQueueAll, 0, 12);
+        $productQualityQueueCount = count($productQualityQueueAll);
+    }
+}
+
+if ($section === 'images') {
+    $selectedArticleQueueOptions = [];
+    if ($selectedArticleSlug !== '' && isset($articleOptions[$selectedArticleSlug])) {
+        $selectedArticleQueueOptions[$selectedArticleSlug] = $articleOptions[$selectedArticleSlug];
+    }
+    if ($selectedArticleQueueOptions !== []) {
+        $imageSnapshot = interessa_admin_image_queue_snapshot($selectedArticleQueueOptions, 'all', max(count($selectedArticleQueueOptions), 1));
+        $imageQueue = is_array($imageSnapshot['rows'] ?? null) ? array_values($imageSnapshot['rows']) : [];
+        $imageQueueCounts = is_array($imageSnapshot['counts'] ?? null) ? $imageSnapshot['counts'] : $imageQueueCounts;
+        $missingHeroSlugs = array_values(array_filter(array_map('strval', (array) ($imageSnapshot['missing_slugs'] ?? []))));
+        $selectedHeroQueueIndex = array_search($selectedArticleSlug, $missingHeroSlugs, true);
+        $prevMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex > 0 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex - 1] : '';
+        $nextMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex < count($missingHeroSlugs) - 1 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex + 1] : '';
+        $selectedHeroQueuePosition = $selectedHeroQueueIndex !== false ? ($selectedHeroQueueIndex + 1) : 0;
+    }
+
+    $selectedThemeQueueOptions = [];
+    if ($selectedThemeSlug !== '' && isset($categoryOptions[$selectedThemeSlug])) {
+        $selectedThemeQueueOptions[$selectedThemeSlug] = $categoryOptions[$selectedThemeSlug];
+    }
+    if ($selectedThemeQueueOptions !== []) {
+        $allThemeImageQueue = interessa_admin_category_image_queue($selectedThemeQueueOptions);
+        $themeAssetManifest = interessa_admin_category_asset_manifest($selectedThemeQueueOptions);
+        $themeManifestTotal = count($themeAssetManifest);
+        $themeHeroReadyCount = 0;
+        $themeThumbReadyCount = 0;
+        $themeFullyReadyCount = 0;
+        foreach ($themeAssetManifest as $themeManifestRow) {
+            $heroReady = false;
+            $thumbReady = false;
+            foreach ((array) ($themeManifestRow['items'] ?? []) as $assetItem) {
+                $variant = (string) ($assetItem['variant'] ?? '');
+                $ready = !empty($assetItem['ready']);
+                if ($variant === 'hero') {
+                    $heroReady = $ready;
+                }
+                if ($variant === 'thumb') {
+                    $thumbReady = $ready;
+                }
+            }
+            if ($heroReady) {
+                $themeHeroReadyCount++;
+            }
+            if ($thumbReady) {
+                $themeThumbReadyCount++;
+            }
+            if ($heroReady && $thumbReady) {
+                $themeFullyReadyCount++;
+            }
+        }
+        $themeHeroMissingCount = max(0, $themeManifestTotal - $themeHeroReadyCount);
+        $themeThumbMissingCount = max(0, $themeManifestTotal - $themeThumbReadyCount);
+        $missingThemeSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allThemeImageQueue, static fn(array $row): bool => empty($row['has_local_theme_image'])))));
+        $firstMissingThemeSlug = $missingThemeSlugs[0] ?? '';
+        $selectedThemeQueueIndex = array_search($selectedThemeSlug, $missingThemeSlugs, true);
+        $prevMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex > 0 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex - 1] : '';
+        $nextMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex < count($missingThemeSlugs) - 1 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex + 1] : '';
+        $selectedThemeQueuePosition = $selectedThemeQueueIndex !== false ? ($selectedThemeQueueIndex + 1) : 0;
+    }
+}
 }
 
 require dirname(__DIR__) . '/inc/head.php';
