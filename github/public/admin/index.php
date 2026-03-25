@@ -2297,6 +2297,7 @@ if ($isAuthed) {
                 }
 
                 interessa_admin_save_article_override($slug, $payload);
+                interessa_admin_save_article_product_plan($slug, $productPlan);
                 interessa_admin_redirect('articles', ['slug' => $slug, 'saved' => 'article']);
             }
 

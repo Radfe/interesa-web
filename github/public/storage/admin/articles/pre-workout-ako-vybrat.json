@@ -1,10 +1,10 @@
 {
     "slug": "pre-workout-ako-vybrat",
-    "title": "",
-    "intro": "",
+    "title": "Ako vybrat pre-workout - stimulanty, pumpa a realne davky",
+    "intro": "Kofein, citrulin, beta-alanin a ich kombinacie: kedy dava pre-workout zmysel a kedy je lepsi non-stim pristup.",
     "meta_title": "",
     "meta_description": "",
-    "category": "",
+    "category": "sila",
     "hero_asset": "",
     "sections": [],
     "comparison": {
@@ -15,7 +15,7 @@
     },
     "recommended_products": [
         "aktin-balanced-preworkout",
-        "aktin-creatine-monohydrate"
+        "gymbeam-balanced-stim-pre-workout"
     ],
     "product_plan": [
         {
@@ -26,12 +26,12 @@
             "show_in_comparison": false
         },
         {
-            "product_slug": "aktin-creatine-monohydrate",
+            "product_slug": "gymbeam-balanced-stim-pre-workout",
             "order": 2,
             "role": "standard",
             "show_in_top": true,
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-24T15:38:41+00:00"
+    "updated_at": "2026-03-25T14:38:42+00:00"
 }

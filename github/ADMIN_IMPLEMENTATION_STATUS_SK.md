@@ -122,6 +122,9 @@ Najnovsia stabilizacia Dognet importu a deeplink vrstvy:
   - podporene a topic-fit produkty idu vyssie
   - produkty s hotovym klikom, obrazkom a validnou produktovou URL sa posuvaju hore
   - flavor/variant spam sa zlucuje na reprezentativne produkty pre kazdy slot
+- `Ulozit produkty v clanku` teraz pri article slotoch nesmie zapisovat len do article override:
+  - po save sa musi synchronizovat aj `article-products.json`, lebo tato vrstva ma pri reloade prednost ako source of truth
+  - inak sa zmena v slote tvari ako ulozena, ale po reload-e sa vrati stary explicitny produkt
 
 Menene subory:
 - [public/inc/affiliates.php](C:/data/praca/webova_stranka/github/public/inc/affiliates.php)

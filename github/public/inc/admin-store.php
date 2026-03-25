@@ -983,6 +983,56 @@ if (!function_exists('interessa_admin_sync_article_product_override')) {
     }
 }
 
+if (!function_exists('interessa_admin_save_article_product_plan')) {
+    function interessa_admin_save_article_product_plan(string $articleSlug, array $productPlan): void {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        if ($articleSlug === '') {
+            throw new RuntimeException('Chyba slug clanku pre product plan save.');
+        }
+
+        $rows = interessa_admin_article_products();
+        foreach ($rows as $key => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $normalized = interessa_admin_normalize_article_product_record($row);
+            if ((string) ($normalized['article_slug'] ?? '') !== $articleSlug) {
+                continue;
+            }
+
+            $normalized['enabled'] = false;
+            $rows[$key] = $normalized;
+        }
+
+        foreach ($productPlan as $planRow) {
+            if (!is_array($planRow)) {
+                continue;
+            }
+
+            $productSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
+            if ($productSlug === '') {
+                continue;
+            }
+
+            $key = interessa_admin_article_product_key($articleSlug, $productSlug);
+            $existing = is_array($rows[$key] ?? null) ? $rows[$key] : [];
+            $rows[$key] = interessa_admin_normalize_article_product_record(array_replace($existing, [
+                'article_slug' => $articleSlug,
+                'product_slug' => $productSlug,
+                'order' => max(1, (int) ($planRow['order'] ?? 1)),
+                'role' => interessa_admin_normalize_candidate_role((string) ($planRow['role'] ?? 'standard')),
+                'show_in_top' => !empty($planRow['show_in_top']),
+                'show_in_comparison' => !empty($planRow['show_in_comparison']),
+                'enabled' => true,
+            ]));
+        }
+
+        interessa_admin_save_article_products($rows);
+        interessa_admin_sync_article_product_override($articleSlug);
+    }
+}
+
 if (!function_exists('interessa_admin_article_product_state')) {
     function interessa_admin_article_product_state(string $articleSlug, ?array $fallbackOverride = null): array {
         $articleSlug = canonical_article_slug(trim($articleSlug));
