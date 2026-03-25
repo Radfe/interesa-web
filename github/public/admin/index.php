@@ -2970,7 +2970,7 @@ $selectedPackshotQueueIndex = false;
 $prevMissingPackshotSlug = '';
 $nextMissingPackshotSlug = '';
 $selectedPackshotQueuePosition = 0;
-if (in_array($section, ['images', 'products', 'help', 'tools'], true)) {
+if (in_array($section, ['images', 'products', 'help'], true)) {
     $allImageQueue = interessa_admin_image_queue($articleOptions, 'all', max(count($articleOptions), 1));
     $allProductImageQueue = interessa_admin_product_image_queue($catalog, 'all', max(count($catalog), 1));
     $allThemeImageQueue = interessa_admin_category_image_queue($categoryOptions);
@@ -3044,7 +3044,9 @@ $productAffiliateQueueCount = 0;
 $productQualityQueueAll = [];
 $productQualityQueue = [];
 $productQualityQueueCount = 0;
-if (in_array($section, ['help', 'tools'], true)) {
+$toolsView = trim((string) ($_GET['tools_view'] ?? ''));
+$toolsShowMoneyPageGaps = $section === 'tools' && $toolsView === 'gaps';
+if ($section === 'help') {
     $productAffiliateQueueAll = interessa_admin_product_affiliate_queue($catalog, max(count($catalog), 1));
     $productAffiliateQueue = array_slice($productAffiliateQueueAll, 0, 12);
     $productAffiliateQueueCount = count($productAffiliateQueueAll);
@@ -3066,7 +3068,7 @@ $moneyPageImageGapReport = [
 ];
 $moneyPageGapBriefPack = ['title' => '', 'text' => '', 'count' => 0];
 $briefRows = [];
-if (in_array($section, ['help', 'tools'], true)) {
+if ($section === 'help' || $toolsShowMoneyPageGaps) {
     $moneyPageImageGapReport = interessa_admin_money_page_image_gap_report($moneyPageMerchantFilter);
     $moneyPageGapBriefPack = interessa_admin_money_page_gap_brief_pack($moneyPageImageGapReport);
     $briefRows = interessa_admin_brief_rows($articleOptions);
@@ -4218,23 +4220,31 @@ require dirname(__DIR__) . '/inc/head.php';
 
               <section class="admin-subsection">
                 <h3>Money page image gaps</h3>
-                <p>
-                  Sledujeme <?= esc((string) ($moneyPageImageGapReport['tracked_pages'] ?? 0)) ?> hlavnych money pages.
-                  Aktualne chyba <?= esc((string) ($moneyPageImageGapReport['missing_products'] ?? 0)) ?> realnych produktovych obrazkov<?= ($moneyPageImageGapReport['merchant_filter'] ?? 'all') !== 'all' ? ' pre vybraneho merchanta' : '' ?>.
-                </p>
-                <p class="admin-note">Najrychlejsia cesta je otvorit image workflow konkretneho clanku a doplnat obrazky po clankoch.</p>
-                <div class="admin-inline-actions">
-                  <form method="post" class="admin-inline-form">
-                    <input type="hidden" name="action" value="export_money_page_image_gap_csv" />
-                    <input type="hidden" name="merchant_filter" value="<?= esc((string) ($moneyPageImageGapReport['merchant_filter'] ?? 'all')) ?>" />
-                    <button class="btn btn-secondary" type="submit">Exportovat gaps + briefy CSV</button>
-                  </form>
-                  <form method="post" class="admin-inline-form">
-                    <input type="hidden" name="action" value="autofill_gap_products_by_filter" />
-                    <input type="hidden" name="merchant_filter" value="<?= esc((string) ($moneyPageImageGapReport['merchant_filter'] ?? 'all')) ?>" />
-                    <button class="btn btn-secondary" type="submit">Skusit doplnit z produktu</button>
-                  </form>
-                </div>
+                <?php if ($toolsShowMoneyPageGaps): ?>
+                  <p>
+                    Sledujeme <?= esc((string) ($moneyPageImageGapReport['tracked_pages'] ?? 0)) ?> hlavnych money pages.
+                    Aktualne chyba <?= esc((string) ($moneyPageImageGapReport['missing_products'] ?? 0)) ?> realnych produktovych obrazkov<?= ($moneyPageImageGapReport['merchant_filter'] ?? 'all') !== 'all' ? ' pre vybraneho merchanta' : '' ?>.
+                  </p>
+                  <p class="admin-note">Najrychlejsia cesta je otvorit image workflow konkretneho clanku a doplnat obrazky po clankoch.</p>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="/admin?section=tools">Skryt gap report</a>
+                    <form method="post" class="admin-inline-form">
+                      <input type="hidden" name="action" value="export_money_page_image_gap_csv" />
+                      <input type="hidden" name="merchant_filter" value="<?= esc((string) ($moneyPageImageGapReport['merchant_filter'] ?? 'all')) ?>" />
+                      <button class="btn btn-secondary" type="submit">Exportovat gaps + briefy CSV</button>
+                    </form>
+                    <form method="post" class="admin-inline-form">
+                      <input type="hidden" name="action" value="autofill_gap_products_by_filter" />
+                      <input type="hidden" name="merchant_filter" value="<?= esc((string) ($moneyPageImageGapReport['merchant_filter'] ?? 'all')) ?>" />
+                      <button class="btn btn-secondary" type="submit">Skusit doplnit z produktu</button>
+                    </form>
+                  </div>
+                <?php else: ?>
+                  <p>Tento report je vacsi a nacitava sa samostatne, aby sa stranka Import / export otvorila rychlo a bez padu.</p>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary" href="/admin?section=tools&amp;tools_view=gaps">Nacitat money page gap report</a>
+                  </div>
+                <?php endif; ?>
               </section>
 
               <section class="admin-subsection">
