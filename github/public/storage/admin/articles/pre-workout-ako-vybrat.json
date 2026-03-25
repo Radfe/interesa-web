@@ -14,13 +14,13 @@
         "rows": []
     },
     "recommended_products": [
-        "aktin-balanced-preworkout",
+        "gymbeam-activlab-caffeine-power-60-tab-bez-pr-ichute",
         "gymbeam-beastpink-pink-drive-jahodov-a-limon-ada",
-        "gymbeam-amix-cellzoom-hardcore-ovocn-y-punc"
+        "gymbeam-bsn-n-o-xplode-legendary-pre-workout-purple-power"
     ],
     "product_plan": [
         {
-            "product_slug": "aktin-balanced-preworkout",
+            "product_slug": "gymbeam-activlab-caffeine-power-60-tab-bez-pr-ichute",
             "order": 1,
             "role": "featured",
             "show_in_top": true,
@@ -34,12 +34,12 @@
             "show_in_comparison": false
         },
         {
-            "product_slug": "gymbeam-amix-cellzoom-hardcore-ovocn-y-punc",
+            "product_slug": "gymbeam-bsn-n-o-xplode-legendary-pre-workout-purple-power",
             "order": 3,
             "role": "standard",
             "show_in_top": true,
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-25T19:01:21+00:00"
+    "updated_at": "2026-03-25T20:19:31+00:00"
 }

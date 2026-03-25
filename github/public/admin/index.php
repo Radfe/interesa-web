@@ -5651,17 +5651,17 @@ require dirname(__DIR__) . '/inc/head.php';
 
             if ($selectedProductHasUsableSourceUrl && !$selectedProductClickReady) {
               $selectedProductNextStep = 'prepare';
-              $selectedProductNextStepLabel = '1. PRIPRAVIT PRODUKT Z ULOZENEHO LINKU';
-              $selectedProductNextStepNote = 'Link uz je vyplneny. Teraz z neho admin pripravi klik, adresu produktu a skusi najst obrazok.';
+              $selectedProductNextStepLabel = '2. PRIPRAVIT AFFILIATE LINK A PRODUKT';
+              $selectedProductNextStepNote = 'Produkt uz mas zvoleny. Teraz z ulozeneho URL admin pripravi klik do obchodu a doplni produktove data.';
             } elseif ($selectedProductHasUsableSourceUrl) {
               $selectedProductNextStep = 'enrich';
               $selectedProductNextStepLabel = '2. NACITAT UDAJE Z OBCHODU';
-              $selectedProductNextStepNote = 'Produkt uz ma fungujuci klik. Teraz admin skusi doplnit nazov, text a obrazok.';
+              $selectedProductNextStepNote = 'Produkt aj affiliate link su uz pripravene. Admin teraz doplni nazov, text a skusi najst obrazok z e-shopu.';
             }
             if ($selectedProductRemoteSrc !== '' && !$selectedProductPackshotReady) {
               $selectedProductNextStep = 'save_image';
               $selectedProductNextStepLabel = '3. ULOZIT OBRAZOK Z E-SHOPU';
-              $selectedProductNextStepNote = 'Obrazok uz je najdeny. Teraz ho treba len ulozit k produktu.';
+              $selectedProductNextStepNote = 'Spravny obrazok z e-shopu je uz najdeny. Vlastny obrazok netreba, pokial nechces manualny fallback alebo nahradu.';
             }
             if ($selectedProductPackshotReady && $selectedProductClickReady && !$selectedProductHasDognetLink) {
               $selectedProductNextStep = 'dognet';
@@ -6186,34 +6186,42 @@ require dirname(__DIR__) . '/inc/head.php';
               $productCurrentStepClass = 'is-done';
               $productCurrentSteps = [];
               if (!$selectedProductClickReady && !$selectedProductPackshotReady) {
-                  $productCurrentStepTitle = 'Dopln odkaz a obrazok produktu';
-                  $productCurrentStepText = 'Najprv vloz priamy odkaz na konkretny produkt a potom dopln obrazok produktu';
+                  $productCurrentStepTitle = 'Dokoncit produkt pre clanok';
+                  $productCurrentStepText = 'Najprv potvrdis spravny produkt a affiliate link. Obrazok riesis az vtedy, ked chyba alebo je zly.';
                   $productCurrentStepClass = 'is-link';
                   $productCurrentSteps = [
-                      'KROK 1: Dopln odkaz produktu',
-                      'KROK 2: Dopln obrazok produktu',
-                      'KROK 3: Uloz a vrat sa do clanku',
+                      'KROK 1: Spravny produkt',
+                      'KROK 2: Affiliate link',
+                      'KROK 3: Obrazok len ak chyba alebo je zly',
+                      'KROK 4: Uloz a vrat sa do clanku',
                   ];
               } elseif (!$selectedProductClickReady) {
-                  $productCurrentStepTitle = 'Dopln link produktu';
-                  $productCurrentStepText = 'Vloz priamy odkaz na konkretny produkt';
+                  $productCurrentStepTitle = 'Dokoncit affiliate link';
+                  $productCurrentStepText = 'Spravny produkt uz mas. Teraz dopln alebo priprav funkcny affiliate link.';
                   $productCurrentStepClass = 'is-link';
                   $productCurrentSteps = [
-                      'KROK 1: Dopln odkaz produktu',
-                      'KROK 2: Uloz a vrat sa do clanku',
+                      'KROK 1: Spravny produkt',
+                      'KROK 2: Affiliate link',
+                      'KROK 3: Obrazok len ak chyba alebo je zly',
+                      'KROK 4: Uloz a vrat sa do clanku',
                   ];
               } elseif (!$selectedProductPackshotReady) {
-                  $productCurrentStepTitle = 'Dopln obrazok produktu';
-                  $productCurrentStepText = 'Dopln obrazok produktu';
+                  $productCurrentStepTitle = 'Dokoncit obrazok produktu';
+                  $productCurrentStepText = 'Produkt aj affiliate link uz sedia. Bezne staci ulozit najdeny obrazok z e-shopu. Vlastny obrazok je len fallback.';
                   $productCurrentStepClass = 'is-image';
                   $productCurrentSteps = [
-                      'KROK 1: Dopln obrazok produktu',
-                      'KROK 2: Uloz a vrat sa do clanku',
+                      'KROK 1: Spravny produkt',
+                      'KROK 2: Affiliate link',
+                      'KROK 3: Obrazok len ak chyba alebo je zly',
+                      'KROK 4: Uloz a vrat sa do clanku',
                   ];
               } else {
+                  $productCurrentStepText = 'Produkt, affiliate link aj obrazok su hotove. Vlastny obrazok je uz len volitelna nahrada.';
                   $productCurrentSteps = [
-                      'KROK 1: Produkt je pripraveny pre clanok',
-                      'KROK 2: Uloz a vrat sa do clanku',
+                      'KROK 1: Spravny produkt',
+                      'KROK 2: Affiliate link',
+                      'KROK 3: Obrazok je hotovy',
+                      'KROK 4: Uloz a vrat sa do clanku',
                   ];
               }
             ?>
@@ -6588,9 +6596,9 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p><strong>Ulozeny obrazok u nas:</strong> <code><?= esc($selectedProductLocalAsset !== '' ? $selectedProductLocalAsset : 'zatial chyba') ?></code></p>
                   <p><strong>Kam sa ulozi hotovy obrazok:</strong> <code><?= esc((string) ($selectedProduct['image_target_asset'] ?? '')) ?></code></p>
                   <?php if ($selectedProductPackshotReady): ?>
-                    <p class="admin-note">Toto je hotovy obrazok produktu, ktory sa zobrazi na webe.</p>
+                    <p class="admin-note">Toto je hotovy obrazok produktu, ktory sa zobrazi na webe. Vlastny obrazok uz netreba, pokial nechces manualnu nahradu.</p>
                   <?php elseif ($selectedProductRemoteSrc !== ''): ?>
-                      <p class="admin-note">Nasiel sa obrazok z obchodu. Teraz klikni <strong>3. Ulozit obrazok z e-shopu</strong>.</p>
+                      <p class="admin-note">Nasiel sa pouzitelny obrazok z obchodu. Bezne staci kliknut <strong>3. Ulozit obrazok z e-shopu</strong>. Vlastny obrazok pouzi len ked je tento zly alebo nevhodny.</p>
                     <?php elseif ($selectedProductHasInvalidRemotePlaceholder): ?>
                       <p class="admin-note">Nenasiel sa pouzitelny obrazok z e-shopu. Najdeny URL bol len lokalny placeholder, preto ho admin ignoruje.</p>
                     <?php elseif (!$selectedProductHasUsableSourceUrl): ?>
@@ -6696,11 +6704,12 @@ require dirname(__DIR__) . '/inc/head.php';
             <?php endif; ?>
 
             <?php if (!$selectedProductPackshotReady && $selectedProductImageBrief !== []): ?>
-              <section class="admin-subsection">
+              <details class="admin-subsection is-compact">
+                <summary><strong>Volitelna nahrada obrazka produktu</strong> - otvor len ked shop image chyba alebo je zly</summary>
                 <div class="admin-subsection-head">
                   <div>
-                <h3>Vlastny obrazok produktu</h3>
-                <p class="admin-meta">Toto je len zalozna cesta. Pouzi ju iba vtedy, ked obchod naozaj nema pouzitelny obrazok produktu.</p>
+                <h3>Vlastny obrazok produktu ako fallback</h3>
+                <p class="admin-meta">Toto je len zalozna cesta a manualny override. Bezne najprv pouzi obrazok z e-shopu alebo feedu.</p>
                   </div>
                 </div>
                 <div class="admin-brief-grid">
@@ -6725,7 +6734,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <?php endif; ?>
                   </div>
                 </div>
-              </section>
+              </details>
             <?php endif; ?>
 
             <?php if (!$articleSlotMode): ?>
@@ -6842,12 +6851,12 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
                 </details>
               <details class="admin-subsection is-compact">
-                <summary><strong>Rucne nahrat vlastny obrazok</strong> - pouzi len ked obrazok z obchodu nefunguje</summary>
+                <summary><strong>Volitelne nahrat vlastny obrazok</strong> - fallback alebo manualny override</summary>
                 <div class="admin-grid one-up">
                   <label>
                     <span>Vyber vlastny obrazok produktu</span>
                     <input type="file" name="product_image" accept="image/webp,image/png,image/jpeg" />
-                    <small class="admin-note">Toto je zalozny krok. Bezne najprv skus obrazok z obchodu.</small>
+                    <small class="admin-note">Toto je len zalozny krok. Ak je obrazok z e-shopu v poriadku, tuto cast nemusis riesit.</small>
                   </label>
                 </div>
               </details>
