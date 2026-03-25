@@ -118,6 +118,10 @@ Najnovsia stabilizacia Dognet importu a deeplink vrstvy:
 - pre strict clanok typu `pre-workout` sa strict topic filter uz aplikuje aj na candidate rows:
   - nerelevantni kandidati sa nemaju dostat do slot selectu
   - category fallback a generic fallback ostavaju vypnute
+- article-slot select teraz pouziva aj deterministic ranking a zakladnu deduplikaciu variantov:
+  - podporene a topic-fit produkty idu vyssie
+  - produkty s hotovym klikom, obrazkom a validnou produktovou URL sa posuvaju hore
+  - flavor/variant spam sa zlucuje na reprezentativne produkty pre kazdy slot
 
 Menene subory:
 - [public/inc/affiliates.php](C:/data/praca/webova_stranka/github/public/inc/affiliates.php)

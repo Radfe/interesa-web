@@ -1083,6 +1083,103 @@ function interessa_admin_candidate_row_article_relevance(array $row, string $art
     ];
 }
 
+function interessa_admin_product_option_text(array $product): string {
+    $normalized = interessa_normalize_product($product);
+    return strtolower(trim(implode(' ', array_filter([
+        (string) ($normalized['slug'] ?? ''),
+        (string) ($normalized['name'] ?? ''),
+        (string) ($normalized['summary'] ?? ''),
+        (string) ($normalized['category'] ?? ''),
+        (string) ($normalized['merchant'] ?? ''),
+        (string) ($normalized['brand'] ?? ''),
+    ]))));
+}
+
+function interessa_admin_product_option_family_key(array $product): string {
+    $normalized = interessa_normalize_product($product);
+    $base = strtolower(trim((string) ($normalized['name'] ?? $normalized['slug'] ?? '')));
+    if ($base === '') {
+        return '';
+    }
+
+    $base = preg_replace('~\([^)]*\)~u', ' ', $base) ?? $base;
+    $base = preg_replace('~\b\d+\s?(g|kg|mg|ml|caps|kapsul|kapsuly|tbl|tabs|tabliet|servings?|porci[ea]|pcs|kusov?)\b~iu', ' ', $base) ?? $base;
+    $base = preg_replace('~\b(chocolate|cokolada|čokolada|vanilla|strawberry|jahoda|banana|banan|cookies?\s*&\s*cream|cookie|cream|berry|fruit\s*punch|watermelon|tropical|orange|lemon|mango|apple|cola|grape|blue\s*raspberry|peach|lime|neutral|natural|original|unflavoured|unflavored|bez\s*prichute|bez\s*príchute)\b~iu', ' ', $base) ?? $base;
+    $base = preg_replace('~[^a-z0-9]+~', '-', $base) ?? $base;
+    $base = trim($base, '-');
+
+    return $base !== '' ? $base : strtolower(trim((string) ($normalized['slug'] ?? '')));
+}
+
+function interessa_admin_product_option_quality_bonus(array $product): int {
+    $normalized = interessa_normalize_product($product);
+    $name = strtolower(trim((string) ($normalized['name'] ?? '')));
+    if ($name === '') {
+        return -40;
+    }
+
+    $bonus = 0;
+    $variantHits = interessa_admin_text_keyword_hits($name, [
+        'chocolate', 'cokolada', 'čokolada', 'vanilla', 'strawberry', 'jahoda', 'banana', 'banan',
+        'cookie', 'cream', 'berry', 'watermelon', 'tropical', 'orange', 'lemon', 'mango', 'apple',
+        'cola', 'grape', 'peach', 'lime', 'unflavoured', 'unflavored', 'bez prichute', 'bez príchute',
+    ]);
+    $variantCount = count($variantHits);
+    if ($variantCount === 0) {
+        $bonus += 16;
+    } else {
+        $bonus -= min(28, $variantCount * 8);
+    }
+
+    if (preg_match('~\b(sample|tester|trial|sachet|bundle|pack|set)\b~i', $name) === 1) {
+        $bonus -= 24;
+    }
+
+    $nameLength = strlen($name);
+    if ($nameLength >= 14 && $nameLength <= 90) {
+        $bonus += 8;
+    } elseif ($nameLength > 120) {
+        $bonus -= 10;
+    }
+
+    return $bonus;
+}
+
+function interessa_admin_article_slot_option_slot_bonus(array $product, string $articleSlug, int $slotIndex): int {
+    $articleSlug = canonical_article_slug($articleSlug);
+    if ($slotIndex < 1 || $slotIndex > 3) {
+        return 0;
+    }
+
+    if (!str_contains($articleSlug, 'pre-workout')) {
+        return 0;
+    }
+
+    $normalized = interessa_normalize_product($product);
+    $category = normalize_category_slug((string) ($normalized['category'] ?? ''));
+    $text = interessa_admin_product_option_text($normalized);
+    $bonus = 0;
+
+    if ($slotIndex === 1) {
+        if ($category === 'pre-workout') {
+            $bonus += 90;
+        }
+        $bonus += count(interessa_admin_text_keyword_hits($text, ['pre-workout', 'predtrening', 'stim', 'pump'])) * 30;
+    } elseif ($slotIndex === 2) {
+        $bonus += count(interessa_admin_text_keyword_hits($text, ['pump', 'citrulline', 'citrulin', 'beta-alanine', 'beta alanine', 'arginine', 'aakg', 'no booster', 'stim-free', 'stim free'])) * 32;
+        if ($category === 'pre-workout') {
+            $bonus += 18;
+        }
+    } else {
+        $bonus += count(interessa_admin_text_keyword_hits($text, ['pre-workout', 'predtrening', 'pump', 'citrulline', 'citrulin', 'beta-alanine', 'beta alanine', 'nitric oxide', 'aakg'])) * 24;
+        if ($category === 'pre-workout') {
+            $bonus += 24;
+        }
+    }
+
+    return $bonus;
+}
+
 function interessa_admin_clean_label(string $value): string {
     $value = trim($value);
     if ($value === '') {
@@ -3392,6 +3489,11 @@ foreach ($articleScopedProductOptionSlugs as $optionSlug) {
     $optionPackshotReady = !empty($optionProduct['has_local_image']);
     $optionClickState = interessa_admin_product_click_state($optionProduct);
     $optionAffiliateReady = !empty($optionClickState['ready']);
+    $optionProductUrl = trim((string) ($optionClickState['product_url'] ?? ''));
+    $optionHasValidProductUrl = $optionProductUrl !== '' && interessa_admin_looks_like_product_url($optionProductUrl);
+    $optionHasName = trim((string) ($optionProduct['name'] ?? '')) !== '';
+    $optionHasMerchant = trim((string) ($optionProduct['merchant'] ?? '')) !== '';
+    $optionReadyForWeb = $optionPackshotReady && $optionAffiliateReady && $optionHasValidProductUrl && $optionHasName && $optionHasMerchant;
     $optionRelevance = interessa_admin_article_slot_product_relevance($optionProduct, $selectedArticleSlug);
     $optionSources = $articleScopedProductOptionSources[$optionSlug] ?? [];
     $optionRank = (int) ($optionRelevance['score'] ?? 0);
@@ -3408,11 +3510,18 @@ foreach ($articleScopedProductOptionSlugs as $optionSlug) {
         $optionRank += 80;
     }
     if ($optionPackshotReady) {
-        $optionRank += 12;
+        $optionRank += 60;
     }
     if ($optionAffiliateReady) {
-        $optionRank += 12;
+        $optionRank += 80;
     }
+    if ($optionHasValidProductUrl) {
+        $optionRank += 40;
+    }
+    if ($optionReadyForWeb) {
+        $optionRank += 70;
+    }
+    $optionRank += interessa_admin_product_option_quality_bonus($optionProduct);
     if ($optionPackshotReady && $optionAffiliateReady) {
         $optionStateLabel = 'Hotovo';
         $optionStateClass = ' is-good';
@@ -3461,12 +3570,16 @@ foreach ($articleScopedProductOptionSlugs as $optionSlug) {
         'image_remote_src' => trim((string) ($optionProduct['image_remote_src'] ?? '')),
         'click_url' => trim((string) ($optionClickState['href'] ?? '')),
         'fallback_url' => trim((string) ($optionProduct['fallback_url'] ?? '')),
+        'product_url' => $optionProductUrl,
         'click_status_label' => $optionAffiliateReady ? 'Affiliate link pripraveny' : 'Pouzity priamy link',
         'state_label' => $optionStateLabel,
         'state_class' => $optionStateClass,
         'next_href' => $optionNextHref,
         'next_label' => $optionNextLabel,
         'rank' => $optionRank,
+        'ready_for_web' => $optionReadyForWeb,
+        'has_valid_product_url' => $optionHasValidProductUrl,
+        'family_key' => interessa_admin_product_option_family_key($optionProduct),
         'role' => (string) ($articleProductPlanMap[$optionSlug]['role'] ?? 'standard'),
         'debug_source' => $optionDebugSource,
         'placement' => !empty($articleProductPlanMap[$optionSlug]['show_in_top']) && !empty($articleProductPlanMap[$optionSlug]['show_in_comparison'])
@@ -3484,6 +3597,49 @@ uasort($articleScopedProductOptions, static function (array $left, array $right)
 
     return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
 });
+$articleScopedProductOptionsBySlot = [];
+foreach (range(1, 3) as $slotIndex) {
+    $slotSelectedSlug = trim((string) ($articleSlotSelections[$slotIndex] ?? ''));
+    $slotOptions = $articleScopedProductOptions;
+    uasort($slotOptions, static function (array $left, array $right) use ($selectedArticleSlug, $slotIndex): int {
+        $leftScore = (int) ($left['rank'] ?? 0) + interessa_admin_article_slot_option_slot_bonus((array) $left, $selectedArticleSlug, $slotIndex);
+        $rightScore = (int) ($right['rank'] ?? 0) + interessa_admin_article_slot_option_slot_bonus((array) $right, $selectedArticleSlug, $slotIndex);
+        $compare = $rightScore <=> $leftScore;
+        if ($compare !== 0) {
+            return $compare;
+        }
+
+        return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
+    });
+
+    $dedupedSlotOptions = [];
+    $seenFamilies = [];
+    if ($slotSelectedSlug !== '' && isset($slotOptions[$slotSelectedSlug])) {
+        $selectedFamily = trim((string) ($slotOptions[$slotSelectedSlug]['family_key'] ?? ''));
+        if ($selectedFamily === '') {
+            $selectedFamily = $slotSelectedSlug;
+        }
+        $seenFamilies[$selectedFamily] = true;
+        $dedupedSlotOptions[$slotSelectedSlug] = $slotOptions[$slotSelectedSlug];
+    }
+
+    foreach ($slotOptions as $optionSlug => $optionRow) {
+        if ($optionSlug === $slotSelectedSlug) {
+            continue;
+        }
+        $familyKey = trim((string) ($optionRow['family_key'] ?? ''));
+        if ($familyKey === '') {
+            $familyKey = (string) $optionSlug;
+        }
+        if (isset($seenFamilies[$familyKey])) {
+            continue;
+        }
+        $seenFamilies[$familyKey] = true;
+        $dedupedSlotOptions[$optionSlug] = $optionRow;
+    }
+
+    $articleScopedProductOptionsBySlot[$slotIndex] = $dedupedSlotOptions;
+}
 $productArticleOptionSlugs = $phaseOneArticleSlugs !== []
     ? $phaseOneArticleSlugs
     : ($priorityArticleSlugs !== [] ? $priorityArticleSlugs : array_keys($articleOptions));
@@ -4705,9 +4861,10 @@ require dirname(__DIR__) . '/inc/head.php';
                       </div>
                       <label>
                         <span>Produkt pre slot <?= esc((string) $slotIndex) ?></span>
+                        <?php $slotSelectOptions = $articleScopedProductOptionsBySlot[$slotIndex] ?? $articleScopedProductOptions; ?>
                         <select name="article_product_slot[<?= esc((string) $slotIndex) ?>]">
                           <option value="">Nechat prazdny slot</option>
-                          <?php foreach ($articleScopedProductOptions as $optionSlug => $optionRow): ?>
+                          <?php foreach ($slotSelectOptions as $optionSlug => $optionRow): ?>
                             <option value="<?= esc((string) $optionSlug) ?>" <?= $slotSlug === (string) $optionSlug ? 'selected' : '' ?>><?= esc((string) ($optionRow['name'] ?? $optionSlug)) ?></option>
                           <?php endforeach; ?>
                         </select>
