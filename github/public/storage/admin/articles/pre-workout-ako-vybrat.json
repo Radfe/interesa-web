@@ -14,13 +14,13 @@
         "rows": []
     },
     "recommended_products": [
-        "gymbeam-activlab-caffeine-power-60-tab-bez-pr-ichute",
+        "gymbeam-cellucor-c4-original-frozen-bombsicle",
         "gymbeam-beastpink-pink-drive-jahodov-a-limon-ada",
         "gymbeam-bsn-n-o-xplode-legendary-pre-workout-purple-power"
     ],
     "product_plan": [
         {
-            "product_slug": "gymbeam-activlab-caffeine-power-60-tab-bez-pr-ichute",
+            "product_slug": "gymbeam-cellucor-c4-original-frozen-bombsicle",
             "order": 1,
             "role": "featured",
             "show_in_top": true,
@@ -41,5 +41,5 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-25T20:19:31+00:00"
+    "updated_at": "2026-03-25T21:12:21+00:00"
 }

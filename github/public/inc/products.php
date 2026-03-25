@@ -1444,15 +1444,15 @@ if (!function_exists('interessa_build_product_from_url')) {
             'local_path' => $localPath,
         ]);
 
-        $affiliateTarget = interessa_build_product_from_url_affiliate_target($url, $merchant, $slug);
-        $affiliateUrl = trim((string) ($affiliateTarget['affiliate_url'] ?? ''));
-        $affiliateCode = trim((string) ($affiliateTarget['code'] ?? ''));
-        if ($affiliateUrl === '' && function_exists('aff_extract_final_url')) {
-            $finalUrl = trim((string) aff_extract_final_url($url));
-            if ($finalUrl !== '' && $finalUrl !== $url) {
-                $affiliateUrl = $url;
-            }
+        $cleanUrl = function_exists('interessa_affiliate_clean_url')
+            ? interessa_affiliate_clean_url($url)
+            : (function_exists('aff_extract_final_url') ? trim((string) aff_extract_final_url($url)) : trim($url));
+        if ($cleanUrl === '') {
+            $cleanUrl = trim($url);
         }
+
+        $affiliateTarget = interessa_build_product_from_url_affiliate_target($cleanUrl, $merchant, $slug);
+        $affiliateCode = trim((string) ($affiliateTarget['code'] ?? ''));
 
         return [
             'slug' => $slug,
@@ -1460,10 +1460,10 @@ if (!function_exists('interessa_build_product_from_url')) {
             'title' => $title,
             'merchant' => $merchant['merchant'],
             'merchant_slug' => $merchant['merchant_slug'],
-            'fallback_url' => $url,
-            'affiliate_url' => $affiliateUrl,
+            'fallback_url' => $cleanUrl,
+            'affiliate_url' => '',
             'affiliate_code' => $affiliateCode,
-            'affiliate_status' => trim((string) ($affiliateTarget['status'] ?? ($affiliateUrl !== '' ? 'affiliate_ready' : 'missing'))),
+            'affiliate_status' => trim((string) ($affiliateTarget['status'] ?? ($affiliateCode !== '' ? 'affiliate_ready' : 'missing'))),
             'image' => $image,
             'image_url' => $imagePublicUrl,
             'image_mode' => $imageSource,

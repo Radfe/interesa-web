@@ -11,6 +11,11 @@ const AFF_REGISTRY_FILES = [
     __DIR__ . '/../content/affiliates/links_overrides.php',
 ];
 const AFF_MERCHANTS_FILE = __DIR__ . '/../content/affiliates/merchants.php';
+const AFF_PRODUCT_CATALOG_FILES = [
+    __DIR__ . '/../content/products/catalog.php',
+    __DIR__ . '/../content/products/catalog_overrides.php',
+];
+const AFF_ADMIN_PRODUCTS_FILE = __DIR__ . '/../storage/admin/products.json';
 
 function aff_detect_delim(string $headerLine): string {
     if (str_contains($headerLine, ';')) { return ';'; }
@@ -440,7 +445,16 @@ function aff_record(string $code): ?array {
     }
 
     $registry = aff_load_registry();
-    return $registry[$code] ?? null;
+    if (isset($registry[$code]) && is_array($registry[$code])) {
+        return $registry[$code];
+    }
+
+    $product = aff_product_context_from_code($code);
+    if (!is_array($product)) {
+        return null;
+    }
+
+    return aff_record_from_product_context($product, $code);
 }
 
 function aff_link_type(?array $record): string {
@@ -522,6 +536,123 @@ function aff_product_url_for_code(string $code): string {
     return aff_extract_final_url($url);
 }
 
+function aff_load_product_index(): array {
+    static $cache = null;
+    if (is_array($cache)) {
+        return $cache;
+    }
+
+    $products = [];
+    foreach (AFF_PRODUCT_CATALOG_FILES as $file) {
+        $data = is_file($file) ? include $file : [];
+        if (!is_array($data)) {
+            continue;
+        }
+
+        $products = array_replace($products, $data);
+    }
+
+    if (is_file(AFF_ADMIN_PRODUCTS_FILE)) {
+        $json = file_get_contents(AFF_ADMIN_PRODUCTS_FILE);
+        $data = is_string($json) ? json_decode($json, true) : null;
+        if (is_array($data)) {
+            $products = array_replace($products, $data);
+        }
+    }
+
+    $bySlug = [];
+    $byCode = [];
+
+    foreach ($products as $key => $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+
+        $slug = trim((string) ($row['slug'] ?? $key));
+        if ($slug === '') {
+            continue;
+        }
+
+        $product = [
+            'slug' => $slug,
+            'affiliate_code' => trim((string) ($row['affiliate_code'] ?? '')),
+            'merchant' => trim((string) ($row['merchant'] ?? $row['brand'] ?? '')),
+            'merchant_slug' => trim((string) ($row['merchant_slug'] ?? '')),
+            'fallback_url' => trim((string) ($row['fallback_url'] ?? $row['product_url'] ?? $row['url'] ?? '')),
+        ];
+
+        $bySlug[$slug] = $product;
+        if ($product['affiliate_code'] !== '') {
+            $byCode[$product['affiliate_code']] = $product;
+        }
+    }
+
+    $cache = [
+        'by_slug' => $bySlug,
+        'by_code' => $byCode,
+    ];
+
+    return $cache;
+}
+
+function aff_product_context_from_code(string $code): ?array {
+    $code = trim($code);
+    if ($code === '') {
+        return null;
+    }
+
+    $index = aff_load_product_index();
+    if (isset($index['by_slug'][$code]) && is_array($index['by_slug'][$code])) {
+        return $index['by_slug'][$code];
+    }
+
+    if (isset($index['by_code'][$code]) && is_array($index['by_code'][$code])) {
+        return $index['by_code'][$code];
+    }
+
+    return null;
+}
+
+function aff_record_from_product_context(array $product, string $code): ?array {
+    $code = trim($code);
+    $productSlug = trim((string) ($product['slug'] ?? ''));
+    $merchant = trim((string) ($product['merchant'] ?? ''));
+    $merchantSlug = trim((string) ($product['merchant_slug'] ?? ''));
+    $fallbackUrl = trim((string) ($product['fallback_url'] ?? ''));
+    $directUrl = function_exists('interessa_affiliate_clean_url')
+        ? interessa_affiliate_clean_url($fallbackUrl)
+        : trim(aff_extract_final_url($fallbackUrl));
+
+    if (!aff_has_full_url_path($directUrl)) {
+        return null;
+    }
+
+    $resolvedMerchant = aff_resolve_merchant_meta($merchantSlug, $merchant, $directUrl);
+    if (is_array($resolvedMerchant)) {
+        $merchant = trim((string) ($resolvedMerchant['name'] ?? $merchant));
+        $merchantSlug = trim((string) ($resolvedMerchant['merchant_slug'] ?? $merchantSlug));
+    }
+
+    $affiliateUrl = function_exists('interessa_affiliate_link')
+        ? interessa_affiliate_link($directUrl, $merchantSlug !== '' ? $merchantSlug : $merchant)
+        : $directUrl;
+    if ($affiliateUrl === '') {
+        $affiliateUrl = $directUrl;
+    }
+
+    $isAffiliate = $affiliateUrl !== $directUrl;
+
+    return aff_merge_merchant_meta([
+        'code' => $code !== '' ? $code : $productSlug,
+        'url' => $affiliateUrl,
+        'merchant' => $merchant,
+        'merchant_slug' => $merchantSlug,
+        'product_slug' => $productSlug,
+        'link_type' => $isAffiliate ? 'affiliate' : 'product',
+        'source' => 'product-catalog',
+    ]);
+}
+
 if (!function_exists('aff_is_valid_http_url')) {
     function aff_is_valid_http_url(mixed $value): bool {
         $url = trim((string) $value);
@@ -572,9 +703,47 @@ function aff_context_merchant_slug(array $context): string {
 
 if (!function_exists('aff_context_direct_url')) {
     function aff_context_direct_url(array $context): string {
-        $fallbackUrl = trim((string) ($context['fallback_url'] ?? ''));
-        if (aff_has_full_url_path($fallbackUrl)) {
-            return $fallbackUrl;
+        $candidates = [
+            trim((string) ($context['fallback_url'] ?? '')),
+            trim((string) ($context['product_url'] ?? '')),
+            trim((string) ($context['url'] ?? '')),
+        ];
+
+        foreach ($candidates as $candidate) {
+            if ($candidate === '') {
+                continue;
+            }
+
+            $cleanUrl = function_exists('interessa_affiliate_clean_url')
+                ? interessa_affiliate_clean_url($candidate)
+                : trim(aff_extract_final_url($candidate));
+            if (aff_has_full_url_path($cleanUrl)) {
+                return $cleanUrl;
+            }
+        }
+
+        return '';
+    }
+}
+
+if (!function_exists('aff_internal_go_code_for_context')) {
+    function aff_internal_go_code_for_context(array $context): string {
+        $explicitCode = trim((string) ($context['code'] ?? $context['affiliate_code'] ?? ''));
+        if ($explicitCode !== '' && preg_match('~^[A-Za-z0-9_-]+$~', $explicitCode)) {
+            return $explicitCode;
+        }
+
+        $productSlug = aff_context_product_slug($context);
+        $directUrl = aff_context_direct_url($context);
+        $merchantSlug = aff_context_merchant_slug($context);
+        $merchant = trim((string) ($context['merchant'] ?? ''));
+        if (
+            $productSlug !== ''
+            && preg_match('~^[A-Za-z0-9_-]+$~', $productSlug)
+            && $directUrl !== ''
+            && aff_is_supported_affiliate_merchant($merchantSlug, $merchant, $directUrl)
+        ) {
+            return $productSlug;
         }
 
         return '';
@@ -921,21 +1090,30 @@ if (!function_exists('interessa_affiliate_target')) {
         }
 
         $target = aff_resolve_click_target($row);
-        $merchant = trim((string) ($row['merchant_slug'] ?? $row['merchant'] ?? ''));
         $directUrl = trim((string) ($target['direct_url'] ?? ''));
-        $targetCode = trim((string) ($target['code'] ?? ''));
+        $goCode = aff_internal_go_code_for_context(array_replace($row, [
+            'code' => trim((string) ($target['code'] ?? $row['code'] ?? '')),
+            'affiliate_code' => trim((string) ($target['code'] ?? $row['affiliate_code'] ?? '')),
+            'fallback_url' => $directUrl !== '' ? $directUrl : (string) ($row['fallback_url'] ?? ''),
+        ]));
 
-        if (!empty($target['is_affiliate']) && $targetCode !== '') {
-            $target['href'] = '/go/' . rawurlencode($targetCode);
+        if ($goCode !== '' && aff_record($goCode) !== null) {
+            $target['href'] = '/go/' . rawurlencode($goCode);
+            $target['code'] = $goCode;
             $target['rel'] = 'nofollow sponsored';
-            $target['label'] = trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu';
-        } elseif ($directUrl !== '') {
-            $wrappedHref = interessa_affiliate_link($directUrl, $merchant);
-            if ($wrappedHref !== '') {
-                $target['href'] = $wrappedHref;
-                $target['rel'] = 'nofollow sponsored';
-                $target['label'] = 'Do obchodu';
+            $target['label'] = 'Do obchodu';
+            $resolvedUrl = aff_resolve($goCode);
+            if ($resolvedUrl !== null && trim((string) ($target['affiliate_url'] ?? '')) === '') {
+                $target['affiliate_url'] = $resolvedUrl;
+                $target['is_affiliate'] = aff_is_affiliate_record(aff_record($goCode));
+                if (!empty($target['is_affiliate'])) {
+                    $target['status'] = 'affiliate_ready';
+                }
             }
+        } elseif ($directUrl !== '') {
+            $target['href'] = $directUrl;
+            $target['rel'] = trim((string) ($target['rel'] ?? 'nofollow')) ?: 'nofollow';
+            $target['label'] = trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu';
         }
 
         return $target;
