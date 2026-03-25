@@ -1577,6 +1577,171 @@ function interessa_admin_product_image_queue(array $catalog, string $filter = 'm
     return array_slice($rows, 0, $limit);
 }
 
+function interessa_admin_image_queue_snapshot(array $articleOptions, string $filter = 'missing', int $limit = 16): array {
+    $counts = [
+        'all' => 0,
+        'ready' => 0,
+        'article' => 0,
+        'theme_fallback' => 0,
+        'missing' => 0,
+        'needs_article' => 0,
+    ];
+    $rows = [];
+    $missingSlugs = [];
+
+    foreach ($articleOptions as $slug => $item) {
+        $imageState = function_exists('interessa_article_image_state')
+            ? interessa_article_image_state((string) $slug, 'hero')
+            : ['status' => 'missing', 'label' => 'naozaj chyba', 'meta' => null];
+        $meta = is_array($imageState['meta'] ?? null) ? $imageState['meta'] : null;
+        $src = (string) ($meta['src'] ?? '');
+        $promptMeta = interessa_hero_prompt_meta((string) $slug);
+        $status = (string) ($imageState['status'] ?? 'missing');
+        $row = [
+            'slug' => (string) $slug,
+            'title' => interessa_admin_clean_label((string) ($item['title'] ?? $slug)),
+            'asset_path' => (string) ($promptMeta['asset_path'] ?? ''),
+            'file_name' => (string) ($promptMeta['file_name'] ?? ''),
+            'alt_text' => (string) ($promptMeta['alt_text'] ?? ''),
+            'dimensions' => (string) ($promptMeta['dimensions'] ?? '1200x800'),
+            'prompt' => (string) ($promptMeta['prompt'] ?? ''),
+            'has_article_image' => $status === 'article',
+            'has_theme_fallback' => $status === 'theme-fallback',
+            'image_state' => $status,
+            'image_state_label' => (string) ($imageState['label'] ?? 'naozaj chyba'),
+            'source_type' => (string) ($meta['source_type'] ?? 'placeholder'),
+            'src' => $src,
+            'article_url' => article_url((string) $slug),
+        ];
+
+        $counts['all']++;
+        if ($status === 'article') {
+            $counts['ready']++;
+            $counts['article']++;
+        } elseif ($status === 'theme-fallback') {
+            $counts['theme_fallback']++;
+            $counts['needs_article']++;
+            $missingSlugs[] = (string) $slug;
+        } else {
+            $counts['missing']++;
+            $counts['needs_article']++;
+            $missingSlugs[] = (string) $slug;
+        }
+
+        $matchesFilter = match ($filter) {
+            'theme-fallback' => $status === 'theme-fallback',
+            'article', 'ready' => $status === 'article',
+            'missing' => $status === 'missing',
+            default => true,
+        };
+        if ($matchesFilter) {
+            $rows[] = $row;
+        }
+    }
+
+    usort($rows, static function (array $left, array $right): int {
+        $statusWeight = static function (string $status): int {
+            return match ($status) {
+                'missing' => 0,
+                'theme-fallback' => 1,
+                'article' => 2,
+                default => 3,
+            };
+        };
+        $statusSort = $statusWeight((string) ($left['image_state'] ?? 'missing')) <=> $statusWeight((string) ($right['image_state'] ?? 'missing'));
+        if ($statusSort !== 0) {
+            return $statusSort;
+        }
+
+        return strcasecmp((string) ($left['title'] ?? ''), (string) ($right['title'] ?? ''));
+    });
+
+    return [
+        'rows' => array_slice($rows, 0, $limit),
+        'counts' => $counts,
+        'missing_slugs' => array_values($missingSlugs),
+    ];
+}
+
+function interessa_admin_product_image_queue_snapshot(array $catalog, string $filter = 'missing', int $limit = 16): array {
+    $counts = [
+        'all' => 0,
+        'missing' => 0,
+        'ready' => 0,
+        'remote' => 0,
+        'placeholder' => 0,
+    ];
+    $rows = [];
+    $missingSlugs = [];
+    $remotePriorityRows = [];
+
+    foreach ($catalog as $slug => $product) {
+        $normalized = interessa_normalize_product(is_array($product) ? $product : []);
+        $mode = trim((string) ($normalized['image_mode'] ?? 'placeholder'));
+        $targetAsset = trim((string) ($normalized['image_target_asset'] ?? ''));
+        $localAsset = trim((string) ($normalized['image_local_asset'] ?? ''));
+        $hasLocalPackshot = !empty($normalized['has_local_image']);
+        $row = [
+            'slug' => (string) ($normalized['slug'] ?? $slug),
+            'name' => interessa_admin_clean_label((string) ($normalized['name'] ?? $slug)),
+            'merchant' => (string) ($normalized['merchant'] ?? ''),
+            'affiliate_code' => (string) ($normalized['affiliate_code'] ?? ''),
+            'fallback_url' => (string) ($normalized['fallback_url'] ?? ''),
+            'image_mode' => $mode,
+            'target_asset' => $hasLocalPackshot && $localAsset !== '' ? $localAsset : $targetAsset,
+            'upload_target_asset' => $targetAsset,
+            'needs_local_packshot' => !$hasLocalPackshot,
+            'remote_src' => (string) ($normalized['image_remote_src'] ?? ''),
+        ];
+
+        $counts['all']++;
+        if (!$hasLocalPackshot) {
+            $counts['missing']++;
+            $missingSlugs[] = (string) ($row['slug'] ?? $slug);
+        } else {
+            $counts['ready']++;
+        }
+        if ($mode === 'remote') {
+            $counts['remote']++;
+        } elseif ($mode === 'placeholder') {
+            $counts['placeholder']++;
+        }
+
+        $matchesFilter = match ($filter) {
+            'ready' => empty($row['needs_local_packshot']),
+            'remote' => ($row['image_mode'] ?? '') === 'remote',
+            'placeholder' => ($row['image_mode'] ?? '') === 'placeholder',
+            'missing' => !empty($row['needs_local_packshot']),
+            default => true,
+        };
+        if ($matchesFilter) {
+            $rows[] = $row;
+        }
+        if (!empty($row['needs_local_packshot']) && trim((string) ($row['remote_src'] ?? '')) !== '') {
+            $remotePriorityRows[] = $row;
+        }
+    }
+
+    usort($rows, static function (array $left, array $right): int {
+        $statusSort = ((int) $right['needs_local_packshot']) <=> ((int) $left['needs_local_packshot']);
+        if ($statusSort !== 0) {
+            return $statusSort;
+        }
+
+        return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
+    });
+    usort($remotePriorityRows, static function (array $left, array $right): int {
+        return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
+    });
+
+    return [
+        'rows' => array_slice($rows, 0, $limit),
+        'counts' => $counts,
+        'missing_slugs' => array_values($missingSlugs),
+        'priority_remote_rows' => array_slice($remotePriorityRows, 0, 5),
+    ];
+}
+
 function interessa_admin_product_affiliate_queue(array $catalog, int $limit = 12): array {
     $rows = [];
     foreach ($catalog as $slug => $product) {
@@ -3087,9 +3252,11 @@ $selectedPackshotQueueIndex = false;
 $prevMissingPackshotSlug = '';
 $nextMissingPackshotSlug = '';
 $selectedPackshotQueuePosition = 0;
-if (in_array($section, ['images', 'products', 'help'], true)) {
-    $allImageQueue = interessa_admin_image_queue($articleOptions, 'all', max(count($articleOptions), 1));
-    $allProductImageQueue = interessa_admin_product_image_queue($catalog, 'all', max(count($catalog), 1));
+if ($section === 'help') {
+    $imageSnapshot = interessa_admin_image_queue_snapshot($articleOptions, $imageFilter, $imageFilter === 'all' ? max(count($articleOptions), 1) : 16);
+    $imageQueue = is_array($imageSnapshot['rows'] ?? null) ? array_values($imageSnapshot['rows']) : [];
+    $imageQueueCounts = is_array($imageSnapshot['counts'] ?? null) ? $imageSnapshot['counts'] : $imageQueueCounts;
+    $missingHeroSlugs = array_values(array_filter(array_map('strval', (array) ($imageSnapshot['missing_slugs'] ?? []))));
     $allThemeImageQueue = interessa_admin_category_image_queue($categoryOptions);
     $themeAssetManifest = interessa_admin_category_asset_manifest($categoryOptions);
     $themeManifestTotal = count($themeAssetManifest);
@@ -3118,26 +3285,11 @@ if (in_array($section, ['images', 'products', 'help'], true)) {
     }
     $themeHeroMissingCount = max(0, $themeManifestTotal - $themeHeroReadyCount);
     $themeThumbMissingCount = max(0, $themeManifestTotal - $themeThumbReadyCount);
-    $imageQueue = interessa_admin_image_queue($articleOptions, $imageFilter, $imageFilter === 'all' ? max(count($articleOptions), 1) : 16);
-    $productImageQueue = interessa_admin_product_image_queue($catalog, $productImageFilter, $productImageFilter === 'all' ? max(count($catalog), 1) : 16);
-    $imageQueueCounts = [
-        'all' => count($allImageQueue),
-        'ready' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'article')),
-        'article' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'article')),
-        'theme_fallback' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'theme-fallback')),
-        'missing' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'missing')),
-        'needs_article' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article')),
-    ];
-    $productImageQueueCounts = [
-        'all' => count($allProductImageQueue),
-        'missing' => count(array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot']))),
-        'ready' => count(array_filter($allProductImageQueue, static fn(array $row): bool => empty($row['needs_local_packshot']))),
-        'remote' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'remote')),
-        'placeholder' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'placeholder')),
-    ];
-    $helpPriorityHeroes = array_slice(array_values(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article')), 0, 5);
-    $helpPriorityProductImages = array_slice(array_values(array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot']) && trim((string) ($row['remote_src'] ?? '')) !== '')), 0, 5);
-    $missingHeroSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article'))));
+    $productImageSnapshot = interessa_admin_product_image_queue_snapshot($catalog, $productImageFilter, $productImageFilter === 'all' ? max(count($catalog), 1) : 16);
+    $productImageQueue = is_array($productImageSnapshot['rows'] ?? null) ? array_values($productImageSnapshot['rows']) : [];
+    $productImageQueueCounts = is_array($productImageSnapshot['counts'] ?? null) ? $productImageSnapshot['counts'] : $productImageQueueCounts;
+    $helpPriorityHeroes = array_slice(array_values(array_filter($imageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article')), 0, 5);
+    $helpPriorityProductImages = is_array($productImageSnapshot['priority_remote_rows'] ?? null) ? array_values($productImageSnapshot['priority_remote_rows']) : [];
     $selectedHeroQueueIndex = array_search($selectedArticleSlug, $missingHeroSlugs, true);
     $prevMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex > 0 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex - 1] : '';
     $nextMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex < count($missingHeroSlugs) - 1 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex + 1] : '';
@@ -3148,7 +3300,7 @@ if (in_array($section, ['images', 'products', 'help'], true)) {
     $prevMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex > 0 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex - 1] : '';
     $nextMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex < count($missingThemeSlugs) - 1 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex + 1] : '';
     $selectedThemeQueuePosition = $selectedThemeQueueIndex !== false ? ($selectedThemeQueueIndex + 1) : 0;
-    $missingPackshotSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot'])))));
+    $missingPackshotSlugs = array_values(array_filter(array_map('strval', (array) ($productImageSnapshot['missing_slugs'] ?? []))));
     $selectedPackshotQueueIndex = array_search($selectedProductSlug, $missingPackshotSlugs, true);
     $prevMissingPackshotSlug = $selectedPackshotQueueIndex !== false && $selectedPackshotQueueIndex > 0 ? (string) $missingPackshotSlugs[$selectedPackshotQueueIndex - 1] : '';
     $nextMissingPackshotSlug = $selectedPackshotQueueIndex !== false && $selectedPackshotQueueIndex < count($missingPackshotSlugs) - 1 ? (string) $missingPackshotSlugs[$selectedPackshotQueueIndex + 1] : '';
@@ -3232,6 +3384,48 @@ while (count($sections) < 5) {
 
 $comparison = is_array($selectedArticleOverride['comparison'] ?? null) ? $selectedArticleOverride['comparison'] : ['columns' => [], 'rows' => []];
 $comparisonEditor = interessa_admin_comparison_editor_state($comparison);
+$selectedArticleProductState = ['product_plan' => [], 'recommended_products' => [], 'source' => 'article_override'];
+$articleProductPlan = [];
+$articleProductPlanHasExplicitSource = false;
+$articleEditorProductSlugs = [];
+$articleProductPlanMap = [];
+$articleSlotSelections = [1 => '', 2 => '', 3 => ''];
+$articleEditorInjectedProduct = '';
+$articleEditorInjectedProductName = '';
+$recommendedProductsText = '';
+$recommendedProductPreview = [];
+$missingRecommendedProducts = [];
+$recommendedDiagnostics = ['summary' => [], 'rows' => [], 'action_rows' => []];
+$recommendedDiagnosticsSummary = [];
+$recommendedDiagnosticsRows = [];
+$recommendedDiagnosticsBySlug = [];
+$recommendedActionRows = [];
+$recommendedCatalogCoverage = 0;
+$recommendedTotalCount = 0;
+$recommendedMissingCount = 0;
+$recommendedAffiliateReadyCount = 0;
+$recommendedPackshotReadyCount = 0;
+$recommendedMoneyReadyCount = 0;
+$recommendedCardReadyCount = 0;
+$articleSelectedProductSlugs = [];
+$articleSelectedSlotBySlug = [];
+$articleReadySlot = 0;
+$showSuggestedProducts = false;
+$articleSuggestedProducts = [];
+$prefillFilledSlots = [];
+$prefillSkippedSlots = [];
+$articleSelectedCount = 0;
+$articleSelectedImageMissingCount = 0;
+$articleSelectedClickMissingCount = 0;
+$articleSelectedReadyCount = 0;
+$articleSelectedMissingProductCount = 0;
+$articleSelectedActionRows = [];
+$articleSelectedActionRowsBySlug = [];
+$articleScopedProductOptionSlugs = [];
+$articleScopedProductOptionSources = [];
+$articleScopedProductOptions = [];
+$articleScopedProductOptionsBySlot = [];
+if ($section === 'articles') {
 $selectedArticleProductState = $selectedArticleSlug !== ''
     ? interessa_admin_article_product_state($selectedArticleSlug, $selectedArticleOverride)
     : ['product_plan' => [], 'recommended_products' => [], 'source' => 'article_override'];
@@ -3598,7 +3792,7 @@ uasort($articleScopedProductOptions, static function (array $left, array $right)
     return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
 });
 $articleScopedProductOptionsBySlot = [];
-foreach (range(1, 3) as $slotIndex) {
+    foreach (range(1, 3) as $slotIndex) {
     $slotSelectedSlug = trim((string) ($articleSlotSelections[$slotIndex] ?? ''));
     $slotOptions = $articleScopedProductOptions;
     uasort($slotOptions, static function (array $left, array $right) use ($selectedArticleSlug, $slotIndex): int {
@@ -3638,7 +3832,8 @@ foreach (range(1, 3) as $slotIndex) {
         $dedupedSlotOptions[$optionSlug] = $optionRow;
     }
 
-    $articleScopedProductOptionsBySlot[$slotIndex] = $dedupedSlotOptions;
+        $articleScopedProductOptionsBySlot[$slotIndex] = $dedupedSlotOptions;
+    }
 }
 $productArticleOptionSlugs = $phaseOneArticleSlugs !== []
     ? $phaseOneArticleSlugs
@@ -3647,98 +3842,108 @@ $selectedProductArticleSlug = canonical_article_slug(trim((string) ($_GET['artic
 if ($selectedProductArticleSlug === '' || !in_array($selectedProductArticleSlug, $productArticleOptionSlugs, true)) {
     $selectedProductArticleSlug = (string) ($productArticleOptionSlugs[0] ?? '');
 }
-$selectedProductArticleHelp = interessa_admin_article_product_help($selectedProductArticleSlug);
-$selectedProductArticleOverride = $selectedProductArticleSlug !== '' ? interessa_admin_article_content($selectedProductArticleSlug) : interessa_admin_normalize_article_override('', []);
-$selectedProductArticleState = $selectedProductArticleSlug !== ''
-    ? interessa_admin_article_product_state($selectedProductArticleSlug, $selectedProductArticleOverride)
-    : ['product_plan' => [], 'recommended_products' => [], 'source' => 'article_override'];
-$productPageArticleProductPlan = is_array($selectedProductArticleState['product_plan'] ?? null)
-    ? array_values($selectedProductArticleState['product_plan'])
-    : [];
-$productPageHasExplicitPlan = !empty($selectedProductArticleState['product_plan']);
+$selectedProductArticleHelp = [];
+$selectedProductArticleOverride = interessa_admin_normalize_article_override('', []);
+$selectedProductArticleState = ['product_plan' => [], 'recommended_products' => [], 'source' => 'article_override'];
+$productPageArticleProductPlan = [];
+$productPageHasExplicitPlan = false;
 $productPageArticleProductSlugs = [];
-foreach ($productPageArticleProductPlan as $planRow) {
-    if (!is_array($planRow)) {
-        continue;
-    }
-    $planSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
-    if ($planSlug !== '') {
-        $productPageArticleProductSlugs[] = $planSlug;
-    }
-}
-$productPageArticleProductSlugs = array_values(array_unique($productPageArticleProductSlugs));
 $productPageArticlePlanMap = [];
-foreach ($productPageArticleProductPlan as $planRow) {
-    if (!is_array($planRow)) {
-        continue;
-    }
-    $planSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
-    if ($planSlug === '') {
-        continue;
-    }
-    $productPageArticlePlanMap[$planSlug] = [
-        'order' => max(1, (int) ($planRow['order'] ?? 99)),
-        'role' => interessa_admin_slugify((string) ($planRow['role'] ?? 'standard')) ?: 'standard',
-        'show_in_top' => !empty($planRow['show_in_top']),
-        'show_in_comparison' => !empty($planRow['show_in_comparison']),
-    ];
-}
-$productPageSelectedSlugs = array_values(array_unique(array_merge(array_keys($productPageArticlePlanMap), $productPageArticleProductSlugs)));
-$productPageDiagnostics = interessa_admin_recommended_diagnostics($productPageSelectedSlugs);
-$productPageDiagnosticsRows = is_array($productPageDiagnostics['rows'] ?? null) ? $productPageDiagnostics['rows'] : [];
+$productPageSelectedSlugs = [];
+$productPageDiagnostics = ['rows' => []];
+$productPageDiagnosticsRows = [];
 $productPageDiagnosticsBySlug = [];
-foreach ($productPageDiagnosticsRows as $diagnosticRow) {
-    $diagnosticSlug = trim((string) ($diagnosticRow['slug'] ?? ''));
-    if ($diagnosticSlug !== '') {
-        $productPageDiagnosticsBySlug[$diagnosticSlug] = $diagnosticRow;
-    }
-}
 $productPageReadyCount = 0;
 $productPageMissingImageCount = 0;
 $productPageMissingClickCount = 0;
 $productPageActionRows = [];
-foreach ($productPageSelectedSlugs as $productPageSlug) {
-    $productPageRow = $productPageDiagnosticsBySlug[$productPageSlug] ?? [];
-    $productPageExists = !empty($productPageRow['exists']) || interessa_product($productPageSlug) !== null;
-    $productPagePackshotReady = !empty($productPageRow['packshot_ready']);
-    $productPageAffiliateReady = !empty($productPageRow['affiliate_ready']);
-    $productPageAffiliateCode = trim((string) ($productPageRow['affiliate_code'] ?? ''));
-    if (!$productPagePackshotReady) {
-        $productPageMissingImageCount++;
-    }
-    if (!$productPageAffiliateReady) {
-        $productPageMissingClickCount++;
-    }
-    if ($productPageExists && $productPagePackshotReady && $productPageAffiliateReady) {
-        $productPageReadyCount++;
-    }
-    $productPageActionHref = '/admin?section=products&product=' . rawurlencode($productPageSlug) . '&article_product_slug=' . rawurlencode($selectedProductArticleSlug) . '#product-main-flow';
-    $productPageActionLabel = 'Doplnit produkt';
-    $productPageActionNote = 'Tomuto produktu este nieco chyba.';
-    if ($productPageExists && !$productPagePackshotReady) {
-        $productPageActionLabel = 'Doplnit obrazok';
-        $productPageActionNote = 'Produkt uz existuje. Chyba mu obrazok.';
-    } elseif ($productPageExists && $productPagePackshotReady && !$productPageAffiliateReady) {
-        if ($productPageAffiliateCode !== '') {
-            $productPageActionHref = '/dognet-helper?code=' . rawurlencode($productPageAffiliateCode);
+if ($section === 'products') {
+    $selectedProductArticleHelp = interessa_admin_article_product_help($selectedProductArticleSlug);
+    $selectedProductArticleOverride = $selectedProductArticleSlug !== '' ? interessa_admin_article_content($selectedProductArticleSlug) : interessa_admin_normalize_article_override('', []);
+    $selectedProductArticleState = $selectedProductArticleSlug !== ''
+        ? interessa_admin_article_product_state($selectedProductArticleSlug, $selectedProductArticleOverride)
+        : ['product_plan' => [], 'recommended_products' => [], 'source' => 'article_override'];
+    $productPageArticleProductPlan = is_array($selectedProductArticleState['product_plan'] ?? null)
+        ? array_values($selectedProductArticleState['product_plan'])
+        : [];
+    $productPageHasExplicitPlan = !empty($selectedProductArticleState['product_plan']);
+    foreach ($productPageArticleProductPlan as $planRow) {
+        if (!is_array($planRow)) {
+            continue;
         }
-        $productPageActionLabel = 'Doplnit odkaz';
-        $productPageActionNote = 'Obrazok je hotovy. Chyba uz len klik do obchodu.';
-    } elseif ($productPageExists && $productPagePackshotReady && $productPageAffiliateReady) {
-        $productPageActionHref = '/admin?section=products&product=' . rawurlencode($productPageSlug) . '&article_product_slug=' . rawurlencode($selectedProductArticleSlug) . '#product-main-flow';
-        $productPageActionLabel = 'Hotovo';
-        $productPageActionNote = 'Tento produkt je pripraveny.';
+        $planSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
+        if ($planSlug !== '') {
+            $productPageArticleProductSlugs[] = $planSlug;
+        }
     }
-    $productPageActionRows[] = [
-        'slug' => $productPageSlug,
-        'name' => (string) ($productPageRow['name'] ?? ($catalog[$productPageSlug]['name'] ?? $productPageSlug)),
-        'exists' => $productPageExists,
-        'packshot_ready' => $productPagePackshotReady,
-        'affiliate_ready' => $productPageAffiliateReady,
-        'next_href' => $productPageActionHref,
-        'next_label' => $productPageActionLabel,
-        'next_note' => $productPageActionNote,
-    ];
+    $productPageArticleProductSlugs = array_values(array_unique($productPageArticleProductSlugs));
+    foreach ($productPageArticleProductPlan as $planRow) {
+        if (!is_array($planRow)) {
+            continue;
+        }
+        $planSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
+        if ($planSlug === '') {
+            continue;
+        }
+        $productPageArticlePlanMap[$planSlug] = [
+            'order' => max(1, (int) ($planRow['order'] ?? 99)),
+            'role' => interessa_admin_slugify((string) ($planRow['role'] ?? 'standard')) ?: 'standard',
+            'show_in_top' => !empty($planRow['show_in_top']),
+            'show_in_comparison' => !empty($planRow['show_in_comparison']),
+        ];
+    }
+    $productPageSelectedSlugs = array_values(array_unique(array_merge(array_keys($productPageArticlePlanMap), $productPageArticleProductSlugs)));
+    $productPageDiagnostics = interessa_admin_recommended_diagnostics($productPageSelectedSlugs);
+    $productPageDiagnosticsRows = is_array($productPageDiagnostics['rows'] ?? null) ? $productPageDiagnostics['rows'] : [];
+    foreach ($productPageDiagnosticsRows as $diagnosticRow) {
+        $diagnosticSlug = trim((string) ($diagnosticRow['slug'] ?? ''));
+        if ($diagnosticSlug !== '') {
+            $productPageDiagnosticsBySlug[$diagnosticSlug] = $diagnosticRow;
+        }
+    }
+    foreach ($productPageSelectedSlugs as $productPageSlug) {
+        $productPageRow = $productPageDiagnosticsBySlug[$productPageSlug] ?? [];
+        $productPageExists = !empty($productPageRow['exists']) || interessa_product($productPageSlug) !== null;
+        $productPagePackshotReady = !empty($productPageRow['packshot_ready']);
+        $productPageAffiliateReady = !empty($productPageRow['affiliate_ready']);
+        $productPageAffiliateCode = trim((string) ($productPageRow['affiliate_code'] ?? ''));
+        if (!$productPagePackshotReady) {
+            $productPageMissingImageCount++;
+        }
+        if (!$productPageAffiliateReady) {
+            $productPageMissingClickCount++;
+        }
+        if ($productPageExists && $productPagePackshotReady && $productPageAffiliateReady) {
+            $productPageReadyCount++;
+        }
+        $productPageActionHref = '/admin?section=products&product=' . rawurlencode($productPageSlug) . '&article_product_slug=' . rawurlencode($selectedProductArticleSlug) . '#product-main-flow';
+        $productPageActionLabel = 'Doplnit produkt';
+        $productPageActionNote = 'Tomuto produktu este nieco chyba.';
+        if ($productPageExists && !$productPagePackshotReady) {
+            $productPageActionLabel = 'Doplnit obrazok';
+            $productPageActionNote = 'Produkt uz existuje. Chyba mu obrazok.';
+        } elseif ($productPageExists && $productPagePackshotReady && !$productPageAffiliateReady) {
+            if ($productPageAffiliateCode !== '') {
+                $productPageActionHref = '/dognet-helper?code=' . rawurlencode($productPageAffiliateCode);
+            }
+            $productPageActionLabel = 'Doplnit odkaz';
+            $productPageActionNote = 'Obrazok je hotovy. Chyba uz len klik do obchodu.';
+        } elseif ($productPageExists && $productPagePackshotReady && $productPageAffiliateReady) {
+            $productPageActionHref = '/admin?section=products&product=' . rawurlencode($productPageSlug) . '&article_product_slug=' . rawurlencode($selectedProductArticleSlug) . '#product-main-flow';
+            $productPageActionLabel = 'Hotovo';
+            $productPageActionNote = 'Tento produkt je pripraveny.';
+        }
+        $productPageActionRows[] = [
+            'slug' => $productPageSlug,
+            'name' => (string) ($productPageRow['name'] ?? ($catalog[$productPageSlug]['name'] ?? $productPageSlug)),
+            'exists' => $productPageExists,
+            'packshot_ready' => $productPagePackshotReady,
+            'affiliate_ready' => $productPageAffiliateReady,
+            'next_href' => $productPageActionHref,
+            'next_label' => $productPageActionLabel,
+            'next_note' => $productPageActionNote,
+        ];
+    }
 }
 $selectedArticlePackshotGaps = array_values(array_map(static function (array $row): array {
     $brief = [];
@@ -3957,8 +4162,8 @@ if ($section === 'products') {
         foreach ($candidateListRows as $candidateListRow) {
             if (interessa_admin_slugify((string) ($candidateListRow['batch_id'] ?? '')) === $recentCandidateBatchId) {
                 $recentImportedRows[] = $candidateListRow;
-            }
-        }
+    }
+}
     }
 
     $recentImportedPilotRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
