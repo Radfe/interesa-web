@@ -1,16 +1,5 @@
 <?php declare(strict_types=1);
 
-echo 'ADMIN START';
-flush();
-
-$interessaAdminDebugLog = dirname(__DIR__, 2) . '/.codex-local/admin-request-debug.log';
-$interessaAdminDebugWrite = static function (string $message) use ($interessaAdminDebugLog): void {
-    $line = '[' . date('Y-m-d H:i:s') . '] admin ' . $message . PHP_EOL;
-    @file_put_contents($interessaAdminDebugLog, $line, FILE_APPEND);
-};
-
-$interessaAdminDebugWrite('index hit request_uri=' . (string) ($_SERVER['REQUEST_URI'] ?? ''));
-
 require_once dirname(__DIR__) . '/inc/functions.php';
 require_once dirname(__DIR__) . '/inc/products.php';
 require_once dirname(__DIR__) . '/inc/hero-prompts.php';
@@ -1906,7 +1895,6 @@ $focusPanel = trim((string) ($_GET['focus'] ?? ''));
 $error = trim((string) ($_GET['error'] ?? ''));
 
 interessa_admin_session_boot();
-$interessaAdminDebugWrite('after session boot');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = trim((string) ($_POST['action'] ?? ''));
@@ -1927,7 +1915,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $isAuthed = interessa_admin_is_authenticated();
-$interessaAdminDebugWrite('after auth check isAuthed=' . ($isAuthed ? 'true' : 'false'));
 $config = interessa_admin_auth_config();
 $importSummary = '';
 $articleOptions = [];
@@ -2754,7 +2741,6 @@ if ($isAuthed) {
     }
 }
 if ($isAuthed) {
-$interessaAdminDebugWrite('entering heavy authed bootstrap');
 $articleOptions = interessa_admin_article_options();
 $priorityArticleSlugs = array_values(array_filter([
     'najlepsie-proteiny-2026',
@@ -2939,88 +2925,152 @@ if (!in_array($productImageFilter, ['missing', 'all', 'ready', 'remote', 'placeh
     $productImageFilter = 'missing';
 }
 
-$allImageQueue = interessa_admin_image_queue($articleOptions, 'all', max(count($articleOptions), 1));
-$allProductImageQueue = interessa_admin_product_image_queue($catalog, 'all', max(count($catalog), 1));
-$allThemeImageQueue = interessa_admin_category_image_queue($categoryOptions);
-$themeAssetManifest = interessa_admin_category_asset_manifest($categoryOptions);
-$themeManifestTotal = count($themeAssetManifest);
+$allImageQueue = [];
+$allProductImageQueue = [];
+$allThemeImageQueue = [];
+$themeAssetManifest = [];
+$themeManifestTotal = 0;
 $themeHeroReadyCount = 0;
 $themeThumbReadyCount = 0;
 $themeFullyReadyCount = 0;
-foreach ($themeAssetManifest as $themeManifestRow) {
-    $heroReady = false;
-    $thumbReady = false;
-    foreach ((array) ($themeManifestRow['items'] ?? []) as $assetItem) {
-        $variant = (string) ($assetItem['variant'] ?? '');
-        $ready = !empty($assetItem['ready']);
-        if ($variant === 'hero') {
-            $heroReady = $ready;
-        }
-        if ($variant === 'thumb') {
-            $thumbReady = $ready;
-        }
-    }
-    if ($heroReady) {
-        $themeHeroReadyCount++;
-    }
-    if ($thumbReady) {
-        $themeThumbReadyCount++;
-    }
-    if ($heroReady && $thumbReady) {
-        $themeFullyReadyCount++;
-    }
-}
-$themeHeroMissingCount = max(0, $themeManifestTotal - $themeHeroReadyCount);
-$themeThumbMissingCount = max(0, $themeManifestTotal - $themeThumbReadyCount);
-$imageQueue = interessa_admin_image_queue($articleOptions, $imageFilter, $imageFilter === 'all' ? max(count($articleOptions), 1) : 16);
-$productImageQueue = interessa_admin_product_image_queue($catalog, $productImageFilter, $productImageFilter === 'all' ? max(count($catalog), 1) : 16);
+$themeHeroMissingCount = 0;
+$themeThumbMissingCount = 0;
+$imageQueue = [];
+$productImageQueue = [];
 $imageQueueCounts = [
-    'all' => count($allImageQueue),
-    'article' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'article')),
-    'theme_fallback' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'theme-fallback')),
-    'missing' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'missing')),
-    'needs_article' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article')),
+    'all' => 0,
+    'ready' => 0,
+    'article' => 0,
+    'theme_fallback' => 0,
+    'missing' => 0,
+    'needs_article' => 0,
 ];
 $productImageQueueCounts = [
-    'all' => count($allProductImageQueue),
-    'missing' => count(array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot']))),
-    'ready' => count(array_filter($allProductImageQueue, static fn(array $row): bool => empty($row['needs_local_packshot']))),
-    'remote' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'remote')),
-    'placeholder' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'placeholder')),
+    'all' => 0,
+    'missing' => 0,
+    'ready' => 0,
+    'remote' => 0,
+    'placeholder' => 0,
 ];
-$helpPriorityHeroes = array_slice(array_values(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article')), 0, 5);
-$helpPriorityProductImages = array_slice(array_values(array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot']) && trim((string) ($row['remote_src'] ?? '')) !== '')), 0, 5);
+$helpPriorityHeroes = [];
+$helpPriorityProductImages = [];
+$missingHeroSlugs = [];
+$selectedHeroQueueIndex = false;
+$prevMissingHeroSlug = '';
+$nextMissingHeroSlug = '';
+$selectedHeroQueuePosition = 0;
+$missingThemeSlugs = [];
+$firstMissingThemeSlug = '';
+$selectedThemeQueueIndex = false;
+$prevMissingThemeSlug = '';
+$nextMissingThemeSlug = '';
+$selectedThemeQueuePosition = 0;
+$missingPackshotSlugs = [];
+$selectedPackshotQueueIndex = false;
+$prevMissingPackshotSlug = '';
+$nextMissingPackshotSlug = '';
+$selectedPackshotQueuePosition = 0;
+if (in_array($section, ['images', 'products', 'help', 'tools'], true)) {
+    $allImageQueue = interessa_admin_image_queue($articleOptions, 'all', max(count($articleOptions), 1));
+    $allProductImageQueue = interessa_admin_product_image_queue($catalog, 'all', max(count($catalog), 1));
+    $allThemeImageQueue = interessa_admin_category_image_queue($categoryOptions);
+    $themeAssetManifest = interessa_admin_category_asset_manifest($categoryOptions);
+    $themeManifestTotal = count($themeAssetManifest);
+    foreach ($themeAssetManifest as $themeManifestRow) {
+        $heroReady = false;
+        $thumbReady = false;
+        foreach ((array) ($themeManifestRow['items'] ?? []) as $assetItem) {
+            $variant = (string) ($assetItem['variant'] ?? '');
+            $ready = !empty($assetItem['ready']);
+            if ($variant === 'hero') {
+                $heroReady = $ready;
+            }
+            if ($variant === 'thumb') {
+                $thumbReady = $ready;
+            }
+        }
+        if ($heroReady) {
+            $themeHeroReadyCount++;
+        }
+        if ($thumbReady) {
+            $themeThumbReadyCount++;
+        }
+        if ($heroReady && $thumbReady) {
+            $themeFullyReadyCount++;
+        }
+    }
+    $themeHeroMissingCount = max(0, $themeManifestTotal - $themeHeroReadyCount);
+    $themeThumbMissingCount = max(0, $themeManifestTotal - $themeThumbReadyCount);
+    $imageQueue = interessa_admin_image_queue($articleOptions, $imageFilter, $imageFilter === 'all' ? max(count($articleOptions), 1) : 16);
+    $productImageQueue = interessa_admin_product_image_queue($catalog, $productImageFilter, $productImageFilter === 'all' ? max(count($catalog), 1) : 16);
+    $imageQueueCounts = [
+        'all' => count($allImageQueue),
+        'ready' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'article')),
+        'article' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'article')),
+        'theme_fallback' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'theme-fallback')),
+        'missing' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') === 'missing')),
+        'needs_article' => count(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article')),
+    ];
+    $productImageQueueCounts = [
+        'all' => count($allProductImageQueue),
+        'missing' => count(array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot']))),
+        'ready' => count(array_filter($allProductImageQueue, static fn(array $row): bool => empty($row['needs_local_packshot']))),
+        'remote' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'remote')),
+        'placeholder' => count(array_filter($allProductImageQueue, static fn(array $row): bool => ($row['image_mode'] ?? '') === 'placeholder')),
+    ];
+    $helpPriorityHeroes = array_slice(array_values(array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article')), 0, 5);
+    $helpPriorityProductImages = array_slice(array_values(array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot']) && trim((string) ($row['remote_src'] ?? '')) !== '')), 0, 5);
+    $missingHeroSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article'))));
+    $selectedHeroQueueIndex = array_search($selectedArticleSlug, $missingHeroSlugs, true);
+    $prevMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex > 0 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex - 1] : '';
+    $nextMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex < count($missingHeroSlugs) - 1 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex + 1] : '';
+    $selectedHeroQueuePosition = $selectedHeroQueueIndex !== false ? ($selectedHeroQueueIndex + 1) : 0;
+    $missingThemeSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allThemeImageQueue, static fn(array $row): bool => empty($row['has_local_theme_image'])))));
+    $firstMissingThemeSlug = $missingThemeSlugs[0] ?? '';
+    $selectedThemeQueueIndex = array_search($selectedThemeSlug, $missingThemeSlugs, true);
+    $prevMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex > 0 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex - 1] : '';
+    $nextMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex < count($missingThemeSlugs) - 1 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex + 1] : '';
+    $selectedThemeQueuePosition = $selectedThemeQueueIndex !== false ? ($selectedThemeQueueIndex + 1) : 0;
+    $missingPackshotSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot'])))));
+    $selectedPackshotQueueIndex = array_search($selectedProductSlug, $missingPackshotSlugs, true);
+    $prevMissingPackshotSlug = $selectedPackshotQueueIndex !== false && $selectedPackshotQueueIndex > 0 ? (string) $missingPackshotSlugs[$selectedPackshotQueueIndex - 1] : '';
+    $nextMissingPackshotSlug = $selectedPackshotQueueIndex !== false && $selectedPackshotQueueIndex < count($missingPackshotSlugs) - 1 ? (string) $missingPackshotSlugs[$selectedPackshotQueueIndex + 1] : '';
+    $selectedPackshotQueuePosition = $selectedPackshotQueueIndex !== false ? ($selectedPackshotQueueIndex + 1) : 0;
+}
 
-$missingHeroSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allImageQueue, static fn(array $row): bool => ($row['image_state'] ?? 'missing') !== 'article'))));
-$selectedHeroQueueIndex = array_search($selectedArticleSlug, $missingHeroSlugs, true);
-$prevMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex > 0 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex - 1] : '';
-$nextMissingHeroSlug = $selectedHeroQueueIndex !== false && $selectedHeroQueueIndex < count($missingHeroSlugs) - 1 ? (string) $missingHeroSlugs[$selectedHeroQueueIndex + 1] : '';
-$selectedHeroQueuePosition = $selectedHeroQueueIndex !== false ? ($selectedHeroQueueIndex + 1) : 0;
-$missingThemeSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allThemeImageQueue, static fn(array $row): bool => empty($row['has_local_theme_image'])))));
-$firstMissingThemeSlug = $missingThemeSlugs[0] ?? '';
-$selectedThemeQueueIndex = array_search($selectedThemeSlug, $missingThemeSlugs, true);
-$prevMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex > 0 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex - 1] : '';
-$nextMissingThemeSlug = $selectedThemeQueueIndex !== false && $selectedThemeQueueIndex < count($missingThemeSlugs) - 1 ? (string) $missingThemeSlugs[$selectedThemeQueueIndex + 1] : '';
-$selectedThemeQueuePosition = $selectedThemeQueueIndex !== false ? ($selectedThemeQueueIndex + 1) : 0;
-$missingPackshotSlugs = array_values(array_filter(array_map(static fn(array $row): string => (string) ($row['slug'] ?? ''), array_filter($allProductImageQueue, static fn(array $row): bool => !empty($row['needs_local_packshot'])))));
-$selectedPackshotQueueIndex = array_search($selectedProductSlug, $missingPackshotSlugs, true);
-$prevMissingPackshotSlug = $selectedPackshotQueueIndex !== false && $selectedPackshotQueueIndex > 0 ? (string) $missingPackshotSlugs[$selectedPackshotQueueIndex - 1] : '';
-$nextMissingPackshotSlug = $selectedPackshotQueueIndex !== false && $selectedPackshotQueueIndex < count($missingPackshotSlugs) - 1 ? (string) $missingPackshotSlugs[$selectedPackshotQueueIndex + 1] : '';
-$selectedPackshotQueuePosition = $selectedPackshotQueueIndex !== false ? ($selectedPackshotQueueIndex + 1) : 0;
-
-$productAffiliateQueueAll = interessa_admin_product_affiliate_queue($catalog, max(count($catalog), 1));
-$productAffiliateQueue = array_slice($productAffiliateQueueAll, 0, 12);
-$productAffiliateQueueCount = count($productAffiliateQueueAll);
-$productQualityQueueAll = interessa_admin_product_quality_queue($catalog, max(count($catalog), 1));
-$productQualityQueue = array_slice($productQualityQueueAll, 0, 12);
-$productQualityQueueCount = count($productQualityQueueAll);
+$productAffiliateQueueAll = [];
+$productAffiliateQueue = [];
+$productAffiliateQueueCount = 0;
+$productQualityQueueAll = [];
+$productQualityQueue = [];
+$productQualityQueueCount = 0;
+if (in_array($section, ['help', 'tools'], true)) {
+    $productAffiliateQueueAll = interessa_admin_product_affiliate_queue($catalog, max(count($catalog), 1));
+    $productAffiliateQueue = array_slice($productAffiliateQueueAll, 0, 12);
+    $productAffiliateQueueCount = count($productAffiliateQueueAll);
+    $productQualityQueueAll = interessa_admin_product_quality_queue($catalog, max(count($catalog), 1));
+    $productQualityQueue = array_slice($productQualityQueueAll, 0, 12);
+    $productQualityQueueCount = count($productQualityQueueAll);
+}
 $moneyPageMerchantFilter = interessa_admin_slugify((string) ($_GET['merchant_filter'] ?? 'all'));
 if ($moneyPageMerchantFilter === '') {
     $moneyPageMerchantFilter = 'all';
 }
-$moneyPageImageGapReport = interessa_admin_money_page_image_gap_report($moneyPageMerchantFilter);
-$moneyPageGapBriefPack = interessa_admin_money_page_gap_brief_pack($moneyPageImageGapReport);
-$briefRows = interessa_admin_brief_rows($articleOptions);
+$moneyPageImageGapReport = [
+    'tracked_pages' => 0,
+    'missing_products' => 0,
+    'missing_products_total' => 0,
+    'merchant_filter' => $moneyPageMerchantFilter,
+    'merchant_groups' => [],
+    'groups' => [],
+];
+$moneyPageGapBriefPack = ['title' => '', 'text' => '', 'count' => 0];
+$briefRows = [];
+if (in_array($section, ['help', 'tools'], true)) {
+    $moneyPageImageGapReport = interessa_admin_money_page_image_gap_report($moneyPageMerchantFilter);
+    $moneyPageGapBriefPack = interessa_admin_money_page_gap_brief_pack($moneyPageImageGapReport);
+    $briefRows = interessa_admin_brief_rows($articleOptions);
+}
 $flashMessages = [
     'login' => 'Prihlasenie prebehlo uspesne.',
     'article' => 'Clanok bol ulozeny.',
@@ -3513,6 +3563,7 @@ $selectedArticlePackshotGaps = array_values(array_map(static function (array $ro
     return !empty($row['exists']) && empty($row['packshot_ready']);
 })));
 $selectedArticlePackshotGapCount = count($selectedArticlePackshotGaps);
+$showAdvancedArticleEditor = $section === 'articles' && trim((string) ($_GET['advanced_article'] ?? '')) === '1';
 
 $candidateMerchantOptions = [
     'gymbeam' => 'GymBeam.sk',
@@ -3522,75 +3573,123 @@ $candidateMerchantOptions = [
     'imunoklub' => 'Imunoklub.sk',
     'kloubus' => 'Kloubus.sk',
 ];
-$allCandidateRowsById = interessa_admin_product_candidates();
-uasort($allCandidateRowsById, static function (array $a, array $b): int {
-    return strcmp((string) ($b['updated_at'] ?? ''), (string) ($a['updated_at'] ?? ''));
-});
-$requestedCandidateId = interessa_admin_slugify((string) ($_GET['candidate'] ?? ''));
-$requestedCandidateRow = $requestedCandidateId !== '' && isset($allCandidateRowsById[$requestedCandidateId])
-    ? $allCandidateRowsById[$requestedCandidateId]
-    : null;
-$candidateImportArticleSlug = canonical_article_slug(trim((string) ($_GET['import_article'] ?? '')));
-if ($candidateImportArticleSlug === '' && is_array($requestedCandidateRow)) {
-    $candidateImportArticleSlug = canonical_article_slug((string) ($requestedCandidateRow['target_article_slug'] ?? ''));
-}
-if ($candidateImportArticleSlug === '' && $selectedArticleSlug !== '' && isset($articleOptions[$selectedArticleSlug])) {
-    $candidateImportArticleSlug = $selectedArticleSlug;
-}
-if ($candidateImportArticleSlug === '' || !isset($articleOptions[$candidateImportArticleSlug])) {
-    $candidateImportArticleSlug = (string) (array_key_first($articleOptions) ?? 'najlepsie-proteiny-2026');
-}
-$candidateImportPreset = interessa_admin_candidate_import_preset($candidateImportArticleSlug);
-$candidateImportArticleTitle = (string) ($articleOptions[$candidateImportArticleSlug]['title'] ?? $candidateImportArticleSlug);
-$candidateImportMerchantOptions = [];
-foreach ((array) ($candidateImportPreset['merchant_defaults'] ?? []) as $presetMerchantSlug) {
-    $presetMerchantSlug = interessa_admin_slugify((string) $presetMerchantSlug);
-    if ($presetMerchantSlug !== '' && isset($candidateMerchantOptions[$presetMerchantSlug])) {
-        $candidateImportMerchantOptions[$presetMerchantSlug] = $candidateMerchantOptions[$presetMerchantSlug];
+ $allCandidateRowsById = [];
+ $requestedCandidateId = '';
+ $requestedCandidateRow = null;
+ $candidateImportArticleSlug = '';
+ $candidateImportPreset = [];
+ $candidateImportArticleTitle = '';
+ $candidateImportMerchantOptions = [];
+ $candidateImportSingleMerchantSlug = '';
+ $candidateImportSingleMerchantName = '';
+ $candidateImportShowMerchantSelect = false;
+ $candidateRowsById = [];
+ $candidateRows = [];
+ $recentCandidateBatchId = '';
+ $selectedCandidateId = '';
+ $selectedCandidate = null;
+ $candidateFocusRequested = false;
+ $productCandidateFocusMode = false;
+ $candidateImportedCount = 0;
+ $candidateClickReadyCount = 0;
+ $candidateAssignedCount = 0;
+ $candidateApprovedCount = 0;
+ $candidateImageKnownCount = 0;
+ $candidateListRows = [];
+ $recentImportedRows = [];
+ $recentImportedPilotRows = [];
+ $recentImportedReadyCount = 0;
+ $recentImportedVisibleRows = [];
+ $firstRecentImportedVisibleRow = null;
+ $recentImportedBlockedRows = [];
+ $candidateSelectorRows = [];
+ $candidateImportedDisplayCount = 0;
+ $candidateClickReadyDisplayCount = 0;
+ $candidateAssignedDisplayCount = 0;
+ $candidateApprovedDisplayCount = 0;
+ $selectedCandidateHasClick = false;
+ $selectedCandidateHasArticle = false;
+ $selectedCandidateApproved = false;
+ $selectedCandidateHasImage = false;
+ $selectedCandidateClickStatus = 'missing';
+ $selectedCandidateClickStatusLabel = 'missing';
+ $selectedCandidateAffiliateStatus = 'missing';
+ $selectedCandidateSummaryLabel = 'Missing click';
+ $selectedCandidateSummaryTone = 'is-warning';
+ $selectedCandidateArticleFit = ['status' => 'no-fit', 'slug' => '', 'reason' => '', 'hits' => [], 'blocked' => []];
+ $selectedCandidateTargetArticleSlug = '';
+ $selectedCandidateArticleSlug = '';
+ $selectedCandidateArticleHelp = interessa_admin_article_product_help('');
+ $candidateRoleOptions = ['standard', 'vegan', 'clean'];
+ $selectedCandidateRole = 'standard';
+ $selectedCandidateOrderRaw = 0;
+ $selectedCandidateOrder = 10;
+ $selectedCandidateSuggestedArticleTitle = '';
+ $selectedCandidateCanUseSimpleAssignment = false;
+
+if ($section === 'products') {
+    $allCandidateRowsById = interessa_admin_product_candidates();
+    uasort($allCandidateRowsById, static function (array $a, array $b): int {
+        return strcmp((string) ($b['updated_at'] ?? ''), (string) ($a['updated_at'] ?? ''));
+    });
+    $requestedCandidateId = interessa_admin_slugify((string) ($_GET['candidate'] ?? ''));
+    $requestedCandidateRow = $requestedCandidateId !== '' && isset($allCandidateRowsById[$requestedCandidateId])
+        ? $allCandidateRowsById[$requestedCandidateId]
+        : null;
+    $candidateImportArticleSlug = canonical_article_slug(trim((string) ($_GET['import_article'] ?? '')));
+    if ($candidateImportArticleSlug === '' && is_array($requestedCandidateRow)) {
+        $candidateImportArticleSlug = canonical_article_slug((string) ($requestedCandidateRow['target_article_slug'] ?? ''));
     }
-}
-if ($candidateImportMerchantOptions === []) {
-    $candidateImportMerchantOptions = $candidateMerchantOptions;
-}
-if ($candidateImportMerchantOptions === []) {
-    $candidateImportMerchantOptions = [
-        'gymbeam' => 'GymBeam.sk',
-    ];
-}
-$candidateImportSingleMerchantSlug = (string) (array_key_first($candidateImportMerchantOptions) ?? '');
-$candidateImportSingleMerchantName = (string) ($candidateImportMerchantOptions[$candidateImportSingleMerchantSlug] ?? $candidateImportSingleMerchantSlug);
-$candidateImportShowMerchantSelect = count($candidateImportMerchantOptions) > 1;
-$candidateRowsById = [];
-foreach ($allCandidateRowsById as $candidateRowId => $candidateRowValue) {
-    $candidateRowTargetArticleSlug = canonical_article_slug((string) ($candidateRowValue['target_article_slug'] ?? ''));
-    if ($candidateRowTargetArticleSlug !== $candidateImportArticleSlug) {
-        continue;
+    if ($candidateImportArticleSlug === '' && $selectedArticleSlug !== '' && isset($articleOptions[$selectedArticleSlug])) {
+        $candidateImportArticleSlug = $selectedArticleSlug;
     }
-    $candidateRowsById[$candidateRowId] = $candidateRowValue;
-}
-$candidateRows = array_values($candidateRowsById);
-$recentCandidateBatchId = interessa_admin_slugify((string) ($_GET['batch'] ?? ''));
-if ($recentCandidateBatchId === '' && $candidateRows !== []) {
-    $recentCandidateBatchId = interessa_admin_slugify((string) ($candidateRows[0]['batch_id'] ?? ''));
-}
-$selectedCandidateId = $requestedCandidateId;
-if ($selectedCandidateId !== '' && !isset($candidateRowsById[$selectedCandidateId])) {
-    $selectedCandidateId = '';
-}
-$selectedCandidate = $selectedCandidateId !== '' && isset($candidateRowsById[$selectedCandidateId])
-    ? $candidateRowsById[$selectedCandidateId]
-    : null;
-$candidateFocusRequested = trim((string) ($_GET['candidate'] ?? '')) !== '';
-$productCandidateFocusMode = $section === 'products' && $candidateFocusRequested && is_array($selectedCandidate);
-$candidateImportedCount = count($candidateRows);
-$candidateClickReadyCount = 0;
-$candidateAssignedCount = 0;
-$candidateApprovedCount = 0;
-$candidateImageKnownCount = 0;
-$candidateListRows = [];
-foreach ($candidateRows as $candidateRow) {
-    $candidateId = trim((string) ($candidateRow['id'] ?? ''));
-    $candidateHasClick = trim((string) ($candidateRow['click_code'] ?? '')) !== '';
+    if ($candidateImportArticleSlug === '' || !isset($articleOptions[$candidateImportArticleSlug])) {
+        $candidateImportArticleSlug = (string) (array_key_first($articleOptions) ?? 'najlepsie-proteiny-2026');
+    }
+    $candidateImportPreset = interessa_admin_candidate_import_preset($candidateImportArticleSlug);
+    $candidateImportArticleTitle = (string) ($articleOptions[$candidateImportArticleSlug]['title'] ?? $candidateImportArticleSlug);
+    foreach ((array) ($candidateImportPreset['merchant_defaults'] ?? []) as $presetMerchantSlug) {
+        $presetMerchantSlug = interessa_admin_slugify((string) $presetMerchantSlug);
+        if ($presetMerchantSlug !== '' && isset($candidateMerchantOptions[$presetMerchantSlug])) {
+            $candidateImportMerchantOptions[$presetMerchantSlug] = $candidateMerchantOptions[$presetMerchantSlug];
+        }
+    }
+    if ($candidateImportMerchantOptions === []) {
+        $candidateImportMerchantOptions = $candidateMerchantOptions;
+    }
+    if ($candidateImportMerchantOptions === []) {
+        $candidateImportMerchantOptions = [
+            'gymbeam' => 'GymBeam.sk',
+        ];
+    }
+    $candidateImportSingleMerchantSlug = (string) (array_key_first($candidateImportMerchantOptions) ?? '');
+    $candidateImportSingleMerchantName = (string) ($candidateImportMerchantOptions[$candidateImportSingleMerchantSlug] ?? $candidateImportSingleMerchantSlug);
+    $candidateImportShowMerchantSelect = count($candidateImportMerchantOptions) > 1;
+    foreach ($allCandidateRowsById as $candidateRowId => $candidateRowValue) {
+        $candidateRowTargetArticleSlug = canonical_article_slug((string) ($candidateRowValue['target_article_slug'] ?? ''));
+        if ($candidateRowTargetArticleSlug !== $candidateImportArticleSlug) {
+            continue;
+        }
+        $candidateRowsById[$candidateRowId] = $candidateRowValue;
+    }
+    $candidateRows = array_values($candidateRowsById);
+    $recentCandidateBatchId = interessa_admin_slugify((string) ($_GET['batch'] ?? ''));
+    if ($recentCandidateBatchId === '' && $candidateRows !== []) {
+        $recentCandidateBatchId = interessa_admin_slugify((string) ($candidateRows[0]['batch_id'] ?? ''));
+    }
+    $selectedCandidateId = $requestedCandidateId;
+    if ($selectedCandidateId !== '' && !isset($candidateRowsById[$selectedCandidateId])) {
+        $selectedCandidateId = '';
+    }
+    $selectedCandidate = $selectedCandidateId !== '' && isset($candidateRowsById[$selectedCandidateId])
+        ? $candidateRowsById[$selectedCandidateId]
+        : null;
+    $candidateFocusRequested = trim((string) ($_GET['candidate'] ?? '')) !== '';
+    $productCandidateFocusMode = $section === 'products' && $candidateFocusRequested && is_array($selectedCandidate);
+    $candidateImportedCount = count($candidateRows);
+    foreach ($candidateRows as $candidateRow) {
+        $candidateId = trim((string) ($candidateRow['id'] ?? ''));
+        $candidateHasClick = trim((string) ($candidateRow['click_code'] ?? '')) !== '';
     $candidateHasArticle = trim((string) ($candidateRow['article_slug'] ?? '')) !== '';
     $candidateApproved = !empty($candidateRow['approved']);
     $candidateHasImage = trim((string) ($candidateRow['image_remote_src'] ?? '')) !== '';
@@ -3634,8 +3733,8 @@ foreach ($candidateRows as $candidateRow) {
     } elseif ($candidateApproved) {
         $candidateNextLabel = 'Hotovo';
     }
-    $candidateListRows[] = [
-        'id' => $candidateId,
+        $candidateListRows[] = [
+            'id' => $candidateId,
         'name' => (string) ($candidateRow['name'] ?? $candidateId),
         'merchant' => (string) ($candidateRow['merchant'] ?? ''),
         'batch_id' => (string) ($candidateRow['batch_id'] ?? ''),
@@ -3659,133 +3758,124 @@ foreach ($candidateRows as $candidateRow) {
         'summary_label' => $candidateSummaryLabel,
         'summary_tone' => $candidateSummaryTone,
         'is_ready_for_article' => $candidateSummaryLabel === 'Ready for article',
-    ];
-}
+        ];
+    }
 
-$recentImportedRows = [];
-if ($recentCandidateBatchId !== '') {
-    foreach ($candidateListRows as $candidateListRow) {
-        if (interessa_admin_slugify((string) ($candidateListRow['batch_id'] ?? '')) === $recentCandidateBatchId) {
-            $recentImportedRows[] = $candidateListRow;
+    if ($recentCandidateBatchId !== '') {
+        foreach ($candidateListRows as $candidateListRow) {
+            if (interessa_admin_slugify((string) ($candidateListRow['batch_id'] ?? '')) === $recentCandidateBatchId) {
+                $recentImportedRows[] = $candidateListRow;
+            }
         }
     }
-}
-$recentImportedPilotRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
-    return (string) ($row['fit_status'] ?? 'blocked') === 'allowed';
-}));
-$recentImportedReadyCount = count(array_filter($recentImportedPilotRows, static function (array $row): bool {
-    return !empty($row['is_ready_for_article']);
-}));
-$recentImportedVisibleRows = $recentImportedPilotRows;
-$firstRecentImportedVisibleRow = $recentImportedVisibleRows[0] ?? null;
-$recentImportedBlockedRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
-    return (string) ($row['fit_status'] ?? 'allowed') !== 'allowed';
-}));
-$candidateSelectorRows = $recentImportedVisibleRows !== [] ? $recentImportedVisibleRows : ($recentImportedRows !== [] ? $recentImportedRows : $candidateListRows);
-$candidateImportedDisplayCount = $candidateImportedCount;
-$candidateClickReadyDisplayCount = $candidateClickReadyCount;
-$candidateAssignedDisplayCount = $candidateAssignedCount;
-$candidateApprovedDisplayCount = $candidateApprovedCount;
-if ($recentImportedVisibleRows !== []) {
-    $candidateImportedDisplayCount = count($recentImportedVisibleRows);
-    $candidateClickReadyDisplayCount = 0;
-    $candidateAssignedDisplayCount = 0;
-    $candidateApprovedDisplayCount = 0;
-    foreach ($recentImportedVisibleRows as $recentImportedRow) {
-        if (!empty($recentImportedRow['has_click'])) {
-            $candidateClickReadyDisplayCount++;
-        }
-        if (!empty($recentImportedRow['has_article'])) {
-            $candidateAssignedDisplayCount++;
-        }
-        if (!empty($recentImportedRow['approved'])) {
-            $candidateApprovedDisplayCount++;
-        }
-    }
-}
 
-$selectedCandidateHasClick = is_array($selectedCandidate) && trim((string) ($selectedCandidate['click_code'] ?? '')) !== '';
-$selectedCandidateHasArticle = is_array($selectedCandidate) && trim((string) ($selectedCandidate['article_slug'] ?? '')) !== '';
-$selectedCandidateApproved = is_array($selectedCandidate) && !empty($selectedCandidate['approved']);
-$selectedCandidateHasImage = is_array($selectedCandidate) && trim((string) ($selectedCandidate['image_remote_src'] ?? '')) !== '';
-$selectedCandidateClickStatus = !$selectedCandidateHasClick
-    ? 'missing'
-    : (((string) ($selectedCandidate['click_status'] ?? '') === 'ready') ? 'ready' : 'missing');
-$selectedCandidateClickStatusLabel = $selectedCandidateClickStatus;
-$selectedCandidateAffiliateStatus = is_array($selectedCandidate)
-    ? trim((string) ($selectedCandidate['affiliate_status'] ?? 'missing'))
-    : 'missing';
-$selectedCandidateSummaryLabel = 'Missing click';
-$selectedCandidateSummaryTone = 'is-warning';
-if ($selectedCandidateClickStatus === 'ready' && !$selectedCandidateHasArticle) {
-    $selectedCandidateSummaryLabel = 'Missing article';
-} elseif ($selectedCandidateClickStatus === 'ready' && $selectedCandidateHasArticle && $selectedCandidateAffiliateStatus === 'missing') {
-    $selectedCandidateSummaryLabel = 'Missing affiliate';
-} elseif ($selectedCandidateClickStatus === 'ready' && $selectedCandidateHasArticle && $selectedCandidateAffiliateStatus !== 'missing' && $selectedCandidateApproved) {
-    $selectedCandidateSummaryLabel = 'Ready for article';
-    $selectedCandidateSummaryTone = 'is-good';
-} elseif ($selectedCandidateClickStatus === 'ready' && $selectedCandidateHasArticle) {
-    $selectedCandidateSummaryLabel = 'Ready to approve';
-}
-$selectedCandidateArticleFit = is_array($selectedCandidate)
-    ? interessa_admin_candidate_phase_one_fit($selectedCandidate)
-    : ['status' => 'no-fit', 'slug' => '', 'reason' => '', 'hits' => [], 'blocked' => []];
-$selectedCandidateTargetArticleSlug = is_array($selectedCandidate)
-    ? canonical_article_slug(trim((string) ($selectedCandidate['target_article_slug'] ?? '')))
-    : '';
-$selectedCandidateArticleSlug = is_array($selectedCandidate) ? canonical_article_slug(trim((string) ($selectedCandidate['article_slug'] ?? ''))) : '';
-if ($selectedCandidateArticleSlug !== '' && !in_array($selectedCandidateArticleSlug, $productArticleOptionSlugs, true)) {
-    $selectedCandidateArticleSlug = '';
-}
-if ($selectedCandidateArticleSlug === '') {
-    if ($selectedCandidateTargetArticleSlug !== '' && in_array($selectedCandidateTargetArticleSlug, $productArticleOptionSlugs, true)) {
-        $selectedCandidateArticleSlug = $selectedCandidateTargetArticleSlug;
+    $recentImportedPilotRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
+        return (string) ($row['fit_status'] ?? 'blocked') === 'allowed';
+    }));
+    $recentImportedReadyCount = count(array_filter($recentImportedPilotRows, static function (array $row): bool {
+        return !empty($row['is_ready_for_article']);
+    }));
+    $recentImportedVisibleRows = $recentImportedPilotRows;
+    $firstRecentImportedVisibleRow = $recentImportedVisibleRows[0] ?? null;
+    $recentImportedBlockedRows = array_values(array_filter($recentImportedRows, static function (array $row): bool {
+        return (string) ($row['fit_status'] ?? 'allowed') !== 'allowed';
+    }));
+    $candidateSelectorRows = $recentImportedVisibleRows !== [] ? $recentImportedVisibleRows : ($recentImportedRows !== [] ? $recentImportedRows : $candidateListRows);
+    $candidateImportedDisplayCount = $candidateImportedCount;
+    $candidateClickReadyDisplayCount = $candidateClickReadyCount;
+    $candidateAssignedDisplayCount = $candidateAssignedCount;
+    $candidateApprovedDisplayCount = $candidateApprovedCount;
+    if ($recentImportedVisibleRows !== []) {
+        $candidateImportedDisplayCount = count($recentImportedVisibleRows);
+        $candidateClickReadyDisplayCount = 0;
+        $candidateAssignedDisplayCount = 0;
+        $candidateApprovedDisplayCount = 0;
+        foreach ($recentImportedVisibleRows as $recentImportedRow) {
+            if (!empty($recentImportedRow['has_click'])) {
+                $candidateClickReadyDisplayCount++;
+            }
+            if (!empty($recentImportedRow['has_article'])) {
+                $candidateAssignedDisplayCount++;
+            }
+            if (!empty($recentImportedRow['approved'])) {
+                $candidateApprovedDisplayCount++;
+            }
+        }
     }
-}
-if ($selectedCandidateArticleSlug === '') {
-    $guessedArticleSlug = canonical_article_slug((string) ($selectedCandidateArticleFit['slug'] ?? ''));
-    if (($selectedCandidateArticleFit['status'] ?? 'no-fit') === 'fit' && $guessedArticleSlug !== '' && in_array($guessedArticleSlug, $productArticleOptionSlugs, true)) {
-        $selectedCandidateArticleSlug = $guessedArticleSlug;
+    $selectedCandidateHasClick = is_array($selectedCandidate) && trim((string) ($selectedCandidate['click_code'] ?? '')) !== '';
+    $selectedCandidateHasArticle = is_array($selectedCandidate) && trim((string) ($selectedCandidate['article_slug'] ?? '')) !== '';
+    $selectedCandidateApproved = is_array($selectedCandidate) && !empty($selectedCandidate['approved']);
+    $selectedCandidateHasImage = is_array($selectedCandidate) && trim((string) ($selectedCandidate['image_remote_src'] ?? '')) !== '';
+    $selectedCandidateClickStatus = !$selectedCandidateHasClick
+        ? 'missing'
+        : (((string) ($selectedCandidate['click_status'] ?? '') === 'ready') ? 'ready' : 'missing');
+    $selectedCandidateClickStatusLabel = $selectedCandidateClickStatus;
+    $selectedCandidateAffiliateStatus = is_array($selectedCandidate)
+        ? trim((string) ($selectedCandidate['affiliate_status'] ?? 'missing'))
+        : 'missing';
+    if ($selectedCandidateClickStatus === 'ready' && !$selectedCandidateHasArticle) {
+        $selectedCandidateSummaryLabel = 'Missing article';
+    } elseif ($selectedCandidateClickStatus === 'ready' && $selectedCandidateHasArticle && $selectedCandidateAffiliateStatus === 'missing') {
+        $selectedCandidateSummaryLabel = 'Missing affiliate';
+    } elseif ($selectedCandidateClickStatus === 'ready' && $selectedCandidateHasArticle && $selectedCandidateAffiliateStatus !== 'missing' && $selectedCandidateApproved) {
+        $selectedCandidateSummaryLabel = 'Ready for article';
+        $selectedCandidateSummaryTone = 'is-good';
+    } elseif ($selectedCandidateClickStatus === 'ready' && $selectedCandidateHasArticle) {
+        $selectedCandidateSummaryLabel = 'Ready to approve';
     }
+    $selectedCandidateArticleFit = is_array($selectedCandidate)
+        ? interessa_admin_candidate_phase_one_fit($selectedCandidate)
+        : ['status' => 'no-fit', 'slug' => '', 'reason' => '', 'hits' => [], 'blocked' => []];
+    $selectedCandidateTargetArticleSlug = is_array($selectedCandidate)
+        ? canonical_article_slug(trim((string) ($selectedCandidate['target_article_slug'] ?? '')))
+        : '';
+    $selectedCandidateArticleSlug = is_array($selectedCandidate) ? canonical_article_slug(trim((string) ($selectedCandidate['article_slug'] ?? ''))) : '';
+    if ($selectedCandidateArticleSlug !== '' && !in_array($selectedCandidateArticleSlug, $productArticleOptionSlugs, true)) {
+        $selectedCandidateArticleSlug = '';
+    }
+    if ($selectedCandidateArticleSlug === '') {
+        if ($selectedCandidateTargetArticleSlug !== '' && in_array($selectedCandidateTargetArticleSlug, $productArticleOptionSlugs, true)) {
+            $selectedCandidateArticleSlug = $selectedCandidateTargetArticleSlug;
+        }
+    }
+    if ($selectedCandidateArticleSlug === '') {
+        $guessedArticleSlug = canonical_article_slug((string) ($selectedCandidateArticleFit['slug'] ?? ''));
+        if (($selectedCandidateArticleFit['status'] ?? 'no-fit') === 'fit' && $guessedArticleSlug !== '' && in_array($guessedArticleSlug, $productArticleOptionSlugs, true)) {
+            $selectedCandidateArticleSlug = $guessedArticleSlug;
+        }
+    }
+    $selectedCandidateArticleHelp = interessa_admin_article_product_help($selectedCandidateArticleSlug);
+    $selectedCandidateRole = is_array($selectedCandidate)
+        ? interessa_admin_slugify((string) ($selectedCandidate['role'] ?? 'standard'))
+        : 'standard';
+    if (!in_array($selectedCandidateRole, $candidateRoleOptions, true)) {
+        $selectedCandidateRole = 'standard';
+    }
+    $selectedCandidateOrderRaw = is_array($selectedCandidate)
+        ? (int) ($selectedCandidate['order'] ?? 0)
+        : 0;
+    if ($selectedCandidateHasArticle) {
+        $selectedCandidateOrder = max(1, $selectedCandidateOrderRaw);
+    } elseif ($selectedCandidateOrderRaw >= 10 && $selectedCandidateOrderRaw % 10 === 0) {
+        $selectedCandidateOrder = $selectedCandidateOrderRaw;
+    }
+    if ($selectedCandidateOrder <= 0) {
+        $selectedCandidateOrder = 10;
+    }
+    $selectedCandidateSuggestedArticleTitle = $selectedCandidateArticleSlug !== ''
+        ? (string) ($articleOptions[$selectedCandidateArticleSlug]['title'] ?? $selectedCandidateArticleSlug)
+        : '';
+    $selectedCandidateCanUseSimpleAssignment = $selectedCandidateHasClick
+        && !$selectedCandidateHasArticle
+        && $selectedCandidateArticleSlug !== ''
+        && ($selectedCandidateArticleFit['status'] ?? 'no-fit') === 'fit';
 }
-$selectedCandidateArticleHelp = interessa_admin_article_product_help($selectedCandidateArticleSlug);
-$candidateRoleOptions = ['standard', 'vegan', 'clean'];
-$selectedCandidateRole = is_array($selectedCandidate)
-    ? interessa_admin_slugify((string) ($selectedCandidate['role'] ?? 'standard'))
-    : 'standard';
-if (!in_array($selectedCandidateRole, $candidateRoleOptions, true)) {
-    $selectedCandidateRole = 'standard';
 }
-$selectedCandidateOrderRaw = is_array($selectedCandidate)
-    ? (int) ($selectedCandidate['order'] ?? 0)
-    : 0;
-$selectedCandidateOrder = 10;
-if ($selectedCandidateHasArticle) {
-    $selectedCandidateOrder = max(1, $selectedCandidateOrderRaw);
-} elseif ($selectedCandidateOrderRaw >= 10 && $selectedCandidateOrderRaw % 10 === 0) {
-    $selectedCandidateOrder = $selectedCandidateOrderRaw;
-}
-if ($selectedCandidateOrder <= 0) {
-    $selectedCandidateOrder = 10;
-}
-$selectedCandidateSuggestedArticleTitle = $selectedCandidateArticleSlug !== ''
-    ? (string) ($articleOptions[$selectedCandidateArticleSlug]['title'] ?? $selectedCandidateArticleSlug)
-    : '';
-$selectedCandidateCanUseSimpleAssignment = $selectedCandidateHasClick
-    && !$selectedCandidateHasArticle
-    && $selectedCandidateArticleSlug !== ''
-    && ($selectedCandidateArticleFit['status'] ?? 'no-fit') === 'fit';
-}
-
-$interessaAdminDebugWrite('before head render');
 
 require dirname(__DIR__) . '/inc/head.php';
-$interessaAdminDebugWrite('after head render');
 ?>
 <section class="container admin-page">
   <?php if (!$isAuthed): ?>
-    <?php echo 'BEFORE LOGIN HTML'; flush(); ?>
-    <?php $interessaAdminDebugWrite('rendering login branch'); ?>
     <div class="admin-login-wrap">
       <section class="admin-login-card">
         <p class="admin-kicker">Protected admin</p>
@@ -3812,7 +3902,6 @@ $interessaAdminDebugWrite('after head render');
       </section>
     </div>
   <?php else: ?>
-    <?php $interessaAdminDebugWrite('rendering authed branch'); ?>
     <div class="admin-shell">
       <?php if ($flashMessage !== ''): ?>
         <div class="admin-flash is-success">
@@ -4639,8 +4728,9 @@ $interessaAdminDebugWrite('after head render');
                 </details>
               </div>
 
-              <details class="admin-subsection">
-                <summary><strong>Dalsie nastavenia clanku</strong> - otvor len ked menis text alebo pokrocile casti</summary>
+              <?php if ($showAdvancedArticleEditor): ?>
+              <details class="admin-subsection" open>
+                <summary><strong>Dalsie nastavenia clanku</strong> - pokrocily editor je otvoreny</summary>
                 <div class="admin-grid one-up">
                   <label>
                     <span>Hlavny obrazok clanku (pokrocile)</span>
@@ -4973,6 +5063,15 @@ $interessaAdminDebugWrite('after head render');
                   </div>
                 <?php endif; ?>
               </section>
+              <?php else: ?>
+              <details class="admin-subsection">
+                <summary><strong>Dalsie nastavenia clanku</strong> - nacitat pokrocily editor len ked ho naozaj potrebujes</summary>
+                <p class="admin-note">Zakladny produktovy workflow mas vyssie. Pokrocily editor textu, porovnania a starsich override poli sa nacita az na vyziadanie, aby sa stranka po prihlaseni otvorila rychlo a stabilne.</p>
+                <div class="admin-inline-actions">
+                  <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;saved=advanced&amp;advanced_article=1">Otvorit pokrocily editor clanku</a>
+                </div>
+              </details>
+              <?php endif; ?>
 
               </details>
 
@@ -8593,7 +8692,6 @@ $interessaAdminDebugWrite('after head render');
 </script>
 <?php endif; ?>
 <?php require dirname(__DIR__) . '/inc/footer.php'; ?>
-<?php echo 'ADMIN END'; flush(); ?>
 
 
 
