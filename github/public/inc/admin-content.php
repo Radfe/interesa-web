@@ -58,55 +58,7 @@ if (!function_exists('interessa_admin_article_content_payload')) {
         }
 
         $comparison = is_array($article['comparison'] ?? null) ? $article['comparison'] : [];
-        if (($comparison['columns'] ?? []) !== [] && ($comparison['rows'] ?? []) !== []) {
-            $comparisonTitle = trim((string) ($comparison['title'] ?? 'Porovnanie produktov')) ?: 'Porovnanie produktov';
-            $comparisonIntro = trim((string) ($comparison['intro'] ?? ''));
-            $anchor = interessa_admin_slugify($comparisonTitle);
-            $headings[] = [
-                'id' => $anchor,
-                'level' => 2,
-                'text' => $comparisonTitle,
-            ];
-
-            echo '<section class="article-admin-comparison">';
-            echo '<h2 class="article-admin-heading" id="' . esc($anchor) . '">' . esc($comparisonTitle) . '</h2>';
-            if ($comparisonIntro !== '') {
-                $wordCount += str_word_count(strip_tags($comparisonIntro));
-                echo '<p class="article-admin-comparison-intro">' . esc($comparisonIntro) . '</p>';
-            }
-            echo interessa_render_comparison_table(
-                is_array($comparison['rows']) ? $comparison['rows'] : [],
-                is_array($comparison['columns']) ? $comparison['columns'] : []
-            );
-            echo '</section>';
-        }
-
-        $recommendedProducts = [];
-        foreach (($article['recommended_products'] ?? []) as $productSlug) {
-            $productSlug = trim((string) $productSlug);
-            if ($productSlug === '') {
-                continue;
-            }
-            $recommendedProducts[] = [
-                'product_slug' => $productSlug,
-            ];
-        }
-
-        if ($recommendedProducts !== []) {
-            $headings[] = [
-                'id' => 'odporucane-produkty',
-                'level' => 2,
-                'text' => 'Odporucane produkty',
-            ];
-            echo '<section class="article-admin-recommended">';
-            echo '<h2 class="article-admin-heading" id="odporucane-produkty">Odporucane produkty</h2>';
-            echo '<div class="article-admin-recommended-grid">';
-            foreach ($recommendedProducts as $row) {
-                echo interessa_render_product_box($row);
-            }
-            echo '</div>';
-            echo '</section>';
-        }
+        $recommendedProducts = array_values(array_filter(array_map(static fn(mixed $value): string => trim((string) $value), (array) ($article['recommended_products'] ?? []))));
 
         $html = (string) ob_get_clean();
         $readingTime = max(1, (int) ceil($wordCount / 180));

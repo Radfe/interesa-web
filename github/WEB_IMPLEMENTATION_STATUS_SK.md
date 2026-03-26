@@ -55,6 +55,18 @@ Web vrstva neriesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsie zjednotenie public product layer:
+- verejny article render uz nema bezat cez dva rozdielne product systémy
+- admin structured clanok uz neinjectuje vlastny odporucany/comparison block priamo do tela
+- source of truth pre verejny product layer je:
+  - admin `product_plan` / `recommended_products`, ak existuju
+  - inak legacy `article-commerce.php`
+- verejny render teraz rozhoduje cez jednotne pravidla:
+  - `comparison block`
+  - `recommended products block`
+  podla realne dostupnych dat na clanku
+- `pre-workout-ako-vybrat` tak vie pouzit rovnaky verejny odporucany produktovy layout ako legacy commercial clanky, aj ked ide cez admin workflow
+
 Posledny vacsi webovy krok:
 - velky kvalitativny pass na starsich jadrovych clankoch, aby boli na rovnakej urovni ako top money pages
 

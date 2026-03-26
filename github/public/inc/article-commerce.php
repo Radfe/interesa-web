@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/article-review-details.php';
+require_once __DIR__ . '/admin-content.php';
 
 if (!function_exists('interessa_article_commerce_clean')) {
     function interessa_article_commerce_clean(mixed $value): mixed {
@@ -414,11 +415,28 @@ if (!function_exists('interessa_article_commerce')) {
     function interessa_article_commerce(string $slug): ?array {
         $sections = interessa_article_commerce_sections();
         $canonicalSlug = interessa_article_commerce_canonical_slug($slug);
-        if ($canonicalSlug === null) {
+        $section = $canonicalSlug !== null ? ($sections[$canonicalSlug] ?? null) : null;
+
+        if (function_exists('interessa_admin_article_content') && function_exists('interessa_admin_article_product_state')) {
+            $adminArticle = interessa_admin_article_content($slug);
+            $articleProductState = interessa_admin_article_product_state($slug, $adminArticle);
+            $recommendedProducts = is_array($articleProductState['recommended_products'] ?? null)
+                ? array_values(array_unique(array_filter(array_map('strval', $articleProductState['recommended_products']))))
+                : [];
+
+            if ($recommendedProducts !== []) {
+                return interessa_article_commerce_clean([
+                    'title' => trim((string) ($adminArticle['commerce_title'] ?? ($section['title'] ?? 'Odporucane produkty'))) ?: 'Odporucane produkty',
+                    'intro' => trim((string) ($adminArticle['commerce_intro'] ?? ($section['intro'] ?? ''))),
+                    'products' => array_map(static fn(string $productSlug): array => ['product_slug' => $productSlug], $recommendedProducts),
+                ]);
+            }
+        }
+
+        if ($canonicalSlug === null || !is_array($section)) {
             return null;
         }
 
-        $section = $sections[$canonicalSlug];
         $reviewDetails = interessa_article_review_details();
         $sectionDetails = $reviewDetails[$canonicalSlug] ?? [];
 
@@ -455,6 +473,21 @@ if (!function_exists('interessa_article_comparison_table_whitelist')) {
 
 if (!function_exists('interessa_article_comparison_table_payload')) {
     function interessa_article_comparison_table_payload(string $slug, ?array $commerce = null): ?array {
+        if (function_exists('interessa_admin_article_content')) {
+            $adminArticle = interessa_admin_article_content($slug);
+            $comparison = is_array($adminArticle['comparison'] ?? null) ? $adminArticle['comparison'] : [];
+            $adminColumns = is_array($comparison['columns'] ?? null) ? $comparison['columns'] : [];
+            $adminRows = is_array($comparison['rows'] ?? null) ? $comparison['rows'] : [];
+            if ($adminColumns !== [] && $adminRows !== []) {
+                return [
+                    'title' => trim((string) ($comparison['title'] ?? 'Porovnanie produktov')) ?: 'Porovnanie produktov',
+                    'intro' => trim((string) ($comparison['intro'] ?? '')),
+                    'columns' => $adminColumns,
+                    'rows' => $adminRows,
+                ];
+            }
+        }
+
         $canonicalSlug = interessa_article_commerce_canonical_slug($slug);
         if ($canonicalSlug === null || !in_array($canonicalSlug, interessa_article_comparison_table_whitelist(), true)) {
             return null;
@@ -495,6 +528,27 @@ if (!function_exists('interessa_article_comparison_table_payload')) {
                 ['label' => 'Akcia', 'key' => 'code', 'type' => 'cta'],
             ],
             'rows' => $rows,
+        ];
+    }
+}
+
+if (!function_exists('interessa_article_product_layout_rules')) {
+    function interessa_article_product_layout_rules(string $slug, ?array $commerce = null, ?array $comparison = null): array {
+        $adminArticle = function_exists('interessa_admin_article_content') ? interessa_admin_article_content($slug) : [];
+        $layout = is_array($adminArticle['product_layout'] ?? null) ? $adminArticle['product_layout'] : [];
+        $showRecommended = $commerce !== null && !empty($commerce['products']);
+        $showComparison = $comparison !== null && !empty($comparison['rows']) && !empty($comparison['columns']);
+
+        if (array_key_exists('show_recommended_products', $layout)) {
+            $showRecommended = !empty($layout['show_recommended_products']) && $showRecommended;
+        }
+        if (array_key_exists('show_comparison_block', $layout)) {
+            $showComparison = !empty($layout['show_comparison_block']) && $showComparison;
+        }
+
+        return [
+            'show_recommended_products' => $showRecommended,
+            'show_comparison_block' => $showComparison,
         ];
     }
 }

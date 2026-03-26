@@ -42,17 +42,21 @@ $shortlistStats = interessa_commerce_shortlist_stats($commerce);
 $shortlistCoveragePercent = interessa_shortlist_coverage_percent($shortlistStats);
 $shortlistCoverageLabel = interessa_shortlist_coverage_label($shortlistStats);
 $comparisonTable = interessa_article_comparison_table_payload($slug, $commerce);
-$hasDecisionLayer = $comparisonTable !== null || $commerce !== null;
+$articleProductLayout = interessa_article_product_layout_rules($slug, $commerce, $comparisonTable);
+$showComparisonBlock = !empty($articleProductLayout['show_comparison_block']) && $comparisonTable !== null;
+$showRecommendedProductsBlock = !empty($articleProductLayout['show_recommended_products']) && $commerce !== null;
+$hasDecisionLayer = $showComparisonBlock || $showRecommendedProductsBlock;
 $crossThemePaths = $categoryMeta !== null ? interessa_cross_theme_paths((string) ($categoryMeta['slug'] ?? '')) : [];
+if (function_exists('interessa_admin_session_boot')) {
+    interessa_admin_session_boot();
+}
+$showAdminLiveEdit = function_exists('interessa_admin_is_authenticated') && interessa_admin_is_authenticated();
 
 if ($usesAdminContent) {
     $adminPayload = interessa_admin_article_content_payload($slug);
     $articleBodyHtml = (string) ($adminPayload['html'] ?? '');
     $articleHeadings = is_array($adminPayload['headings'] ?? null) ? $adminPayload['headings'] : [];
     $readingTime = (int) ($adminPayload['reading_time'] ?? 1);
-    if (!empty($adminPayload['has_recommendations'])) {
-        $commerce = null;
-    }
 } else {
     $articleBodyHtml = interessa_fix_mojibake((string) file_get_contents($file));
     $articlePrepared = interessa_article_prepare_body($articleBodyHtml);
@@ -189,15 +193,23 @@ include __DIR__ . '/inc/head.php';
           <?php if ($categoryMeta !== null): ?>
             <a class="btn btn-ghost" href="<?= esc(category_url((string) $categoryMeta['slug'])) ?>">Pozriet temu</a>
           <?php endif; ?>
-          <?php if ($comparisonTable !== null): ?>
+          <?php if ($showComparisonBlock): ?>
             <a class="btn btn-ghost" href="#porovnanie-produktov">Porovnanie produktov</a>
           <?php endif; ?>
-          <?php if ($commerce !== null): ?>
+          <?php if ($showRecommendedProductsBlock): ?>
             <a class="btn btn-ghost" href="#odporucane-produkty">Odporucane produkty</a>
           <?php endif; ?>
           <?php if ($faq !== []): ?>
             <a class="btn btn-ghost" href="#caste-otazky">Caste otazky</a>
           <?php endif; ?>
+        </div>
+      <?php endif; ?>
+
+      <?php if ($showAdminLiveEdit): ?>
+        <div class="article-quick-actions" aria-label="Admin live edit">
+          <a class="btn btn-ghost" href="/admin?section=articles&amp;slug=<?= esc($slug) ?>">Upravit clanok</a>
+          <a class="btn btn-ghost" href="/admin?section=articles&amp;slug=<?= esc($slug) ?>#article-products-block">Upravit produkty</a>
+          <a class="btn btn-ghost" href="/admin?section=images&amp;slug=<?= esc($slug) ?>">Upravit obrazky</a>
         </div>
       <?php endif; ?>
 
@@ -230,7 +242,7 @@ include __DIR__ . '/inc/head.php';
         </section>
       <?php endif; ?>
 
-      <?php if ($commerce !== null): ?>
+      <?php if ($showRecommendedProductsBlock): ?>
         <div id="rychly-vyber">
           <?php interessa_render_commerce_verdict($commerce); ?>
         </div>
@@ -243,7 +255,7 @@ include __DIR__ . '/inc/head.php';
         </section>
       <?php endif; ?>
 
-      <?php if ($comparisonTable !== null): ?>
+      <?php if ($showComparisonBlock): ?>
         <section class="topbox" id="porovnanie-produktov">
           <div class="topbox-head">
             <h2><?= esc((string) ($comparisonTable['title'] ?? 'Porovnanie produktov')) ?></h2>
@@ -262,7 +274,7 @@ include __DIR__ . '/inc/head.php';
       <?php endif; ?>
 
       <?php
-      if ($commerce !== null) {
+      if ($showRecommendedProductsBlock) {
           interessa_render_top_products(
               $commerce['products'] ?? [],
               $commerce['title'] ?? 'Odporucane produkty',
@@ -300,7 +312,7 @@ include __DIR__ . '/inc/head.php';
         <?php echo $articleBodyHtml; ?>
       </div>
       <?php
-      interessa_render_article_trust_box($slug, $meta, $commerce, is_file($file) ? $file : null);
+      interessa_render_article_trust_box($slug, $meta, $showRecommendedProductsBlock ? $commerce : null, is_file($file) ? $file : null);
       interessa_render_article_faq_box($slug, 'caste-otazky');
       interessa_render_related_articles($slug, 3);
       ?>

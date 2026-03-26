@@ -79,6 +79,8 @@ Najnovsi UX a click-layer cleanup:
   - Canva prompt / upload
   - az potom produktove sloty
 - starsie pokrocile polia pre odporucane produkty ostavaju dostupne len ako legacy fallback
+- verejny clanok uz vie citat admin `product_plan` / `article-products.json` ako source of truth pre odporucane produkty
+- tym sa zrovnala admin sprava slotov s verejnym renderom clanku a odpadla zavisla paralelna product vrstva len pre niektore legacy clanky
 
 Stabilizacia article slot save flow:
 - `Ulozit produkty v clanku` stale deduplikuje rovnaky produkt napriec slotmi

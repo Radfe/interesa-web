@@ -274,7 +274,14 @@ if (!function_exists('interessa_render_product_box')) {
             }
             $html .= '</div>';
         }
-        $html .= '<div class="affiliate-product-actions">' . interessa_affiliate_cta_html($row) . '</div>';
+        $html .= '<div class="affiliate-product-actions">' . interessa_affiliate_cta_html($row);
+        if (function_exists('interessa_admin_is_authenticated') && interessa_admin_is_authenticated()) {
+            $productSlug = trim((string) ($row['product_slug'] ?? $row['slug'] ?? ''));
+            if ($productSlug !== '') {
+                $html .= ' <a class="btn btn-ghost" href="/admin?section=products&amp;product=' . rawurlencode($productSlug) . '">Upravit produkt</a>';
+            }
+        }
+        $html .= '</div>';
         if ($showDisclosure) {
             $html .= interessa_render_affiliate_disclosure();
         }
