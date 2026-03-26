@@ -9,6 +9,11 @@ require_once dirname(__DIR__) . '/inc/admin-feed-import.php';
 require_once dirname(__DIR__) . '/inc/article-commerce.php';
 require_once dirname(__DIR__) . '/inc/dognet-helper.php';
 
+if (trim((string) ($_GET['suggest_products'] ?? '')) === '1') {
+    ini_set('display_errors', '1');
+    error_reporting(E_ALL);
+}
+
 function interessa_admin_selected_section(): string {
     $section = strtolower(trim((string) ($_GET['section'] ?? '')));
     if ($section === '') {
@@ -40,6 +45,22 @@ function interessa_admin_redirect_fragment(string $section, array $query = [], s
     $suffix = trim($fragment) !== '' ? '#' . ltrim(trim($fragment), '#') : '';
     header('Location: /admin?' . http_build_query($query) . $suffix, true, 303);
     exit;
+}
+
+function interessa_admin_suggest_products_log(string $message, array $context = []): void {
+    $payload = [];
+    foreach ($context as $key => $value) {
+        if (is_scalar($value) || $value === null) {
+            $payload[$key] = $value;
+        }
+    }
+
+    $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($encoded === false) {
+        $encoded = '{}';
+    }
+
+    error_log('[admin_suggest_products] ' . $message . ' ' . $encoded);
 }
 
 function interessa_admin_product_image_redirect_query(string $slug, string $saved, string $returnSection = '', string $returnSlug = ''): array {
@@ -2515,11 +2536,48 @@ if ($isAuthed) {
                     }
                 }
 
-                $suggested = function_exists('interessa_get_top_products_for_article')
-                    ? array_values(array_slice(interessa_get_top_products_for_article($articleSlug, 3), 0, 3))
-                    : (function_exists('interessa_get_products_for_article')
-                        ? array_values(array_slice(interessa_get_products_for_article($articleSlug, 3), 0, 3))
-                        : []);
+                $suggested = [];
+                $catalogLoadedCount = 0;
+                try {
+                    $articleExists = function_exists('article_registry')
+                        ? array_key_exists($articleSlug, article_registry())
+                        : true;
+                    interessa_admin_suggest_products_log('prefill-start', [
+                        'slug' => $articleSlug,
+                        'article_found' => $articleExists ? 1 : 0,
+                        'stage' => 'prefill-start',
+                    ]);
+                    $catalogForSuggestions = function_exists('interessa_product_catalog') ? interessa_product_catalog() : [];
+                    $catalogLoadedCount = is_array($catalogForSuggestions) ? count($catalogForSuggestions) : 0;
+                    interessa_admin_suggest_products_log('prefill-before-scoring', [
+                        'slug' => $articleSlug,
+                        'article_found' => $articleExists ? 1 : 0,
+                        'products_loaded' => $catalogLoadedCount,
+                        'stage' => 'prefill-before-scoring',
+                    ]);
+
+                    $suggested = function_exists('interessa_get_top_products_for_article')
+                        ? array_values(array_slice(interessa_get_top_products_for_article($articleSlug, 3), 0, 3))
+                        : (function_exists('interessa_get_products_for_article')
+                            ? array_values(array_slice(interessa_get_products_for_article($articleSlug, 3), 0, 3))
+                            : []);
+
+                    interessa_admin_suggest_products_log('prefill-after-scoring', [
+                        'slug' => $articleSlug,
+                        'article_found' => $articleExists ? 1 : 0,
+                        'products_loaded' => $catalogLoadedCount,
+                        'result_count' => count($suggested),
+                        'stage' => 'prefill-after-scoring',
+                    ]);
+                } catch (Throwable $e) {
+                    $suggested = [];
+                    interessa_admin_suggest_products_log('prefill-error', [
+                        'slug' => $articleSlug,
+                        'products_loaded' => $catalogLoadedCount,
+                        'stage' => 'prefill-controller',
+                        'error' => trim($e->getMessage()),
+                    ]);
+                }
 
                 $filledSlots = [];
                 $skippedSlots = [];
@@ -3452,6 +3510,8 @@ $articleScopedProductOptionSlugs = [];
 $articleScopedProductOptionSources = [];
 $articleScopedProductOptions = [];
 $articleScopedProductOptionsBySlot = [];
+$articleSuggestedProductsError = '';
+$articleSuggestedProductsDiagnostics = [];
 if ($section === 'articles') {
 $selectedArticleProductState = $selectedArticleSlug !== ''
     ? interessa_admin_article_product_state($selectedArticleSlug, $selectedArticleOverride)
@@ -3540,12 +3600,62 @@ foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
 }
 $articleReadySlot = max(0, min(3, (int) ($_GET['slot_ready'] ?? 0)));
 $showSuggestedProducts = trim((string) ($_GET['suggest_products'] ?? '')) === '1';
-$articleSuggestedProducts = $showSuggestedProducts && $selectedArticleSlug !== '' && function_exists('interessa_get_top_products_for_article')
-    ? array_values(array_slice(interessa_get_top_products_for_article($selectedArticleSlug, 3), 0, 3))
-    : ($showSuggestedProducts && $selectedArticleSlug !== '' && function_exists('interessa_get_products_for_article')
-        ? array_values(array_slice(interessa_get_products_for_article($selectedArticleSlug, 3), 0, 3))
-        : [])
-;
+$articleSuggestedProducts = [];
+if ($showSuggestedProducts && $selectedArticleSlug !== '') {
+    $articleExists = function_exists('article_registry')
+        ? array_key_exists($selectedArticleSlug, article_registry())
+        : true;
+    $catalogLoadedCount = 0;
+    try {
+        interessa_admin_suggest_products_log('start', [
+            'slug' => $selectedArticleSlug,
+            'article_found' => $articleExists ? 1 : 0,
+            'stage' => 'start',
+        ]);
+
+        $catalogForSuggestions = function_exists('interessa_product_catalog') ? interessa_product_catalog() : [];
+        $catalogLoadedCount = is_array($catalogForSuggestions) ? count($catalogForSuggestions) : 0;
+        interessa_admin_suggest_products_log('catalog-loaded', [
+            'slug' => $selectedArticleSlug,
+            'article_found' => $articleExists ? 1 : 0,
+            'products_loaded' => $catalogLoadedCount,
+            'stage' => 'before-scoring',
+        ]);
+
+        if (function_exists('interessa_get_top_products_for_article')) {
+            $articleSuggestedProducts = array_values(array_slice(interessa_get_top_products_for_article($selectedArticleSlug, 3), 0, 3));
+        } elseif (function_exists('interessa_get_products_for_article')) {
+            $articleSuggestedProducts = array_values(array_slice(interessa_get_products_for_article($selectedArticleSlug, 3), 0, 3));
+        } else {
+            $articleSuggestedProducts = [];
+        }
+
+        interessa_admin_suggest_products_log('after-scoring', [
+            'slug' => $selectedArticleSlug,
+            'article_found' => $articleExists ? 1 : 0,
+            'products_loaded' => $catalogLoadedCount,
+            'result_count' => count($articleSuggestedProducts),
+            'stage' => 'after-scoring',
+        ]);
+    } catch (Throwable $e) {
+        $articleSuggestedProducts = [];
+        $articleSuggestedProductsError = trim($e->getMessage());
+        $articleSuggestedProductsDiagnostics = [
+            'slug' => $selectedArticleSlug,
+            'article_found' => $articleExists ? '1' : '0',
+            'products_loaded' => (string) $catalogLoadedCount,
+            'stage' => 'controller-render',
+            'error' => $articleSuggestedProductsError,
+        ];
+        interessa_admin_suggest_products_log('error', [
+            'slug' => $selectedArticleSlug,
+            'article_found' => $articleExists ? 1 : 0,
+            'products_loaded' => $catalogLoadedCount,
+            'stage' => 'controller-render',
+            'error' => $articleSuggestedProductsError,
+        ]);
+    }
+}
 $prefillFilledSlots = array_values(array_filter(array_map(
     static fn(string $value): string => trim($value),
     explode(',', (string) ($_GET['prefill_filled'] ?? ''))
@@ -5141,6 +5251,10 @@ require dirname(__DIR__) . '/inc/head.php';
                         Preskocene sloty: <?= $prefillSkippedSlots !== [] ? esc(implode(', ', $prefillSkippedSlots)) : 'ziadne' ?>.
                       </p>
                     <?php endif; ?>
+                    <?php if ($articleSuggestedProductsError !== ''): ?>
+                      <p class="admin-note">Pre tento článok zatiaľ nemáš importované relevantné produkty.</p>
+                      <p class="admin-note">Diagnostika: slug <?= esc((string) ($articleSuggestedProductsDiagnostics['slug'] ?? $selectedArticleSlug)) ?>, article_found <?= esc((string) ($articleSuggestedProductsDiagnostics['article_found'] ?? '0')) ?>, products_loaded <?= esc((string) ($articleSuggestedProductsDiagnostics['products_loaded'] ?? '0')) ?>, stage <?= esc((string) ($articleSuggestedProductsDiagnostics['stage'] ?? 'unknown')) ?>.</p>
+                    <?php endif; ?>
                     <?php if ($articleSuggestedProducts !== []): ?>
                       <div class="admin-queue-list">
                         <?php foreach ($articleSuggestedProducts as $suggestedProduct): ?>
@@ -5173,8 +5287,8 @@ require dirname(__DIR__) . '/inc/head.php';
                           </article>
                         <?php endforeach; ?>
                       </div>
-                    <?php else: ?>
-                      <p class="admin-note">Pre tento clanok sa zatial nenasli vhodne automaticke navrhy.</p>
+                    <?php elseif ($articleSuggestedProductsError === ''): ?>
+                      <p class="admin-note">Pre tento článok zatiaľ nemáš importované relevantné produkty.</p>
                     <?php endif; ?>
                   </section>
                 <?php endif; ?>

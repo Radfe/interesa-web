@@ -385,6 +385,24 @@ if (!function_exists('interessa_supported_affiliate_merchants')) {
     }
 }
 
+if (!function_exists('interessa_product_suggestion_log')) {
+    function interessa_product_suggestion_log(string $message, array $context = []): void {
+        $payload = [];
+        foreach ($context as $key => $value) {
+            if (is_scalar($value) || $value === null) {
+                $payload[$key] = $value;
+            }
+        }
+
+        $encoded = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($encoded === false) {
+            $encoded = '{}';
+        }
+
+        error_log('[interessa_product_suggest] ' . $message . ' ' . $encoded);
+    }
+}
+
 if (!function_exists('interessa_is_supported_affiliate_merchant')) {
     function interessa_is_supported_affiliate_merchant(string $merchantSlug): bool {
         $merchantSlug = interessa_guess_slug_from_text($merchantSlug);
@@ -396,6 +414,9 @@ if (!function_exists('interessa_product_article_match_score')) {
     function interessa_product_article_match_score(array $normalizedProduct, array $rule): ?array {
         $slug = trim((string) ($normalizedProduct['slug'] ?? ''));
         $category = normalize_category_slug((string) ($normalizedProduct['category'] ?? ''));
+        $name = trim((string) ($normalizedProduct['name'] ?? ''));
+        $price = max(0.0, (float) ($normalizedProduct['price'] ?? 0));
+        $productUrl = trim((string) ($normalizedProduct['url'] ?? $normalizedProduct['fallback_url'] ?? ''));
         $merchantSlug = trim((string) ($normalizedProduct['merchant_slug'] ?? ''));
         if ($slug === '' || $category === '' || !interessa_is_supported_affiliate_merchant($merchantSlug)) {
             return null;
@@ -409,12 +430,13 @@ if (!function_exists('interessa_product_article_match_score')) {
         $haystack = mb_strtolower(trim(implode(' ', array_filter([
             $slug,
             str_replace('-', ' ', $slug),
-            (string) ($normalizedProduct['name'] ?? ''),
+            $name,
             (string) ($normalizedProduct['summary'] ?? ''),
             $category,
             trim((string) ($normalizedProduct['merchant'] ?? '')),
+            $productUrl,
         ]))), 'UTF-8');
-        $nameHaystack = mb_strtolower(trim((string) ($normalizedProduct['name'] ?? '')), 'UTF-8');
+        $nameHaystack = mb_strtolower($name, 'UTF-8');
 
         $excludeHits = 0;
         foreach ((array) ($rule['exclude_keywords'] ?? []) as $keyword) {
@@ -454,11 +476,11 @@ if (!function_exists('interessa_product_article_match_score')) {
         if (trim((string) ($normalizedProduct['summary'] ?? '')) !== '') {
             $qualityScore += 5;
         }
-        if (trim((string) ($normalizedProduct['fallback_url'] ?? '')) !== '' || trim((string) ($normalizedProduct['affiliate_code'] ?? '')) !== '') {
+        if ($productUrl !== '' || trim((string) ($normalizedProduct['affiliate_code'] ?? '')) !== '') {
             $qualityScore += 10;
             $availabilityScore += 25;
         }
-        if ((float) ($normalizedProduct['price'] ?? 0) > 0) {
+        if ($price > 0) {
             $availabilityScore += 15;
         }
         if (!empty($normalizedProduct['image']) && trim((string) (($normalizedProduct['image']['source_type'] ?? '') ?: ($normalizedProduct['image']['source'] ?? ''))) !== 'placeholder') {
@@ -494,6 +516,11 @@ if (!function_exists('interessa_get_products_for_article')) {
             return [];
         }
 
+        $products = interessa_product_catalog();
+        if (!is_array($products) || count($products) === 0) {
+            return [];
+        }
+
         $articleRule = interessa_article_product_rule($articleId);
         $articleCategories = is_array($articleRule['categories'] ?? null) ? $articleRule['categories'] : [];
         if ($articleCategories === [] && !(bool) ($articleRule['strict'] ?? false)) {
@@ -501,57 +528,70 @@ if (!function_exists('interessa_get_products_for_article')) {
         }
 
         $matches = [];
-        foreach (interessa_product_catalog() as $productSlug => $product) {
-            $normalized = interessa_normalize_product(is_array($product) ? $product : []);
-            $normalizedSlug = trim((string) ($normalized['slug'] ?? $productSlug));
-            $productCategory = normalize_category_slug((string) ($normalized['category'] ?? ''));
-            $merchantSlug = trim((string) ($normalized['merchant_slug'] ?? ''));
-            if ($normalizedSlug === '' || $productCategory === '' || !interessa_is_supported_affiliate_merchant($merchantSlug)) {
+        foreach ($products as $productSlug => $product) {
+            try {
+                $normalized = interessa_normalize_product(is_array($product) ? $product : []);
+                $normalizedSlug = trim((string) ($normalized['slug'] ?? $productSlug));
+                $productCategory = normalize_category_slug((string) ($normalized['category'] ?? ''));
+                $merchantSlug = trim((string) ($normalized['merchant_slug'] ?? ''));
+                if ($normalizedSlug === '' || $productCategory === '' || !interessa_is_supported_affiliate_merchant($merchantSlug)) {
+                    continue;
+                }
+
+                $matchMeta = interessa_product_article_match_score($normalized, $articleRule);
+                if ($matchMeta === null) {
+                    continue;
+                }
+
+                $target = interessa_affiliate_target($normalized);
+                $categoryMeta = function_exists('category_meta') ? category_meta($productCategory) : null;
+                $affiliateLink = trim((string) ($target['href'] ?? ''));
+                $imageMeta = is_array($normalized['image'] ?? null) ? $normalized['image'] : [];
+                $imageSourceType = trim((string) ($imageMeta['source_type'] ?? 'placeholder'));
+                $hasReadyClick = $affiliateLink !== '' && $affiliateLink !== '#';
+                $hasReadyImage = $imageSourceType !== '' && $imageSourceType !== 'placeholder';
+                $readinessScore = 0;
+                if ($hasReadyClick) {
+                    $readinessScore += 100;
+                }
+                if ($hasReadyImage) {
+                    $readinessScore += 60;
+                }
+
+                $matches[] = [
+                    'product_slug' => $normalizedSlug,
+                    'name' => trim((string) ($normalized['name'] ?? $normalizedSlug)),
+                    'image' => $normalized['image'],
+                    'affiliate_link' => $affiliateLink !== '' ? $affiliateLink : '#',
+                    'affiliate_label' => trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu',
+                    'merchant' => trim((string) ($normalized['merchant'] ?? '')),
+                    'merchant_slug' => trim((string) ($normalized['merchant_slug'] ?? '')),
+                    'category' => $productCategory,
+                    'category_label' => trim((string) ($categoryMeta['title'] ?? humanize_slug($productCategory))),
+                    'summary' => trim((string) ($normalized['summary'] ?? '')),
+                    '_match_score' => (int) ($matchMeta['score'] ?? 0),
+                    '_category_priority' => (int) ($matchMeta['category_priority'] ?? 999),
+                    '_prefer_hits' => (int) ($matchMeta['prefer_hits'] ?? 0),
+                    '_name_hits' => (int) ($matchMeta['name_hits'] ?? 0),
+                    '_merchant_score' => (int) ($matchMeta['merchant_score'] ?? 0),
+                    '_availability_score' => (int) ($matchMeta['availability_score'] ?? 0),
+                    '_readiness_score' => $readinessScore,
+                    '_has_ready_click' => $hasReadyClick ? 1 : 0,
+                    '_has_ready_image' => $hasReadyImage ? 1 : 0,
+                    '_quality_score' => (int) ($matchMeta['quality_score'] ?? 0),
+                ];
+            } catch (Throwable $e) {
+                interessa_product_suggestion_log('scoring-error', [
+                    'article' => $articleId,
+                    'product_slug' => is_string($productSlug) ? $productSlug : '',
+                    'error' => trim($e->getMessage()),
+                ]);
                 continue;
             }
+        }
 
-            $matchMeta = interessa_product_article_match_score($normalized, $articleRule);
-            if ($matchMeta === null) {
-                continue;
-            }
-
-            $target = interessa_affiliate_target($normalized);
-            $categoryMeta = function_exists('category_meta') ? category_meta($productCategory) : null;
-            $affiliateLink = trim((string) ($target['href'] ?? ''));
-            $imageMeta = is_array($normalized['image'] ?? null) ? $normalized['image'] : [];
-            $imageSourceType = trim((string) ($imageMeta['source_type'] ?? 'placeholder'));
-            $hasReadyClick = $affiliateLink !== '' && $affiliateLink !== '#';
-            $hasReadyImage = $imageSourceType !== '' && $imageSourceType !== 'placeholder';
-            $readinessScore = 0;
-            if ($hasReadyClick) {
-                $readinessScore += 100;
-            }
-            if ($hasReadyImage) {
-                $readinessScore += 60;
-            }
-
-            $matches[] = [
-                'product_slug' => $normalizedSlug,
-                'name' => trim((string) ($normalized['name'] ?? $normalizedSlug)),
-                'image' => $normalized['image'],
-                'affiliate_link' => $affiliateLink !== '' ? $affiliateLink : '#',
-                'affiliate_label' => trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu',
-                'merchant' => trim((string) ($normalized['merchant'] ?? '')),
-                'merchant_slug' => trim((string) ($normalized['merchant_slug'] ?? '')),
-                'category' => $productCategory,
-                'category_label' => trim((string) ($categoryMeta['title'] ?? humanize_slug($productCategory))),
-                'summary' => trim((string) ($normalized['summary'] ?? '')),
-                '_match_score' => (int) ($matchMeta['score'] ?? 0),
-                '_category_priority' => (int) ($matchMeta['category_priority'] ?? 999),
-                '_prefer_hits' => (int) ($matchMeta['prefer_hits'] ?? 0),
-                '_name_hits' => (int) ($matchMeta['name_hits'] ?? 0),
-                '_merchant_score' => (int) ($matchMeta['merchant_score'] ?? 0),
-                '_availability_score' => (int) ($matchMeta['availability_score'] ?? 0),
-                '_readiness_score' => $readinessScore,
-                '_has_ready_click' => $hasReadyClick ? 1 : 0,
-                '_has_ready_image' => $hasReadyImage ? 1 : 0,
-                '_quality_score' => (int) ($matchMeta['quality_score'] ?? 0),
-            ];
+        if ($matches === []) {
+            return [];
         }
 
         usort($matches, static function (array $left, array $right): int {
