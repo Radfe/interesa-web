@@ -3512,6 +3512,10 @@ $articleScopedProductOptions = [];
 $articleScopedProductOptionsBySlot = [];
 $articleSuggestedProductsError = '';
 $articleSuggestedProductsDiagnostics = [];
+$articleSuggestedProductsCount = 0;
+$articleSuggestedProductsScoringDone = false;
+$productsPilotMode = $productsPilotMode ?? false;
+$brandFocusMode = $brandFocusMode ?? false;
 if ($section === 'articles') {
 $selectedArticleProductState = $selectedArticleSlug !== ''
     ? interessa_admin_article_product_state($selectedArticleSlug, $selectedArticleOverride)
@@ -3629,6 +3633,8 @@ if ($showSuggestedProducts && $selectedArticleSlug !== '') {
         } else {
             $articleSuggestedProducts = [];
         }
+        $articleSuggestedProductsCount = count($articleSuggestedProducts);
+        $articleSuggestedProductsScoringDone = true;
 
         interessa_admin_suggest_products_log('after-scoring', [
             'slug' => $selectedArticleSlug,
@@ -3647,6 +3653,8 @@ if ($showSuggestedProducts && $selectedArticleSlug !== '') {
             'stage' => 'controller-render',
             'error' => $articleSuggestedProductsError,
         ];
+        $articleSuggestedProductsCount = 0;
+        $articleSuggestedProductsScoringDone = false;
         interessa_admin_suggest_products_log('error', [
             'slug' => $selectedArticleSlug,
             'article_found' => $articleExists ? 1 : 0,
@@ -5251,11 +5259,11 @@ require dirname(__DIR__) . '/inc/head.php';
                         Preskocene sloty: <?= $prefillSkippedSlots !== [] ? esc(implode(', ', $prefillSkippedSlots)) : 'ziadne' ?>.
                       </p>
                     <?php endif; ?>
+                    <p class="admin-note">Debug: products_returned <?= esc((string) $articleSuggestedProductsCount) ?>, scoring <?= $articleSuggestedProductsScoringDone ? 'ok' : 'not-run-or-error' ?>.</p>
                     <?php if ($articleSuggestedProductsError !== ''): ?>
                       <p class="admin-note">Pre tento článok zatiaľ nemáš importované relevantné produkty.</p>
                       <p class="admin-note">Diagnostika: slug <?= esc((string) ($articleSuggestedProductsDiagnostics['slug'] ?? $selectedArticleSlug)) ?>, article_found <?= esc((string) ($articleSuggestedProductsDiagnostics['article_found'] ?? '0')) ?>, products_loaded <?= esc((string) ($articleSuggestedProductsDiagnostics['products_loaded'] ?? '0')) ?>, stage <?= esc((string) ($articleSuggestedProductsDiagnostics['stage'] ?? 'unknown')) ?>.</p>
-                    <?php endif; ?>
-                    <?php if ($articleSuggestedProducts !== []): ?>
+                    <?php elseif ($articleSuggestedProducts !== []): ?>
                       <div class="admin-queue-list">
                         <?php foreach ($articleSuggestedProducts as $suggestedProduct): ?>
                           <?php
@@ -5287,7 +5295,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           </article>
                         <?php endforeach; ?>
                       </div>
-                    <?php elseif ($articleSuggestedProductsError === ''): ?>
+                    <?php else: ?>
                       <p class="admin-note">Pre tento článok zatiaľ nemáš importované relevantné produkty.</p>
                     <?php endif; ?>
                   </section>
