@@ -72,9 +72,9 @@
         "role": "standard",
         "show_in_top": true,
         "show_in_comparison": false,
-        "enabled": true,
+        "enabled": false,
         "created_at": "2026-03-25T18:25:50+00:00",
-        "updated_at": "2026-03-25T21:12:21+00:00"
+        "updated_at": "2026-03-26T13:09:47+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-bsn-n-o-xplode-legendary-pre-workout-green-burst": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -94,9 +94,9 @@
         "role": "standard",
         "show_in_top": true,
         "show_in_comparison": false,
-        "enabled": true,
+        "enabled": false,
         "created_at": "2026-03-25T19:55:54+00:00",
-        "updated_at": "2026-03-25T21:12:21+00:00"
+        "updated_at": "2026-03-26T13:09:50+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-cellucor-c4-original-frozen-bombsicle": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -105,9 +105,9 @@
         "role": "featured",
         "show_in_top": true,
         "show_in_comparison": false,
-        "enabled": true,
+        "enabled": false,
         "created_at": "2026-03-25T21:12:21+00:00",
-        "updated_at": "2026-03-25T21:12:21+00:00"
+        "updated_at": "2026-03-26T13:09:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-citrulline-malate": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -119,6 +119,39 @@
         "enabled": false,
         "created_at": "2026-03-25T14:38:16+00:00",
         "updated_at": "2026-03-25T21:12:21+00:00"
+    },
+    "pre-workout-ako-vybrat::gymbeam-gymbeam-arginine-citrulline": {
+        "article_slug": "pre-workout-ako-vybrat",
+        "product_slug": "gymbeam-gymbeam-arginine-citrulline",
+        "order": 1,
+        "role": "featured",
+        "show_in_top": true,
+        "show_in_comparison": false,
+        "enabled": true,
+        "created_at": "2026-03-26T13:09:37+00:00",
+        "updated_at": "2026-03-26T13:09:37+00:00"
+    },
+    "pre-workout-ako-vybrat::gymbeam-nutrend-pre-workout-pump-berry-splash": {
+        "article_slug": "pre-workout-ako-vybrat",
+        "product_slug": "gymbeam-nutrend-pre-workout-pump-berry-splash",
+        "order": 2,
+        "role": "standard",
+        "show_in_top": true,
+        "show_in_comparison": false,
+        "enabled": true,
+        "created_at": "2026-03-26T13:09:47+00:00",
+        "updated_at": "2026-03-26T13:09:47+00:00"
+    },
+    "pre-workout-ako-vybrat::gymbeam-nutrend-pre-workout-pump-rainbow": {
+        "article_slug": "pre-workout-ako-vybrat",
+        "product_slug": "gymbeam-nutrend-pre-workout-pump-rainbow",
+        "order": 3,
+        "role": "standard",
+        "show_in_top": true,
+        "show_in_comparison": false,
+        "enabled": true,
+        "created_at": "2026-03-26T13:09:50+00:00",
+        "updated_at": "2026-03-26T13:09:50+00:00"
     },
     "pre-workout-ako-vybrat::muscletech-vapor-x5-next-gen-pre-workout": {
         "article_slug": "pre-workout-ako-vybrat",

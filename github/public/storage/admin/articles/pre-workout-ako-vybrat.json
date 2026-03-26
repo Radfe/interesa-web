@@ -14,32 +14,32 @@
         "rows": []
     },
     "recommended_products": [
-        "gymbeam-cellucor-c4-original-frozen-bombsicle",
-        "gymbeam-beastpink-pink-drive-jahodov-a-limon-ada",
-        "gymbeam-bsn-n-o-xplode-legendary-pre-workout-purple-power"
+        "gymbeam-gymbeam-arginine-citrulline",
+        "gymbeam-nutrend-pre-workout-pump-berry-splash",
+        "gymbeam-nutrend-pre-workout-pump-rainbow"
     ],
     "product_plan": [
         {
-            "product_slug": "gymbeam-cellucor-c4-original-frozen-bombsicle",
+            "product_slug": "gymbeam-gymbeam-arginine-citrulline",
             "order": 1,
             "role": "featured",
             "show_in_top": true,
             "show_in_comparison": false
         },
         {
-            "product_slug": "gymbeam-beastpink-pink-drive-jahodov-a-limon-ada",
+            "product_slug": "gymbeam-nutrend-pre-workout-pump-berry-splash",
             "order": 2,
             "role": "standard",
             "show_in_top": true,
             "show_in_comparison": false
         },
         {
-            "product_slug": "gymbeam-bsn-n-o-xplode-legendary-pre-workout-purple-power",
+            "product_slug": "gymbeam-nutrend-pre-workout-pump-rainbow",
             "order": 3,
             "role": "standard",
             "show_in_top": true,
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-25T21:12:21+00:00"
+    "updated_at": "2026-03-26T13:09:50+00:00"
 }

@@ -63,6 +63,17 @@ function interessa_admin_suggest_products_log(string $message, array $context = 
     error_log('[admin_suggest_products] ' . $message . ' ' . $encoded);
 }
 
+function interessa_admin_article_save_log(string $message, array $context = []): void {
+    $encoded = $context !== []
+        ? json_encode($context, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        : '{}';
+    if (!is_string($encoded) || $encoded === '') {
+        $encoded = '{}';
+    }
+
+    error_log('[admin_article_save] ' . $message . ' ' . $encoded);
+}
+
 function interessa_admin_product_image_redirect_query(string $slug, string $saved, string $returnSection = '', string $returnSlug = ''): array {
     $query = [
         'product' => $slug,
@@ -2287,7 +2298,22 @@ if ($isAuthed) {
 
             if ($action === 'save_article') {
                 $slug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
+                $receivedSlots = $_POST['article_product_slot'] ?? [];
+                interessa_admin_article_save_log('entered-save-article', [
+                    'slug' => $slug,
+                    'action' => $action,
+                    'received_slot_1' => trim((string) (($receivedSlots[1] ?? '') ?: '')),
+                    'received_slot_2' => trim((string) (($receivedSlots[2] ?? '') ?: '')),
+                    'received_slot_3' => trim((string) (($receivedSlots[3] ?? '') ?: '')),
+                ]);
                 $productPlan = interessa_admin_collect_article_product_plan();
+                interessa_admin_article_save_log('final-slot-assignments-before-save', [
+                    'slug' => $slug,
+                    'slot_slugs' => implode(',', array_map(
+                        static fn(array $row): string => trim((string) ($row['product_slug'] ?? '')),
+                        array_filter($productPlan, 'is_array')
+                    )),
+                ]);
                 $visualComparison = interessa_admin_collect_comparison_visual();
                 $comparisonColumns = $visualComparison['columns'] !== []
                     ? $visualComparison['columns']
@@ -2328,6 +2354,13 @@ if ($isAuthed) {
 
                 interessa_admin_save_article_override($slug, $payload);
                 interessa_admin_save_article_product_plan($slug, $productPlan);
+                interessa_admin_article_save_log('save-article-product-plan-success', [
+                    'slug' => $slug,
+                    'saved_slot_slugs' => implode(',', array_map(
+                        static fn(array $row): string => trim((string) ($row['product_slug'] ?? '')),
+                        array_filter($productPlan, 'is_array')
+                    )),
+                ]);
                 interessa_admin_redirect('articles', ['slug' => $slug, 'saved' => 'article']);
             }
 
@@ -3725,6 +3758,13 @@ if ($showSuggestedProducts && $selectedArticleSlug !== '') {
         'stage' => 'render-slot-state',
     ]);
 }
+if ($section === 'articles' && $selectedArticleSlug !== '' && $flash === 'article') {
+    interessa_admin_article_save_log('loaded-slot-assignments-after-redirect', [
+        'slug' => $selectedArticleSlug,
+        'loaded_slot_slugs' => implode(',', $articleSuggestedProductsLoadedSlotSlugs),
+        'saved' => $flash,
+    ]);
+}
 $prefillFilledSlots = array_values(array_filter(array_map(
     static fn(string $value): string => trim($value),
     explode(',', (string) ($_GET['prefill_filled'] ?? ''))
@@ -4720,6 +4760,9 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($flash !== ''): ?>
           <div class="admin-flash is-success">Ulozene: <?= esc($flash) ?></div>
         <?php endif; ?>
+        <?php if ($section === 'articles' && $saved === 'article' && $selectedArticleSlug !== ''): ?>
+          <div class="admin-flash is-success">Produkty v clanku boli ulozene. Slot 1 / Slot 2 / Slot 3 teraz bezia z explicitneho article product planu.</div>
+        <?php endif; ?>
         <?php if ($importSummary !== ''): ?>
           <div class="admin-flash is-success"><?= esc($importSummary) ?></div>
         <?php endif; ?>
@@ -5145,7 +5188,22 @@ require dirname(__DIR__) . '/inc/head.php';
               <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
             </form>
 
-            <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack" autocomplete="off">
+            <?php if ($showSuggestedProducts && $selectedArticleSlug !== '' && $articleSuggestedProducts !== []): ?>
+              <?php foreach ($articleSuggestedProducts as $suggestedProduct): ?>
+                <?php $suggestedFormSlug = trim((string) ($suggestedProduct['product_slug'] ?? '')); ?>
+                <?php if ($suggestedFormSlug === '') { continue; } ?>
+                <?php for ($suggestedSlot = 1; $suggestedSlot <= 3; $suggestedSlot++): ?>
+                  <form method="post" action="/admin" class="admin-inline-form" id="article-suggest-assign-<?= esc($suggestedFormSlug) ?>-<?= esc((string) $suggestedSlot) ?>">
+                    <input type="hidden" name="action" value="assign_suggested_product_to_slot" />
+                    <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
+                    <input type="hidden" name="product_slug" value="<?= esc($suggestedFormSlug) ?>" />
+                    <input type="hidden" name="target_slot" value="<?= esc((string) $suggestedSlot) ?>" />
+                  </form>
+                <?php endfor; ?>
+              <?php endforeach; ?>
+            <?php endif; ?>
+
+            <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack" autocomplete="off" id="article-save-form">
               <input type="hidden" name="action" value="save_article" />
               <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
 
@@ -5346,13 +5404,7 @@ require dirname(__DIR__) . '/inc/head.php';
                             </div>
                             <div class="admin-inline-actions">
                               <?php for ($suggestedSlot = 1; $suggestedSlot <= 3; $suggestedSlot++): ?>
-                                <form method="post" class="admin-inline-form">
-                                  <input type="hidden" name="action" value="assign_suggested_product_to_slot" />
-                                  <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
-                                  <input type="hidden" name="product_slug" value="<?= esc($suggestedSlug) ?>" />
-                                  <input type="hidden" name="target_slot" value="<?= esc((string) $suggestedSlot) ?>" />
-                                  <button class="btn btn-secondary btn-small" type="submit">Do slotu <?= esc((string) $suggestedSlot) ?></button>
-                                </form>
+                                <button class="btn btn-secondary btn-small" type="submit" form="article-suggest-assign-<?= esc($suggestedSlug) ?>-<?= esc((string) $suggestedSlot) ?>">Do slotu <?= esc((string) $suggestedSlot) ?></button>
                               <?php endfor; ?>
                             </div>
                           </article>
@@ -5812,12 +5864,12 @@ require dirname(__DIR__) . '/inc/head.php';
               </details>
 
               <div class="admin-actions">
-                <button class="btn btn-cta" type="submit">Ulozit produkty v clanku</button>
+                <button class="btn btn-cta" type="submit" form="article-save-form">Ulozit produkty v clanku</button>
                 <a class="btn btn-secondary" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
                 <details class="admin-inline-more">
                   <summary>Pokrocile</summary>
                   <div class="admin-inline-actions">
-                    <button class="btn btn-secondary" type="submit" name="action" value="save_article">Ulozit cely clanok</button>
+                    <button class="btn btn-secondary" type="submit" name="action" value="save_article" form="article-save-form">Ulozit cely clanok</button>
                     <button class="btn btn-secondary" type="submit" name="action" value="delete_article_override" onclick="return confirm('Naozaj resetovat admin override pre tento clanok?');">Reset override</button>
                   </div>
                 </details>
