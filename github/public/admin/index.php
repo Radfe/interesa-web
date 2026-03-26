@@ -2515,9 +2515,11 @@ if ($isAuthed) {
                     }
                 }
 
-                $suggested = function_exists('interessa_get_products_for_article')
-                    ? array_values(array_slice(interessa_get_products_for_article($articleSlug, 5), 0, 5))
-                    : [];
+                $suggested = function_exists('interessa_get_top_products_for_article')
+                    ? array_values(array_slice(interessa_get_top_products_for_article($articleSlug, 3), 0, 3))
+                    : (function_exists('interessa_get_products_for_article')
+                        ? array_values(array_slice(interessa_get_products_for_article($articleSlug, 3), 0, 3))
+                        : []);
 
                 $filledSlots = [];
                 $skippedSlots = [];
@@ -3538,9 +3540,12 @@ foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
 }
 $articleReadySlot = max(0, min(3, (int) ($_GET['slot_ready'] ?? 0)));
 $showSuggestedProducts = trim((string) ($_GET['suggest_products'] ?? '')) === '1';
-$articleSuggestedProducts = $showSuggestedProducts && $selectedArticleSlug !== '' && function_exists('interessa_get_products_for_article')
-    ? array_values(array_slice(interessa_get_products_for_article($selectedArticleSlug, 5), 0, 5))
-    : [];
+$articleSuggestedProducts = $showSuggestedProducts && $selectedArticleSlug !== '' && function_exists('interessa_get_top_products_for_article')
+    ? array_values(array_slice(interessa_get_top_products_for_article($selectedArticleSlug, 3), 0, 3))
+    : ($showSuggestedProducts && $selectedArticleSlug !== '' && function_exists('interessa_get_products_for_article')
+        ? array_values(array_slice(interessa_get_products_for_article($selectedArticleSlug, 3), 0, 3))
+        : [])
+;
 $prefillFilledSlots = array_values(array_filter(array_map(
     static fn(string $value): string => trim($value),
     explode(',', (string) ($_GET['prefill_filled'] ?? ''))
@@ -5105,7 +5110,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Produkty v tomto clanku</h3>
-                    <p class="admin-meta">Odporucany postup: najprv vyber z navrhnutych produktov a az potom dolad konkretne sloty.</p>
+                    <p class="admin-meta">Odporucany postup: najprv si nechaj navrhnut TOP 3 produkty z importovaneho katalogu a potom dolad konkretne sloty.</p>
                   </div>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;suggest_products=1#article-product-suggestions">Navrhnut produkty</a>
@@ -5120,7 +5125,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <div class="admin-subsection-head">
                       <div>
                         <h4>Navrhnute produkty pre tento clanok</h4>
-                        <p class="admin-meta">Toto je hlavny workflow. System najprv navrhne tematicky vhodne produkty a editor si z nich vybera alebo ich predvyplni do slotov.</p>
+                        <p class="admin-meta">System ukaze TOP 3 tematicky vhodne produkty z podporovanych merchantov a importovaneho katalogu. Manual override cez sloty ostava plne dostupny.</p>
                       </div>
                       <div class="admin-inline-actions">
                         <form method="post" class="admin-inline-form">

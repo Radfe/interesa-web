@@ -84,6 +84,100 @@ if (!function_exists('interessa_admin_feed_filter_terms')) {
     }
 }
 
+if (!function_exists('interessa_admin_feed_clean_product_url')) {
+    function interessa_admin_feed_clean_product_url(string $url): string {
+        $url = trim($url);
+        if ($url === '') {
+            return '';
+        }
+
+        if (function_exists('aff_extract_final_url')) {
+            $url = trim((string) aff_extract_final_url($url));
+        }
+
+        if (!preg_match('~^https?://~i', $url)) {
+            return '';
+        }
+
+        $parts = parse_url($url);
+        if (!is_array($parts) || trim((string) ($parts['host'] ?? '')) === '') {
+            return '';
+        }
+
+        $query = [];
+        parse_str((string) ($parts['query'] ?? ''), $query);
+        $cleanQuery = [];
+        foreach ($query as $key => $value) {
+            $normalizedKey = strtolower(trim((string) $key));
+            if ($normalizedKey === '' || str_starts_with($normalizedKey, 'utm_') || in_array($normalizedKey, ['fbclid', 'gclid', 'source', 'aff', 'affiliate', 'campaign'], true)) {
+                continue;
+            }
+            $cleanQuery[$key] = $value;
+        }
+
+        $clean = (string) ($parts['scheme'] ?? 'https') . '://' . (string) $parts['host'];
+        if (isset($parts['port'])) {
+            $clean .= ':' . (int) $parts['port'];
+        }
+        $path = trim((string) ($parts['path'] ?? ''));
+        $clean .= $path !== '' ? $path : '/';
+        if ($cleanQuery !== []) {
+            $clean .= '?' . http_build_query($cleanQuery);
+        }
+
+        return $clean;
+    }
+}
+
+if (!function_exists('interessa_admin_feed_normalize_price')) {
+    function interessa_admin_feed_normalize_price(mixed $value): float {
+        $price = trim((string) $value);
+        if ($price === '') {
+            return 0.0;
+        }
+
+        $price = preg_replace('~[^0-9,\.]~', '', $price) ?? '';
+        if ($price === '') {
+            return 0.0;
+        }
+
+        if (substr_count($price, ',') === 1 && substr_count($price, '.') === 0) {
+            $price = str_replace(',', '.', $price);
+        } elseif (substr_count($price, ',') > 0 && substr_count($price, '.') > 0) {
+            $price = str_replace(',', '', $price);
+        } else {
+            $price = str_replace(',', '.', $price);
+        }
+
+        return max(0.0, round((float) $price, 2));
+    }
+}
+
+if (!function_exists('interessa_admin_feed_normalize_category')) {
+    function interessa_admin_feed_normalize_category(string $category = '', string $productType = '', string $name = ''): string {
+        $haystack = strtolower(trim(implode(' ', array_filter([$category, $productType, $name]))));
+        $map = [
+            'pre-workout' => ['pre-workout', 'predtrening', 'pred trening', 'nakopavac', 'nakopávač', 'pump', 'stim'],
+            'kreatin' => ['kreatin', 'creatine', 'creapure'],
+            'proteiny' => ['protein', 'proteiny', 'whey', 'isolate', 'isolat', 'kasein', 'casein', 'gainer', 'vegan protein', 'vegansky protein'],
+            'probiotika-travenie' => ['probiotik', 'traven', 'digest', 'gut', 'enzym'],
+            'klby-koza' => ['kolagen', 'collagen', 'klby', 'kĺby', 'joint', 'glukosamin', 'glucosamine', 'msm'],
+            'mineraly' => ['magnesium', 'magnez', 'horcik', 'mineraly', 'minerály', 'zinc', 'zinok', 'electroly'],
+            'imunita' => ['imunita', 'immunity', 'vitamin c', 'vitamin d', 'immune'],
+        ];
+
+        foreach ($map as $normalized => $tokens) {
+            foreach ($tokens as $token) {
+                if ($token !== '' && str_contains($haystack, $token)) {
+                    return normalize_category_slug($normalized);
+                }
+            }
+        }
+
+        return normalize_category_slug($category !== '' ? $category : $productType);
+    }
+}
+
 if (!function_exists('interessa_admin_feed_row_matches_filter')) {
     function interessa_admin_feed_row_matches_filter(array $row, array $terms): bool {
         if ($terms === []) {
@@ -352,6 +446,9 @@ if (!function_exists('interessa_admin_parse_xml_feed')) {
             }
 
             $url = interessa_admin_feed_xml_value($item, 'URL');
+            $cleanUrl = interessa_admin_feed_clean_product_url($url);
+            $rawCategory = interessa_admin_feed_xml_value($item, 'CATEGORYTEXT');
+            $rawProductType = interessa_admin_feed_xml_value($item, 'CATEGORYNAME');
             $merchantMeta = interessa_admin_feed_merchant_identity($merchantSlug, $url);
             $resolvedMerchantSlug = (string) ($merchantMeta['merchant_slug'] ?? $merchantSlug);
             $resolvedMerchant = (string) ($merchantMeta['merchant'] ?? ucfirst($merchantSlug));
@@ -361,13 +458,13 @@ if (!function_exists('interessa_admin_parse_xml_feed')) {
                 'name' => $name,
                 'merchant' => $resolvedMerchant,
                 'merchant_slug' => $resolvedMerchantSlug,
-                'category' => interessa_admin_feed_xml_value($item, 'CATEGORYTEXT'),
-                'product_type' => interessa_admin_feed_xml_value($item, 'CATEGORYNAME'),
-                'price' => interessa_admin_feed_xml_value($item, 'PRICE_VAT'),
-                'url' => $url,
-                'fallback_url' => $url,
+                'category' => interessa_admin_feed_normalize_category($rawCategory, $rawProductType, $name),
+                'product_type' => $rawProductType,
+                'price' => interessa_admin_feed_normalize_price(interessa_admin_feed_xml_value($item, 'PRICE_VAT')),
+                'url' => $cleanUrl,
+                'fallback_url' => $cleanUrl,
                 'image_remote_src' => interessa_admin_feed_xml_value($item, 'IMGURL'),
-                'summary' => interessa_admin_feed_xml_value($item, 'CATEGORYTEXT'),
+                'summary' => $rawCategory,
                 'merchant_product_id' => interessa_admin_feed_xml_value($item, 'ITEM_ID'),
                 'ean' => interessa_admin_feed_xml_value($item, 'EAN'),
                 'feed_source' => 'xml',
@@ -422,6 +519,9 @@ if (!function_exists('interessa_admin_parse_csv_feed')) {
             }
 
             $url = trim((string) ($record['deeplink'] ?? $record['url'] ?? ''));
+            $cleanUrl = interessa_admin_feed_clean_product_url($url);
+            $rawCategory = trim((string) ($record['category'] ?? $record['category_text'] ?? ''));
+            $rawProductType = trim((string) ($record['product_type'] ?? $record['type'] ?? ''));
             $merchantMeta = interessa_admin_feed_merchant_identity($merchantSlug, $url);
             $resolvedMerchantSlug = (string) ($merchantMeta['merchant_slug'] ?? $merchantSlug);
             $resolvedMerchant = (string) ($merchantMeta['merchant'] ?? ucfirst($merchantSlug));
@@ -431,13 +531,13 @@ if (!function_exists('interessa_admin_parse_csv_feed')) {
                 'name' => $name,
                 'merchant' => $resolvedMerchant,
                 'merchant_slug' => $resolvedMerchantSlug,
-                'category' => trim((string) ($record['category'] ?? $record['category_text'] ?? '')),
-                'product_type' => trim((string) ($record['product_type'] ?? $record['type'] ?? '')),
-                'price' => trim((string) ($record['price'] ?? $record['price_vat'] ?? '')),
-                'url' => $url,
-                'fallback_url' => $url,
+                'category' => interessa_admin_feed_normalize_category($rawCategory, $rawProductType, $name),
+                'product_type' => $rawProductType,
+                'price' => interessa_admin_feed_normalize_price((string) ($record['price'] ?? $record['price_vat'] ?? '')),
+                'url' => $cleanUrl,
+                'fallback_url' => $cleanUrl,
                 'image_remote_src' => trim((string) ($record['image'] ?? $record['image_url'] ?? '')),
-                'summary' => trim((string) ($record['category'] ?? $record['category_text'] ?? '')),
+                'summary' => $rawCategory,
                 'merchant_product_id' => trim((string) ($record['id'] ?? $record['product_id'] ?? '')),
                 'ean' => trim((string) ($record['ean'] ?? '')),
                 'feed_source' => 'csv',
@@ -488,6 +588,9 @@ if (!function_exists('interessa_admin_parse_json_feed')) {
             }
 
             $url = trim((string) ($item['url'] ?? $item['product_url'] ?? $item['link'] ?? ''));
+            $cleanUrl = interessa_admin_feed_clean_product_url($url);
+            $rawCategory = trim((string) ($item['category'] ?? $item['category_text'] ?? ''));
+            $rawProductType = trim((string) ($item['product_type'] ?? $item['type'] ?? ''));
             $merchantMeta = interessa_admin_feed_merchant_identity($merchantSlug, $url);
             $resolvedMerchantSlug = (string) ($merchantMeta['merchant_slug'] ?? $merchantSlug);
             $resolvedMerchant = (string) ($merchantMeta['merchant'] ?? ucfirst($merchantSlug));
@@ -497,11 +600,11 @@ if (!function_exists('interessa_admin_parse_json_feed')) {
                 'name' => $name,
                 'merchant' => $resolvedMerchant,
                 'merchant_slug' => $resolvedMerchantSlug,
-                'category' => trim((string) ($item['category'] ?? $item['category_text'] ?? '')),
-                'product_type' => trim((string) ($item['product_type'] ?? $item['type'] ?? '')),
-                'price' => trim((string) ($item['price'] ?? $item['price_vat'] ?? '')),
-                'url' => $url,
-                'fallback_url' => $url,
+                'category' => interessa_admin_feed_normalize_category($rawCategory, $rawProductType, $name),
+                'product_type' => $rawProductType,
+                'price' => interessa_admin_feed_normalize_price((string) ($item['price'] ?? $item['price_vat'] ?? '')),
+                'url' => $cleanUrl,
+                'fallback_url' => $cleanUrl,
                 'image_remote_src' => trim((string) ($item['image'] ?? $item['image_url'] ?? '')),
                 'summary' => trim((string) ($item['summary'] ?? $item['description'] ?? '')),
                 'merchant_product_id' => trim((string) ($item['id'] ?? $item['product_id'] ?? '')),
@@ -545,9 +648,14 @@ if (!function_exists('interessa_admin_import_feed_products')) {
                 'brand' => $row['merchant'] ?? '',
                 'merchant' => $row['merchant'] ?? '',
                 'merchant_slug' => $row['merchant_slug'] ?? '',
+                'category' => $row['category'] ?? '',
+                'price' => $row['price'] ?? 0,
+                'url' => $row['url'] ?? $row['fallback_url'] ?? '',
                 'fallback_url' => $row['fallback_url'] ?? '',
                 'summary' => $row['summary'] ?? '',
                 'image_remote_src' => $row['image_remote_src'] ?? '',
+                'merchant_product_id' => $row['merchant_product_id'] ?? '',
+                'feed_source' => $row['feed_source'] ?? '',
             ]);
             $imported[] = $slug;
         }

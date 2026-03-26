@@ -118,6 +118,27 @@ Najnovsia stabilizacia Dognet importu a deeplink vrstvy:
   - `feed_url`
 - merchant mimo tohto setu sa uz nema tvarit ako automaticky Dognet affiliate-supported merchant
 - direct fallback kompatibilita ostava aj pre ostatne obchody, ale bez predstierania canonical Dognet podpory
+
+Najnovsi clean feed import a auto-selection krok:
+- Dognet feed import teraz uklada do produktovej storage len clean produktove data:
+  - `name`
+  - `slug`
+  - `url`
+  - `fallback_url`
+  - `image_remote_src`
+  - `merchant`
+  - `merchant_slug`
+  - `category`
+  - `price`
+- feed parser pri importe cisti tracking query parametre a normalizuje internu kategoriu produktu
+- auto navrhy produktov pre clanok teraz pouzivaju pravidlovy scoring nad importovanym katalogom
+- scoring zohladnuje:
+  - keyword match na temu clanku
+  - kategorialnu zhodu
+  - podporovaneho merchanta
+  - klikovu a obrazkovu pripravenost
+  - dostupnost ceny a kvalitu nazvu
+- admin `Clanky` teraz pouziva `TOP 3` navrhy produktov pre clanok a existujuci slot workflow ostava manual override vrstva
 - v import/export casti adminu pribudol jednoduchy blok `Import affiliate produktov`
 - pre 5 podporovanych merchantov tam admin vidi:
   - nazov
