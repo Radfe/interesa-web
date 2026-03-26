@@ -986,8 +986,16 @@ if (!function_exists('interessa_normalize_product')) {
         $imageConfig['merchant_slug'] = $merchantSlug !== '' ? $merchantSlug : (string) ($imageConfig['merchant_slug'] ?? '');
         $image = $slug !== '' ? interessa_product_image_meta($slug, $imageConfig, true) : null;
         $imageRemoteSrc = trim((string) ($imageConfig['remote_src'] ?? $imageConfig['src'] ?? ''));
-        $imageLocalAsset = $slug !== '' ? (interessa_product_image_local_asset($slug, $merchantSlug) ?? '') : '';
-        $imageLocalPath = $slug !== '' ? (interessa_product_image_local_path($slug, $merchantSlug) ?? '') : '';
+        $lightweightMode = function_exists('interessa_media_lightweight_mode') && interessa_media_lightweight_mode();
+        $imageLocalAsset = '';
+        $imageLocalPath = '';
+        if ($lightweightMode) {
+            $imageLocalAsset = trim((string) (($image['asset'] ?? '') ?: ($imageConfig['asset'] ?? '')));
+            $imageLocalPath = $imageLocalAsset !== '' ? (interessa_asset_file_path($imageLocalAsset) ?? '') : '';
+        } else {
+            $imageLocalAsset = $slug !== '' ? (interessa_product_image_local_asset($slug, $merchantSlug) ?? '') : '';
+            $imageLocalPath = $slug !== '' ? (interessa_product_image_local_path($slug, $merchantSlug) ?? '') : '';
+        }
         $imageTargetAsset = $slug !== ''
             ? trim((string) (($image['target_asset'] ?? '') ?: interessa_product_image_target_asset($slug, $merchantSlug)))
             : '';

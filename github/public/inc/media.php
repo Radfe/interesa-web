@@ -83,6 +83,15 @@ if (!function_exists('interessa_product_image_target_asset')) {
     }
 }
 
+if (!function_exists('interessa_media_lightweight_mode')) {
+    function interessa_media_lightweight_mode(): bool {
+        $suggestProducts = trim((string) ($_GET['suggest_products'] ?? '')) === '1';
+        $action = trim((string) ($_POST['action'] ?? $_GET['action'] ?? ''));
+
+        return $suggestProducts || in_array($action, ['prefill_suggested_product_slots', 'assign_suggested_product_to_slot'], true);
+    }
+}
+
 if (!function_exists('interessa_product_image_target_path')) {
     function interessa_product_image_target_path(string $slug, string $merchantSlug = ''): string {
         return dirname(__DIR__) . '/assets/' . interessa_product_image_target_asset($slug, $merchantSlug);
@@ -499,6 +508,55 @@ if (!function_exists('interessa_product_image_meta')) {
         $merchantSlug = trim((string) ($config['merchant_slug'] ?? ''));
         $sizes = (string) ($config['sizes'] ?? '(min-width: 1100px) 280px, 50vw');
         $targetAsset = trim((string) ($config['mirror_asset'] ?? interessa_product_image_target_asset($slug, $merchantSlug)));
+
+        if (interessa_media_lightweight_mode()) {
+            $configuredAsset = trim((string) ($config['asset'] ?? ''));
+            $directAsset = $configuredAsset !== '' ? ltrim($configuredAsset, '/') : $targetAsset;
+            $directAssetPath = $directAsset !== '' ? interessa_asset_file_path($directAsset) : null;
+            if ($directAssetPath !== null) {
+                return [
+                    'src' => interessa_asset_public_url($directAsset),
+                    'alt' => $alt,
+                    'loading' => (string) ($config['loading'] ?? 'lazy'),
+                    'decoding' => 'async',
+                    'sizes' => $sizes,
+                    'asset' => $directAsset,
+                    'kind' => 'product',
+                    'entity' => $slug,
+                    'variant_name' => trim((string) ($config['variant_name'] ?? 'main')) ?: 'main',
+                    'crop_mode' => 'contain',
+                    'source_type' => 'local',
+                    'target_asset' => $targetAsset,
+                ];
+            }
+
+            $remote = interessa_remote_image_meta($config, $alt, $sizes);
+            if ($remote !== null) {
+                $remote['target_asset'] = $targetAsset;
+                return $remote;
+            }
+
+            if (!$allowFallback) {
+                return null;
+            }
+
+            $fallbackAsset = interessa_image_placeholder_asset('product');
+            return [
+                'src' => interessa_asset_public_url($fallbackAsset),
+                'alt' => $alt,
+                'loading' => (string) ($config['loading'] ?? 'lazy'),
+                'decoding' => 'async',
+                'sizes' => $sizes,
+                'asset' => $fallbackAsset,
+                'kind' => 'product',
+                'entity' => $slug,
+                'variant_name' => trim((string) ($config['variant_name'] ?? 'main')) ?: 'main',
+                'crop_mode' => 'contain',
+                'source_type' => 'placeholder',
+                'target_asset' => $targetAsset,
+            ];
+        }
+
         $variants = [];
 
         if (isset($config['asset'])) {
