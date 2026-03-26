@@ -2561,12 +2561,17 @@ if ($isAuthed) {
                         : (function_exists('interessa_get_products_for_article')
                             ? array_values(array_slice(interessa_get_products_for_article($articleSlug, 3), 0, 3))
                             : []);
+                    $suggestedSlugs = array_values(array_filter(array_map(
+                        static fn(array $row): string => trim((string) ($row['product_slug'] ?? '')),
+                        array_filter($suggested, 'is_array')
+                    ), static fn(string $slug): bool => $slug !== ''));
 
                     interessa_admin_suggest_products_log('prefill-after-scoring', [
                         'slug' => $articleSlug,
                         'article_found' => $articleExists ? 1 : 0,
                         'products_loaded' => $catalogLoadedCount,
                         'result_count' => count($suggested),
+                        'result_slugs' => implode(',', $suggestedSlugs),
                         'stage' => 'prefill-after-scoring',
                     ]);
                 } catch (Throwable $e) {
@@ -2582,6 +2587,24 @@ if ($isAuthed) {
                 $filledSlots = [];
                 $skippedSlots = [];
                 $suggestedIndex = 0;
+                $finalSlotAssignments = [];
+                foreach ($existingPlan as $row) {
+                    if (!is_array($row)) {
+                        continue;
+                    }
+                    $slot = max(1, min(3, (int) ($row['order'] ?? 1)));
+                    $existingSlug = trim((string) ($row['product_slug'] ?? ''));
+                    if ($existingSlug === '') {
+                        continue;
+                    }
+                    $finalSlotAssignments[$slot] = [
+                        'product_slug' => $existingSlug,
+                        'order' => $slot,
+                        'role' => trim((string) ($row['role'] ?? ($slot === 1 ? 'featured' : 'standard'))) ?: ($slot === 1 ? 'featured' : 'standard'),
+                        'show_in_top' => array_key_exists('show_in_top', $row) ? !empty($row['show_in_top']) : true,
+                        'show_in_comparison' => !empty($row['show_in_comparison']),
+                    ];
+                }
                 for ($slot = 1; $slot <= 3; $slot++) {
                     if (!empty($occupiedSlots[$slot])) {
                         $skippedSlots[] = (string) $slot;
@@ -2595,12 +2618,32 @@ if ($isAuthed) {
                             continue;
                         }
 
-                        interessa_admin_assign_product_to_article_slot($articleSlug, $candidateSlug, $slot);
                         $usedProductSlugs[$candidateSlug] = true;
+                        $finalSlotAssignments[$slot] = [
+                            'product_slug' => $candidateSlug,
+                            'order' => $slot,
+                            'role' => $slot === 1 ? 'featured' : 'standard',
+                            'show_in_top' => true,
+                            'show_in_comparison' => false,
+                        ];
                         $filledSlots[] = (string) $slot;
                         continue 2;
                     }
                 }
+
+                ksort($finalSlotAssignments);
+                $finalPlan = array_values($finalSlotAssignments);
+                interessa_admin_suggest_products_log('prefill-save-plan', [
+                    'slug' => $articleSlug,
+                    'to_write_slugs' => implode(',', array_map(
+                        static fn(array $row): string => trim((string) ($row['product_slug'] ?? '')),
+                        $finalPlan
+                    )),
+                    'filled_slots' => implode(',', $filledSlots),
+                    'skipped_slots' => implode(',', $skippedSlots),
+                    'stage' => 'prefill-save-plan',
+                ]);
+                interessa_admin_save_article_product_plan($articleSlug, $finalPlan);
 
                 interessa_admin_redirect_fragment('articles', [
                     'slug' => $articleSlug,
@@ -3514,6 +3557,8 @@ $articleSuggestedProductsError = '';
 $articleSuggestedProductsDiagnostics = [];
 $articleSuggestedProductsCount = 0;
 $articleSuggestedProductsScoringDone = false;
+$articleSuggestedProductsSlugs = [];
+$articleSuggestedProductsLoadedSlotSlugs = [];
 $productsPilotMode = $productsPilotMode ?? false;
 $brandFocusMode = $brandFocusMode ?? false;
 if ($section === 'articles') {
@@ -3635,12 +3680,17 @@ if ($showSuggestedProducts && $selectedArticleSlug !== '') {
         }
         $articleSuggestedProductsCount = count($articleSuggestedProducts);
         $articleSuggestedProductsScoringDone = true;
+        $articleSuggestedProductsSlugs = array_values(array_filter(array_map(
+            static fn(array $row): string => trim((string) ($row['product_slug'] ?? '')),
+            array_filter($articleSuggestedProducts, 'is_array')
+        ), static fn(string $slug): bool => $slug !== ''));
 
         interessa_admin_suggest_products_log('after-scoring', [
             'slug' => $selectedArticleSlug,
             'article_found' => $articleExists ? 1 : 0,
             'products_loaded' => $catalogLoadedCount,
             'result_count' => count($articleSuggestedProducts),
+            'result_slugs' => implode(',', $articleSuggestedProductsSlugs),
             'stage' => 'after-scoring',
         ]);
     } catch (Throwable $e) {
@@ -3663,6 +3713,17 @@ if ($showSuggestedProducts && $selectedArticleSlug !== '') {
             'error' => $articleSuggestedProductsError,
         ]);
     }
+}
+$articleSuggestedProductsLoadedSlotSlugs = array_values(array_filter(array_map(
+    static fn(string $value): string => trim($value),
+    $articleSlotSelections
+), static fn(string $value): bool => $value !== ''));
+if ($showSuggestedProducts && $selectedArticleSlug !== '') {
+    interessa_admin_suggest_products_log('render-slot-state', [
+        'slug' => $selectedArticleSlug,
+        'loaded_slot_slugs' => implode(',', $articleSuggestedProductsLoadedSlotSlugs),
+        'stage' => 'render-slot-state',
+    ]);
 }
 $prefillFilledSlots = array_values(array_filter(array_map(
     static fn(string $value): string => trim($value),
@@ -5079,6 +5140,11 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </details>
 
+            <form method="post" action="/admin" class="admin-inline-form" id="article-suggest-prefill-form">
+              <input type="hidden" name="action" value="prefill_suggested_product_slots" />
+              <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
+            </form>
+
             <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack" autocomplete="off">
               <input type="hidden" name="action" value="save_article" />
               <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
@@ -5246,11 +5312,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <p class="admin-meta">System ukaze TOP 3 tematicky vhodne produkty z podporovanych merchantov a importovaneho katalogu. Manual override cez sloty ostava plne dostupny.</p>
                       </div>
                       <div class="admin-inline-actions">
-                        <form method="post" class="admin-inline-form">
-                          <input type="hidden" name="action" value="prefill_suggested_product_slots" />
-                          <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
-                          <button class="btn btn-secondary btn-small" type="submit">Predvyplnit sloty</button>
-                        </form>
+                        <button class="btn btn-secondary btn-small" type="submit" form="article-suggest-prefill-form">Predvyplnit sloty</button>
                       </div>
                     </div>
                     <?php if ($prefillFilledSlots !== [] || $prefillSkippedSlots !== []): ?>
@@ -5260,6 +5322,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       </p>
                     <?php endif; ?>
                     <p class="admin-note">Debug: products_returned <?= esc((string) $articleSuggestedProductsCount) ?>, scoring <?= $articleSuggestedProductsScoringDone ? 'ok' : 'not-run-or-error' ?>.</p>
+                    <p class="admin-note">Debug slugs: scored <?= esc($articleSuggestedProductsSlugs !== [] ? implode(', ', $articleSuggestedProductsSlugs) : 'ziadne') ?>. loaded_slots <?= esc($articleSuggestedProductsLoadedSlotSlugs !== [] ? implode(', ', $articleSuggestedProductsLoadedSlotSlugs) : 'ziadne') ?>.</p>
                     <?php if ($articleSuggestedProductsError !== ''): ?>
                       <p class="admin-note">Pre tento článok zatiaľ nemáš importované relevantné produkty.</p>
                       <p class="admin-note">Diagnostika: slug <?= esc((string) ($articleSuggestedProductsDiagnostics['slug'] ?? $selectedArticleSlug)) ?>, article_found <?= esc((string) ($articleSuggestedProductsDiagnostics['article_found'] ?? '0')) ?>, products_loaded <?= esc((string) ($articleSuggestedProductsDiagnostics['products_loaded'] ?? '0')) ?>, stage <?= esc((string) ($articleSuggestedProductsDiagnostics['stage'] ?? 'unknown')) ?>.</p>
