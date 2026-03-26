@@ -136,6 +136,19 @@ if (!function_exists('interessa_product_has_web_ready_image')) {
     }
 }
 
+if (!function_exists('interessa_product_lower')) {
+    function interessa_product_lower(string $value): string {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        return function_exists('mb_strtolower')
+            ? mb_strtolower($value, 'UTF-8')
+            : strtolower($value);
+    }
+}
+
 if (!function_exists('interessa_article_product_category_map')) {
     function interessa_article_product_category_map(): array {
         return [
@@ -192,13 +205,13 @@ if (!function_exists('interessa_article_product_context')) {
         $title = trim((string) ($meta['title'] ?? ''));
         $description = trim((string) ($meta['description'] ?? ''));
         $category = normalize_category_slug((string) ($meta['category'] ?? ''));
-        $haystack = mb_strtolower(trim(implode(' ', array_filter([
+        $haystack = interessa_product_lower(trim(implode(' ', array_filter([
             $articleId,
             $title,
             $description,
             str_replace('-', ' ', $articleId),
             str_replace('-', ' ', $category),
-        ]))), 'UTF-8');
+        ]))));
 
         return [
             'slug' => $articleId,
@@ -228,6 +241,10 @@ if (!function_exists('interessa_article_product_profiles')) {
             'pre-workout-ako-vybrat' => [
                 'category' => 'pre-workout',
                 'keywords' => ['pre-workout', 'predtrening', 'pump', 'stim', 'citrulin', 'beta alanine', 'kofein'],
+            ],
+            'pre-workout-bez-kofeinu-pre-koho-dava-zmysel' => [
+                'category' => 'pre-workout',
+                'keywords' => ['stim free', 'stim-free', 'bez kofeinu', 'pump', 'pumpa', 'citrulline', 'citrulin', 'arginine', 'beta alanine', 'beta-alanine', 'pre-workout'],
             ],
         ];
     }
@@ -302,7 +319,7 @@ if (!function_exists('interessa_article_product_rule')) {
                 is_array($rule['triggers'] ?? null) ? $rule['triggers'] : []
             ))));
             foreach ($tokens as $token) {
-                $token = mb_strtolower(trim((string) $token), 'UTF-8');
+                $token = interessa_product_lower(trim((string) $token));
                 if ($token !== '' && str_contains($haystack, $token)) {
                     $matchedRule = $rule + ['key' => $ruleKey];
                     break 2;
@@ -359,11 +376,11 @@ if (!function_exists('interessa_article_product_rule')) {
             is_array($matchedRule['allow_categories'] ?? null) ? $matchedRule['allow_categories'] : $categories
         ))));
         $matchedRule['prefer_keywords'] = array_values(array_unique(array_filter(array_map(
-            static fn($value): string => mb_strtolower(trim((string) $value), 'UTF-8'),
+            static fn($value): string => interessa_product_lower(trim((string) $value)),
             is_array($matchedRule['prefer_keywords'] ?? null) ? $matchedRule['prefer_keywords'] : []
         ))));
         $matchedRule['exclude_keywords'] = array_values(array_unique(array_filter(array_map(
-            static fn($value): string => mb_strtolower(trim((string) $value), 'UTF-8'),
+            static fn($value): string => interessa_product_lower(trim((string) $value)),
             is_array($matchedRule['exclude_keywords'] ?? null) ? $matchedRule['exclude_keywords'] : []
         ))));
         $matchedRule['context'] = $context;
@@ -410,6 +427,31 @@ if (!function_exists('interessa_is_supported_affiliate_merchant')) {
     }
 }
 
+if (!function_exists('interessa_product_suggestion_enrich_rows')) {
+    function interessa_product_suggestion_enrich_rows(array $rows): array {
+        if ($rows === []) {
+            return [];
+        }
+
+        foreach ($rows as &$row) {
+            $productSlug = trim((string) ($row['product_slug'] ?? ''));
+            $normalized = $productSlug !== '' ? interessa_product($productSlug) : null;
+            $normalized = is_array($normalized) ? interessa_normalize_product($normalized) : [];
+            $target = $normalized !== [] ? interessa_affiliate_target($normalized) : [];
+            $affiliateLink = trim((string) ($target['href'] ?? ''));
+
+            $row['affiliate_link'] = $affiliateLink !== '' ? $affiliateLink : '#';
+            $row['affiliate_label'] = trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu';
+            if (!isset($row['image']) && $normalized !== []) {
+                $row['image'] = $normalized['image'] ?? null;
+            }
+        }
+        unset($row);
+
+        return array_values($rows);
+    }
+}
+
 if (!function_exists('interessa_product_article_match_score')) {
     function interessa_product_article_match_score(array $normalizedProduct, array $rule): ?array {
         $slug = trim((string) ($normalizedProduct['slug'] ?? ''));
@@ -427,7 +469,7 @@ if (!function_exists('interessa_product_article_match_score')) {
             return null;
         }
 
-        $haystack = mb_strtolower(trim(implode(' ', array_filter([
+        $haystack = interessa_product_lower(trim(implode(' ', array_filter([
             $slug,
             str_replace('-', ' ', $slug),
             $name,
@@ -435,8 +477,8 @@ if (!function_exists('interessa_product_article_match_score')) {
             $category,
             trim((string) ($normalizedProduct['merchant'] ?? '')),
             $productUrl,
-        ]))), 'UTF-8');
-        $nameHaystack = mb_strtolower($name, 'UTF-8');
+        ]))));
+        $nameHaystack = interessa_product_lower($name);
 
         $excludeHits = 0;
         foreach ((array) ($rule['exclude_keywords'] ?? []) as $keyword) {
@@ -528,6 +570,10 @@ if (!function_exists('interessa_get_products_for_article')) {
         }
 
         $matches = [];
+        $candidateBeforeFilter = count($products);
+        $candidateAfterMerchantFilter = 0;
+        $candidateAfterCategoryFilter = 0;
+        $candidateAfterKeywordFilter = 0;
         foreach ($products as $productSlug => $product) {
             try {
                 $normalized = interessa_normalize_product(is_array($product) ? $product : []);
@@ -537,18 +583,23 @@ if (!function_exists('interessa_get_products_for_article')) {
                 if ($normalizedSlug === '' || $productCategory === '' || !interessa_is_supported_affiliate_merchant($merchantSlug)) {
                     continue;
                 }
+                $candidateAfterMerchantFilter++;
+
+                $allowCategories = is_array($articleRule['allow_categories'] ?? null) ? $articleRule['allow_categories'] : [];
+                if ($allowCategories === [] || in_array($productCategory, $allowCategories, true)) {
+                    $candidateAfterCategoryFilter++;
+                }
 
                 $matchMeta = interessa_product_article_match_score($normalized, $articleRule);
                 if ($matchMeta === null) {
                     continue;
                 }
+                $candidateAfterKeywordFilter++;
 
-                $target = interessa_affiliate_target($normalized);
                 $categoryMeta = function_exists('category_meta') ? category_meta($productCategory) : null;
-                $affiliateLink = trim((string) ($target['href'] ?? ''));
                 $imageMeta = is_array($normalized['image'] ?? null) ? $normalized['image'] : [];
                 $imageSourceType = trim((string) ($imageMeta['source_type'] ?? 'placeholder'));
-                $hasReadyClick = $affiliateLink !== '' && $affiliateLink !== '#';
+                $hasReadyClick = trim((string) ($normalized['url'] ?? $normalized['fallback_url'] ?? '')) !== '' || trim((string) ($normalized['affiliate_code'] ?? '')) !== '';
                 $hasReadyImage = $imageSourceType !== '' && $imageSourceType !== 'placeholder';
                 $readinessScore = 0;
                 if ($hasReadyClick) {
@@ -562,8 +613,6 @@ if (!function_exists('interessa_get_products_for_article')) {
                     'product_slug' => $normalizedSlug,
                     'name' => trim((string) ($normalized['name'] ?? $normalizedSlug)),
                     'image' => $normalized['image'],
-                    'affiliate_link' => $affiliateLink !== '' ? $affiliateLink : '#',
-                    'affiliate_label' => trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu',
                     'merchant' => trim((string) ($normalized['merchant'] ?? '')),
                     'merchant_slug' => trim((string) ($normalized['merchant_slug'] ?? '')),
                     'category' => $productCategory,
@@ -591,6 +640,15 @@ if (!function_exists('interessa_get_products_for_article')) {
         }
 
         if ($matches === []) {
+            interessa_product_suggestion_log('scoring-stage', [
+                'article' => $articleId,
+                'entered_scoring' => 1,
+                'candidate_before_filter' => $candidateBeforeFilter,
+                'candidate_after_merchant_filter' => $candidateAfterMerchantFilter,
+                'candidate_after_category_filter' => $candidateAfterCategoryFilter,
+                'candidate_after_keyword_filter' => $candidateAfterKeywordFilter,
+                'final_returned_slugs' => '',
+            ]);
             return [];
         }
 
@@ -644,21 +702,67 @@ if (!function_exists('interessa_get_products_for_article')) {
         }
         unset($row);
 
+        $matches = interessa_product_suggestion_enrich_rows($matches);
+        interessa_product_suggestion_log('scoring-stage', [
+            'article' => $articleId,
+            'entered_scoring' => 1,
+            'candidate_before_filter' => $candidateBeforeFilter,
+            'candidate_after_merchant_filter' => $candidateAfterMerchantFilter,
+            'candidate_after_category_filter' => $candidateAfterCategoryFilter,
+            'candidate_after_keyword_filter' => $candidateAfterKeywordFilter,
+            'final_returned_slugs' => implode(',', array_map(static fn(array $row): string => trim((string) ($row['product_slug'] ?? '')), $matches)),
+        ]);
+
         return array_values($matches);
     }
 }
 
 if (!function_exists('interessa_get_top_products_for_article')) {
+    function interessa_article_requires_caffeine_free(array $context): bool {
+        $haystack = interessa_product_lower(trim((string) ($context['haystack'] ?? '')));
+        foreach (['bez kofeinu', 'bezkofein', 'bez kofeín', 'stim free', 'stim-free', 'without caffeine', 'caffeine free'] as $token) {
+            if ($token !== '' && str_contains($haystack, $token)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     function interessa_fallback_products_for_article(string $articleId, int $limit = 3): array {
         $limit = max(1, $limit);
         $catalog = interessa_product_catalog();
         if (!is_array($catalog) || $catalog === []) {
+            interessa_product_suggestion_log('fallback-stage', [
+                'article' => $articleId,
+                'entered_fallback' => 1,
+                'candidate_before_filter' => 0,
+                'candidate_after_merchant_filter' => 0,
+                'candidate_after_category_filter' => 0,
+                'candidate_after_keyword_filter' => 0,
+                'final_returned_slugs' => '',
+            ]);
             return [];
         }
 
         $context = interessa_article_product_context($articleId);
-        $haystack = mb_strtolower(trim((string) ($context['haystack'] ?? $articleId)), 'UTF-8');
+        $haystack = interessa_product_lower(trim((string) ($context['haystack'] ?? $articleId)));
+        $caffeineFreeTopic = interessa_article_requires_caffeine_free($context);
         $fallbackTokens = ['pre-workout', 'pump', 'stimulant', 'energy', 'preworkout'];
+        if ($caffeineFreeTopic) {
+            $fallbackTokens = array_values(array_unique(array_merge($fallbackTokens, [
+                'stim free',
+                'stim-free',
+                'bez kofeinu',
+                'bezkofein',
+                'pumpa',
+                'citrulline',
+                'citrulin',
+                'arginine',
+                'beta alanine',
+                'beta-alanine',
+            ])));
+        }
         $preferPreWorkoutFallback = false;
         foreach ($fallbackTokens as $token) {
             if ($token !== '' && str_contains($haystack, $token)) {
@@ -669,6 +773,10 @@ if (!function_exists('interessa_get_top_products_for_article')) {
 
         $matches = [];
         $fallbackPool = [];
+        $candidateBeforeFilter = count($catalog);
+        $candidateAfterMerchantFilter = 0;
+        $candidateAfterCategoryFilter = 0;
+        $candidateAfterKeywordFilter = 0;
         foreach ($catalog as $productSlug => $product) {
             $normalized = interessa_normalize_product(is_array($product) ? $product : []);
             $normalizedSlug = trim((string) ($normalized['slug'] ?? $productSlug));
@@ -676,28 +784,42 @@ if (!function_exists('interessa_get_top_products_for_article')) {
             if ($normalizedSlug === '' || !interessa_is_supported_affiliate_merchant($merchantSlug)) {
                 continue;
             }
+            $candidateAfterMerchantFilter++;
 
-            $productName = mb_strtolower(trim((string) ($normalized['name'] ?? '')), 'UTF-8');
-            $productCategory = mb_strtolower(trim((string) ($normalized['category'] ?? '')), 'UTF-8');
-            $summary = mb_strtolower(trim((string) ($normalized['summary'] ?? '')), 'UTF-8');
+            $productName = interessa_product_lower(trim((string) ($normalized['name'] ?? '')));
+            $productCategory = interessa_product_lower(trim((string) ($normalized['category'] ?? '')));
+            $summary = interessa_product_lower(trim((string) ($normalized['summary'] ?? '')));
             $combined = trim(implode(' ', array_filter([$productName, $productCategory, $summary])));
             $price = max(0.0, (float) ($normalized['price'] ?? 0));
-            $target = interessa_affiliate_target($normalized);
-            $affiliateLink = trim((string) ($target['href'] ?? ''));
+            $categoryLooksRelevant = str_contains($productCategory, 'pre-workout') || str_contains($productCategory, 'preworkout');
+            if ($preferPreWorkoutFallback && !$categoryLooksRelevant && !str_contains($combined, 'pre-workout') && !str_contains($combined, 'preworkout')) {
+                $fallbackPool[] = [
+                    'product_slug' => $normalizedSlug,
+                    'name' => trim((string) ($normalized['name'] ?? $normalizedSlug)),
+                    'image' => $normalized['image'],
+                    'merchant' => trim((string) ($normalized['merchant'] ?? '')),
+                    'merchant_slug' => $merchantSlug,
+                    'category' => trim((string) ($normalized['category'] ?? '')),
+                    'category_label' => trim((string) ($normalized['category'] ?? humanize_slug((string) ($normalized['category'] ?? '')))),
+                    'summary' => trim((string) ($normalized['summary'] ?? '')),
+                    '_price' => $price > 0 ? $price : PHP_FLOAT_MAX,
+                    '_quality' => interessa_product_visual_score($normalized) + ((trim((string) ($normalized['url'] ?? $normalized['fallback_url'] ?? '')) !== '' || trim((string) ($normalized['affiliate_code'] ?? '')) !== '') ? 20 : 0),
+                ];
+                continue;
+            }
+            $candidateAfterCategoryFilter++;
 
             $row = [
                 'product_slug' => $normalizedSlug,
                 'name' => trim((string) ($normalized['name'] ?? $normalizedSlug)),
                 'image' => $normalized['image'],
-                'affiliate_link' => $affiliateLink !== '' ? $affiliateLink : '#',
-                'affiliate_label' => trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu',
                 'merchant' => trim((string) ($normalized['merchant'] ?? '')),
                 'merchant_slug' => $merchantSlug,
                 'category' => trim((string) ($normalized['category'] ?? '')),
                 'category_label' => trim((string) ($normalized['category'] ?? humanize_slug((string) ($normalized['category'] ?? '')))),
                 'summary' => trim((string) ($normalized['summary'] ?? '')),
                 '_price' => $price > 0 ? $price : PHP_FLOAT_MAX,
-                '_quality' => interessa_product_visual_score($normalized) + ($affiliateLink !== '' && $affiliateLink !== '#' ? 20 : 0),
+                '_quality' => interessa_product_visual_score($normalized) + ((trim((string) ($normalized['url'] ?? $normalized['fallback_url'] ?? '')) !== '' || trim((string) ($normalized['affiliate_code'] ?? '')) !== '') ? 20 : 0),
             ];
 
             if ($preferPreWorkoutFallback) {
@@ -707,9 +829,19 @@ if (!function_exists('interessa_get_top_products_for_article')) {
                         $tokenHits++;
                     }
                 }
-                if ($tokenHits > 0 || str_contains($productCategory, 'pre-workout') || str_contains($productCategory, 'preworkout')) {
+                $caffeinePenalty = 0;
+                if ($caffeineFreeTopic) {
+                    foreach (['caffeine', 'kofein', 'stim', 'stimulant'] as $badToken) {
+                        if ($badToken !== '' && str_contains($combined, $badToken)) {
+                            $caffeinePenalty -= 120;
+                        }
+                    }
+                }
+                if ($tokenHits > 0 || $categoryLooksRelevant) {
                     $row['_token_hits'] = $tokenHits;
+                    $row['_caffeine_penalty'] = $caffeinePenalty;
                     $matches[] = $row;
+                    $candidateAfterKeywordFilter++;
                 }
             }
 
@@ -718,6 +850,10 @@ if (!function_exists('interessa_get_top_products_for_article')) {
 
         if ($matches !== []) {
             usort($matches, static function (array $left, array $right): int {
+                $penaltyCompare = ((int) ($right['_caffeine_penalty'] ?? 0)) <=> ((int) ($left['_caffeine_penalty'] ?? 0));
+                if ($penaltyCompare !== 0) {
+                    return $penaltyCompare;
+                }
                 $tokenCompare = ((int) ($right['_token_hits'] ?? 0)) <=> ((int) ($left['_token_hits'] ?? 0));
                 if ($tokenCompare !== 0) {
                     return $tokenCompare;
@@ -733,11 +869,21 @@ if (!function_exists('interessa_get_top_products_for_article')) {
                 return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
             });
             $matches = array_slice($matches, 0, $limit);
+            $finalReturnedSlugs = implode(',', array_map(static fn(array $row): string => trim((string) ($row['product_slug'] ?? '')), $matches));
+            interessa_product_suggestion_log('fallback-stage', [
+                'article' => $articleId,
+                'entered_fallback' => 1,
+                'candidate_before_filter' => $candidateBeforeFilter,
+                'candidate_after_merchant_filter' => $candidateAfterMerchantFilter,
+                'candidate_after_category_filter' => $candidateAfterCategoryFilter,
+                'candidate_after_keyword_filter' => $candidateAfterKeywordFilter,
+                'final_returned_slugs' => $finalReturnedSlugs,
+            ]);
             foreach ($matches as &$row) {
-                unset($row['_token_hits'], $row['_price'], $row['_quality']);
+                unset($row['_token_hits'], $row['_caffeine_penalty'], $row['_price'], $row['_quality']);
             }
             unset($row);
-            return array_values($matches);
+            return interessa_product_suggestion_enrich_rows(array_values($matches));
         }
 
         usort($fallbackPool, static function (array $left, array $right): int {
@@ -753,21 +899,57 @@ if (!function_exists('interessa_get_top_products_for_article')) {
         });
 
         $fallbackPool = array_slice($fallbackPool, 0, $limit);
+        $finalReturnedSlugs = implode(',', array_map(static fn(array $row): string => trim((string) ($row['product_slug'] ?? '')), $fallbackPool));
+        interessa_product_suggestion_log('fallback-stage', [
+            'article' => $articleId,
+            'entered_fallback' => 1,
+            'candidate_before_filter' => $candidateBeforeFilter,
+            'candidate_after_merchant_filter' => $candidateAfterMerchantFilter,
+            'candidate_after_category_filter' => $candidateAfterCategoryFilter,
+            'candidate_after_keyword_filter' => $candidateAfterKeywordFilter,
+            'final_returned_slugs' => $finalReturnedSlugs,
+        ]);
         foreach ($fallbackPool as &$row) {
             unset($row['_price'], $row['_quality']);
         }
         unset($row);
 
-        return array_values($fallbackPool);
+        return interessa_product_suggestion_enrich_rows(array_values($fallbackPool));
     }
 
     function interessa_get_top_products_for_article(string $articleId, int $limit = 3): array {
         $limit = max(1, $limit);
-        $top = array_values(array_slice(interessa_get_products_for_article($articleId, $limit), 0, $limit));
+        interessa_product_suggestion_log('top-stage', [
+            'article' => $articleId,
+            'entered_scoring' => 1,
+            'entered_fallback' => 0,
+        ]);
+        try {
+            $top = array_values(array_slice(interessa_get_products_for_article($articleId, $limit), 0, $limit));
+        } catch (Throwable $e) {
+            interessa_product_suggestion_log('top-stage-error', [
+                'article' => $articleId,
+                'entered_scoring' => 1,
+                'entered_fallback' => 0,
+                'error' => trim($e->getMessage()),
+            ]);
+            $top = [];
+        }
         if ($top !== []) {
+            interessa_product_suggestion_log('top-stage-result', [
+                'article' => $articleId,
+                'entered_scoring' => 1,
+                'entered_fallback' => 0,
+                'final_returned_slugs' => implode(',', array_map(static fn(array $row): string => trim((string) ($row['product_slug'] ?? '')), $top)),
+            ]);
             return $top;
         }
 
+        interessa_product_suggestion_log('top-stage-fallback', [
+            'article' => $articleId,
+            'entered_scoring' => 1,
+            'entered_fallback' => 1,
+        ]);
         return interessa_fallback_products_for_article($articleId, $limit);
     }
 }
@@ -1257,10 +1439,10 @@ if (!function_exists('interessa_clean_product_name')) {
         $merchantSlug = trim((string) ($context['merchant_slug'] ?? ''));
         $merchantVariants = [];
         if ($merchant !== '') {
-            $merchantVariants[] = mb_strtolower($merchant, 'UTF-8');
+            $merchantVariants[] = interessa_product_lower($merchant);
         }
         if ($merchantSlug !== '') {
-            $merchantVariants[] = mb_strtolower(str_replace(['-', '_'], ' ', $merchantSlug), 'UTF-8');
+            $merchantVariants[] = interessa_product_lower(str_replace(['-', '_'], ' ', $merchantSlug));
         }
 
         $separators = [' | ', ' - ', ' – ', ' — '];
@@ -1271,7 +1453,7 @@ if (!function_exists('interessa_clean_product_name')) {
             }
 
             $lastPart = (string) end($parts);
-            $lastPartLower = mb_strtolower($lastPart, 'UTF-8');
+            $lastPartLower = interessa_product_lower($lastPart);
             $matchesMerchant = false;
             foreach ($merchantVariants as $variant) {
                 if ($variant !== '' && ($lastPartLower === $variant || str_contains($lastPartLower, $variant))) {
