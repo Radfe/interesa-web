@@ -649,8 +649,126 @@ if (!function_exists('interessa_get_products_for_article')) {
 }
 
 if (!function_exists('interessa_get_top_products_for_article')) {
+    function interessa_fallback_products_for_article(string $articleId, int $limit = 3): array {
+        $limit = max(1, $limit);
+        $catalog = interessa_product_catalog();
+        if (!is_array($catalog) || $catalog === []) {
+            return [];
+        }
+
+        $context = interessa_article_product_context($articleId);
+        $haystack = mb_strtolower(trim((string) ($context['haystack'] ?? $articleId)), 'UTF-8');
+        $fallbackTokens = ['pre-workout', 'pump', 'stimulant', 'energy', 'preworkout'];
+        $preferPreWorkoutFallback = false;
+        foreach ($fallbackTokens as $token) {
+            if ($token !== '' && str_contains($haystack, $token)) {
+                $preferPreWorkoutFallback = true;
+                break;
+            }
+        }
+
+        $matches = [];
+        $fallbackPool = [];
+        foreach ($catalog as $productSlug => $product) {
+            $normalized = interessa_normalize_product(is_array($product) ? $product : []);
+            $normalizedSlug = trim((string) ($normalized['slug'] ?? $productSlug));
+            $merchantSlug = trim((string) ($normalized['merchant_slug'] ?? ''));
+            if ($normalizedSlug === '' || !interessa_is_supported_affiliate_merchant($merchantSlug)) {
+                continue;
+            }
+
+            $productName = mb_strtolower(trim((string) ($normalized['name'] ?? '')), 'UTF-8');
+            $productCategory = mb_strtolower(trim((string) ($normalized['category'] ?? '')), 'UTF-8');
+            $summary = mb_strtolower(trim((string) ($normalized['summary'] ?? '')), 'UTF-8');
+            $combined = trim(implode(' ', array_filter([$productName, $productCategory, $summary])));
+            $price = max(0.0, (float) ($normalized['price'] ?? 0));
+            $target = interessa_affiliate_target($normalized);
+            $affiliateLink = trim((string) ($target['href'] ?? ''));
+
+            $row = [
+                'product_slug' => $normalizedSlug,
+                'name' => trim((string) ($normalized['name'] ?? $normalizedSlug)),
+                'image' => $normalized['image'],
+                'affiliate_link' => $affiliateLink !== '' ? $affiliateLink : '#',
+                'affiliate_label' => trim((string) ($target['label'] ?? 'Do obchodu')) ?: 'Do obchodu',
+                'merchant' => trim((string) ($normalized['merchant'] ?? '')),
+                'merchant_slug' => $merchantSlug,
+                'category' => trim((string) ($normalized['category'] ?? '')),
+                'category_label' => trim((string) ($normalized['category'] ?? humanize_slug((string) ($normalized['category'] ?? '')))),
+                'summary' => trim((string) ($normalized['summary'] ?? '')),
+                '_price' => $price > 0 ? $price : PHP_FLOAT_MAX,
+                '_quality' => interessa_product_visual_score($normalized) + ($affiliateLink !== '' && $affiliateLink !== '#' ? 20 : 0),
+            ];
+
+            if ($preferPreWorkoutFallback) {
+                $tokenHits = 0;
+                foreach ($fallbackTokens as $token) {
+                    if ($token !== '' && str_contains($combined, $token)) {
+                        $tokenHits++;
+                    }
+                }
+                if ($tokenHits > 0 || str_contains($productCategory, 'pre-workout') || str_contains($productCategory, 'preworkout')) {
+                    $row['_token_hits'] = $tokenHits;
+                    $matches[] = $row;
+                }
+            }
+
+            $fallbackPool[] = $row;
+        }
+
+        if ($matches !== []) {
+            usort($matches, static function (array $left, array $right): int {
+                $tokenCompare = ((int) ($right['_token_hits'] ?? 0)) <=> ((int) ($left['_token_hits'] ?? 0));
+                if ($tokenCompare !== 0) {
+                    return $tokenCompare;
+                }
+                $qualityCompare = ((int) ($right['_quality'] ?? 0)) <=> ((int) ($left['_quality'] ?? 0));
+                if ($qualityCompare !== 0) {
+                    return $qualityCompare;
+                }
+                $priceCompare = ((float) ($left['_price'] ?? PHP_FLOAT_MAX)) <=> ((float) ($right['_price'] ?? PHP_FLOAT_MAX));
+                if ($priceCompare !== 0) {
+                    return $priceCompare;
+                }
+                return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
+            });
+            $matches = array_slice($matches, 0, $limit);
+            foreach ($matches as &$row) {
+                unset($row['_token_hits'], $row['_price'], $row['_quality']);
+            }
+            unset($row);
+            return array_values($matches);
+        }
+
+        usort($fallbackPool, static function (array $left, array $right): int {
+            $priceCompare = ((float) ($left['_price'] ?? PHP_FLOAT_MAX)) <=> ((float) ($right['_price'] ?? PHP_FLOAT_MAX));
+            if ($priceCompare !== 0) {
+                return $priceCompare;
+            }
+            $qualityCompare = ((int) ($right['_quality'] ?? 0)) <=> ((int) ($left['_quality'] ?? 0));
+            if ($qualityCompare !== 0) {
+                return $qualityCompare;
+            }
+            return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
+        });
+
+        $fallbackPool = array_slice($fallbackPool, 0, $limit);
+        foreach ($fallbackPool as &$row) {
+            unset($row['_price'], $row['_quality']);
+        }
+        unset($row);
+
+        return array_values($fallbackPool);
+    }
+
     function interessa_get_top_products_for_article(string $articleId, int $limit = 3): array {
-        return array_values(array_slice(interessa_get_products_for_article($articleId, max(1, $limit)), 0, max(1, $limit)));
+        $limit = max(1, $limit);
+        $top = array_values(array_slice(interessa_get_products_for_article($articleId, $limit), 0, $limit));
+        if ($top !== []) {
+            return $top;
+        }
+
+        return interessa_fallback_products_for_article($articleId, $limit);
     }
 }
 
