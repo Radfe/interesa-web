@@ -22,7 +22,7 @@ if (!function_exists('interessa_admin_auth_config')) {
         }
 
         $config = [
-            'password' => '',
+            'password' => 'Napisemknihu1',
             'password_hash' => '',
             'source' => 'none',
             'file' => '',
