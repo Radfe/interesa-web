@@ -331,3 +331,4 @@ if (!function_exists('interessa_admin_logout')) {
         session_destroy();
     }
 }
+// deploy trigger
