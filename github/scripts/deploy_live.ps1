@@ -1,5 +1,6 @@
 param(
-    [string]$SinceRef = ''
+    [string]$SinceRef = '',
+    [string[]]$ExplicitFiles
 )
 
 $ErrorActionPreference = 'Stop'
@@ -12,12 +13,21 @@ try {
     $paths = Resolve-WinScpPaths -Config $config
     Import-WinScpAssembly -AssemblyPath $paths.AssemblyPath
 
-    $changeSet = Get-ChangedPublicFiles -Config $config -SinceRef $SinceRef
+    $changeSet = Get-ChangedPublicFiles -Config $config -SinceRef $SinceRef -ExplicitFiles $ExplicitFiles
     $files = @($changeSet.Files)
     if ($files.Count -eq 0) {
         Write-Host 'Deploy skipped: no changed files in public/.'
         exit 0
     }
+
+    Write-Host ("Changed files source: {0}" -f $changeSet.BaseRef)
+    foreach ($file in $files) {
+        Write-Host ("FILE  raw={0}" -f [string]$file.RawPath)
+        Write-Host ("      project-relative={0}" -f [string]$file.RepoRelativePath)
+        Write-Host ("      local={0}" -f [string]$file.LocalPath)
+        Write-Host ("      remote={0}" -f [string]$file.RemotePath)
+    }
+    Write-Host ''
 
     $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
     $backupRoot = Join-Path $config.DeployBackupRoot $timestamp

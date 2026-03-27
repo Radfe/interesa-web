@@ -44,6 +44,15 @@ function Ensure-LocalDirectory {
     }
 }
 
+function Normalize-ComparePath {
+    param(
+        [Parameter(Mandatory = $true)][string]$Path
+    )
+
+    $fullPath = [System.IO.Path]::GetFullPath($Path)
+    return (($fullPath -replace '\\', '/').TrimEnd('/')).ToLowerInvariant()
+}
+
 function Get-DeployConfig {
     $projectRoot = Get-DeployProjectRoot
     $configPath = Join-Path $projectRoot 'scripts\deploy_config.ps1'
@@ -275,57 +284,144 @@ function Get-HeadCommit {
 function Convert-ToRelativePublicPath {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Config,
-        [Parameter(Mandatory = $true)][string]$RepoRelativePath
+        [Parameter(Mandatory = $true)][string]$InputPath
     )
 
-    $normalized = $RepoRelativePath -replace '\\', '/'
-    if (-not $normalized.StartsWith('public/')) {
-        throw "Path is outside public/: $RepoRelativePath"
+    $rawPath = ([string]$InputPath).Trim().Trim('"')
+    if ([string]::IsNullOrWhiteSpace($rawPath)) {
+        throw 'Changed file path is empty.'
     }
 
-    return $normalized.Substring(7)
+    $projectRoot = [System.IO.Path]::GetFullPath($Config.ProjectRoot)
+    $publicRoot = [System.IO.Path]::GetFullPath($Config.LocalPublicRoot)
+    $projectRootCompare = Normalize-ComparePath -Path $projectRoot
+    $publicRootCompare = Normalize-ComparePath -Path $publicRoot
+    $projectFolderName = [System.IO.Path]::GetFileName($projectRoot.TrimEnd('\', '/'))
+
+    $normalizedProjectRelative = $null
+    $candidate = ($rawPath -replace '\\', '/').Trim()
+    if ($candidate.StartsWith('./')) {
+        $candidate = $candidate.Substring(2)
+    }
+
+    if ([System.IO.Path]::IsPathRooted($rawPath)) {
+        $absoluteCandidate = [System.IO.Path]::GetFullPath($rawPath)
+        $absoluteCompare = Normalize-ComparePath -Path $absoluteCandidate
+
+        if ($absoluteCompare -eq $publicRootCompare) {
+            $normalizedProjectRelative = 'public'
+        } elseif ($absoluteCompare.StartsWith($publicRootCompare + '/')) {
+            $subPath = $absoluteCandidate.Substring($publicRoot.Length).TrimStart('\', '/')
+            $normalizedProjectRelative = 'public/' + ($subPath -replace '\\', '/')
+        } elseif ($absoluteCompare.StartsWith($projectRootCompare + '/')) {
+            $normalizedProjectRelative = $absoluteCandidate.Substring($projectRoot.Length).TrimStart('\', '/') -replace '\\', '/'
+        } else {
+            throw "Path is outside project root: $rawPath"
+        }
+    }
+
+    if (-not $normalizedProjectRelative) {
+        $segments = @(($candidate -split '/')) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+
+        if ($segments.Count -ge 2 -and $segments[0].ToLowerInvariant() -eq $projectFolderName.ToLowerInvariant()) {
+            $segments = @($segments[1..($segments.Count - 1)])
+        }
+
+        $publicIndex = -1
+        for ($i = 0; $i -lt $segments.Count; $i++) {
+            if ($segments[$i].ToLowerInvariant() -eq 'public') {
+                $publicIndex = $i
+                break
+            }
+        }
+
+        if ($publicIndex -ge 0) {
+            $normalizedProjectRelative = (($segments[$publicIndex..($segments.Count - 1)]) -join '/')
+        } else {
+            $normalizedProjectRelative = ($segments -join '/')
+        }
+    }
+
+    $normalizedProjectRelative = ($normalizedProjectRelative -replace '\\', '/').TrimStart('/')
+    if ($normalizedProjectRelative -eq 'public') {
+        throw "Path points to public root, not to a file: $rawPath"
+    }
+
+    $localCandidate = [System.IO.Path]::GetFullPath(
+        (Join-Path $projectRoot ($normalizedProjectRelative -replace '/', '\'))
+    )
+    $localCandidateCompare = Normalize-ComparePath -Path $localCandidate
+
+    $isInsidePublic = $localCandidateCompare.StartsWith($publicRootCompare + '/') -or $localCandidateCompare -eq $publicRootCompare
+    if (-not $isInsidePublic) {
+        throw "Path is outside public/: $rawPath"
+    }
+
+    if (-not (Test-Path $localCandidate -PathType Leaf)) {
+        throw "Changed file does not exist locally: $localCandidate"
+    }
+
+    $relativePublicPath = $localCandidate.Substring($publicRoot.Length).TrimStart('\', '/')
+    if ([string]::IsNullOrWhiteSpace($relativePublicPath)) {
+        throw "Path points to public root, not to a file: $rawPath"
+    }
+
+    return [pscustomobject]@{
+        RawPath = $rawPath
+        ProjectRelativePath = $normalizedProjectRelative
+        RelativePublicPath = ($relativePublicPath -replace '\\', '/')
+        LocalPath = $localCandidate
+        RemotePath = Join-RemotePath -RemoteRoot $Config.RemoteRoot -RelativePath $relativePublicPath
+    }
 }
 
 function Get-ChangedPublicFiles {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Config,
-        [string]$SinceRef
+        [string]$SinceRef,
+        [string[]]$ExplicitFiles
     )
 
-    $baseRef = if ([string]::IsNullOrWhiteSpace($SinceRef)) {
-        Get-DefaultDeployBaseRef -Config $Config
+    $allFiles = @()
+    $baseRef = $null
+
+    if ($ExplicitFiles -and $ExplicitFiles.Count -gt 0) {
+        $baseRef = 'explicit-files'
+        $allFiles = @($ExplicitFiles)
     } else {
-        $SinceRef
+        $baseRef = if ([string]::IsNullOrWhiteSpace($SinceRef)) {
+            Get-DefaultDeployBaseRef -Config $Config
+        } else {
+            $SinceRef
+        }
+
+        $diffFiles = @(git -C $Config.ProjectRoot diff --name-only --diff-filter=ACMR $baseRef -- public 2>$null)
+        if ($LASTEXITCODE -ne 0) {
+            throw "Git diff failed for base ref '$baseRef'."
+        }
+
+        $untrackedFiles = @(git -C $Config.ProjectRoot ls-files --others --exclude-standard -- public 2>$null)
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Git ls-files failed while collecting untracked public files.'
+        }
+
+        $allFiles = @($diffFiles + $untrackedFiles)
     }
 
-    $diffFiles = @(git -C $Config.ProjectRoot diff --name-only --diff-filter=ACMR $baseRef -- public 2>$null)
-    if ($LASTEXITCODE -ne 0) {
-        throw "Git diff failed for base ref '$baseRef'."
-    }
-
-    $untrackedFiles = @(git -C $Config.ProjectRoot ls-files --others --exclude-standard -- public 2>$null)
-    if ($LASTEXITCODE -ne 0) {
-        throw 'Git ls-files failed while collecting untracked public files.'
-    }
-
-    $allFiles = @($diffFiles + $untrackedFiles) |
+    $allFiles = @($allFiles) |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
         ForEach-Object { ($_ -replace '\\', '/').Trim() } |
         Sort-Object -Unique
 
     $items = @()
     foreach ($repoRelative in $allFiles) {
-        $relativePublicPath = Convert-ToRelativePublicPath -Config $Config -RepoRelativePath $repoRelative
-        $localPath = Join-Path $Config.ProjectRoot ($repoRelative -replace '/', '\')
-        if (-not (Test-Path $localPath -PathType Leaf)) {
-            continue
-        }
-
+        $normalizedItem = Convert-ToRelativePublicPath -Config $Config -InputPath $repoRelative
         $items += [pscustomobject]@{
-            RepoRelativePath = $repoRelative
-            RelativePublicPath = $relativePublicPath
-            LocalPath = (Resolve-Path $localPath).Path
-            RemotePath = Join-RemotePath -RemoteRoot $Config.RemoteRoot -RelativePath $relativePublicPath
+            RawPath = [string]$normalizedItem.RawPath
+            RepoRelativePath = [string]$normalizedItem.ProjectRelativePath
+            RelativePublicPath = [string]$normalizedItem.RelativePublicPath
+            LocalPath = (Resolve-Path $normalizedItem.LocalPath).Path
+            RemotePath = [string]$normalizedItem.RemotePath
         }
     }
 
