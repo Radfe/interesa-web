@@ -73,6 +73,7 @@ function Get-DeployConfig {
         LocalPublicRoot = Join-Path $projectRoot 'public'
         DeployBackupRoot = Join-Path $projectRoot '.deploy_backups'
         DeployStateRoot = Join-Path $projectRoot '.deploy_state'
+        DeployLogRoot = Join-Path $projectRoot '.deploy_logs'
         WinScpAssemblyPath = ''
         WinScpExecutablePath = ''
         TimeoutInSeconds = 30
@@ -99,8 +100,18 @@ function Get-DeployConfig {
 
     Ensure-LocalDirectory -Path $config.DeployBackupRoot
     Ensure-LocalDirectory -Path $config.DeployStateRoot
+    Ensure-LocalDirectory -Path $config.DeployLogRoot
 
     return $config
+}
+
+function Test-DeployConfigValue {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Config,
+        [Parameter(Mandatory = $true)][string]$Key
+    )
+
+    return -not [string]::IsNullOrWhiteSpace([string]$Config[$Key])
 }
 
 function Resolve-WinScpPaths {
@@ -146,6 +157,49 @@ function Resolve-WinScpPaths {
         AssemblyPath = $assemblyPath
         ExecutablePath = $executablePath
     }
+}
+
+function Get-DeployPreflightReport {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Config
+    )
+
+    $paths = Resolve-WinScpPaths -Config $Config
+
+    return [pscustomobject]@{
+        ConfigPath = Join-Path (Get-DeployProjectRoot) 'scripts\deploy_config.ps1'
+        ConfigExists = Test-Path (Join-Path (Get-DeployProjectRoot) 'scripts\deploy_config.ps1')
+        WinScpAssemblyPath = [string]$paths.AssemblyPath
+        WinScpAssemblyExists = Test-Path ([string]$paths.AssemblyPath)
+        WinScpExecutablePath = [string]$paths.ExecutablePath
+        WinScpExecutableExists = Test-Path ([string]$paths.ExecutablePath)
+        LocalPublicRoot = [string]$Config.LocalPublicRoot
+        LocalPublicRootExists = Test-Path ([string]$Config.LocalPublicRoot)
+        RemoteRoot = [string]$Config.RemoteRoot
+        RemoteRootConfigured = Test-DeployConfigValue -Config $Config -Key 'RemoteRoot'
+        FtpHostConfigured = Test-DeployConfigValue -Config $Config -Key 'HostName'
+        FtpUserConfigured = Test-DeployConfigValue -Config $Config -Key 'UserName'
+        FtpPasswordConfigured = Test-DeployConfigValue -Config $Config -Key 'Password'
+        Protocol = [string]$Config.Protocol
+    }
+}
+
+function Show-DeployPreflight {
+    param(
+        [Parameter(Mandatory = $true)]$Report
+    )
+
+    Write-Host 'Deploy self-check:'
+    Write-Host ("- deploy_config.ps1: {0}" -f ($(if ($Report.ConfigExists) { 'OK' } else { 'CHYBA' })))
+    Write-Host ("- WinSCP DLL: {0}" -f ($(if ($Report.WinScpAssemblyExists) { $Report.WinScpAssemblyPath } else { 'CHYBA' })))
+    Write-Host ("- WinSCP EXE/COM: {0}" -f ($(if ($Report.WinScpExecutableExists) { $Report.WinScpExecutablePath } else { 'CHYBA' })))
+    Write-Host ("- local public root: {0}" -f ($(if ($Report.LocalPublicRootExists) { $Report.LocalPublicRoot } else { 'CHYBA' })))
+    Write-Host ("- remote root: {0}" -f ($(if ($Report.RemoteRootConfigured) { $Report.RemoteRoot } else { 'CHYBA' })))
+    Write-Host ("- FTP host: {0}" -f ($(if ($Report.FtpHostConfigured) { 'OK' } else { 'CHYBA' })))
+    Write-Host ("- FTP user: {0}" -f ($(if ($Report.FtpUserConfigured) { 'OK' } else { 'CHYBA' })))
+    Write-Host ("- FTP password: {0}" -f ($(if ($Report.FtpPasswordConfigured) { 'OK' } else { 'CHYBA' })))
+    Write-Host ("- protocol: {0}" -f $Report.Protocol)
+    Write-Host ''
 }
 
 function Import-WinScpAssembly {
@@ -431,6 +485,20 @@ function Get-ChangedPublicFiles {
     }
 }
 
+function Get-ExplicitFilesFromList {
+    param(
+        [Parameter(Mandatory = $true)][string]$ListPath
+    )
+
+    if (-not (Test-Path $ListPath -PathType Leaf)) {
+        throw "Explicit files list does not exist: $ListPath"
+    }
+
+    return @(Get-Content -Path $ListPath -ErrorAction Stop |
+        ForEach-Object { ([string]$_).Trim() } |
+        Where-Object { $_ -ne '' -and -not $_.StartsWith('#') })
+}
+
 function Get-LatestBackupManifest {
     param(
         [Parameter(Mandatory = $true)][hashtable]$Config
@@ -458,4 +526,24 @@ function Save-DeployManifest {
     Ensure-LocalDirectory -Path (Split-Path $ManifestPath -Parent)
     $json = $Data | ConvertTo-Json -Depth 8
     Set-Content -Path $ManifestPath -Value $json -Encoding UTF8
+}
+
+function New-DeployLogPath {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Config,
+        [Parameter(Mandatory = $true)][string]$Prefix
+    )
+
+    $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    return Join-Path $Config.DeployLogRoot ("{0}-{1}.log" -f $Prefix, $timestamp)
+}
+
+function Write-DeployLog {
+    param(
+        [Parameter(Mandatory = $true)][string]$LogPath,
+        [Parameter(Mandatory = $true)][string[]]$Lines
+    )
+
+    Ensure-LocalDirectory -Path (Split-Path $LogPath -Parent)
+    Set-Content -Path $LogPath -Value ($Lines -join [Environment]::NewLine) -Encoding UTF8
 }

@@ -1,0 +1,8 @@
+public/inc/admin-auth.php
+public/admin/index.php
+public/router.php
+public/.htaccess
+public/storage/admin/.htaccess
+public/storage/admin/auth.example.php
+public/inc/admin-store.php
+public/inc/functions.php

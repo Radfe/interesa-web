@@ -9,6 +9,8 @@ try {
     . (Join-Path $PSScriptRoot 'deploy_common.ps1')
 
     $config = Get-DeployConfig
+    $preflight = Get-DeployPreflightReport -Config $config
+    Show-DeployPreflight -Report $preflight
     $paths = Resolve-WinScpPaths -Config $config
     Import-WinScpAssembly -AssemblyPath $paths.AssemblyPath
 
@@ -29,6 +31,13 @@ try {
         throw "Rollback manifest is empty: $manifestPath"
     }
 
+    $logLines = @(
+        ('time=' + (Get-Date).ToString('s')),
+        ('mode=rollback'),
+        ('manifest=' + [string]$manifestPath),
+        ('remote_root=' + [string]$config.RemoteRoot)
+    )
+
     $session = $null
     try {
         $session = New-WinScpSession -Config $config -ExecutablePath $paths.ExecutablePath
@@ -46,16 +55,19 @@ try {
                 $putResult = $session.PutFiles($backupPath, $remotePath, $false, $transferOptions)
                 $putResult.Check()
                 Write-Host ("ROLLED BACK  {0}" -f $relativePath)
+                $logLines += ('rolled_back=' + $relativePath + ' | remote=' + $remotePath)
                 continue
             }
 
             if (-not $remoteExisted -and $session.FileExists($remotePath)) {
                 $session.RemoveFiles($remotePath).Check()
                 Write-Host ("REMOVED      {0}" -f $relativePath)
+                $logLines += ('removed=' + $relativePath + ' | remote=' + $remotePath)
                 continue
             }
 
             Write-Host ("SKIPPED      {0}" -f $relativePath)
+            $logLines += ('skipped=' + $relativePath + ' | remote=' + $remotePath)
         }
     }
     finally {
@@ -64,11 +76,28 @@ try {
         }
     }
 
+    $logPath = New-DeployLogPath -Config $config -Prefix 'rollback'
+    $logLines += 'result=success'
+    Write-DeployLog -LogPath $logPath -Lines $logLines
+
     Write-Host ''
     Write-Host ("Rollback complete from backup: {0}" -f (Split-Path $manifestPath -Parent))
+    Write-Host ("Rollback log: {0}" -f $logPath)
     exit 0
 }
 catch {
+    try {
+        if ($config) {
+            $logPath = New-DeployLogPath -Config $config -Prefix 'rollback-error'
+            Write-DeployLog -LogPath $logPath -Lines @(
+                ('time=' + (Get-Date).ToString('s')),
+                ('result=error'),
+                ('message=' + $_.Exception.Message)
+            )
+            Write-Host ("Rollback log: {0}" -f $logPath)
+        }
+    } catch {
+    }
     Write-Host ''
     Write-Host ("Rollback failed: {0}" -f $_.Exception.Message) -ForegroundColor Red
     exit 1

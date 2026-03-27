@@ -1,4 +1,5 @@
 .codex-local/
+.deploy_logs/
 public/storage/dognet/raw/*.xml
 !public/storage/dognet/raw/.gitkeep
 
