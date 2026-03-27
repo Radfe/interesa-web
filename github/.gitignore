@@ -8,3 +8,6 @@ config/admin-auth.php
 public/storage/admin/product-candidates.json
 tmp_homepage.html
 tmp_products_import.html
+scripts/deploy_config.ps1
+.deploy_backups/
+.deploy_state/
