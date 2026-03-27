@@ -541,12 +541,18 @@ if (!function_exists('article_meta')) {
             $description = interessa_fix_mojibake($description);
         }
 
-        return [
+        $meta = [
             'slug' => $slug,
             'title' => $title,
             'description' => $description,
             'category' => normalize_category_slug($row[2] ?? ''),
         ];
+
+        if (function_exists('interessa_admin_merge_article_meta')) {
+            $meta = interessa_admin_merge_article_meta($slug, $meta);
+        }
+
+        return $meta;
     }
 }
 
@@ -606,6 +612,16 @@ if (!function_exists('interessa_article_seo_meta')) {
         $meta = article_meta($slug);
         $overrides = interessa_article_seo_overrides();
         $override = $overrides[$slug] ?? $overrides[canonical_article_slug($slug)] ?? [];
+
+        if (function_exists('interessa_admin_article_content')) {
+            $adminArticle = interessa_admin_article_content($slug);
+            if (trim((string) ($adminArticle['meta_title'] ?? '')) !== '') {
+                $override['meta_title'] = trim((string) $adminArticle['meta_title']);
+            }
+            if (trim((string) ($adminArticle['meta_description'] ?? '')) !== '') {
+                $override['meta_description'] = trim((string) $adminArticle['meta_description']);
+            }
+        }
 
         $metaTitle = trim((string) ($override['meta_title'] ?? $meta['title'] ?? ''));
         $metaDescription = trim((string) ($override['meta_description'] ?? $meta['description'] ?? ''));

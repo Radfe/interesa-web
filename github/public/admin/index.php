@@ -2306,6 +2306,9 @@ if ($isAuthed) {
 
             if ($action === 'save_article') {
                 $slug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
+                if ($slug === '') {
+                    throw new RuntimeException('Vyber clanok, ktory chces ulozit.');
+                }
                 $receivedSlots = $_POST['article_product_slot'] ?? [];
                 interessa_admin_article_save_log('entered-save-article', [
                     'slug' => $slug,

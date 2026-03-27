@@ -84,6 +84,24 @@ Najnovsi bezpecnostny hardening admin loginu:
   - docasny lock na 15 minut
 - helper `interessa_admin_is_authenticated()` ostava source of truth pre buduce admin-only ovladanie aj na verejnom webe
 
+Najnovsia stabilizacia article save/load flow:
+- structured clanok sa uklada do `public/storage/admin/articles/<slug>.json`
+- admin `save_article` je source of truth pre:
+  - `title`
+  - `intro`
+  - `meta_title`
+  - `meta_description`
+  - `category`
+  - `hero_asset`
+  - `sections`
+  - `comparison`
+  - `recommended_products`
+  - `product_plan`
+- public meta vrstva uz vie citat admin override cez `article_meta(...)`
+- public SEO meta vrstva uz vie preferovat admin `meta_title` a `meta_description`
+- public clanok prepne na admin structured body len vtedy, ked naozaj existuje structured text/porovnanie
+- samotny `product_plan` alebo metadata uz nesmu vyprázdnit legacy HTML telo clanku
+
 Najnovsi UX a click-layer cleanup:
 - verejne CTA `Do obchodu` maju ist cez interni route `/go/<code>` namiesto priameho zobrazenia dlheho Dognet URL
 - admin image readiness uz nema hlasit `Obrazok chyba`, ak web realne renderuje validny remote/feed obrazok produktu

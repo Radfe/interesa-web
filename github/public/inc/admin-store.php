@@ -654,14 +654,22 @@ if (!function_exists('interessa_admin_article_content')) {
 if (!function_exists('interessa_admin_article_has_structured_content')) {
     function interessa_admin_article_has_structured_content(string $slug): bool {
         $article = interessa_admin_article_content($slug);
+        $legacyArticlePath = dirname(__DIR__) . '/content/articles/' . canonical_article_slug($slug) . '.html';
+        $hasStructuredBody = $article['sections'] !== []
+            || ($article['comparison']['columns'] ?? []) !== []
+            || ($article['comparison']['rows'] ?? []) !== [];
+
+        if (is_file($legacyArticlePath)) {
+            return $hasStructuredBody;
+        }
+
         return trim((string) ($article['title'] ?? '')) !== ''
             || trim((string) ($article['intro'] ?? '')) !== ''
             || trim((string) ($article['meta_title'] ?? '')) !== ''
             || trim((string) ($article['meta_description'] ?? '')) !== ''
             || trim((string) ($article['category'] ?? '')) !== ''
             || trim((string) ($article['hero_asset'] ?? '')) !== ''
-            || $article['sections'] !== []
-            || ($article['comparison']['columns'] ?? []) !== []
+            || $hasStructuredBody
             || $article['recommended_products'] !== [];
     }
 }
