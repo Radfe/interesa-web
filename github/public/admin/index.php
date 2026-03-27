@@ -4885,6 +4885,12 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($section === 'articles' && $saved === 'article' && $selectedArticleSlug !== ''): ?>
           <div class="admin-flash is-success">Produkty v clanku boli ulozene. Slot 1 / Slot 2 / Slot 3 teraz bezia z explicitneho article product planu.</div>
         <?php endif; ?>
+        <?php if ($section === 'articles' && $saved === 'product' && $selectedArticleSlug !== '' && (int) ($_GET['slot_ready'] ?? 0) > 0): ?>
+          <div class="admin-flash is-success">Produkt bol priradeny do Slotu <?= esc((string) max(1, min(3, (int) ($_GET['slot_ready'] ?? 0)))) ?>.</div>
+        <?php endif; ?>
+        <?php if ($section === 'articles' && $saved === 'product' && $selectedArticleSlug !== '' && ((string) ($_GET['prefill_filled'] ?? '') !== '' || (string) ($_GET['prefill_skipped'] ?? '') !== '')): ?>
+          <div class="admin-flash is-success">Navrhy boli predvyplnene do volnych slotov.</div>
+        <?php endif; ?>
         <?php if ($importSummary !== ''): ?>
           <div class="admin-flash is-success"><?= esc($importSummary) ?></div>
         <?php endif; ?>
@@ -5305,26 +5311,6 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </details>
 
-            <form method="post" action="/admin" class="admin-inline-form" id="article-suggest-prefill-form">
-              <input type="hidden" name="action" value="prefill_suggested_product_slots" />
-              <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
-            </form>
-
-            <?php if ($showSuggestedProducts && $selectedArticleSlug !== '' && $articleSuggestedProducts !== []): ?>
-              <?php foreach ($articleSuggestedProducts as $suggestedProduct): ?>
-                <?php $suggestedFormSlug = trim((string) ($suggestedProduct['product_slug'] ?? '')); ?>
-                <?php if ($suggestedFormSlug === '') { continue; } ?>
-                <?php for ($suggestedSlot = 1; $suggestedSlot <= 3; $suggestedSlot++): ?>
-                  <form method="post" action="/admin" class="admin-inline-form" id="article-suggest-assign-<?= esc($suggestedFormSlug) ?>-<?= esc((string) $suggestedSlot) ?>">
-                    <input type="hidden" name="action" value="assign_suggested_product_to_slot" />
-                    <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
-                    <input type="hidden" name="product_slug" value="<?= esc($suggestedFormSlug) ?>" />
-                    <input type="hidden" name="target_slot" value="<?= esc((string) $suggestedSlot) ?>" />
-                  </form>
-                <?php endfor; ?>
-              <?php endforeach; ?>
-            <?php endif; ?>
-
             <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack" autocomplete="off" id="article-save-form">
               <input type="hidden" name="action" value="save_article" />
               <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
@@ -5550,7 +5536,11 @@ require dirname(__DIR__) . '/inc/head.php';
                         <p class="admin-meta">Toto len ukazuje navrhy. Nic sa samo neulozi, kym nekliknes <strong>Do slotu X</strong> alebo <strong>Predvyplnit sloty</strong>.</p>
                       </div>
                       <div class="admin-inline-actions">
-                        <button class="btn btn-secondary btn-small" type="submit" form="article-suggest-prefill-form">Predvyplnit sloty</button>
+                        <form method="post" action="/admin" class="admin-inline-form">
+                          <input type="hidden" name="action" value="prefill_suggested_product_slots" />
+                          <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
+                          <button class="btn btn-secondary btn-small" type="submit">Predvyplnit sloty</button>
+                        </form>
                       </div>
                     </div>
                     <?php if ($prefillFilledSlots !== [] || $prefillSkippedSlots !== []): ?>
@@ -5581,7 +5571,13 @@ require dirname(__DIR__) . '/inc/head.php';
                             </div>
                             <div class="admin-inline-actions">
                               <?php for ($suggestedSlot = 1; $suggestedSlot <= 3; $suggestedSlot++): ?>
-                                <button class="btn btn-secondary btn-small" type="submit" form="article-suggest-assign-<?= esc($suggestedSlug) ?>-<?= esc((string) $suggestedSlot) ?>">Do slotu <?= esc((string) $suggestedSlot) ?></button>
+                                <form method="post" action="/admin" class="admin-inline-form">
+                                  <input type="hidden" name="action" value="assign_suggested_product_to_slot" />
+                                  <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
+                                  <input type="hidden" name="product_slug" value="<?= esc($suggestedSlug) ?>" />
+                                  <input type="hidden" name="target_slot" value="<?= esc((string) $suggestedSlot) ?>" />
+                                  <button class="btn btn-secondary btn-small" type="submit">Do slotu <?= esc((string) $suggestedSlot) ?></button>
+                                </form>
                               <?php endfor; ?>
                             </div>
                           </article>
