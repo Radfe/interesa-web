@@ -414,7 +414,11 @@ if (!function_exists('interessa_admin_write_json')) {
         }
 
         $tmpPath = $path . '.tmp';
-        file_put_contents($tmpPath, $json . PHP_EOL);
+        $written = @file_put_contents($tmpPath, $json . PHP_EOL);
+        if ($written === false) {
+            @unlink($tmpPath);
+            throw new RuntimeException('Nepodarilo sa zapisat docasny admin subor.');
+        }
         if (!rename($tmpPath, $path)) {
             @unlink($tmpPath);
             throw new RuntimeException('Nepodarilo sa ulozit admin data.');
@@ -468,6 +472,13 @@ if (!function_exists('interessa_admin_article_override_path')) {
     function interessa_admin_article_override_path(string $slug): string {
         $slug = interessa_admin_slugify($slug);
         return INTERESSA_ADMIN_ARTICLES_DIR . '/' . $slug . '.json';
+    }
+}
+
+if (!function_exists('interessa_admin_article_backup_dir')) {
+    function interessa_admin_article_backup_dir(string $slug): string {
+        $slug = interessa_admin_slugify($slug);
+        return INTERESSA_ADMIN_ARTICLES_DIR . '/_backups/' . $slug;
     }
 }
 
@@ -561,6 +572,8 @@ if (!function_exists('interessa_admin_normalize_comparison')) {
 if (!function_exists('interessa_admin_normalize_article_override')) {
     function interessa_admin_normalize_article_override(string $slug, array $data): array {
         $canonicalSlug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : $slug;
+        $updatedAt = trim((string) ($data['updated_at'] ?? ''));
+        $updatedBy = interessa_admin_normalize_text($data['updated_by'] ?? '');
 
         return [
             'slug' => $canonicalSlug,
@@ -602,7 +615,8 @@ if (!function_exists('interessa_admin_normalize_article_override')) {
                 },
                 is_array($data['product_plan'] ?? null) ? $data['product_plan'] : []
             ))),
-            'updated_at' => date('c'),
+            'updated_at' => $updatedAt,
+            'updated_by' => $updatedBy !== '' ? $updatedBy : 'admin',
         ];
     }
 }
@@ -632,6 +646,15 @@ if (!function_exists('interessa_admin_all_article_overrides')) {
 
 if (!function_exists('interessa_admin_save_article_override')) {
     function interessa_admin_save_article_override(string $slug, array $data): void {
+        $result = interessa_admin_safe_save_article_override($slug, $data);
+        if (!($result['success'] ?? false)) {
+            throw new RuntimeException((string) ($result['error'] ?? 'Clanok sa nepodarilo ulozit.'));
+        }
+    }
+}
+
+if (!function_exists('interessa_admin_write_article_override_raw')) {
+    function interessa_admin_write_article_override_raw(string $slug, array $data): void {
         $slug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : trim($slug);
         if ($slug === '') {
             throw new RuntimeException('Chyba slug clanku.');
@@ -641,6 +664,154 @@ if (!function_exists('interessa_admin_save_article_override')) {
             interessa_admin_article_override_path($slug),
             interessa_admin_normalize_article_override($slug, $data)
         );
+    }
+}
+
+if (!function_exists('interessa_admin_validate_article_save_payload')) {
+    function interessa_admin_validate_article_save_payload(string $slug, array $data): array {
+        $slug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : trim($slug);
+        if ($slug === '') {
+            return [
+                'success' => false,
+                'error' => 'Chyba slug clanku.',
+            ];
+        }
+
+        $title = interessa_admin_normalize_text($data['title'] ?? '');
+        if ($title === '') {
+            return [
+                'success' => false,
+                'error' => 'Vypln nazov clanku.',
+            ];
+        }
+
+        foreach (['intro', 'meta_title', 'meta_description', 'category', 'hero_asset'] as $field) {
+            if (array_key_exists($field, $data) && is_array($data[$field])) {
+                return [
+                    'success' => false,
+                    'error' => 'Pole ' . $field . ' ma neplatny format.',
+                ];
+            }
+        }
+
+        foreach (['sections', 'comparison', 'recommended_products', 'product_plan'] as $field) {
+            if (array_key_exists($field, $data) && !is_array($data[$field])) {
+                return [
+                    'success' => false,
+                    'error' => 'Pole ' . $field . ' musi byt pole.',
+                ];
+            }
+        }
+
+        return [
+            'success' => true,
+            'error' => '',
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_create_article_backup')) {
+    function interessa_admin_create_article_backup(string $slug, string $path): ?string {
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $backupDir = interessa_admin_article_backup_dir($slug);
+        interessa_admin_ensure_dir($backupDir);
+        $backupPath = $backupDir . '/' . date('Ymd-His') . '.json';
+        if (!@copy($path, $backupPath)) {
+            throw new RuntimeException('Nepodarilo sa vytvorit zalohu clanku pred ulozenim.');
+        }
+
+        return $backupPath;
+    }
+}
+
+if (!function_exists('interessa_admin_restore_article_state')) {
+    function interessa_admin_restore_article_state(string $articlePath, bool $articleExisted, string $originalArticleJson, array $originalArticleProducts): void {
+        if ($articleExisted) {
+            $decoded = json_decode($originalArticleJson, true);
+            if (!is_array($decoded)) {
+                throw new RuntimeException('Nepodarilo sa obnovit povodny clanok po zlyhani ulozenia.');
+            }
+            interessa_admin_write_json($articlePath, $decoded);
+        } elseif (is_file($articlePath)) {
+            @unlink($articlePath);
+        }
+
+        interessa_admin_save_article_products($originalArticleProducts);
+    }
+}
+
+if (!function_exists('interessa_admin_safe_save_article_override')) {
+    function interessa_admin_safe_save_article_override(string $slug, array $data): array {
+        $slug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : trim($slug);
+        $validation = interessa_admin_validate_article_save_payload($slug, $data);
+        if (!($validation['success'] ?? false)) {
+            return [
+                'success' => false,
+                'error' => (string) ($validation['error'] ?? 'Clanok sa nepodarilo ulozit.'),
+            ];
+        }
+
+        $updatedAt = date('c');
+        $data['updated_at'] = $updatedAt;
+        $data['updated_by'] = trim((string) ($data['updated_by'] ?? '')) !== ''
+            ? trim((string) $data['updated_by'])
+            : 'admin';
+        $normalized = interessa_admin_normalize_article_override($slug, $data);
+
+        if (trim((string) ($normalized['slug'] ?? '')) === '') {
+            return [
+                'success' => false,
+                'error' => 'Chyba slug clanku.',
+            ];
+        }
+
+        if (trim((string) ($normalized['title'] ?? '')) === '') {
+            return [
+                'success' => false,
+                'error' => 'Vypln nazov clanku.',
+            ];
+        }
+
+        $articlePath = interessa_admin_article_override_path($slug);
+        $articleExisted = is_file($articlePath);
+        $originalArticleJson = $articleExisted ? (string) @file_get_contents($articlePath) : '';
+        if ($articleExisted && $originalArticleJson === '') {
+            return [
+                'success' => false,
+                'error' => 'Nepodarilo sa precitat povodny clanok pred ulozenim.',
+            ];
+        }
+
+        $originalArticleProducts = interessa_admin_article_products();
+
+        try {
+            interessa_admin_create_article_backup($slug, $articlePath);
+            interessa_admin_write_article_override_raw($slug, $normalized);
+            interessa_admin_save_article_product_plan($slug, is_array($normalized['product_plan'] ?? null) ? $normalized['product_plan'] : []);
+        } catch (Throwable $e) {
+            try {
+                interessa_admin_restore_article_state($articlePath, $articleExisted, $originalArticleJson, $originalArticleProducts);
+            } catch (Throwable $restoreError) {
+                return [
+                    'success' => false,
+                    'error' => trim($e->getMessage()) . ' Obnova povodneho stavu zlyhala: ' . trim($restoreError->getMessage()),
+                ];
+            }
+
+            return [
+                'success' => false,
+                'error' => trim($e->getMessage()) !== '' ? trim($e->getMessage()) : 'Clanok sa nepodarilo ulozit.',
+            ];
+        }
+
+        return [
+            'success' => true,
+            'slug' => $slug,
+            'updated_at' => $updatedAt,
+        ];
     }
 }
 
@@ -991,7 +1162,7 @@ if (!function_exists('interessa_admin_sync_article_product_override')) {
         $override['comparison'] = array_replace($existingComparison, [
             'rows' => $comparisonRows,
         ]);
-        interessa_admin_save_article_override($articleSlug, $override);
+        interessa_admin_write_article_override_raw($articleSlug, $override);
     }
 }
 
