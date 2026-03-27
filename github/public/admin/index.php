@@ -2420,14 +2420,28 @@ if ($isAuthed) {
                     throw new RuntimeException('Vyber clanok, ktory chces ulozit.');
                 }
                 $receivedSlots = $_POST['article_product_slot'] ?? [];
+                $receivedSlot1 = trim((string) (($receivedSlots[1] ?? '') ?: ''));
+                $receivedSlot2 = trim((string) (($receivedSlots[2] ?? '') ?: ''));
+                $receivedSlot3 = trim((string) (($receivedSlots[3] ?? '') ?: ''));
                 interessa_admin_article_save_log('entered-save-article', [
                     'slug' => $slug,
                     'action' => $action,
-                    'received_slot_1' => trim((string) (($receivedSlots[1] ?? '') ?: '')),
-                    'received_slot_2' => trim((string) (($receivedSlots[2] ?? '') ?: '')),
-                    'received_slot_3' => trim((string) (($receivedSlots[3] ?? '') ?: '')),
+                    'received_slot_1' => $receivedSlot1,
+                    'received_slot_2' => $receivedSlot2,
+                    'received_slot_3' => $receivedSlot3,
                 ]);
                 $productPlan = interessa_admin_collect_article_product_plan();
+                $savedSlotsByOrder = [1 => '', 2 => '', 3 => ''];
+                foreach ($productPlan as $productPlanRow) {
+                    if (!is_array($productPlanRow)) {
+                        continue;
+                    }
+                    $slotOrder = (int) ($productPlanRow['order'] ?? 0);
+                    if ($slotOrder < 1 || $slotOrder > 3) {
+                        continue;
+                    }
+                    $savedSlotsByOrder[$slotOrder] = trim((string) ($productPlanRow['product_slug'] ?? ''));
+                }
                 interessa_admin_article_save_log('final-slot-assignments-before-save', [
                     'slug' => $slug,
                     'slot_slugs' => implode(',', array_map(
@@ -2482,7 +2496,17 @@ if ($isAuthed) {
                         array_filter($productPlan, 'is_array')
                     )),
                 ]);
-                interessa_admin_redirect('articles', ['slug' => $slug, 'saved' => 'article']);
+                interessa_admin_redirect('articles', [
+                    'slug' => $slug,
+                    'saved' => 'article',
+                    'debug_test' => 'article-save-slots',
+                    'post_slot_1' => $receivedSlot1,
+                    'post_slot_2' => $receivedSlot2,
+                    'post_slot_3' => $receivedSlot3,
+                    'saved_slot_1' => (string) ($savedSlotsByOrder[1] ?? ''),
+                    'saved_slot_2' => (string) ($savedSlotsByOrder[2] ?? ''),
+                    'saved_slot_3' => (string) ($savedSlotsByOrder[3] ?? ''),
+                ]);
             }
 
             if ($action === 'delete_product_override') {
@@ -3886,6 +3910,18 @@ if ($section === 'articles' && $selectedArticleSlug !== '' && $flash === 'articl
         'saved' => $flash,
     ]);
 }
+$articleSaveDebugMode = trim((string) ($_GET['debug_test'] ?? ''));
+$articleSaveDebugRows = [];
+if ($section === 'articles' && $articleSaveDebugMode === 'article-save-slots') {
+    $articleSaveDebugRows = [
+        'POST slot 1' => trim((string) ($_GET['post_slot_1'] ?? '')),
+        'POST slot 2' => trim((string) ($_GET['post_slot_2'] ?? '')),
+        'POST slot 3' => trim((string) ($_GET['post_slot_3'] ?? '')),
+        'SAVED slot 1' => trim((string) ($_GET['saved_slot_1'] ?? '')),
+        'SAVED slot 2' => trim((string) ($_GET['saved_slot_2'] ?? '')),
+        'SAVED slot 3' => trim((string) ($_GET['saved_slot_3'] ?? '')),
+    ];
+}
 $prefillFilledSlots = array_values(array_filter(array_map(
     static fn(string $value): string => trim($value),
     explode(',', (string) ($_GET['prefill_filled'] ?? ''))
@@ -4884,6 +4920,16 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php endif; ?>
         <?php if ($section === 'articles' && $saved === 'article' && $selectedArticleSlug !== ''): ?>
           <div class="admin-flash is-success">Produkty v clanku boli ulozene. Slot 1 / Slot 2 / Slot 3 teraz bezia z explicitneho article product planu.</div>
+        <?php endif; ?>
+        <?php if ($section === 'articles' && $articleSaveDebugRows !== []): ?>
+          <div class="admin-flash is-success">
+            <strong>DEBUG TEST</strong> - docasny save debug pre sloty. Po potvrdeni sa odstrani.
+            <div style="margin-top:8px;">
+              <?php foreach ($articleSaveDebugRows as $debugLabel => $debugValue): ?>
+                <div><?= esc($debugLabel) ?>: <code><?= esc($debugValue !== '' ? $debugValue : '(empty)') ?></code></div>
+              <?php endforeach; ?>
+            </div>
+          </div>
         <?php endif; ?>
         <?php if ($importSummary !== ''): ?>
           <div class="admin-flash is-success"><?= esc($importSummary) ?></div>
