@@ -293,6 +293,116 @@ function interessa_admin_product_click_state(array $product): array {
     ];
 }
 
+function interessa_admin_affiliate_readiness_state(?array $product): array {
+    if (!is_array($product) || $product === []) {
+        return [
+            'status' => 'missing',
+            'label' => 'Chyba produkt',
+            'badge_class' => ' is-warning',
+            'note' => 'V slote nie je pripraveny ziadny produkt.',
+            'is_risk' => true,
+            'target_href' => '',
+            'product_url' => '',
+            'affiliate_code' => '',
+        ];
+    }
+
+    $normalized = interessa_normalize_product($product);
+    $productSlug = trim((string) ($normalized['slug'] ?? ''));
+    $productName = trim((string) ($normalized['name'] ?? ''));
+    $fallbackUrl = trim((string) ($normalized['fallback_url'] ?? $normalized['url'] ?? ''));
+    $hasRawProductUrl = $fallbackUrl !== '';
+    $hasValidRawProductUrl = $hasRawProductUrl && interessa_admin_looks_like_product_url($fallbackUrl);
+    $clickState = interessa_admin_product_click_state($normalized);
+    $target = interessa_affiliate_target($normalized);
+    $targetHref = trim((string) ($target['href'] ?? $clickState['href'] ?? ''));
+    $resolvedProductUrl = trim((string) ($clickState['product_url'] ?? ''));
+    $hasValidResolvedProductUrl = $resolvedProductUrl !== '' && interessa_admin_looks_like_product_url($resolvedProductUrl);
+    $hasValidProductUrl = $hasValidRawProductUrl || $hasValidResolvedProductUrl;
+    $hasClickTarget = $targetHref !== '';
+    $affiliateReady = !empty($clickState['affiliate_ready']);
+    $directReady = !empty($clickState['direct_ready']);
+    $affiliateCode = trim((string) ($normalized['affiliate_code'] ?? ''));
+
+    if ($affiliateReady) {
+        return [
+            'status' => 'affiliate_ready',
+            'label' => 'Affiliate ready',
+            'badge_class' => ' is-good',
+            'note' => 'Produkt ma funkcny affiliate klik.',
+            'is_risk' => false,
+            'target_href' => $targetHref,
+            'product_url' => $resolvedProductUrl !== '' ? $resolvedProductUrl : $fallbackUrl,
+            'affiliate_code' => $affiliateCode,
+        ];
+    }
+
+    if ($directReady) {
+        return [
+            'status' => 'direct_fallback',
+            'label' => 'Direct fallback',
+            'badge_class' => ' is-warning',
+            'note' => 'Produkt nema affiliate ready klik, ale direct link funguje.',
+            'is_risk' => true,
+            'target_href' => $targetHref,
+            'product_url' => $fallbackUrl !== '' ? $fallbackUrl : $resolvedProductUrl,
+            'affiliate_code' => $affiliateCode,
+        ];
+    }
+
+    if (!$hasValidProductUrl) {
+        return [
+            'status' => 'missing_product_url',
+            'label' => 'Chyba produktovy link',
+            'badge_class' => ' is-warning',
+            'note' => $hasRawProductUrl
+                ? 'URL je vyplnena, ale nevyzera ako konkretna stranka produktu.'
+                : 'Produktu chyba validna URL konkretneho produktu.',
+            'is_risk' => true,
+            'target_href' => $targetHref,
+            'product_url' => '',
+            'affiliate_code' => $affiliateCode,
+        ];
+    }
+
+    if (!$hasClickTarget) {
+        return [
+            'status' => 'missing_click',
+            'label' => 'Chyba klik',
+            'badge_class' => ' is-warning',
+            'note' => 'Produkt ma URL, ale system nevie vyriesit funkcny klik.',
+            'is_risk' => true,
+            'target_href' => '',
+            'product_url' => $resolvedProductUrl !== '' ? $resolvedProductUrl : $fallbackUrl,
+            'affiliate_code' => $affiliateCode,
+        ];
+    }
+
+    if ($productSlug === '' && $productName === '') {
+        return [
+            'status' => 'missing',
+            'label' => 'Chyba produkt',
+            'badge_class' => ' is-warning',
+            'note' => 'Produktu chybaju zakladne udaje.',
+            'is_risk' => true,
+            'target_href' => $targetHref,
+            'product_url' => $resolvedProductUrl !== '' ? $resolvedProductUrl : $fallbackUrl,
+            'affiliate_code' => $affiliateCode,
+        ];
+    }
+
+    return [
+        'status' => 'missing',
+        'label' => 'Chyba stav',
+        'badge_class' => ' is-warning',
+        'note' => 'Produkt potrebuje kontrolu affiliate vrstvy.',
+        'is_risk' => true,
+        'target_href' => $targetHref,
+        'product_url' => $resolvedProductUrl !== '' ? $resolvedProductUrl : $fallbackUrl,
+        'affiliate_code' => $affiliateCode,
+    ];
+}
+
 
 function interessa_admin_recommended_diagnostics(array $slugs): array {
     $rows = [];
@@ -5118,9 +5228,9 @@ require dirname(__DIR__) . '/inc/head.php';
                 <h2>Editor clanku</h2>
               </div>
               <div class="admin-inline-actions">
-                <a class="btn btn-cta btn-small" href="#article-products-block">Produkty v clanku</a>
+                <a class="btn btn-cta btn-small" href="#article-save-form">Upravit clanok</a>
+                <a class="btn btn-secondary btn-small" href="#article-products-block">Produkty v clanku</a>
                 <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
-                <a class="btn btn-secondary btn-small" href="#article-check-block">Skontrolovat clanok</a>
                 <details class="admin-inline-more">
                   <summary>Dalsie akcie</summary>
                   <div class="admin-inline-actions">
@@ -5222,56 +5332,57 @@ require dirname(__DIR__) . '/inc/head.php';
               <section class="admin-subsection is-compact">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3>Hlavny produktovy workflow</h3>
-                    <p class="admin-meta">Tu riesis len 3 sloty, hlavny produkt a ulozenie produktov v clanku.</p>
+                    <h3>Rychla uprava clanku</h3>
+                    <p class="admin-meta">Bezny workflow: uprav text, vyber 3 produkty, uloz clanok a skontroluj live web.</p>
                   </div>
                 </div>
-              <div class="admin-grid two-up">
-                <div>
-                  <span class="admin-label-like">Clanok</span>
-                  <p class="admin-note"><?= esc((string) ($selectedArticleOverride['title'] ?: $selectedArticleMeta['title'])) ?></p>
-                </div>
                 <?php $selectedCategory = (string) ($selectedArticleOverride['category'] ?: $selectedArticleMeta['category']); ?>
-                <div>
-                  <span class="admin-label-like">Kategoria clanku</span>
-                  <p class="admin-note"><?= esc((string) ($categoryOptions[$selectedCategory]['title'] ?? ($selectedCategory !== '' ? $selectedCategory : 'Bez kategorie'))) ?></p>
-                </div>
-              </div>
-              <div class="admin-check-card" style="margin-top:12px;">
-                <strong>Pripravenost systemu</strong>
-                <p class="admin-note" style="margin-top:6px;">Pred hostingom manualne over: URL produktu, blokovanie homepage URL, nacitanie nazvu, nacitanie a ulozenie obrazka, preview v slote, navrhy produktov, predvyplnenie slotov, quality status slotu, affiliate resolve, direct fallback a Dognet dohldanie pri znamom merchantovi.</p>
-              </div>
-              </section>
-
-              <details class="admin-subsection is-compact">
-                <summary><strong>Redakcny obsah clanku</strong> - otvor len ked menis titulok, intro alebo kategoriu</summary>
                 <div class="admin-grid two-up">
                   <label>
                     <span>Titulok</span>
                     <input type="text" name="title" value="<?= esc((string) ($selectedArticleOverride['title'] ?: $selectedArticleMeta['title'])) ?>" />
                   </label>
-                  <label>
-                    <span>Kategoria</span>
-                    <select name="category">
-                      <option value="">Bez kategorie</option>
-                      <?php foreach ($categoryOptions as $categorySlug => $categoryRow): ?>
-                        <option value="<?= esc((string) $categorySlug) ?>" <?= $selectedCategory === (string) $categorySlug ? 'selected' : '' ?>><?= esc((string) ($categoryRow['title'] ?? $categorySlug)) ?></option>
-                      <?php endforeach; ?>
-                    </select>
-                  </label>
-                  <div></div>
+                  <div>
+                    <span class="admin-label-like">Clanok</span>
+                    <p class="admin-note"><?= esc((string) ($selectedArticleOverride['title'] ?: $selectedArticleMeta['title'])) ?></p>
+                  </div>
                 </div>
                 <label>
                   <span>Intro</span>
                   <textarea name="intro" rows="3"><?= esc((string) ($selectedArticleOverride['intro'] ?: $selectedArticleMeta['description'])) ?></textarea>
                 </label>
-              </details>
+                <div class="admin-subsection is-compact">
+                  <div class="admin-subsection-head">
+                    <h3>Sekcie clanku</h3>
+                    <button class="btn btn-secondary btn-small" type="button" data-add-section>Pridej sekciu</button>
+                  </div>
+                  <div class="admin-sections" data-sections-root>
+                    <?php foreach ($sections as $sectionRow): ?>
+                      <div class="admin-section-row" data-section-row>
+                        <input type="text" name="section_heading[]" value="<?= esc((string) ($sectionRow['heading'] ?? '')) ?>" placeholder="Nadpis sekcie" />
+                        <textarea name="section_body[]" rows="4" placeholder="Obsah sekcie"><?= esc((string) ($sectionRow['body'] ?? '')) ?></textarea>
+                      </div>
+                    <?php endforeach; ?>
+                  </div>
+                  <template id="admin-section-template">
+                    <div class="admin-section-row" data-section-row>
+                      <input type="text" name="section_heading[]" placeholder="Nadpis sekcie" />
+                      <textarea name="section_body[]" rows="4" placeholder="Obsah sekcie"></textarea>
+                    </div>
+                  </template>
+                </div>
+                <div class="admin-actions">
+                  <button class="btn btn-cta" type="submit" form="article-save-form">ULOZIT CLANOK</button>
+                  <a class="btn btn-secondary" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Skontrolovat live web</a>
+                </div>
+              </section>
 
-              <section class="admin-subsection is-compact" id="article-hero-block">
+              <details class="admin-subsection is-compact" id="article-hero-block">
+                <summary><strong>Pokrocile</strong> - hero obrazok clanku</summary>
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Hero obrazok clanku</h3>
-                    <p class="admin-meta">Odporucany postup: 1. skopiruj Canva prompt, 2. priprav hero obrazok, 3. nahraj ho sem, 4. az potom ries produkty.</p>
+                    <p class="admin-meta">Volitelny krok. Otvor len ked potrebujes doplnit alebo zmenit hlavny obrazok clanku.</p>
                   </div>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=images&amp;slug=<?= esc($selectedArticleSlug) ?>">Otvorit obrazky</a>
@@ -5294,16 +5405,17 @@ require dirname(__DIR__) . '/inc/head.php';
                       <span>2. Nahraj hotovy hero obrazok</span>
                       <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" />
                     </label>
-                    <small class="admin-note">Po ulozeni sa hero obrazok ulozi ako finalny asset pre clanok. Produkty ries nizsie az po tomto kroku.</small>
+                    <small class="admin-note">Po ulozeni sa hero obrazok ulozi ako finalny asset pre clanok.</small>
                   </div>
                 </div>
-              </section>
+              </details>
 
-              <section class="admin-subsection is-compact" id="article-check-block">
+              <details class="admin-subsection is-compact" id="article-check-block">
+                <summary><strong>Pokrocile</strong> - pripravenost a kontrola clanku</summary>
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Co v tomto clanku este chyba</h3>
-                    <p class="admin-meta">Tu hned vidis, kolko produktov je vybranych, co je hotove a na co mas kliknut dalej.</p>
+                    <p class="admin-meta">Pomocny prehlad pre kontrolu. Bezny workflow je vyssie v editore a nizsie v produktoch.</p>
                   </div>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="#article-products-block">Prejst na produkty v clanku</a>
@@ -5358,19 +5470,23 @@ require dirname(__DIR__) . '/inc/head.php';
                 <?php else: ?>
                   <p class="admin-note">Clanok zatial nema explicitne priradene produkty. Nizsie vypln 3 sloty v casti <strong>Produkty v tomto clanku</strong>.</p>
                 <?php endif; ?>
-              </section>
+              </details>
 
               <div class="admin-subsection" id="article-products-block">
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Produkty v tomto clanku</h3>
-                    <p class="admin-meta">Odporucany postup: najprv si nechaj navrhnut TOP 3 produkty z importovaneho katalogu a potom dolad konkretne sloty.</p>
+                    <p class="admin-meta">Vyber 3 produkty pre clanok, oznac hlavny produkt a uloz clanok.</p>
                   </div>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;suggest_products=1#article-product-suggestions">Navrhnut produkty</a>
                   </div>
                 </div>
-                <p class="admin-note">Tento clanok ma pevne 3 sloty. Vyber do nich produkty, oznac hlavny produkt a potom uloz produkty v clanku.</p>
+                <div class="admin-actions" style="margin-bottom:12px;">
+                  <button class="btn btn-cta" type="submit" form="article-save-form">ULOZIT CLANOK</button>
+                  <a class="btn btn-secondary" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Skontrolovat live web</a>
+                </div>
+                <p class="admin-note">Tento clanok ma pevne 3 sloty. Hlavny produkt nastav ako prvy vyber pre citatela.</p>
                 <?php if ($articleProductPlanHasExplicitSource === false): ?>
                   <p class="admin-note">Clanok zatial nema explicitne priradene produkty.</p>
                 <?php endif; ?>
@@ -5443,52 +5559,100 @@ require dirname(__DIR__) . '/inc/head.php';
                           }
                       }
                   }
+                  $articleSlotOverviewRows = [];
+                  $articleRiskRows = [];
+                  $articleTopRows = [];
+                  $articleFeaturedSummary = 'Hlavny produkt este nie je vybrany.';
+                  for ($slotIndex = 1; $slotIndex <= 3; $slotIndex++) {
+                      $slotSlug = (string) ($articleSlotSelections[$slotIndex] ?? '');
+                      $slotRow = $slotSlug !== '' ? ($articleScopedProductOptions[$slotSlug] ?? null) : null;
+                      $slotReadiness = interessa_admin_affiliate_readiness_state(is_array($slotRow) ? $slotRow : null);
+                      $slotName = $slotSlug !== '' && is_array($slotRow)
+                          ? trim((string) ($slotRow['name'] ?? $slotSlug))
+                          : 'Ziadny produkt';
+                      $slotRole = $slotSlug !== '' ? (string) ($articleProductPlanMap[$slotSlug]['role'] ?? ($slotIndex === $articleFeaturedSlot ? 'featured' : 'standard')) : 'missing';
+                      $slotTop = $slotSlug !== '' ? !empty($articleProductPlanMap[$slotSlug]['show_in_top']) : false;
+
+                      $articleSlotOverviewRows[] = [
+                          'slot' => $slotIndex,
+                          'slug' => $slotSlug,
+                          'name' => $slotName,
+                          'role' => $slotRole,
+                          'show_in_top' => $slotTop,
+                          'readiness' => $slotReadiness,
+                      ];
+
+                      if ($slotIndex === $articleFeaturedSlot && $slotSlug !== '') {
+                          $articleFeaturedSummary = 'Slot ' . $slotIndex . ': ' . $slotName;
+                      }
+
+                      if ($slotTop && $slotSlug !== '') {
+                          $articleTopRows[] = 'Slot ' . $slotIndex . ': ' . $slotName;
+                      }
+
+                      if (!empty($slotReadiness['is_risk'])) {
+                          $articleRiskRows[] = 'Slot ' . $slotIndex . ': ' . $slotName . ' (' . (string) ($slotReadiness['label'] ?? 'Riziko') . ')';
+                      }
+                  }
                 ?>
+                <section class="admin-subsection is-compact" style="margin-bottom:16px;">
+                  <div class="admin-subsection-head">
+                    <div>
+                      <h4>Affiliate pripravenost clanku</h4>
+                      <p class="admin-meta">Rychly V1 prehlad. Hned vidis, co je OK, co ide len fallbackom a co treba riesit pred live clankom.</p>
+                    </div>
+                  </div>
+                  <div class="admin-queue-list">
+                    <?php foreach ($articleSlotOverviewRows as $overviewRow): ?>
+                      <?php $overviewReadiness = $overviewRow['readiness']; ?>
+                      <article class="admin-queue-item">
+                        <div>
+                          <strong>Slot <?= esc((string) $overviewRow['slot']) ?>: <?= esc((string) $overviewRow['name']) ?></strong>
+                          <p class="admin-note" style="margin-top:6px;"><?= esc((string) ($overviewReadiness['note'] ?? '')) ?></p>
+                        </div>
+                        <div class="admin-status-pills">
+                          <span class="admin-status-pill<?= esc((string) ($overviewReadiness['badge_class'] ?? ' is-warning')) ?>"><?= esc((string) ($overviewReadiness['label'] ?? 'Chyba stav')) ?></span>
+                          <?php if ((string) ($overviewRow['role'] ?? '') === 'featured'): ?>
+                            <span class="admin-status-pill is-good">Hlavny produkt</span>
+                          <?php endif; ?>
+                          <?php if (!empty($overviewRow['show_in_top'])): ?>
+                            <span class="admin-status-pill is-good">Top vyber</span>
+                          <?php endif; ?>
+                        </div>
+                      </article>
+                    <?php endforeach; ?>
+                  </div>
+                  <div class="admin-check-card" style="margin-top:12px;">
+                    <strong>Rychly zaver pre clanok</strong>
+                    <p class="admin-note" style="margin-top:6px;"><strong>Hlavny produkt:</strong> <?= esc($articleFeaturedSummary) ?></p>
+                    <p class="admin-note" style="margin-top:6px;"><strong>Top produkty:</strong> <?= esc($articleTopRows !== [] ? implode(' / ', $articleTopRows) : 'Zatial nie su oznacene top produkty.') ?></p>
+                    <p class="admin-note" style="margin-top:6px;"><strong>Rizikove sloty:</strong> <?= esc($articleRiskRows !== [] ? implode(' / ', $articleRiskRows) : 'Ziadne. Vsetky sloty su bez rizika.') ?></p>
+                  </div>
+                </section>
                 <div class="admin-grid one-up">
                   <?php for ($slotIndex = 1; $slotIndex <= 3; $slotIndex++): ?>
                     <?php
                       $slotSlug = (string) ($articleSlotSelections[$slotIndex] ?? '');
                       $slotRow = $slotSlug !== '' ? ($articleScopedProductOptions[$slotSlug] ?? null) : null;
                       $slotActionRow = $slotSlug !== '' ? ($articleSelectedActionRowsBySlug[$slotSlug] ?? []) : [];
-                      $slotStatusLabel = 'Slot je prazdny';
-                      $slotStatusClass = ' is-warning';
-                      if (is_array($slotRow)) {
-                          $slotNameReady = trim((string) ($slotRow['name'] ?? '')) !== '';
-                          $slotImageReady = trim((string) ($slotRow['image_local_url'] ?? '')) !== '' || trim((string) ($slotRow['image_remote_src'] ?? '')) !== '';
-                          $slotClickReady = trim((string) ($slotRow['click_url'] ?? '')) !== '' || trim((string) ($slotRow['fallback_url'] ?? '')) !== '';
-                          $slotMerchantReady = trim((string) ($slotRow['merchant'] ?? '')) !== '';
-                          $slotWarnings = [];
-                          if (!$slotNameReady) {
-                              $slotWarnings[] = 'Chyba nazov';
-                          }
-                          if (!$slotImageReady) {
-                              $slotWarnings[] = 'Chyba obrazok';
-                          }
-                          if (!$slotClickReady) {
-                              $slotWarnings[] = 'Chyba link';
-                          }
-                          if (!$slotMerchantReady) {
-                              $slotWarnings[] = 'Chyba merchant';
-                          }
-
-                          if ($slotWarnings === []) {
-                              $slotStatusLabel = 'Pripravene na web';
-                              $slotStatusClass = ' is-good';
-                          } else {
-                              $slotStatusLabel = implode(' / ', $slotWarnings);
-                              $slotStatusClass = ' is-warning';
-                          }
-                      }
+                      $slotReadiness = interessa_admin_affiliate_readiness_state(is_array($slotRow) ? $slotRow : null);
+                      $slotStatusLabel = (string) ($slotReadiness['label'] ?? 'Chyba stav');
+                      $slotStatusClass = (string) ($slotReadiness['badge_class'] ?? ' is-warning');
+                      $slotStatusNote = (string) ($slotReadiness['note'] ?? 'Ziadny produkt nie je priradeny.');
                     ?>
                     <section class="admin-subsection is-compact article-product-slot" id="slot-<?= esc((string) $slotIndex) ?>">
                       <div class="admin-subsection-head">
                         <div>
                           <h4>Slot <?= esc((string) $slotIndex) ?></h4>
-                          <p class="admin-meta"><?= $slotIndex === $articleFeaturedSlot && $slotSlug !== '' ? 'Hlavny produkt' : 'Vyber 1 produkt pre tento slot' ?></p>
+                          <p class="admin-meta"><?= $slotIndex === $articleFeaturedSlot && $slotSlug !== '' ? 'Hlavny produkt' : 'Produkt pre tento slot' ?></p>
                         </div>
                       </div>
+                      <div class="admin-check-card" style="margin-bottom:12px;">
+                        <strong><?= $slotSlug !== '' ? esc((string) ($slotRow['name'] ?? $slotSlug)) : 'Ziadny produkt' ?></strong>
+                        <p class="admin-note" style="margin-top:6px;"><?= esc($slotStatusNote) ?></p>
+                      </div>
                       <label>
-                        <span>Produkt pre slot <?= esc((string) $slotIndex) ?></span>
+                        <span>Rychla zmena produktu</span>
                         <?php $slotSelectOptions = $articleScopedProductOptionsBySlot[$slotIndex] ?? $articleScopedProductOptions; ?>
                         <select name="article_product_slot[<?= esc((string) $slotIndex) ?>]" autocomplete="off">
                           <option value="" <?= $slotSlug === '' ? 'selected' : '' ?>>Nechat prazdny slot</option>
@@ -5532,11 +5696,12 @@ require dirname(__DIR__) . '/inc/head.php';
                         </div>
                         <label class="admin-check-card admin-check-card--inline">
                           <input type="radio" name="article_product_featured_slot" value="<?= esc((string) $slotIndex) ?>" <?= $slotIndex === $articleFeaturedSlot ? 'checked' : '' ?> />
-                          <span><strong><?= $slotIndex === $articleFeaturedSlot ? 'Toto je hlavny produkt' : 'Nastavit ako hlavny produkt' ?></strong></span>
+                          <span><strong><?= $slotIndex === $articleFeaturedSlot ? 'Toto je hlavny produkt' : 'Oznacit ako hlavny produkt' ?></strong></span>
                         </label>
                         <div class="admin-inline-actions">
+                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;article=<?= esc($selectedArticleSlug) ?>&amp;slot=<?= esc((string) $slotIndex) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>"><?= $slotSlug !== '' ? 'Vybrat alebo zmenit produkt' : 'Vybrat produkt' ?></a>
                           <?php if (!empty($slotActionRow['next_enabled'])): ?>
-                            <a class="btn btn-secondary btn-small" href="<?= esc((string) ($slotActionRow['next_href'] ?? ($slotRow['next_href'] ?? '#'))) ?>"><?= esc((string) ($slotActionRow['next_label'] ?? ($slotRow['next_label'] ?? 'Doplnit produkt'))) ?></a>
+                            <a class="btn btn-secondary btn-small" href="<?= esc((string) ($slotActionRow['next_href'] ?? ($slotRow['next_href'] ?? '#'))) ?>"><?= esc((string) ($slotActionRow['next_label'] ?? ($slotRow['next_label'] ?? 'Skontrolovat produkt'))) ?></a>
                           <?php endif; ?>
                           <?php if (!empty($slotActionRow['exists']) && !empty($slotActionRow['affiliate_ready'])): ?>
                             <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Pozriet na webe</a>
@@ -5560,7 +5725,16 @@ require dirname(__DIR__) . '/inc/head.php';
               <?php if ($showAdvancedArticleEditor): ?>
               <details class="admin-subsection" open>
                 <summary><strong>Dalsie nastavenia clanku</strong> - pokrocily editor je otvoreny</summary>
-                <div class="admin-grid one-up">
+                <div class="admin-grid two-up">
+                  <label>
+                    <span>Kategoria</span>
+                    <select name="category">
+                      <option value="">Bez kategorie</option>
+                      <?php foreach ($categoryOptions as $categorySlug => $categoryRow): ?>
+                        <option value="<?= esc((string) $categorySlug) ?>" <?= $selectedCategory === (string) $categorySlug ? 'selected' : '' ?>><?= esc((string) ($categoryRow['title'] ?? $categorySlug)) ?></option>
+                      <?php endforeach; ?>
+                    </select>
+                  </label>
                   <label>
                     <span>Hlavny obrazok clanku (pokrocile)</span>
                     <input type="text" name="hero_asset" value="<?= esc((string) ($selectedArticleOverride['hero_asset'] ?? '')) ?>" placeholder="img/articles/heroes/slug.webp" />
@@ -5575,27 +5749,6 @@ require dirname(__DIR__) . '/inc/head.php';
                     <span>Meta description</span>
                     <input type="text" name="meta_description" value="<?= esc((string) ($selectedArticleOverride['meta_description'] ?? '')) ?>" />
                   </label>
-                </div>
-
-                <div class="admin-subsection">
-                  <div class="admin-subsection-head">
-                    <h3>Text clanku</h3>
-                    <button class="btn btn-secondary btn-small" type="button" data-add-section>Pridej sekciu</button>
-                  </div>
-                  <div class="admin-sections" data-sections-root>
-                    <?php foreach ($sections as $sectionRow): ?>
-                      <div class="admin-section-row" data-section-row>
-                        <input type="text" name="section_heading[]" value="<?= esc((string) ($sectionRow['heading'] ?? '')) ?>" placeholder="Nadpis sekcie" />
-                        <textarea name="section_body[]" rows="4" placeholder="Obsah sekcie"><?= esc((string) ($sectionRow['body'] ?? '')) ?></textarea>
-                      </div>
-                    <?php endforeach; ?>
-                  </div>
-                  <template id="admin-section-template">
-                    <div class="admin-section-row" data-section-row>
-                      <input type="text" name="section_heading[]" placeholder="Nadpis sekcie" />
-                      <textarea name="section_body[]" rows="4" placeholder="Obsah sekcie"></textarea>
-                    </div>
-                  </template>
                 </div>
 
               <div class="admin-subsection">
@@ -5866,7 +6019,7 @@ require dirname(__DIR__) . '/inc/head.php';
               <?php else: ?>
               <details class="admin-subsection">
                 <summary><strong>Dalsie nastavenia clanku</strong> - nacitat pokrocily editor len ked ho naozaj potrebujes</summary>
-                <p class="admin-note">Zakladny produktovy workflow mas vyssie. Pokrocily editor textu, porovnania a starsich override poli sa nacita az na vyziadanie, aby sa stranka po prihlaseni otvorila rychlo a stabilne.</p>
+                <p class="admin-note">Zakladny workflow mas vyssie. Tu su skryte meta polia, porovnanie, legacy odporucane produkty a dalsie vedlajsie nastavenia.</p>
                 <div class="admin-inline-actions">
                   <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;saved=advanced&amp;advanced_article=1">Otvorit pokrocily editor clanku</a>
                 </div>
@@ -5876,12 +6029,12 @@ require dirname(__DIR__) . '/inc/head.php';
               </details>
 
               <div class="admin-actions">
-                <button class="btn btn-cta" type="submit" form="article-save-form">Ulozit produkty v clanku</button>
+                <button class="btn btn-cta" type="submit" form="article-save-form">ULOZIT CLANOK</button>
                 <a class="btn btn-secondary" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
                 <details class="admin-inline-more">
                   <summary>Pokrocile</summary>
                   <div class="admin-inline-actions">
-                    <button class="btn btn-secondary" type="submit" name="action" value="save_article" form="article-save-form">Ulozit cely clanok</button>
+                    <button class="btn btn-secondary" type="submit" name="action" value="save_article" form="article-save-form">Ulozit teraz</button>
                     <button class="btn btn-secondary" type="submit" name="action" value="delete_article_override" onclick="return confirm('Naozaj resetovat admin override pre tento clanok?');">Reset override</button>
                   </div>
                 </details>
