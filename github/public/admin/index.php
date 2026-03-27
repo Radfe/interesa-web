@@ -5332,6 +5332,10 @@ require dirname(__DIR__) . '/inc/head.php';
               <?php $selectedCategory = (string) ($selectedArticleOverride['category'] ?: $selectedArticleMeta['category']); ?>
               <?php
                 $articleFeaturedSlot = 1;
+                $articleComparisonWhitelist = function_exists('interessa_article_comparison_table_whitelist')
+                    ? interessa_article_comparison_table_whitelist()
+                    : [];
+                $articleComparisonAllowed = in_array(canonical_article_slug($selectedArticleSlug), $articleComparisonWhitelist, true);
                 foreach ($articleSlotSelections as $slotIndex => $slotSlug) {
                     if ($slotSlug !== '' && (string) ($articleProductPlanMap[$slotSlug]['role'] ?? 'standard') === 'featured') {
                         $articleFeaturedSlot = (int) $slotIndex;
@@ -5502,6 +5506,24 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               </section>
 
+              <div hidden aria-hidden="true">
+                <?php foreach ($articleScopedProductOptions as $hiddenProductSlug => $hiddenProductRow): ?>
+                  <?php
+                    $hiddenProductSlug = (string) $hiddenProductSlug;
+                    $hiddenRoleValue = (string) ($articleProductPlanMap[$hiddenProductSlug]['role'] ?? 'standard');
+                    if (!in_array($hiddenRoleValue, ['featured', 'value', 'alternative', 'vegan', 'clean', 'standard'], true)) {
+                        $hiddenRoleValue = 'standard';
+                    }
+                    $hiddenPlacementValue = (string) ($articleProductPlanMap[$hiddenProductSlug]['placement'] ?? ($articleComparisonAllowed ? 'both' : 'recommended'));
+                    if (!in_array($hiddenPlacementValue, ['recommended', 'comparison', 'both', 'hidden'], true)) {
+                        $hiddenPlacementValue = $articleComparisonAllowed ? 'both' : 'recommended';
+                    }
+                  ?>
+                  <input type="hidden" form="article-save-form" name="article_product_role[<?= esc($hiddenProductSlug) ?>]" value="<?= esc($hiddenRoleValue) ?>" />
+                  <input type="hidden" form="article-save-form" name="article_product_placement[<?= esc($hiddenProductSlug) ?>]" value="<?= esc($hiddenPlacementValue) ?>" />
+                <?php endforeach; ?>
+              </div>
+
               <div class="admin-subsection" id="article-products-block">
                 <div class="admin-subsection-head">
                   <div>
@@ -5594,7 +5616,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <label>
                         <span>Rychla zmena produktu</span>
                         <?php $slotSelectOptions = $articleScopedProductOptionsBySlot[$slotIndex] ?? $articleScopedProductOptions; ?>
-                        <select name="article_product_slot[<?= esc((string) $slotIndex) ?>]" autocomplete="off">
+                        <select name="article_product_slot[<?= esc((string) $slotIndex) ?>]" autocomplete="off" form="article-save-form">
                           <option value="" <?= $slotSlug === '' ? 'selected' : '' ?>>Nechat prazdny slot</option>
                           <?php foreach ($slotSelectOptions as $optionSlug => $optionRow): ?>
                             <option value="<?= esc((string) $optionSlug) ?>" <?= $slotSlug === (string) $optionSlug ? 'selected' : '' ?>><?= esc((string) ($optionRow['name'] ?? $optionSlug)) ?></option>
@@ -5605,8 +5627,6 @@ require dirname(__DIR__) . '/inc/head.php';
                         <span class="admin-status-pill<?= esc($slotStatusClass) ?>"><?= esc($slotStatusLabel) ?></span>
                       </div>
                       <?php if (is_array($slotRow)): ?>
-                        <input type="hidden" name="article_product_role[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['role'] ?? 'standard')) ?>" />
-                        <input type="hidden" name="article_product_placement[<?= esc((string) $slotSlug) ?>]" value="<?= esc((string) ($slotRow['placement'] ?? 'recommended')) ?>" />
                         <?php if ($articleReadySlot === $slotIndex && $flash === 'product'): ?>
                           <?php
                             $slotPreviewClickUrl = trim((string) ($slotRow['click_url'] ?? ''));
@@ -5635,7 +5655,7 @@ require dirname(__DIR__) . '/inc/head.php';
                           <span class="admin-status-pill<?= esc((string) ($slotRow['state_class'] ?? ' is-warning')) ?>"><?= esc((string) ($slotRow['state_label'] ?? 'Chyba')) ?></span>
                         </div>
                         <label class="admin-check-card admin-check-card--inline">
-                          <input type="radio" name="article_product_featured_slot" value="<?= esc((string) $slotIndex) ?>" <?= $slotIndex === $articleFeaturedSlot ? 'checked' : '' ?> />
+                          <input type="radio" name="article_product_featured_slot" value="<?= esc((string) $slotIndex) ?>" form="article-save-form" <?= $slotIndex === $articleFeaturedSlot ? 'checked' : '' ?> />
                           <span><strong><?= $slotIndex === $articleFeaturedSlot ? 'Toto je hlavny produkt' : 'Oznacit ako hlavny produkt' ?></strong></span>
                         </label>
                         <div class="admin-inline-actions">
