@@ -2420,28 +2420,14 @@ if ($isAuthed) {
                     throw new RuntimeException('Vyber clanok, ktory chces ulozit.');
                 }
                 $receivedSlots = $_POST['article_product_slot'] ?? [];
-                $receivedSlot1 = trim((string) (($receivedSlots[1] ?? '') ?: ''));
-                $receivedSlot2 = trim((string) (($receivedSlots[2] ?? '') ?: ''));
-                $receivedSlot3 = trim((string) (($receivedSlots[3] ?? '') ?: ''));
                 interessa_admin_article_save_log('entered-save-article', [
                     'slug' => $slug,
                     'action' => $action,
-                    'received_slot_1' => $receivedSlot1,
-                    'received_slot_2' => $receivedSlot2,
-                    'received_slot_3' => $receivedSlot3,
+                    'received_slot_1' => trim((string) (($receivedSlots[1] ?? '') ?: '')),
+                    'received_slot_2' => trim((string) (($receivedSlots[2] ?? '') ?: '')),
+                    'received_slot_3' => trim((string) (($receivedSlots[3] ?? '') ?: '')),
                 ]);
                 $productPlan = interessa_admin_collect_article_product_plan();
-                $savedSlotsByOrder = [1 => '', 2 => '', 3 => ''];
-                foreach ($productPlan as $productPlanRow) {
-                    if (!is_array($productPlanRow)) {
-                        continue;
-                    }
-                    $slotOrder = (int) ($productPlanRow['order'] ?? 0);
-                    if ($slotOrder < 1 || $slotOrder > 3) {
-                        continue;
-                    }
-                    $savedSlotsByOrder[$slotOrder] = trim((string) ($productPlanRow['product_slug'] ?? ''));
-                }
                 interessa_admin_article_save_log('final-slot-assignments-before-save', [
                     'slug' => $slug,
                     'slot_slugs' => implode(',', array_map(
@@ -2496,17 +2482,7 @@ if ($isAuthed) {
                         array_filter($productPlan, 'is_array')
                     )),
                 ]);
-                interessa_admin_redirect('articles', [
-                    'slug' => $slug,
-                    'saved' => 'article',
-                    'debug_test' => 'article-save-slots',
-                    'post_slot_1' => $receivedSlot1,
-                    'post_slot_2' => $receivedSlot2,
-                    'post_slot_3' => $receivedSlot3,
-                    'saved_slot_1' => (string) ($savedSlotsByOrder[1] ?? ''),
-                    'saved_slot_2' => (string) ($savedSlotsByOrder[2] ?? ''),
-                    'saved_slot_3' => (string) ($savedSlotsByOrder[3] ?? ''),
-                ]);
+                interessa_admin_redirect('articles', ['slug' => $slug, 'saved' => 'article']);
             }
 
             if ($action === 'delete_product_override') {
@@ -3910,18 +3886,6 @@ if ($section === 'articles' && $selectedArticleSlug !== '' && $flash === 'articl
         'saved' => $flash,
     ]);
 }
-$articleSaveDebugMode = trim((string) ($_GET['debug_test'] ?? ''));
-$articleSaveDebugRows = [];
-if ($section === 'articles' && $articleSaveDebugMode === 'article-save-slots') {
-    $articleSaveDebugRows = [
-        'POST slot 1' => trim((string) ($_GET['post_slot_1'] ?? '')),
-        'POST slot 2' => trim((string) ($_GET['post_slot_2'] ?? '')),
-        'POST slot 3' => trim((string) ($_GET['post_slot_3'] ?? '')),
-        'SAVED slot 1' => trim((string) ($_GET['saved_slot_1'] ?? '')),
-        'SAVED slot 2' => trim((string) ($_GET['saved_slot_2'] ?? '')),
-        'SAVED slot 3' => trim((string) ($_GET['saved_slot_3'] ?? '')),
-    ];
-}
 $prefillFilledSlots = array_values(array_filter(array_map(
     static fn(string $value): string => trim($value),
     explode(',', (string) ($_GET['prefill_filled'] ?? ''))
@@ -4921,16 +4885,6 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($section === 'articles' && $saved === 'article' && $selectedArticleSlug !== ''): ?>
           <div class="admin-flash is-success">Produkty v clanku boli ulozene. Slot 1 / Slot 2 / Slot 3 teraz bezia z explicitneho article product planu.</div>
         <?php endif; ?>
-        <?php if ($section === 'articles' && $articleSaveDebugRows !== []): ?>
-          <div class="admin-flash is-success">
-            <strong>DEBUG TEST</strong> - docasny save debug pre sloty. Po potvrdeni sa odstrani.
-            <div style="margin-top:8px;">
-              <?php foreach ($articleSaveDebugRows as $debugLabel => $debugValue): ?>
-                <div><?= esc($debugLabel) ?>: <code><?= esc($debugValue !== '' ? $debugValue : '(empty)') ?></code></div>
-              <?php endforeach; ?>
-            </div>
-          </div>
-        <?php endif; ?>
         <?php if ($importSummary !== ''): ?>
           <div class="admin-flash is-success"><?= esc($importSummary) ?></div>
         <?php endif; ?>
@@ -5574,11 +5528,15 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Produkty v tomto clanku</h3>
-                    <p class="admin-meta">Vyber alebo zmen 3 produkty, oznac hlavny produkt a skontroluj ich pripravenost pred ulozenim.</p>
+                    <p class="admin-meta">Toto je hlavna pracovna cast pre produkty: vyber Slot 1 / Slot 2 / Slot 3, oznac hlavny produkt a potom uloz clanok.</p>
                   </div>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;suggest_products=1#article-product-suggestions">Navrhnut produkty</a>
                   </div>
+                </div>
+                <div class="admin-actions" style="margin-bottom:12px;">
+                  <button class="btn btn-cta" type="submit" form="article-save-form">ULOZIT CLANOK</button>
+                  <a class="btn btn-secondary" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
                 </div>
                 <p class="admin-note">Tento clanok ma pevne 3 sloty. Slot 1 alebo explicitne oznaceny slot ma byt hlavny produkt pre citatela.</p>
                 <?php if ($articleProductPlanHasExplicitSource === false): ?>
@@ -5589,7 +5547,7 @@ require dirname(__DIR__) . '/inc/head.php';
                     <div class="admin-subsection-head">
                       <div>
                         <h4>Navrhnute produkty pre tento clanok</h4>
-                        <p class="admin-meta">System ukaze TOP 3 tematicky vhodne produkty z podporovanych merchantov a importovaneho katalogu. Manual override cez sloty ostava plne dostupny.</p>
+                        <p class="admin-meta">Toto len ukazuje navrhy. Nic sa samo neulozi, kym nekliknes <strong>Do slotu X</strong> alebo <strong>Predvyplnit sloty</strong>.</p>
                       </div>
                       <div class="admin-inline-actions">
                         <button class="btn btn-secondary btn-small" type="submit" form="article-suggest-prefill-form">Predvyplnit sloty</button>
@@ -5601,11 +5559,8 @@ require dirname(__DIR__) . '/inc/head.php';
                         Preskocene sloty: <?= $prefillSkippedSlots !== [] ? esc(implode(', ', $prefillSkippedSlots)) : 'ziadne' ?>.
                       </p>
                     <?php endif; ?>
-                    <p class="admin-note">Debug: products_returned <?= esc((string) $articleSuggestedProductsCount) ?>, scoring <?= $articleSuggestedProductsScoringDone ? 'ok' : 'not-run-or-error' ?>.</p>
-                    <p class="admin-note">Debug slugs: scored <?= esc($articleSuggestedProductsSlugs !== [] ? implode(', ', $articleSuggestedProductsSlugs) : 'ziadne') ?>. loaded_slots <?= esc($articleSuggestedProductsLoadedSlotSlugs !== [] ? implode(', ', $articleSuggestedProductsLoadedSlotSlugs) : 'ziadne') ?>.</p>
                     <?php if ($articleSuggestedProductsError !== ''): ?>
                       <p class="admin-note">Pre tento článok zatiaľ nemáš importované relevantné produkty.</p>
-                      <p class="admin-note">Diagnostika: slug <?= esc((string) ($articleSuggestedProductsDiagnostics['slug'] ?? $selectedArticleSlug)) ?>, article_found <?= esc((string) ($articleSuggestedProductsDiagnostics['article_found'] ?? '0')) ?>, products_loaded <?= esc((string) ($articleSuggestedProductsDiagnostics['products_loaded'] ?? '0')) ?>, stage <?= esc((string) ($articleSuggestedProductsDiagnostics['stage'] ?? 'unknown')) ?>.</p>
                     <?php elseif ($articleSuggestedProducts !== []): ?>
                       <div class="admin-queue-list">
                         <?php foreach ($articleSuggestedProducts as $suggestedProduct): ?>
