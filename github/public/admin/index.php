@@ -4879,6 +4879,9 @@ require dirname(__DIR__) . '/inc/head.php';
       <?php endif; ?>
 
       <div class="admin-main">
+        <div class="admin-flash is-success" style="font-size:1rem;font-weight:800;border:2px solid #14532d;background:#ecfdf5;color:#14532d;">
+          ADMIN VERSION TEST: 2026-03-27-A
+        </div>
         <?php if ($flash !== ''): ?>
           <div class="admin-flash is-success">Ulozene: <?= esc($flash) ?></div>
         <?php endif; ?>
