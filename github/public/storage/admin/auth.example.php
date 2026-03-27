@@ -1,6 +1,6 @@
 <?php
 return [
-    // Copy this file to auth.php and replace the password or use password_hash.
-    'password' => 'interesa-admin',
-    // 'password_hash' => '',
+    // Legacy compatibility example for environments that still load public/storage/admin/auth.php.
+    // Prefer ../config/admin-auth.php outside public routing when possible.
+    'password_hash' => '$2y$10$replace_this_with_password_hash_generated_via_password_hash',
 ];

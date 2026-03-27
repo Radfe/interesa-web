@@ -1,8 +1,10 @@
-# Interesa.sk — čisté URL (Apache + mod_rewrite)
 Options -Indexes
 RewriteEngine On
 
-# Nepretláčaj existujúce súbory/priečinky
+# Blokuj citlive admin storage subory
+RewriteRule ^storage/admin/ - [F,L]
+
+# Nepretlacaj existujuce subory/priecinky
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
@@ -17,5 +19,5 @@ RewriteRule ^(kategorie)(/.*)?$ router.php [QSA,L]
 # Domov
 RewriteRule ^$ index.php [L]
 
-# Všetko ostatné na router
+# Vsetko ostatne na router
 RewriteRule ^.*$ router.php [QSA,L]

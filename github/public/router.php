@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 if (PHP_SAPI === 'cli-server') {
     $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+    if (preg_match('~^/storage/admin(?:/|$)~', $uriPath) === 1) {
+        http_response_code(403);
+        echo 'Forbidden';
+        exit;
+    }
     $resolved = realpath(__DIR__ . $uriPath);
     $docroot = realpath(__DIR__) ?: __DIR__;
 
@@ -16,6 +21,12 @@ require_once __DIR__ . '/inc/functions.php';
 
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 $path = rtrim($path, '/');
+
+if (preg_match('~^/storage/admin(?:/|$)~', $path) === 1) {
+    http_response_code(403);
+    echo 'Forbidden';
+    exit;
+}
 
 $send404 = static function (): void {
     http_response_code(404);

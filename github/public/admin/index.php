@@ -2223,11 +2223,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = trim((string) ($_POST['action'] ?? ''));
 
     if ($action === 'login') {
+        $rateLimit = interessa_admin_login_rate_limit_status();
+        if (!empty($rateLimit['blocked'])) {
+            $error = 'Prihlasenie je docasne zablokovane. Skus to znova o chvilu.';
+        } elseif (!interessa_admin_validate_csrf_token((string) ($_POST['csrf_token'] ?? ''), 'login')) {
+            $error = 'Prihlasenie sa nepodarilo. Skus to znova.';
+        } else {
         $password = (string) ($_POST['password'] ?? '');
         if (interessa_admin_attempt_login($password)) {
             interessa_admin_redirect($section, ['saved' => 'login']);
         }
         $error = 'Nespravne heslo pre admin.';
+        }
     }
 
     if ($action === 'logout') {
@@ -2238,7 +2245,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $isAuthed = interessa_admin_is_authenticated();
-$config = interessa_admin_auth_config();
+$loginCsrfToken = interessa_admin_csrf_token('login');
+$loginRateLimit = interessa_admin_login_rate_limit_status();
 $importSummary = '';
 $articleOptions = [];
 
@@ -4645,18 +4653,19 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($error !== ''): ?>
           <div class="admin-flash is-error"><?= esc($error) ?></div>
         <?php endif; ?>
+        <?php if (!empty($loginRateLimit['blocked'])): ?>
+          <div class="admin-flash is-error">Prihlasenie je docasne zablokovane. Skus to znova o niekolko minut.</div>
+        <?php endif; ?>
 
         <form method="post" class="admin-form admin-form-stack">
           <input type="hidden" name="action" value="login" />
+          <input type="hidden" name="csrf_token" value="<?= esc($loginCsrfToken) ?>" />
           <label>
-            <span>Heslo</span>
+            <span>Zadajte heslo</span>
             <input type="password" name="password" autocomplete="current-password" required />
           </label>
           <button class="btn btn-cta" type="submit">Prihlasit sa</button>
         </form>
-        <?php if (($config['source'] ?? 'default') === 'default'): ?>
-          <p class="admin-note">Pouziva sa docasne predvolene heslo <strong><?= esc((string) ($config['label'] ?? 'interesa-admin')) ?></strong>. Pre lokalnu zmenu vytvor <code>public/storage/admin/auth.php</code> podla <code>auth.example.php</code>.</p>
-        <?php endif; ?>
       </section>
     </div>
   <?php else: ?>

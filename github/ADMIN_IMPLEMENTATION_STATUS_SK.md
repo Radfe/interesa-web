@@ -70,6 +70,20 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsi bezpecnostny hardening admin loginu:
+- login stranka uz nesmie zobrazovat predvolene heslo, internu cestu k auth suboru ani technicke instrukcie priamo v UI
+- admin auth helper teraz preferuje `password_hash` a `password_verify`
+- podporovany je bezpecnejsi config mimo public routingu:
+  - `config/admin-auth.php`
+- legacy `public/storage/admin/auth.php` ostava docasne kompatibilny fallback, ale web access na `storage/admin` je bloknuty cez `.htaccess`
+- po login sa robi `session_regenerate_id(true)`
+- admin session cookie pouziva `httponly`, `SameSite=Lax` a `secure` pri HTTPS
+- login ma zakladny CSRF token
+- pridany je jednoduchy brute-force limit:
+  - 5 zlych pokusov
+  - docasny lock na 15 minut
+- helper `interessa_admin_is_authenticated()` ostava source of truth pre buduce admin-only ovladanie aj na verejnom webe
+
 Najnovsi UX a click-layer cleanup:
 - verejne CTA `Do obchodu` maju ist cez interni route `/go/<code>` namiesto priameho zobrazenia dlheho Dognet URL
 - admin image readiness uz nema hlasit `Obrazok chyba`, ak web realne renderuje validny remote/feed obrazok produktu
