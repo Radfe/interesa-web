@@ -1545,6 +1545,148 @@ if (!function_exists('interessa_admin_assign_product_to_article_slot')) {
     }
 }
 
+if (!function_exists('interessa_admin_direct_save_article_slot_product')) {
+    function interessa_admin_direct_save_article_slot_product(string $articleSlug, string $productSlug, int $slot, int $featuredSlot = 0): array {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        $productSlug = interessa_admin_slugify($productSlug);
+        $slot = max(1, min(3, $slot));
+        $featuredSlot = max(1, min(3, $featuredSlot > 0 ? $featuredSlot : $slot));
+        if ($articleSlug === '' || $productSlug === '') {
+            throw new RuntimeException('SLOT SAVE FAILED: chyba clanok alebo produkt pre slot.');
+        }
+
+        $originalRows = interessa_admin_article_products();
+        $articlePath = interessa_admin_article_override_path($articleSlug);
+        $articleExisted = is_file($articlePath);
+        $originalArticleJson = $articleExisted ? (string) @file_get_contents($articlePath) : '';
+        if ($articleExisted && $originalArticleJson === '') {
+            throw new RuntimeException('SLOT SAVE FAILED: nepodarilo sa precitat povodny clanok pred zapisom.');
+        }
+
+        $rows = $originalRows;
+        $comparisonAllowed = false;
+        if (function_exists('interessa_article_comparison_table_whitelist')) {
+            $comparisonAllowed = in_array($articleSlug, interessa_article_comparison_table_whitelist(), true);
+        }
+
+        $targetKey = interessa_admin_article_product_key($articleSlug, $productSlug);
+        $existing = is_array($rows[$targetKey] ?? null) ? $rows[$targetKey] : [];
+
+        foreach ($rows as $rowKey => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $normalized = interessa_admin_normalize_article_product_record($row);
+            if ((string) ($normalized['article_slug'] ?? '') !== $articleSlug) {
+                continue;
+            }
+
+            $rowProductSlug = interessa_admin_slugify((string) ($normalized['product_slug'] ?? ''));
+            $rowOrder = max(1, (int) ($normalized['order'] ?? 1));
+
+            if ($rowOrder === $slot || $rowProductSlug === $productSlug) {
+                $normalized['enabled'] = false;
+            }
+
+            $rows[$rowKey] = $normalized;
+        }
+
+        $rows[$targetKey] = interessa_admin_normalize_article_product_record(array_replace($existing, [
+            'article_slug' => $articleSlug,
+            'product_slug' => $productSlug,
+            'order' => $slot,
+            'role' => $slot === $featuredSlot ? 'featured' : 'standard',
+            'show_in_top' => true,
+            'show_in_comparison' => $comparisonAllowed,
+            'enabled' => true,
+        ]));
+
+        foreach ($rows as $rowKey => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $normalized = interessa_admin_normalize_article_product_record($row);
+            if ((string) ($normalized['article_slug'] ?? '') !== $articleSlug || empty($normalized['enabled'])) {
+                $rows[$rowKey] = $normalized;
+                continue;
+            }
+
+            $rowOrder = max(1, (int) ($normalized['order'] ?? 1));
+            $normalized['role'] = $rowOrder === $featuredSlot ? 'featured' : 'standard';
+            $normalized['show_in_top'] = true;
+            $rows[$rowKey] = interessa_admin_normalize_article_product_record($normalized);
+        }
+
+        try {
+            interessa_admin_save_article_products($rows);
+            interessa_admin_sync_article_product_override($articleSlug);
+
+            $persistedRows = interessa_admin_article_product_records_for_article($articleSlug);
+            $enabledRows = array_values(array_filter($persistedRows, static function ($row): bool {
+                return is_array($row) && !empty($row['enabled']);
+            }));
+            usort($enabledRows, static function (array $a, array $b): int {
+                return max(1, (int) ($a['order'] ?? 1)) <=> max(1, (int) ($b['order'] ?? 1));
+            });
+
+            $targetEnabledRows = array_values(array_filter($enabledRows, static function (array $row) use ($slot): bool {
+                return max(1, (int) ($row['order'] ?? 1)) === $slot;
+            }));
+            if (count($targetEnabledRows) !== 1) {
+                throw new RuntimeException('SLOT SAVE FAILED: expected one enabled product in slot ' . $slot . '.');
+            }
+
+            $enabledTargetSlug = interessa_admin_slugify((string) ($targetEnabledRows[0]['product_slug'] ?? ''));
+            if ($enabledTargetSlug !== $productSlug) {
+                throw new RuntimeException('SLOT SAVE FAILED: expected ' . $productSlug . ' in slot ' . $slot . ', but persisted article-products state does not match.');
+            }
+
+            $override = interessa_admin_article_override($articleSlug);
+            $overridePlan = array_values(array_filter((array) ($override['product_plan'] ?? []), static fn($row): bool => is_array($row)));
+            usort($overridePlan, static function (array $a, array $b): int {
+                return max(1, (int) ($a['order'] ?? 1)) <=> max(1, (int) ($b['order'] ?? 1));
+            });
+            $overrideTargetSlug = '';
+            foreach ($overridePlan as $planRow) {
+                if (max(1, (int) ($planRow['order'] ?? 1)) === $slot) {
+                    $overrideTargetSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
+                    break;
+                }
+            }
+            if ($overrideTargetSlug !== $productSlug) {
+                throw new RuntimeException('SLOT SAVE FAILED: expected ' . $productSlug . ' in slot ' . $slot . ', but article JSON product_plan does not match.');
+            }
+
+            $expectedRecommended = array_values(array_map(
+                static fn(array $row): string => interessa_admin_slugify((string) ($row['product_slug'] ?? '')),
+                $enabledRows
+            ));
+            $persistedRecommended = array_values(array_map(
+                'interessa_admin_slugify',
+                is_array($override['recommended_products'] ?? null) ? $override['recommended_products'] : []
+            ));
+            if ($persistedRecommended !== $expectedRecommended) {
+                throw new RuntimeException('SLOT SAVE FAILED: recommended_products does not match enabled slot state.');
+            }
+
+            return [
+                'success' => true,
+                'article_slug' => $articleSlug,
+                'product_slug' => $productSlug,
+                'target_slot' => $slot,
+                'featured_slot' => $featuredSlot,
+                'product_plan' => $overridePlan,
+                'recommended_products' => $persistedRecommended,
+            ];
+        } catch (Throwable $e) {
+            interessa_admin_restore_article_state($articlePath, $articleExisted, $originalArticleJson, $originalRows);
+            throw $e;
+        }
+    }
+}
+
 if (!function_exists('interessa_admin_prepare_candidate_click')) {
     function interessa_admin_prepare_candidate_click(string $id): array {
         $candidate = interessa_admin_product_candidate_record($id);

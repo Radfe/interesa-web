@@ -2656,6 +2656,33 @@ if ($isAuthed) {
                 ], 'slot-' . $targetSlot);
             }
 
+            if ($action === 'assign_article_slot_product') {
+                $articleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? '')));
+                $productSlug = trim((string) ($_POST['product_slug'] ?? ''));
+                $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
+                $featuredSlot = max(0, min(3, (int) ($_POST['featured_slot'] ?? 0)));
+                if ($articleSlug === '' || $productSlug === '' || $targetSlot < 1) {
+                    interessa_admin_redirect_fragment('articles', [
+                        'slug' => $articleSlug,
+                        'slot_error' => 'SLOT SAVE FAILED: chyba clanok, slot alebo produkt.',
+                    ], 'article-products-block');
+                }
+
+                try {
+                    $result = interessa_admin_direct_save_article_slot_product($articleSlug, $productSlug, $targetSlot, $featuredSlot);
+                    interessa_admin_redirect_fragment('articles', [
+                        'slug' => $articleSlug,
+                        'slot_message' => 'Ulozene: Slot ' . $targetSlot . ' bol zmeneny na ' . (string) ($result['product_slug'] ?? $productSlug),
+                        'slot_ready' => (string) $targetSlot,
+                    ], 'slot-' . $targetSlot);
+                } catch (Throwable $slotError) {
+                    interessa_admin_redirect_fragment('articles', [
+                        'slug' => $articleSlug,
+                        'slot_error' => trim($slotError->getMessage()) !== '' ? trim($slotError->getMessage()) : ('SLOT SAVE FAILED: expected ' . $productSlug . ' in slot ' . $targetSlot . ', but persisted state does not match'),
+                    ], 'slot-' . $targetSlot);
+                }
+            }
+
             if ($action === 'delete_affiliate_override') {
                 $code = trim((string) ($_POST['code'] ?? ''));
                 interessa_admin_delete_affiliate_record($code);
@@ -4733,6 +4760,12 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($flash !== ''): ?>
           <div class="admin-flash is-success">Ulozene: <?= esc($flash) ?></div>
         <?php endif; ?>
+        <?php if ($section === 'articles' && trim((string) ($_GET['slot_message'] ?? '')) !== ''): ?>
+          <div class="admin-flash is-success"><?= esc((string) ($_GET['slot_message'] ?? '')) ?></div>
+        <?php endif; ?>
+        <?php if ($section === 'articles' && trim((string) ($_GET['slot_error'] ?? '')) !== ''): ?>
+          <div class="admin-flash is-error"><?= esc((string) ($_GET['slot_error'] ?? '')) ?></div>
+        <?php endif; ?>
         <?php if ($section === 'articles' && $saved === 'article' && $selectedArticleSlug !== ''): ?>
           <div class="admin-flash is-success">Produkty v clanku boli ulozene. Slot 1 / Slot 2 / Slot 3 teraz bezia z explicitneho article product planu.</div>
         <?php endif; ?>
@@ -5366,7 +5399,8 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Produkty v tomto clanku</h3>
-                    <p class="admin-meta">Tu uz len vidis aktualne sloty, hlavny produkt a stav pripravenosti. Zmenu produktu rob len cez tlacidlo <strong>Vybrat alebo zmenit produkt</strong>.</p>
+                    <p class="admin-flash is-success"><strong>DIRECT SLOT SAVE MODE ACTIVE</strong></p>
+                    <p class="admin-meta">Tu uz len vidis aktualne sloty, hlavny produkt a stav pripravenosti. Zmenu produktu rob priamo tu cez vyber produktu a tlacidlo <strong>Ulozit Slot</strong>.</p>
                   </div>
                 </div>
                 <p class="admin-note">Tento clanok ma pevne 3 sloty. Slot 1 alebo explicitne oznaceny slot ma byt hlavny produkt pre citatela.</p>
@@ -5396,7 +5430,7 @@ require dirname(__DIR__) . '/inc/head.php';
                         <p class="admin-note" style="margin-top:6px;"><?= esc($slotStatusNote) ?></p>
                       </div>
                       <input type="hidden" name="article_product_slot[<?= esc((string) $slotIndex) ?>]" value="<?= esc($slotSlug) ?>" form="article-save-form" />
-                      <p class="admin-note">Produkt pre tento slot zmenis len cez tlacidlo nizsie.</p>
+                      <p class="admin-note">Slot zmenis priamo tu. Vyber produkt a klikni <strong>Ulozit Slot</strong>.</p>
                       <div class="admin-status-pills">
                         <span class="admin-status-pill<?= esc($slotStatusClass) ?>"><?= esc($slotStatusLabel) ?></span>
                       </div>
@@ -5428,22 +5462,30 @@ require dirname(__DIR__) . '/inc/head.php';
                         <div class="admin-status-pills">
                           <span class="admin-status-pill<?= esc((string) ($slotRow['state_class'] ?? ' is-warning')) ?>"><?= esc((string) ($slotRow['state_label'] ?? 'Chyba')) ?></span>
                         </div>
-                        <label class="admin-check-card admin-check-card--inline">
-                          <input type="radio" name="article_product_featured_slot" value="<?= esc((string) $slotIndex) ?>" form="article-save-form" <?= $slotIndex === $articleFeaturedSlot ? 'checked' : '' ?> />
-                          <span><strong><?= $slotIndex === $articleFeaturedSlot ? 'Toto je hlavny produkt' : 'Oznacit ako hlavny produkt' ?></strong></span>
-                        </label>
-                        <div class="admin-inline-actions">
-                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;article=<?= esc($selectedArticleSlug) ?>&amp;slot=<?= esc((string) $slotIndex) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>"><?= $slotSlug !== '' ? 'Vybrat alebo zmenit produkt' : 'Vybrat produkt' ?></a>
-                          <?php if (!empty($slotActionRow['exists']) && !empty($slotActionRow['affiliate_ready'])): ?>
-                            <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Pozriet na webe</a>
-                          <?php endif; ?>
-                        </div>
+                        <p class="admin-note"><strong><?= $slotIndex === $articleFeaturedSlot ? 'Toto je hlavny produkt.' : 'Hlavny produkt je teraz Slot ' . $articleFeaturedSlot . '.' ?></strong></p>
                       <?php else: ?>
                         <p class="admin-note">Ziadny produkt nie je priradeny.</p>
-                        <div class="admin-inline-actions">
-                          <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;article=<?= esc($selectedArticleSlug) ?>&amp;slot=<?= esc((string) $slotIndex) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>">Vybrat produkt pre slot</a>
-                        </div>
                       <?php endif; ?>
+                      <?php $slotOptions = is_array($articleScopedProductOptionsBySlot[$slotIndex] ?? null) ? $articleScopedProductOptionsBySlot[$slotIndex] : $articleScopedProductOptions; ?>
+                      <form method="post" action="/admin" class="admin-inline-form" style="margin-top:12px;">
+                        <input type="hidden" name="action" value="assign_article_slot_product" />
+                        <input type="hidden" name="article_slug" value="<?= esc($selectedArticleSlug) ?>" />
+                        <input type="hidden" name="target_slot" value="<?= esc((string) $slotIndex) ?>" />
+                        <input type="hidden" name="featured_slot" value="<?= esc((string) $articleFeaturedSlot) ?>" />
+                        <label class="admin-inline-select">
+                          <span>Produkt pre Slot <?= esc((string) $slotIndex) ?></span>
+                          <select name="product_slug">
+                            <option value="">Vyber produkt</option>
+                            <?php foreach ($slotOptions as $optionSlug => $optionRow): ?>
+                              <option value="<?= esc((string) $optionSlug) ?>" <?= (string) $optionSlug === $slotSlug ? 'selected' : '' ?>><?= esc((string) ($optionRow['name'] ?? $optionSlug)) ?></option>
+                            <?php endforeach; ?>
+                          </select>
+                        </label>
+                        <button class="btn btn-cta btn-small" type="submit">Ulozit Slot</button>
+                        <?php if (!empty($slotActionRow['exists']) && !empty($slotActionRow['affiliate_ready'])): ?>
+                          <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Pozriet na webe</a>
+                        <?php endif; ?>
+                      </form>
                     </section>
                   <?php endfor; ?>
                 </div>
@@ -6924,19 +6966,14 @@ require dirname(__DIR__) . '/inc/head.php';
               <input type="hidden" name="action" value="save_product" />
               <input type="hidden" name="return_section" value="<?= esc($productReturnSection) ?>" />
               <?php if ($productReturnSlug !== ""): ?><input type="hidden" name="return_slug" value="<?= esc($productReturnSlug) ?>" /><?php endif; ?>
-              <?php if ($returnArticlePrefill !== ""): ?><input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" /><?php endif; ?>
-              <?php if ($returnArticleSlotPrefill > 0): ?><input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" /><?php endif; ?>
               <div id="product-edit-form" class="admin-subsection is-compact<?= $focusPanel === 'product_edit' ? ' is-focused' : '' ?>">
                 <div class="admin-subsection-head">
                   <div>
-                    <h3><?= $articleSlotMode ? 'Ulozit produkt pre tento slot' : 'Tu doplnis produkt' ?></h3>
-                    <p class="admin-meta"><?= $articleSlotMode ? 'Tu ulozis produktove udaje. Po ulozeni sa vratis priamo naspat na clanok a slot sa hned aktualizuje.' : 'Toto je rucna uprava jedneho produktu. Hlavny workflow je vyber z navrhnutych produktov pri clanku.' ?></p>
-                    <?php if ($returnArticlePrefill !== '' && $returnArticleSlotPrefill > 0): ?>
-                      <p class="admin-note"><strong>Po ulozeni sa tento produkt priradi do clanku <?= esc($returnArticlePrefill) ?> / Slot <?= esc((string) $returnArticleSlotPrefill) ?>.</strong></p>
-                    <?php endif; ?>
+                    <h3>Tu doplnis produkt</h3>
+                    <p class="admin-meta">Toto je rucna uprava jedneho produktu. Hlavny workflow pre sloty je priamo v editore clanku.</p>
                   </div>
                 </div>
-                <div class="admin-flash is-success" style="margin-bottom:16px;"><?= $articleSlotMode ? 'Rucne doplnenie produktu pre slot: pouzi len ked navrhy nestacia alebo opravujes konkretny produkt.' : 'Rucny produktovy workflow: pouzi len ked automaticke navrhy pri clanku nestacia.' ?></div>
+                <div class="admin-flash is-success" style="margin-bottom:16px;">Rucny produktovy workflow: pouzi len ked automaticke navrhy pri clanku nestacia.</div>
                 <input type="hidden" name="product_slug" value="<?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?>" />
                 <input type="hidden" name="merchant_slug" value="<?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?>" />
                 <p class="admin-note"><strong>Kod produktu:</strong> <?= esc((string) ($selectedProduct['slug'] ?? $selectedProductSlug)) ?><?php if (trim((string) ($selectedProduct['merchant_slug'] ?? '')) !== ''): ?> / <strong>Kod obchodu:</strong> <?= esc((string) ($selectedProduct['merchant_slug'] ?? '')) ?><?php endif; ?></p>
@@ -7017,7 +7054,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               </details>
               <div class="admin-actions">
-                <button class="btn btn-cta" type="submit"><?= $articleSlotMode ? 'Ulozit produkt a vratit sa do clanku' : 'Ulozit produkt' ?></button>
+                <button class="btn btn-cta" type="submit">Ulozit produkt</button>
                 <button class="btn btn-secondary" type="submit" name="action" value="delete_product_override" onclick="return confirm('Naozaj zmazat admin override produktu?');">Zmazat override produktu</button>
               </div>
               </div>
