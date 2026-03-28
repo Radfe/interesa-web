@@ -96,6 +96,11 @@ Najnovsi obrazkovy zaver:
 - handoff zapisany do:
   - [WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md](C:/data/praca/webova_stranka/github/WEB_TO_ADMIN_IMAGE_STATUS_HANDOFF_2026-03-17_SK.md)
 
+Najnovsie dorovnanie article hero vrstvy:
+- prioritne clanky maju teraz zjednoteny hero naming a Canva prompt brief
+- pre prioritne clanky boli dorovnane realne hero asset cesty do admin article JSON
+- `najlepsie-proteiny-2026` uz ma pripraveny aj vlastny hero asset subor, aby neostal bez obrazku pri deployi
+
 Najnovsi brand/Canva zaver:
 - admin uz ma sekciu `Logo a ikonka`, prompty pre Canvu aj automaticku pripravu icon bundle
 - netreba novy brand system od nuly

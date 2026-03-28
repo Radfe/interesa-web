@@ -16,7 +16,7 @@ if (!function_exists('interessa_hero_prompt_registry')) {
 
 if (!function_exists('interessa_hero_visual_style')) {
     function interessa_hero_visual_style(): string {
-        return 'Realistic editorial hero visual, bright minimal background, soft pastel palette, natural light, premium health and fitness look, no text, no logo, no collage.';
+        return 'Realistic editorial supplement hero visual, clean white or soft pastel background, soft natural lighting, minimal composition, modern fitness and wellness aesthetic, premium but believable product context, no text, no logo, no collage, consistent centered framing.';
     }
 }
 
@@ -54,14 +54,18 @@ if (!function_exists('interessa_build_hero_prompt')) {
 
 if (!function_exists('interessa_hero_prompt_meta')) {
     function interessa_hero_prompt_meta(string $slug): array {
-        $canonicalSlug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : $slug;
+        $requestedSlug = trim($slug);
+        $canonicalSlug = function_exists('canonical_article_slug') ? canonical_article_slug($requestedSlug) : $requestedSlug;
         $registry = interessa_hero_prompt_registry();
-        $item = $registry[$canonicalSlug] ?? [];
-        $meta = article_meta($canonicalSlug);
+        $item = $registry[$requestedSlug] ?? $registry[$canonicalSlug] ?? [];
+        $meta = article_meta($requestedSlug);
+        if (!is_array($meta) || $meta === []) {
+            $meta = article_meta($canonicalSlug);
+        }
 
         $title = trim((string) ($item['title'] ?? ($meta['title'] ?? '')));
         if ($title === '') {
-            $title = humanize_slug($canonicalSlug);
+            $title = humanize_slug($requestedSlug !== '' ? $requestedSlug : $canonicalSlug);
         }
         if (function_exists('interessa_fix_mojibake')) {
             $title = interessa_fix_mojibake($title);
@@ -69,8 +73,9 @@ if (!function_exists('interessa_hero_prompt_meta')) {
 
         $category = normalize_category_slug((string) ($item['category'] ?? ($meta['category'] ?? '')));
         $targetFolder = (string) ($item['target_folder'] ?? 'public/assets/img/articles/heroes/');
-        $assetPath = (string) ($item['asset_path'] ?? ($targetFolder . $canonicalSlug . '.webp'));
-        $fileName = (string) ($item['file_name'] ?? ($canonicalSlug . '.webp'));
+        $defaultSlug = $requestedSlug !== '' ? $requestedSlug : $canonicalSlug;
+        $assetPath = (string) ($item['asset_path'] ?? ($targetFolder . $defaultSlug . '.webp'));
+        $fileName = (string) ($item['file_name'] ?? ($defaultSlug . '.webp'));
         $altText = (string) ($item['alt_text'] ?? $title);
         if (function_exists('interessa_fix_mojibake')) {
             $altText = interessa_fix_mojibake($altText);

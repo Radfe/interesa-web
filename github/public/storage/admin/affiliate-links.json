@@ -98,6 +98,15 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
+    "gymbeam-activlab-black-wolf-multifruit": {
+        "code": "gymbeam-activlab-black-wolf-multifruit",
+        "url": "https://gymbeam.sk/predtreningovy-stimulant-black-wolf-activlab.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-activlab-black-wolf-multifruit",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
+    },
     "gymbeam-activlab-black-wolf-multifruit-gymbeam": {
         "code": "gymbeam-activlab-black-wolf-multifruit-gymbeam",
         "url": "https://gymbeam.sk/predtreningovy-stimulant-black-wolf-activlab.html",
@@ -12823,6 +12832,15 @@
         "product_slug": "gymbeam-gymbeam-creatine-dextrose-zelen-e-jablko",
         "link_type": "product",
         "source": "supported-affiliate-feed"
+    },
+    "gymbeam-gymbeam-creatine-hcl-bez-pr-ichute": {
+        "code": "gymbeam-gymbeam-creatine-hcl-bez-pr-ichute",
+        "url": "https://gymbeam.sk/kreatin-hcl-gymbeam-105427.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-gymbeam-creatine-hcl-bez-pr-ichute",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
     },
     "gymbeam-gymbeam-creatine-hcl-bez-pr-ichute-gymbeam": {
         "code": "gymbeam-gymbeam-creatine-hcl-bez-pr-ichute-gymbeam",
@@ -30653,6 +30671,15 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
+    "gymbeam-gymbeam-kreat-in-100-creapure-r": {
+        "code": "gymbeam-gymbeam-kreat-in-100-creapure-r",
+        "url": "https://gymbeam.sk/kreatin-100-creapurer-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-gymbeam-kreat-in-100-creapure-r",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
+    },
     "gymbeam-gymbeam-kreat-in-100-creapure-r-gymbeam": {
         "code": "gymbeam-gymbeam-kreat-in-100-creapure-r-gymbeam",
         "url": "https://gymbeam.sk/kreatin-100-creapurer-gymbeam.html",
@@ -31192,6 +31219,15 @@
         "product_slug": "gymbeam-gymbeam-lactobacillus-gasseri",
         "link_type": "product",
         "source": "supported-affiliate-feed"
+    },
+    "gymbeam-gymbeam-lactobacillus-rhamnosus": {
+        "code": "gymbeam-gymbeam-lactobacillus-rhamnosus",
+        "url": "https://gymbeam.sk/lactobacillus-rhamnosus-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-gymbeam-lactobacillus-rhamnosus",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
     },
     "gymbeam-gymbeam-lactobacillus-rhamnosus-gymbeam": {
         "code": "gymbeam-gymbeam-lactobacillus-rhamnosus-gymbeam",
@@ -31814,6 +31850,15 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
+    "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute": {
+        "code": "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
+        "url": "https://gymbeam.sk/magnezium-chelat-bisglycinat-prasok-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
+    },
     "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute-gymbeam": {
         "code": "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute-gymbeam",
         "url": "https://gymbeam.sk/magnezium-chelat-bisglycinat-prasok-gymbeam.html",
@@ -31822,6 +31867,15 @@
         "product_slug": "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
         "link_type": "product",
         "source": "supported-affiliate-feed"
+    },
+    "gymbeam-gymbeam-magnesium-shot-citr-on": {
+        "code": "gymbeam-gymbeam-magnesium-shot-citr-on",
+        "url": "https://gymbeam.sk/magneziovy-shot-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-gymbeam-magnesium-shot-citr-on",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
     },
     "gymbeam-gymbeam-magnesium-shot-citr-on-gymbeam": {
         "code": "gymbeam-gymbeam-magnesium-shot-citr-on-gymbeam",
@@ -41633,6 +41687,15 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
+    "gymbeam-gymbeam-probio-complex": {
+        "code": "gymbeam-gymbeam-probio-complex",
+        "url": "https://gymbeam.sk/probio-complex-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-gymbeam-probio-complex",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
+    },
     "gymbeam-gymbeam-probio-complex-gymbeam": {
         "code": "gymbeam-gymbeam-probio-complex-gymbeam",
         "url": "https://gymbeam.sk/probio-complex-gymbeam.html",
@@ -42172,6 +42235,15 @@
         "product_slug": "gymbeam-gymbeam-pupalkov-y-olej",
         "link_type": "product",
         "source": "supported-affiliate-feed"
+    },
+    "gymbeam-gymbeam-pure-isowhey-bez-pr-ichute": {
+        "code": "gymbeam-gymbeam-pure-isowhey-bez-pr-ichute",
+        "url": "https://gymbeam.sk/pure-isowhey-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-gymbeam-pure-isowhey-bez-pr-ichute",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
     },
     "gymbeam-gymbeam-pure-isowhey-bez-pr-ichute-gymbeam": {
         "code": "gymbeam-gymbeam-pure-isowhey-bez-pr-ichute-gymbeam",
@@ -57590,6 +57662,15 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
+    "gymbeam-gymbeam-vitamin-d3-k1-k2-forte": {
+        "code": "gymbeam-gymbeam-vitamin-d3-k1-k2-forte",
+        "url": "https://gymbeam.sk/vitamin-d3-k1-k2-forte-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-gymbeam-vitamin-d3-k1-k2-forte",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
+    },
     "gymbeam-gymbeam-vitamin-d3-k1-k2-forte-gymbeam": {
         "code": "gymbeam-gymbeam-vitamin-d3-k1-k2-forte-gymbeam",
         "url": "https://gymbeam.sk/vitamin-d3-k1-k2-forte-gymbeam.html",
@@ -59336,6 +59417,15 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
+    "gymbeam-just-whey": {
+        "code": "gymbeam-just-whey",
+        "url": "https://gymbeam.sk/just-whey-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-just-whey",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
+    },
     "gymbeam-kacacie-prsia-gymbeam-gymbeam": {
         "code": "gymbeam-kacacie-prsia-gymbeam-gymbeam",
         "url": "https://gymbeam.sk/kacacie-prsia-gymbeam.html",
@@ -59947,6 +60037,15 @@
         "product_slug": "gymbeam-m-oller-s-omega-3-pr-irodn-a-chut",
         "link_type": "product",
         "source": "supported-affiliate-feed"
+    },
+    "gymbeam-magnesium-citrate-caps": {
+        "code": "gymbeam-magnesium-citrate-caps",
+        "url": "https://gymbeam.sk/magnezium-citrat-caps-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-magnesium-citrate-caps",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
     },
     "gymbeam-mammut-nutrition-amylopektin-waxy-maize-gain-gymbeam": {
         "code": "gymbeam-mammut-nutrition-amylopektin-waxy-maize-gain-gymbeam",
@@ -61838,6 +61937,15 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
+    "gymbeam-nutrend-pre-workout-pump-berry-splash": {
+        "code": "gymbeam-nutrend-pre-workout-pump-berry-splash",
+        "url": "https://gymbeam.sk/predtreningovy-stimulant-pump-nutrend.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-nutrend-pre-workout-pump-berry-splash",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
+    },
     "gymbeam-nutrend-pre-workout-pump-berry-splash-gymbeam": {
         "code": "gymbeam-nutrend-pre-workout-pump-berry-splash-gymbeam",
         "url": "https://gymbeam.sk/predtreningovy-stimulant-pump-nutrend.html",
@@ -61846,6 +61954,15 @@
         "product_slug": "gymbeam-nutrend-pre-workout-pump-berry-splash",
         "link_type": "product",
         "source": "supported-affiliate-feed"
+    },
+    "gymbeam-nutrend-pre-workout-pump-rainbow": {
+        "code": "gymbeam-nutrend-pre-workout-pump-rainbow",
+        "url": "https://gymbeam.sk/predtreningovy-stimulant-pump-nutrend.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-nutrend-pre-workout-pump-rainbow",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
     },
     "gymbeam-nutrend-pre-workout-pump-rainbow-gymbeam": {
         "code": "gymbeam-nutrend-pre-workout-pump-rainbow-gymbeam",
@@ -62611,6 +62728,15 @@
         "product_slug": "gymbeam-podprsenka-string-bralette-white-strix-xxlxxl",
         "link_type": "product",
         "source": "supported-affiliate-feed"
+    },
+    "gymbeam-probioten": {
+        "code": "gymbeam-probioten",
+        "url": "https://gymbeam.sk/probioten-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-probioten",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
     },
     "gymbeam-probioten-gymbeam-bez-pr-ichute-gymbeam": {
         "code": "gymbeam-probioten-gymbeam-bez-pr-ichute-gymbeam",
@@ -76130,6 +76256,15 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
+    "gymbeam-true-whey": {
+        "code": "gymbeam-true-whey",
+        "url": "https://gymbeam.sk/true-whey-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-true-whey",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
+    },
     "gymbeam-under-armour-batoh-studio-lite-black-gymbeam": {
         "code": "gymbeam-under-armour-batoh-studio-lite-black-gymbeam",
         "url": "https://gymbeam.sk/batoh-studio-lite-black-under-armour.html",
@@ -82097,50 +82232,11 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
-    "protein-na-chudnutie-gymbeam": {
-        "code": "protein-na-chudnutie-gymbeam",
-        "url": "https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Ftrue-whey-gymbeam.html",
-        "merchant": "GymBeam",
-        "merchant_slug": "gymbeam",
-        "product_slug": "gymbeam-true-whey",
-        "link_type": "affiliate",
-        "source": "admin-panel"
-    },
-    "kreatin-porovnanie-proteinsk": {
-        "code": "kreatin-porovnanie-proteinsk",
-        "url": "https://www.protein.sk/100-pure-creatine-scitec-nutrition-produkt",
-        "merchant": "Protein.sk",
-        "product_slug": "proteinsk-kreatin-monohydrat-value"
-    },
-    "proteinsk-100-whey-protein-nutrend": {
-        "code": "proteinsk-100-whey-protein-nutrend",
-        "url": "https://www.protein.sk/whey-protein-nutrend",
-        "merchant": "Protein.sk",
-        "product_slug": "proteinsk-100-whey-protein-nutrend"
-    },
-    "proteinsk-kolagen-protein-nutrition": {
-        "code": "proteinsk-kolagen-protein-nutrition",
-        "url": "https://www.protein.sk/kolagen/protein-nutrition",
-        "merchant": "Protein.sk",
-        "product_slug": "proteinsk-kolagen-protein-nutrition"
-    },
-    "ironaesthetics-kofein-100-tab": {
-        "code": "ironaesthetics-kofein-100-tab",
-        "url": "https://ironaesthetics.sk/anabolizery-a-stimulanty/1847-kofein-90-tab-iron-aesthetics.html",
-        "merchant": "Iron Aesthetics",
-        "product_slug": "ironaesthetics-kofein-100-tab"
-    },
-    "ironaesthetics-arginin-akg-100-tab": {
-        "code": "ironaesthetics-arginin-akg-100-tab",
-        "url": "https://ironaesthetics.sk/aminokyseliny-a-bcaa/1845-arginin-akg-100-tab-iron-aesthetics.html",
-        "merchant": "Iron Aesthetics",
-        "product_slug": "ironaesthetics-arginin-akg-100-tab"
-    },
-    "ironaesthetics-synefrin-100-tab": {
-        "code": "ironaesthetics-synefrin-100-tab",
-        "url": "https://ironaesthetics.sk/1852-synefrin-90-tab-iron-aesthetics.html",
-        "merchant": "Iron Aesthetics",
-        "product_slug": "ironaesthetics-synefrin-100-tab"
+    "imunoklub-imunoglukan-p4h-250-ml": {
+        "code": "imunoklub-imunoglukan-p4h-250-ml",
+        "url": "https://www.imunoklub.sk/eshop/imunoglukan-p4h-250-ml.html?page_id=61",
+        "merchant": "Imunoklub",
+        "product_slug": "imunoklub-imunoglukan-p4h-250-ml"
     },
     "imunoklub-imunoglukan-p4h-60-kapsul": {
         "code": "imunoklub-imunoglukan-p4h-60-kapsul",
@@ -82154,22 +82250,70 @@
         "merchant": "Imunoklub",
         "product_slug": "imunoklub-imunoglukan-p4h-prod-60-kapsul"
     },
-    "imunoklub-imunoglukan-p4h-250-ml": {
-        "code": "imunoklub-imunoglukan-p4h-250-ml",
-        "url": "https://www.imunoklub.sk/eshop/imunoglukan-p4h-250-ml.html?page_id=61",
-        "merchant": "Imunoklub",
-        "product_slug": "imunoklub-imunoglukan-p4h-250-ml"
+    "ironaesthetics-arginin-akg-100-tab": {
+        "code": "ironaesthetics-arginin-akg-100-tab",
+        "url": "https://ironaesthetics.sk/aminokyseliny-a-bcaa/1845-arginin-akg-100-tab-iron-aesthetics.html",
+        "merchant": "Iron Aesthetics",
+        "product_slug": "ironaesthetics-arginin-akg-100-tab"
     },
-    "symprove-daily-essential-4-tyzdne": {
-        "code": "symprove-daily-essential-4-tyzdne",
-        "url": "https://www.symprove.sk/products/daily-essential",
-        "merchant": "Symprove",
-        "product_slug": "symprove-daily-essential-4-tyzdne"
+    "ironaesthetics-kofein-100-tab": {
+        "code": "ironaesthetics-kofein-100-tab",
+        "url": "https://ironaesthetics.sk/anabolizery-a-stimulanty/1847-kofein-90-tab-iron-aesthetics.html",
+        "merchant": "Iron Aesthetics",
+        "product_slug": "ironaesthetics-kofein-100-tab"
+    },
+    "ironaesthetics-synefrin-100-tab": {
+        "code": "ironaesthetics-synefrin-100-tab",
+        "url": "https://ironaesthetics.sk/1852-synefrin-90-tab-iron-aesthetics.html",
+        "merchant": "Iron Aesthetics",
+        "product_slug": "ironaesthetics-synefrin-100-tab"
+    },
+    "kreatin-porovnanie-proteinsk": {
+        "code": "kreatin-porovnanie-proteinsk",
+        "url": "https://www.protein.sk/100-pure-creatine-scitec-nutrition-produkt",
+        "merchant": "Protein.sk",
+        "product_slug": "proteinsk-kreatin-monohydrat-value"
+    },
+    "protein-na-chudnutie-gymbeam": {
+        "code": "protein-na-chudnutie-gymbeam",
+        "url": "https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Ftrue-whey-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-true-whey",
+        "link_type": "affiliate",
+        "source": "admin-panel"
+    },
+    "proteinsk-100-whey-protein-nutrend": {
+        "code": "proteinsk-100-whey-protein-nutrend",
+        "url": "https://www.protein.sk/whey-protein-nutrend",
+        "merchant": "Protein.sk",
+        "product_slug": "proteinsk-100-whey-protein-nutrend"
+    },
+    "proteinsk-kolagen-protein-nutrition": {
+        "code": "proteinsk-kolagen-protein-nutrition",
+        "url": "https://www.protein.sk/kolagen/protein-nutrition",
+        "merchant": "Protein.sk",
+        "product_slug": "proteinsk-kolagen-protein-nutrition"
+    },
+    "proteinsk-kreatin-monohydrat-value": {
+        "code": "proteinsk-kreatin-monohydrat-value",
+        "url": "https://www.protein.sk/100-pure-creatine-scitec-nutrition-produkt",
+        "merchant": "Protein.sk",
+        "merchant_slug": "protein-sk",
+        "product_slug": "proteinsk-kreatin-monohydrat-value",
+        "link_type": "product",
+        "source": "admin-affiliate-integrity-fix"
     },
     "symprove-daily-essential-12-tyzdnov": {
         "code": "symprove-daily-essential-12-tyzdnov",
         "url": "https://www.symprove.sk/products/daily-essential?variant=41577951002742&view=default",
         "merchant": "Symprove",
         "product_slug": "symprove-daily-essential-12-tyzdnov"
+    },
+    "symprove-daily-essential-4-tyzdne": {
+        "code": "symprove-daily-essential-4-tyzdne",
+        "url": "https://www.symprove.sk/products/daily-essential",
+        "merchant": "Symprove",
+        "product_slug": "symprove-daily-essential-4-tyzdne"
     }
 }

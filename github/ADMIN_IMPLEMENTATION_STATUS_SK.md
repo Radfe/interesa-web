@@ -138,6 +138,15 @@ Najnovsia stabilizacia Dognet importu a deeplink vrstvy:
   - fallback URL
   - product slugu
   automaticky skusa affiliate lookup cez resolver
+
+Najnovsie zjednotenie hero workflow pre prioritne clanky:
+- priority clanky maju zjednoteny Canva-ready hero prompt standard
+- article JSON uz ma doplnene `hero_asset` pre prioritne clanky
+- prompt registry pre priority clanky uz obsahuje:
+  - finalny naming
+  - finalnu asset path
+  - jednotny visual brief
+- pre `najlepsie-proteiny-2025 / 2026` je pripraveny aj zdielany hero asset, aby admin neostal v stave bez realneho obrazku
 - ak uz system pozna vhodny deeplink pre ten isty produkt alebo merchant/URL match, pouzije ho hned bez dalsieho rucneho kroku
 - ak sa nic nenajde, produkt sa neblokuje a ostane direct fallback URL
 - canonical affiliate merchant set je teraz zúzeny na 5 podporovanych Dognet merchantov:

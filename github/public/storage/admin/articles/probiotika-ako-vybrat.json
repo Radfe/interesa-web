@@ -5,7 +5,7 @@
     "meta_title": "Ako vybrať probiotiká: kmene, CFU a praktický výber podľa použitia",
     "meta_description": "Praktický sprievodca výberom probiotík. Zisti, ako čítať kmene, CFU, kedy má zmysel jednoduchý everyday produkt a ktoré tri voľby sú dnes najpraktickejšie.",
     "category": "probiotika-travenie",
-    "hero_asset": "",
+    "hero_asset": "img/articles/heroes/probiotika-ako-vybrat.webp",
     "sections": [
         {
             "heading": "Rýchle rozhodnutie: ktoré probiotiká vybrať",
@@ -70,6 +70,6 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-28T20:18:38+00:00",
+    "updated_at": "2026-03-28T21:27:06+00:00",
     "updated_by": "admin"
 }

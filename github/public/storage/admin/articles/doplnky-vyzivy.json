@@ -5,7 +5,7 @@
     "meta_title": "Doplnky výživy 2026: základný výber podľa cieľa a praktického použitia",
     "meta_description": "Praktický výber doplnkov výživy pre rok 2026. Kreatín, horčík a vitamín D ako základ, ktorý dáva zmysel pre väčšinu ľudí podľa cieľa a režimu.",
     "category": "vyziva",
-    "hero_asset": "",
+    "hero_asset": "img/articles/heroes/doplnky-vyzivy.webp",
     "sections": [
         {
             "heading": "Rýchle rozhodnutie: s čím začať",
@@ -70,6 +70,6 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-28T20:18:38+00:00",
+    "updated_at": "2026-03-28T21:27:06+00:00",
     "updated_by": "admin"
 }

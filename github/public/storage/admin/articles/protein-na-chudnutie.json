@@ -5,7 +5,7 @@
     "meta_title": "Proteín na chudnutie: ktorý typ vybrať a čo dáva najväčší zmysel",
     "meta_description": "Praktický sprievodca výberom proteínu na chudnutie. Kedy dáva zmysel isolate, kedy stačí whey a ktoré tri produkty sú dnes najpraktickejšia voľba.",
     "category": "proteiny",
-    "hero_asset": "",
+    "hero_asset": "img/articles/heroes/protein-na-chudnutie.webp",
     "sections": [
         {
             "heading": "Rýchle rozhodnutie: čo dáva pri chudnutí najväčší zmysel",
@@ -70,6 +70,6 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-28T20:18:38+00:00",
+    "updated_at": "2026-03-28T21:27:06+00:00",
     "updated_by": "admin"
 }
