@@ -32,9 +32,6 @@ return [
     'chudnutie' => [
         'hero' => ['asset' => 'img/cards/proteiny.webp', 'alt' => 'Ilustračný vizuál kategórie chudnutie'],
     ],
-    'doplnkove-prislusenstvo' => [
-        'hero' => ['asset' => 'img/cards/vyziva.webp', 'alt' => 'Ilustračný vizuál kategórie doplnkové príslušenstvo'],
-    ],
     'kreatin' => [
         'hero' => ['asset' => 'img/cards/proteiny.webp', 'alt' => 'Ilustračný vizuál kategórie kreatín'],
     ],

@@ -14,13 +14,13 @@
         "rows": []
     },
     "recommended_products": [
-        "gymbeam-cellucor-c4-original-frozen-bombsicle",
+        "gymbeam-activlab-black-wolf-multifruit",
         "gymbeam-nutrend-pre-workout-pump-berry-splash",
         "gymbeam-nutrend-pre-workout-pump-rainbow"
     ],
     "product_plan": [
         {
-            "product_slug": "gymbeam-cellucor-c4-original-frozen-bombsicle",
+            "product_slug": "gymbeam-activlab-black-wolf-multifruit",
             "order": 1,
             "role": "featured",
             "show_in_top": true,
@@ -41,6 +41,6 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-26T13:51:59+00:00",
+    "updated_at": "2026-03-28T18:32:10+00:00",
     "updated_by": "admin"
 }

@@ -159,11 +159,11 @@ $homeThemeIntentGroups = [
     [
         'title' => 'Dories detail alebo specialitu',
         'description' => 'Doplnkove temy pomozu, ked uz nechces studovat zaklad, ale hladat uzsi vyber.',
-        'links' => ['kreatin', 'pre-workout', 'probiotika-travenie', 'aminokyseliny', 'doplnkove-prislusenstvo'],
+        'links' => ['kreatin', 'pre-workout', 'probiotika-travenie', 'aminokyseliny'],
     ],
 ];
 
-$homeSupportThemeSlugs = ['chudnutie', 'kreatin', 'pre-workout', 'probiotika-travenie', 'aminokyseliny', 'doplnkove-prislusenstvo'];
+$homeSupportThemeSlugs = ['chudnutie', 'kreatin', 'pre-workout', 'probiotika-travenie', 'aminokyseliny'];
 $homeSupportThemes = [];
 foreach ($homeSupportThemeSlugs as $slug) {
     $meta = category_meta($slug);

@@ -1424,7 +1424,6 @@ function interessa_admin_category_image_brief(string $slug, string $variant = 'h
         'klby-koza' => 'svetla kremova a broskynova',
         'aminokyseliny' => 'svetla ruzova a modra',
         'chudnutie' => 'svieza ruzova a kremova',
-        'doplnkove-prislusenstvo' => 'cista sediva a svetla modra',
         'kreatin' => 'jemna modra a tmavsia sediva',
         'pre-workout' => 'energicka ruzova a tyrkysova',
         'probiotika-travenie' => 'cista zelena a svetla modra',
@@ -1438,7 +1437,6 @@ function interessa_admin_category_image_brief(string $slug, string $variant = 'h
         'klby-koza' => 'kolagen, kozmeticky doplnok alebo clean wellness produkt',
         'aminokyseliny' => 'sportovy shaker, aminokyseliny alebo sportovy editorial',
         'chudnutie' => 'lahky fitness editorial a clean produktovy doplnok',
-        'doplnkove-prislusenstvo' => 'saker, krabicka, doplnkove prislusenstvo alebo clean desk setup',
         'kreatin' => 'kreatinovy produkt, shaker a silovy editorial',
         'pre-workout' => 'predtrenigovka, shaker alebo energicky workout editorial',
         'probiotika-travenie' => 'probiotika, travenie, wellness editorial alebo clean supplement detail',
@@ -1516,12 +1514,6 @@ function interessa_admin_category_visual_direction(string $slug): array {
             'accent' => 'Svetla zelena, biela, jemna ruzova',
             'motif' => 'Pohyb, lahkost, wellness, zdrava zmena',
             'message' => 'Lahkost, disciplina a zdrava premena',
-        ],
-        'doplnkove-prislusenstvo' => [
-            'style' => 'Produktovy detail',
-            'accent' => 'Seda, cierna, biela',
-            'motif' => 'Shakery, flasky, doplnky, cisty studiovy stol',
-            'message' => 'Praktickost, poriadok a jednoduche pouzitie',
         ],
         'kreatin' => [
             'style' => 'Produktovy a silovy',

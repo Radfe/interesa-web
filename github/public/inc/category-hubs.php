@@ -128,21 +128,6 @@ if (!function_exists('interessa_category_hubs')) {
                     ['slug' => 'spalovace-tukov-realita', 'label' => 'Spalovace', 'description' => 'Co je pri spalovacoch realita a co len marketing.'],
                 ],
             ],
-            'doplnkove-prislusenstvo' => [
-                'title' => 'Doplnkove prislusenstvo',
-                'description' => 'Prakticke doplnky, rutina a pomocne veci okolo suplementacie a treningu.',
-                'intro' => 'Tato kategoria je zatial skor podporny hub nez plnohodnotna obsahova sekcia. Zameriava sa na prakticku stranku suplementacie: co ma zmysel riesit v rutine, davkovani a organizacii doplnkov.',
-                'focus_points' => [
-                    'Najprv si uprac rutinu a davkovanie, az potom kupuj dalsie produkty navyse.',
-                    'Praktickost pouzivania casto rozhoduje o tom, ci doplnok budes realne uzivat dlhodobo.',
-                    'Pomocne prislusenstvo ma zmysel len vtedy, ked zjednodusuje konzistentnost.',
-                ],
-                'featured_guides' => [
-                    ['slug' => 'doplnky-vyzivy', 'label' => 'Rutina', 'description' => 'Zakladny vyber doplnkov, ktory pomoze upratat kazdodennu suplementaciu.'],
-                    ['slug' => 'kedy-brat-kreatin-a-kolko', 'label' => 'Davkovanie', 'description' => 'Prakticky clanok o nacasovani a jednoduchosti davkovania kreatinu.'],
-                    ['slug' => 'pre-workout-ako-vybrat', 'label' => 'Trening', 'description' => 'Ako si vybrat predtreningovku bez zbytocneho chaosu a prestreleneho stimu.'],
-                ],
-            ],
             'kreatin' => [
                 'title' => 'Kreatin',
                 'description' => 'Monohydrat, HCl, davkovanie, nasycovanie a rozdiely medzi najcastejsimi formami kreatinu.',

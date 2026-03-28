@@ -48320,15 +48320,6 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
-    "gymbeam-gymbeam-sportov-e-puzdro-na-mobil-gymbeam": {
-        "code": "gymbeam-gymbeam-sportov-e-puzdro-na-mobil-gymbeam",
-        "url": "https://gymbeam.sk/sportove-puzdro-na-mobil-gymbeam.html",
-        "merchant": "GymBeam",
-        "merchant_slug": "gymbeam",
-        "product_slug": "gymbeam-gymbeam-sportov-e-puzdro-na-mobil",
-        "link_type": "product",
-        "source": "supported-affiliate-feed"
-    },
     "gymbeam-gymbeam-sportov-y-n-apoj-fueintra-workout-citr-on-limetka-gymbeam": {
         "code": "gymbeam-gymbeam-sportov-y-n-apoj-fueintra-workout-citr-on-limetka-gymbeam",
         "url": "https://gymbeam.sk/sportovy-napoj-fueintra-workout-gymbeam.html",
@@ -56654,15 +56645,6 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
-    "gymbeam-gymbeam-tyc-mobility-stick-156-cm-gymbeam": {
-        "code": "gymbeam-gymbeam-tyc-mobility-stick-156-cm-gymbeam",
-        "url": "https://gymbeam.sk/tyc-mobility-stick-156-cm-gymbeam.html",
-        "merchant": "GymBeam",
-        "merchant_slug": "gymbeam",
-        "product_slug": "gymbeam-gymbeam-tyc-mobility-stick-156-cm",
-        "link_type": "product",
-        "source": "supported-affiliate-feed"
-    },
     "gymbeam-gymbeam-tycov-e-istenie-gymbeam": {
         "code": "gymbeam-gymbeam-tycov-e-istenie-gymbeam",
         "url": "https://gymbeam.sk/tycove-istenie-gymbeam.html",
@@ -56696,15 +56678,6 @@
         "merchant": "GymBeam",
         "merchant_slug": "gymbeam",
         "product_slug": "gymbeam-gymbeam-ultimate-pillbox-black",
-        "link_type": "product",
-        "source": "supported-affiliate-feed"
-    },
-    "gymbeam-gymbeam-univerz-alny-drziak-na-mobil-gymbeam": {
-        "code": "gymbeam-gymbeam-univerz-alny-drziak-na-mobil-gymbeam",
-        "url": "https://gymbeam.sk/univerzalny-drziak-na-mobil-gymbeam.html",
-        "merchant": "GymBeam",
-        "merchant_slug": "gymbeam",
-        "product_slug": "gymbeam-gymbeam-univerz-alny-drziak-na-mobil",
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
@@ -57641,15 +57614,6 @@
         "merchant": "GymBeam",
         "merchant_slug": "gymbeam",
         "product_slug": "gymbeam-gymbeam-vlassk-e-orechy",
-        "link_type": "product",
-        "source": "supported-affiliate-feed"
-    },
-    "gymbeam-gymbeam-vodeodoln-e-puzdro-na-mobil-gymbeam": {
-        "code": "gymbeam-gymbeam-vodeodoln-e-puzdro-na-mobil-gymbeam",
-        "url": "https://gymbeam.sk/vodeodolne-puzdro-na-mobil-gymbeam.html",
-        "merchant": "GymBeam",
-        "merchant_slug": "gymbeam",
-        "product_slug": "gymbeam-gymbeam-vodeodoln-e-puzdro-na-mobil",
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },

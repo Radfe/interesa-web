@@ -1,0 +1,33 @@
+{
+    "slug": "najlepsie-proteiny-2026",
+    "product_plan": [
+        {
+            "product_slug": "gymbeam-just-whey",
+            "order": 1,
+            "role": "featured",
+            "show_in_top": true,
+            "show_in_comparison": false
+        },
+        {
+            "product_slug": "gymbeam-true-whey",
+            "order": 2,
+            "role": "standard",
+            "show_in_top": true,
+            "show_in_comparison": false
+        },
+        {
+            "product_slug": "gymbeam-gymbeam-pure-isowhey-bez-pr-ichute",
+            "order": 3,
+            "role": "standard",
+            "show_in_top": true,
+            "show_in_comparison": false
+        }
+    ],
+    "recommended_products": [
+        "gymbeam-just-whey",
+        "gymbeam-true-whey",
+        "gymbeam-gymbeam-pure-isowhey-bez-pr-ichute"
+    ],
+    "updated_at": "2026-03-28T18:32:10+00:00",
+    "updated_by": "admin"
+}

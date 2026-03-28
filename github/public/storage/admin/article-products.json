@@ -8,7 +8,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T15:15:05+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::aktin-creatine-monohydrate": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -19,18 +19,18 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-24T15:38:41+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-activlab-black-wolf-multifruit": {
         "article_slug": "pre-workout-ako-vybrat",
         "product_slug": "gymbeam-activlab-black-wolf-multifruit",
-        "order": 2,
-        "role": "standard",
+        "order": 1,
+        "role": "featured",
         "show_in_top": true,
         "show_in_comparison": false,
-        "enabled": false,
+        "enabled": true,
         "created_at": "2026-03-25T15:43:28+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-activlab-caffeine-power-60-tab-bez-pr-ichute": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -41,7 +41,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T20:19:31+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-amix-cellzoom-hardcore-ovocn-y-punc": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -52,7 +52,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T19:01:21+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-balanced-stim-pre-workout": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -63,7 +63,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T15:09:27+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-beastpink-pink-drive-jahodov-a-limon-ada": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -74,7 +74,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T18:25:50+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-bsn-n-o-xplode-legendary-pre-workout-green-burst": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -85,7 +85,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T16:47:33+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-bsn-n-o-xplode-legendary-pre-workout-purple-power": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -96,7 +96,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T19:55:54+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-cellucor-c4-original-frozen-bombsicle": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -105,9 +105,9 @@
         "role": "featured",
         "show_in_top": true,
         "show_in_comparison": false,
-        "enabled": true,
+        "enabled": false,
         "created_at": "2026-03-25T21:12:21+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-citrulline-malate": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -118,7 +118,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T14:38:16+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-gymbeam-arginine-citrulline": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -129,7 +129,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-26T13:09:37+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-nutrend-pre-workout-pump-berry-splash": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -140,7 +140,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-26T13:09:47+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-nutrend-pre-workout-pump-rainbow": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -151,7 +151,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-26T13:09:50+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
     },
     "pre-workout-ako-vybrat::muscletech-vapor-x5-next-gen-pre-workout": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -162,6 +162,39 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T14:38:16+00:00",
-        "updated_at": "2026-03-28T16:27:59+00:00"
+        "updated_at": "2026-03-28T18:32:10+00:00"
+    },
+    "najlepsie-proteiny-2026::gymbeam-just-whey": {
+        "article_slug": "najlepsie-proteiny-2026",
+        "product_slug": "gymbeam-just-whey",
+        "order": 1,
+        "role": "featured",
+        "show_in_top": true,
+        "show_in_comparison": false,
+        "enabled": true,
+        "created_at": "2026-03-28T18:32:10+00:00",
+        "updated_at": "2026-03-28T18:32:10+00:00"
+    },
+    "najlepsie-proteiny-2026::gymbeam-true-whey": {
+        "article_slug": "najlepsie-proteiny-2026",
+        "product_slug": "gymbeam-true-whey",
+        "order": 2,
+        "role": "standard",
+        "show_in_top": true,
+        "show_in_comparison": false,
+        "enabled": true,
+        "created_at": "2026-03-28T18:32:10+00:00",
+        "updated_at": "2026-03-28T18:32:10+00:00"
+    },
+    "najlepsie-proteiny-2026::gymbeam-gymbeam-pure-isowhey-bez-pr-ichute": {
+        "article_slug": "najlepsie-proteiny-2026",
+        "product_slug": "gymbeam-gymbeam-pure-isowhey-bez-pr-ichute",
+        "order": 3,
+        "role": "standard",
+        "show_in_top": true,
+        "show_in_comparison": false,
+        "enabled": true,
+        "created_at": "2026-03-28T18:32:10+00:00",
+        "updated_at": "2026-03-28T18:32:10+00:00"
     }
 }

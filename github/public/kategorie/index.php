@@ -14,7 +14,7 @@ $page_og_type = 'website';
 $hubs = interessa_category_hubs();
 
 $primarySlugs = ['proteiny', 'vyziva', 'mineraly', 'sila', 'klby-koza', 'imunita'];
-$secondarySlugs = ['chudnutie', 'kreatin', 'pre-workout', 'probiotika-travenie', 'aminokyseliny', 'doplnkove-prislusenstvo'];
+$secondarySlugs = ['chudnutie', 'kreatin', 'pre-workout', 'probiotika-travenie', 'aminokyseliny'];
 
 $primaryHubs = [];
 foreach ($primarySlugs as $slug) {
@@ -44,7 +44,7 @@ $intentGroups = [
     [
         'title' => 'Hladam detail alebo specialitu',
         'description' => 'Tieto temy su vhodne vtedy, ked uz mas zaklad a potrebujes riesit uzsi vyber alebo doplnok.',
-        'links' => ['kreatin', 'pre-workout', 'probiotika-travenie', 'aminokyseliny', 'doplnkove-prislusenstvo'],
+        'links' => ['kreatin', 'pre-workout', 'probiotika-travenie', 'aminokyseliny'],
     ],
 ];
 

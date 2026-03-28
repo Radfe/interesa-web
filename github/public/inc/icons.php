@@ -53,7 +53,6 @@ if (!function_exists('interessa_category_icon_name')) {
             'pre-workout' => 'flame',
             'probiotika', 'probiotika-travenie' => 'bolt',
             'aminokyseliny' => 'molecule',
-            'doplnkove-prislusenstvo' => 'grid',
             'chudnutie' => 'bolt',
             default => 'grid',
         };

@@ -403,7 +403,6 @@ if (!function_exists('category_registry')) {
             'klby-koza' => ['title' => 'Kĺby a koža', 'description' => 'Kolagén, kĺbová výživa a doplnky pre pohybový aparát aj lepší vzhľad pokožky.'],
             'aminokyseliny' => ['title' => 'Aminokyseliny', 'description' => 'BCAA, EAA a aminokyseliny pre regeneráciu, tréning a orientáciu v zložení.'],
             'chudnutie' => ['title' => 'Chudnutie', 'description' => 'Proteíny na chudnutie, spaľovače tukov a realistické tipy pre redukciu tuku.'],
-            'doplnkove-prislusenstvo' => ['title' => 'Doplnkové príslušenstvo', 'description' => 'Praktické príslušenstvo a pomocné doplnky, ktoré dávajú zmysel pri každodennom používaní.'],
             'kreatin' => ['title' => 'Kreatín', 'description' => 'Monohydrát, HCl, dávkovanie, nasýtenie a výber kreatínu bez mýtov.'],
             'pre-workout' => ['title' => 'Pre-workout', 'description' => 'Ako vybrať predtréningovku, kedy ju brať a na čo si dať pozor v zložení.'],
             'probiotika-travenie' => ['title' => 'Probiotiká a trávenie', 'description' => 'Probiotiká, trávenie a výber produktov podľa zloženia a reálnych potrieb.'],
