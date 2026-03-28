@@ -2637,25 +2637,6 @@ if ($isAuthed) {
                 ]);
             }
 
-            if ($action === 'open_product_for_article_slot') {
-                $articleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? '')));
-                $productSlug = trim((string) ($_POST['product_slug'] ?? ''));
-                $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
-                if ($articleSlug === '' || $targetSlot < 1) {
-                    throw new RuntimeException('Nepodarilo sa otvorit produkt pre slot.');
-                }
-                if ($productSlug === '') {
-                    interessa_admin_redirect_fragment('articles', ['slug' => $articleSlug], 'slot-' . $targetSlot);
-                }
-
-                interessa_admin_assign_product_to_article_slot($articleSlug, $productSlug, $targetSlot);
-                interessa_admin_redirect_fragment('articles', [
-                    'slug' => $articleSlug,
-                    'saved' => 'product',
-                    'slot_ready' => (string) $targetSlot,
-                ], 'slot-' . $targetSlot);
-            }
-
             if ($action === 'assign_article_slot_product') {
                 $articleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? '')));
                 $productSlug = trim((string) ($_POST['product_slug'] ?? ''));
@@ -3337,13 +3318,11 @@ if (!in_array($returnSectionPrefill, ['articles', 'images'], true)) {
 $returnSlugPrefill = canonical_article_slug(trim((string) ($_GET['return_slug'] ?? '')));
 $returnArticlePrefill = canonical_article_slug(trim((string) ($_GET['article'] ?? $returnSlugPrefill)));
 $returnArticleSlotPrefill = max(0, min(3, (int) ($_GET['slot'] ?? 0)));
-$articleSlotMode = $section === 'products' && $returnArticlePrefill !== '' && $returnArticleSlotPrefill > 0;
-$articleSlotModeTitle = $articleSlotMode ? (string) ($articleOptions[$returnArticlePrefill]['title'] ?? humanize_slug($returnArticlePrefill)) : '';
-$productReturnSection = $articleSlotMode ? 'articles' : ($returnSectionPrefill !== '' ? $returnSectionPrefill : 'products');
-$productReturnSlug = $articleSlotMode ? $returnArticlePrefill : $returnSlugPrefill;
-$articleSlotBackHref = $articleSlotMode
-    ? '/admin?section=articles&slug=' . rawurlencode($returnArticlePrefill) . '#slot-' . rawurlencode((string) $returnArticleSlotPrefill)
-    : '';
+$articleSlotMode = false;
+$articleSlotModeTitle = '';
+$productReturnSection = $returnSectionPrefill !== '' ? $returnSectionPrefill : 'products';
+$productReturnSlug = $returnSlugPrefill;
+$articleSlotBackHref = '';
 $prefillNewProductName = trim((string) ($_GET['prefill_product_name'] ?? ''));
 $prefillNewProductSlug = trim((string) ($_GET['prefill_product_slug'] ?? ''));
 $prefillNewProductBrand = trim((string) ($_GET['prefill_product_brand'] ?? ''));
@@ -5889,37 +5868,6 @@ require dirname(__DIR__) . '/inc/head.php';
               $selectedProductNextStepNote = 'Produkt uz ma obrazok aj klik do obchodu. Tu uz netreba nic robit.';
             }
           ?>
-          <?php if ($articleSlotMode): ?>
-          <section class="admin-card">
-            <div class="admin-card-head">
-              <div>
-                <p class="admin-kicker">Clanok je hlavny kontext</p>
-                <p class="admin-flash is-success"><strong>ASSIGN ONLY SLOT MODE ACTIVE</strong></p>
-                <h2>Vyberas produkt pre Slot <?= esc((string) $returnArticleSlotPrefill) ?> clanku <?= esc($articleSlotModeTitle) ?></h2>
-                <p class="admin-note">Toto je jediny krok pre zmenu produktu v slote: vyber produkt, klikni <strong>Potvrdit vyber produktu</strong> a system ta hned vrati spat na clanok.</p>
-              </div>
-              <div class="admin-inline-actions">
-                <form method="post" action="/admin" class="admin-inline-form">
-                  <input type="hidden" name="action" value="open_product_for_article_slot" />
-                  <input type="hidden" name="article_slug" value="<?= esc($returnArticlePrefill) ?>" />
-                  <input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" />
-                  <label class="admin-inline-select">
-                    <span>Produkt pre tento slot</span>
-                    <select name="product_slug">
-                      <option value="">Vyber produkt</option>
-                      <?php foreach ($productSlugs as $slug): ?>
-                        <option value="<?= esc($slug) ?>" <?= $slug === $selectedProductSlug ? 'selected' : '' ?>><?= esc((string) ($catalog[$slug]['name'] ?? $slug)) ?></option>
-                      <?php endforeach; ?>
-                    </select>
-                  </label>
-                  <button class="btn btn-cta btn-small" type="submit">Potvrdit vyber produktu</button>
-                </form>
-                <a class="btn btn-secondary" href="<?= esc($articleSlotBackHref) ?>">Spat na clanok bez ulozenia</a>
-              </div>
-            </div>
-            <p class="admin-note">Najprv vyber produkt v tomto selecte a klikni <strong>Potvrdit vyber produktu</strong>. Nic dalsie tu netreba nastavovat.</p>
-          </section>
-          <?php endif; ?>
           <?php if (!$articleSlotMode): ?>
           <section class="admin-card<?= $productCandidateFocusMode ? ' is-candidate-focus-root' : '' ?><?= !$productCandidateFocusMode ? ' is-primary-flow' : '' ?>" id="products-candidate-steps">
             <?php if (!$productCandidateFocusMode): ?>
