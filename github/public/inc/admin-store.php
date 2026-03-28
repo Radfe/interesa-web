@@ -1483,8 +1483,10 @@ if (!function_exists('interessa_admin_assign_product_to_article_slot')) {
         if (function_exists('interessa_article_comparison_table_whitelist')) {
             $comparisonAllowed = in_array($articleSlug, interessa_article_comparison_table_whitelist(), true);
         }
+        $targetKey = interessa_admin_article_product_key($articleSlug, $productSlug);
+        $existing = is_array($rows[$targetKey] ?? null) ? $rows[$targetKey] : [];
 
-        foreach ($rows as $key => $row) {
+        foreach ($rows as $rowKey => $row) {
             if (!is_array($row)) {
                 continue;
             }
@@ -1496,19 +1498,19 @@ if (!function_exists('interessa_admin_assign_product_to_article_slot')) {
 
             $rowProductSlug = interessa_admin_slugify((string) ($normalized['product_slug'] ?? ''));
             $rowOrder = max(1, (int) ($normalized['order'] ?? 1));
-            if ($rowOrder === $slot && $rowProductSlug !== '' && $rowProductSlug !== $productSlug && !empty($normalized['enabled'])) {
+            if ($rowOrder === $slot) {
                 $normalized['enabled'] = false;
-                $rows[$key] = $normalized;
-                $comparisonAllowed = !empty($normalized['show_in_comparison']);
+                $rows[$rowKey] = $normalized;
+                continue;
             }
 
-            if ($rowProductSlug === $productSlug && $rowOrder !== $slot && !empty($normalized['enabled'])) {
+            if ($rowProductSlug === $productSlug) {
                 $normalized['enabled'] = false;
-                $rows[$key] = $normalized;
+                $rows[$rowKey] = $normalized;
             }
         }
 
-        $rows[interessa_admin_article_product_key($articleSlug, $productSlug)] = interessa_admin_normalize_article_product_record([
+        $rows[$targetKey] = interessa_admin_normalize_article_product_record(array_replace($existing, [
             'article_slug' => $articleSlug,
             'product_slug' => $productSlug,
             'order' => $slot,
@@ -1516,7 +1518,7 @@ if (!function_exists('interessa_admin_assign_product_to_article_slot')) {
             'show_in_top' => true,
             'show_in_comparison' => $comparisonAllowed,
             'enabled' => true,
-        ]);
+        ]));
 
         interessa_admin_save_article_products($rows);
         interessa_admin_sync_article_product_override($articleSlug);
