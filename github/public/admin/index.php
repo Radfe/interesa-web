@@ -2656,162 +2656,6 @@ if ($isAuthed) {
                 ], 'slot-' . $targetSlot);
             }
 
-            if ($action === 'assign_suggested_product_to_slot') {
-                $articleSlug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
-                $productSlug = trim((string) ($_POST['product_slug'] ?? ''));
-                $targetSlot = max(0, min(3, (int) ($_POST['target_slot'] ?? 0)));
-                if ($articleSlug === '' || $productSlug === '' || $targetSlot < 1) {
-                    throw new RuntimeException('Nepodarilo sa priradit navrhnuty produkt do slotu.');
-                }
-
-                interessa_admin_assign_product_to_article_slot($articleSlug, $productSlug, $targetSlot);
-                interessa_admin_redirect_fragment('articles', [
-                    'slug' => $articleSlug,
-                    'saved' => 'product',
-                    'slot_ready' => (string) $targetSlot,
-                    'suggest_products' => '1',
-                ], 'slot-' . $targetSlot);
-            }
-
-            if ($action === 'prefill_suggested_product_slots') {
-                $articleSlug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
-                if ($articleSlug === '') {
-                    throw new RuntimeException('Nepodarilo sa predvyplnit sloty pre clanok.');
-                }
-
-                $state = interessa_admin_article_product_state($articleSlug);
-                $existingPlan = array_values(array_filter((array) ($state['product_plan'] ?? []), static fn($row): bool => is_array($row)));
-                $occupiedSlots = [];
-                $usedProductSlugs = [];
-                foreach ($existingPlan as $row) {
-                    $slot = max(0, min(3, (int) ($row['order'] ?? 0)));
-                    $productSlug = trim((string) ($row['product_slug'] ?? ''));
-                    if ($slot > 0) {
-                        $occupiedSlots[$slot] = true;
-                    }
-                    if ($productSlug !== '') {
-                        $usedProductSlugs[$productSlug] = true;
-                    }
-                }
-
-                $suggested = [];
-                $catalogLoadedCount = 0;
-                try {
-                    $articleExists = function_exists('article_registry')
-                        ? array_key_exists($articleSlug, article_registry())
-                        : true;
-                    interessa_admin_suggest_products_log('prefill-start', [
-                        'slug' => $articleSlug,
-                        'article_found' => $articleExists ? 1 : 0,
-                        'stage' => 'prefill-start',
-                    ]);
-                    $catalogForSuggestions = function_exists('interessa_product_catalog') ? interessa_product_catalog() : [];
-                    $catalogLoadedCount = is_array($catalogForSuggestions) ? count($catalogForSuggestions) : 0;
-                    interessa_admin_suggest_products_log('prefill-before-scoring', [
-                        'slug' => $articleSlug,
-                        'article_found' => $articleExists ? 1 : 0,
-                        'products_loaded' => $catalogLoadedCount,
-                        'stage' => 'prefill-before-scoring',
-                    ]);
-
-                    $suggested = function_exists('interessa_get_top_products_for_article')
-                        ? array_values(array_slice(interessa_get_top_products_for_article($articleSlug, 3), 0, 3))
-                        : (function_exists('interessa_get_products_for_article')
-                            ? array_values(array_slice(interessa_get_products_for_article($articleSlug, 3), 0, 3))
-                            : []);
-                    $suggestedSlugs = array_values(array_filter(array_map(
-                        static fn(array $row): string => trim((string) ($row['product_slug'] ?? '')),
-                        array_filter($suggested, 'is_array')
-                    ), static fn(string $slug): bool => $slug !== ''));
-
-                    interessa_admin_suggest_products_log('prefill-after-scoring', [
-                        'slug' => $articleSlug,
-                        'article_found' => $articleExists ? 1 : 0,
-                        'products_loaded' => $catalogLoadedCount,
-                        'result_count' => count($suggested),
-                        'result_slugs' => implode(',', $suggestedSlugs),
-                        'stage' => 'prefill-after-scoring',
-                    ]);
-                } catch (Throwable $e) {
-                    $suggested = [];
-                    interessa_admin_suggest_products_log('prefill-error', [
-                        'slug' => $articleSlug,
-                        'products_loaded' => $catalogLoadedCount,
-                        'stage' => 'prefill-controller',
-                        'error' => trim($e->getMessage()),
-                    ]);
-                }
-
-                $filledSlots = [];
-                $skippedSlots = [];
-                $suggestedIndex = 0;
-                $finalSlotAssignments = [];
-                foreach ($existingPlan as $row) {
-                    if (!is_array($row)) {
-                        continue;
-                    }
-                    $slot = max(1, min(3, (int) ($row['order'] ?? 1)));
-                    $existingSlug = trim((string) ($row['product_slug'] ?? ''));
-                    if ($existingSlug === '') {
-                        continue;
-                    }
-                    $finalSlotAssignments[$slot] = [
-                        'product_slug' => $existingSlug,
-                        'order' => $slot,
-                        'role' => trim((string) ($row['role'] ?? ($slot === 1 ? 'featured' : 'standard'))) ?: ($slot === 1 ? 'featured' : 'standard'),
-                        'show_in_top' => array_key_exists('show_in_top', $row) ? !empty($row['show_in_top']) : true,
-                        'show_in_comparison' => !empty($row['show_in_comparison']),
-                    ];
-                }
-                for ($slot = 1; $slot <= 3; $slot++) {
-                    if (!empty($occupiedSlots[$slot])) {
-                        $skippedSlots[] = (string) $slot;
-                        continue;
-                    }
-
-                    while (isset($suggested[$suggestedIndex])) {
-                        $candidateSlug = trim((string) ($suggested[$suggestedIndex]['product_slug'] ?? ''));
-                        $suggestedIndex++;
-                        if ($candidateSlug === '' || isset($usedProductSlugs[$candidateSlug])) {
-                            continue;
-                        }
-
-                        $usedProductSlugs[$candidateSlug] = true;
-                        $finalSlotAssignments[$slot] = [
-                            'product_slug' => $candidateSlug,
-                            'order' => $slot,
-                            'role' => $slot === 1 ? 'featured' : 'standard',
-                            'show_in_top' => true,
-                            'show_in_comparison' => false,
-                        ];
-                        $filledSlots[] = (string) $slot;
-                        continue 2;
-                    }
-                }
-
-                ksort($finalSlotAssignments);
-                $finalPlan = array_values($finalSlotAssignments);
-                interessa_admin_suggest_products_log('prefill-save-plan', [
-                    'slug' => $articleSlug,
-                    'to_write_slugs' => implode(',', array_map(
-                        static fn(array $row): string => trim((string) ($row['product_slug'] ?? '')),
-                        $finalPlan
-                    )),
-                    'filled_slots' => implode(',', $filledSlots),
-                    'skipped_slots' => implode(',', $skippedSlots),
-                    'stage' => 'prefill-save-plan',
-                ]);
-                interessa_admin_save_article_product_plan($articleSlug, $finalPlan);
-
-                interessa_admin_redirect_fragment('articles', [
-                    'slug' => $articleSlug,
-                    'saved' => 'product',
-                    'suggest_products' => '1',
-                    'prefill_filled' => implode(',', $filledSlots),
-                    'prefill_skipped' => implode(',', $skippedSlots),
-                ], 'article-product-suggestions');
-            }
-
             if ($action === 'delete_affiliate_override') {
                 $code = trim((string) ($_POST['code'] ?? ''));
                 interessa_admin_delete_affiliate_record($code);
@@ -5254,11 +5098,12 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="articles" />
-                <select name="slug" onchange="this.form.submit()">
+                <select name="slug">
                   <?php foreach ($articleOptions as $slug => $item): ?>
                     <option value="<?= esc($slug) ?>" <?= $slug === $selectedArticleSlug ? 'selected' : '' ?>><?= esc($item['title']) ?></option>
                   <?php endforeach; ?>
                 </select>
+                <button class="btn btn-secondary btn-small" type="submit">Otvorit clanok</button>
               </form>
             </div>
 
@@ -5527,67 +5372,6 @@ require dirname(__DIR__) . '/inc/head.php';
                 <p class="admin-note">Tento clanok ma pevne 3 sloty. Slot 1 alebo explicitne oznaceny slot ma byt hlavny produkt pre citatela.</p>
                 <?php if ($articleProductPlanHasExplicitSource === false): ?>
                   <p class="admin-note">Clanok zatial nema explicitne priradene produkty.</p>
-                <?php endif; ?>
-                <?php if (false && $showSuggestedProducts): ?>
-                  <section class="admin-subsection is-compact" id="article-product-suggestions" style="margin-bottom:16px;">
-                    <div class="admin-subsection-head">
-                      <div>
-                        <h4>Navrhnute produkty pre tento clanok</h4>
-                        <p class="admin-meta">Toto len ukazuje navrhy. Nic sa samo neulozi, kym nekliknes <strong>Do slotu X</strong> alebo <strong>Predvyplnit sloty</strong>.</p>
-                        <p class="admin-note"><strong>INLINE SUGGEST FORMS ACTIVE</strong></p>
-                      </div>
-                      <div class="admin-inline-actions">
-                        <form method="post" action="/admin" class="admin-inline-form">
-                          <input type="hidden" name="action" value="prefill_suggested_product_slots" />
-                          <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
-                          <button class="btn btn-secondary btn-small" type="submit">Predvyplnit sloty</button>
-                        </form>
-                      </div>
-                    </div>
-                    <?php if ($prefillFilledSlots !== [] || $prefillSkippedSlots !== []): ?>
-                      <p class="admin-note">
-                        Vyplnene sloty: <?= $prefillFilledSlots !== [] ? esc(implode(', ', $prefillFilledSlots)) : '0' ?>.
-                        Preskocene sloty: <?= $prefillSkippedSlots !== [] ? esc(implode(', ', $prefillSkippedSlots)) : 'ziadne' ?>.
-                      </p>
-                    <?php endif; ?>
-                    <?php if ($articleSuggestedProductsError !== ''): ?>
-                      <p class="admin-note">Pre tento článok zatiaľ nemáš importované relevantné produkty.</p>
-                    <?php elseif ($articleSuggestedProducts !== []): ?>
-                      <div class="admin-queue-list">
-                        <?php foreach ($articleSuggestedProducts as $suggestedProduct): ?>
-                          <?php
-                            $suggestedSlug = trim((string) ($suggestedProduct['product_slug'] ?? ''));
-                            $suggestedName = trim((string) ($suggestedProduct['name'] ?? $suggestedSlug));
-                            $suggestedMerchant = trim((string) ($suggestedProduct['merchant'] ?? ''));
-                          ?>
-                          <article class="admin-queue-item">
-                            <div>
-                              <div style="max-width:120px; margin-bottom:8px;">
-                                <?= interessa_render_image($suggestedProduct['image'] ?? null, ['class' => 'admin-mini-product-card__image']) ?>
-                              </div>
-                              <strong><?= esc($suggestedName) ?></strong>
-                              <?php if ($suggestedMerchant !== ''): ?>
-                                <p><?= esc($suggestedMerchant) ?></p>
-                              <?php endif; ?>
-                            </div>
-                            <div class="admin-inline-actions">
-                              <?php for ($suggestedSlot = 1; $suggestedSlot <= 3; $suggestedSlot++): ?>
-                                <form method="post" action="/admin" class="admin-inline-form">
-                                  <input type="hidden" name="action" value="assign_suggested_product_to_slot" />
-                                  <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
-                                  <input type="hidden" name="product_slug" value="<?= esc($suggestedSlug) ?>" />
-                                  <input type="hidden" name="target_slot" value="<?= esc((string) $suggestedSlot) ?>" />
-                                  <button class="btn btn-secondary btn-small" type="submit">Do slotu <?= esc((string) $suggestedSlot) ?></button>
-                                </form>
-                              <?php endfor; ?>
-                            </div>
-                          </article>
-                        <?php endforeach; ?>
-                      </div>
-                    <?php else: ?>
-                      <p class="admin-note">Pre tento článok zatiaľ nemáš importované relevantné produkty.</p>
-                    <?php endif; ?>
-                  </section>
                 <?php endif; ?>
                 <div class="admin-grid one-up">
                   <?php for ($slotIndex = 1; $slotIndex <= 3; $slotIndex++): ?>
@@ -6068,6 +5852,7 @@ require dirname(__DIR__) . '/inc/head.php';
             <div class="admin-card-head">
               <div>
                 <p class="admin-kicker">Clanok je hlavny kontext</p>
+                <p class="admin-flash is-success"><strong>ASSIGN ONLY SLOT MODE ACTIVE</strong></p>
                 <h2>Vyberas produkt pre Slot <?= esc((string) $returnArticleSlotPrefill) ?> clanku <?= esc($articleSlotModeTitle) ?></h2>
                 <p class="admin-note">Toto je jediny krok pre zmenu produktu v slote: vyber produkt, klikni <strong>Potvrdit vyber produktu</strong> a system ta hned vrati spat na clanok.</p>
               </div>
@@ -6087,32 +5872,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   </label>
                   <button class="btn btn-cta btn-small" type="submit">Potvrdit vyber produktu</button>
                 </form>
-                <a class="btn btn-secondary" href="<?= esc($articleSlotBackHref) ?>">Spat na clanok</a>
-                <a class="btn btn-secondary" href="<?= esc(article_url($returnArticlePrefill)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
+                <a class="btn btn-secondary" href="<?= esc($articleSlotBackHref) ?>">Spat na clanok bez ulozenia</a>
               </div>
             </div>
-            <?php if ($selectedProductSlug !== ''): ?>
-            <div class="admin-status-grid">
-              <article class="admin-status-card">
-                <strong><?= esc((string) $returnArticleSlotPrefill) ?></strong>
-                <span>Aktualny slot</span>
-              </article>
-              <article class="admin-status-card">
-                <strong><?= trim((string) ($selectedProduct['name'] ?? '')) !== '' ? 'Ano' : 'Nie' ?></strong>
-                <span>Nazov produktu</span>
-              </article>
-              <article class="admin-status-card">
-                <strong><?= $selectedProductPackshotReady ? 'Hotovo' : 'Chyba' ?></strong>
-                <span>Obrazok produktu</span>
-              </article>
-              <article class="admin-status-card">
-                <strong><?= $selectedProductClickReady ? 'Produkt ma funkcny odkaz' : 'Treba vlozit priamy odkaz na konkretny produkt' ?></strong>
-                <span>Klik do obchodu</span>
-              </article>
-            </div>
-            <?php else: ?>
             <p class="admin-note">Najprv vyber produkt v tomto selecte a klikni <strong>Potvrdit vyber produktu</strong>. Nic dalsie tu netreba nastavovat.</p>
-            <?php endif; ?>
           </section>
           <?php endif; ?>
           <?php if (!$articleSlotMode): ?>
@@ -6129,12 +5892,13 @@ require dirname(__DIR__) . '/inc/head.php';
                 <input type="hidden" name="section" value="products" />
                 <label class="admin-inline-select">
                   <span>Clanok</span>
-                  <select name="import_article" onchange="this.form.submit()">
+                  <select name="import_article">
                     <?php foreach ($articleOptions as $articleSlug => $articleOption): ?>
                       <option value="<?= esc($articleSlug) ?>" <?= $articleSlug === $candidateImportArticleSlug ? 'selected' : '' ?>><?= esc((string) ($articleOption['title'] ?? $articleSlug)) ?></option>
                     <?php endforeach; ?>
                   </select>
                 </label>
+                <button class="btn btn-secondary btn-small" type="submit">Otvorit clanok</button>
               </form>
             </div>
             <?php if ($recentImportedRows !== []): ?>
@@ -6490,11 +6254,12 @@ require dirname(__DIR__) . '/inc/head.php';
               <?php else: ?>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="products" />
-                <select name="product" onchange="this.form.submit()">
+                <select name="product">
                   <?php foreach ($productSlugs as $slug): ?>
                     <option value="<?= esc($slug) ?>" <?= $slug === $selectedProductSlug ? 'selected' : '' ?>><?= esc((string) ($catalog[$slug]['name'] ?? $slug)) ?></option>
                   <?php endforeach; ?>
                 </select>
+                <button class="btn btn-secondary btn-small" type="submit">Otvorit produkt</button>
               </form>
               <?php endif; ?>
             </div>
@@ -6509,11 +6274,12 @@ require dirname(__DIR__) . '/inc/head.php';
                 <form method="get" action="/admin" class="admin-inline-form">
                   <input type="hidden" name="section" value="products" />
                   <input type="hidden" name="product" value="<?= esc($selectedProductSlug) ?>" />
-                  <select name="article_product_slug" onchange="this.form.submit()">
+                  <select name="article_product_slug">
                     <?php foreach ($productArticleOptionSlugs as $articleSlug): ?>
                       <option value="<?= esc($articleSlug) ?>" <?= $articleSlug === $selectedProductArticleSlug ? 'selected' : '' ?>><?= esc((string) ($articleOptions[$articleSlug]['title'] ?? $articleSlug)) ?></option>
                     <?php endforeach; ?>
                   </select>
+                  <button class="btn btn-secondary btn-small" type="submit">Otvorit clanok</button>
                 </form>
               </div>
               <div class="admin-status-grid">
@@ -7153,6 +6919,7 @@ require dirname(__DIR__) . '/inc/head.php';
             </details>
             <?php endif; ?>
 
+            <?php if (!$articleSlotMode): ?>
             <form method="post" enctype="multipart/form-data" class="admin-form admin-form-stack">
               <input type="hidden" name="action" value="save_product" />
               <input type="hidden" name="return_section" value="<?= esc($productReturnSection) ?>" />
@@ -7251,17 +7018,10 @@ require dirname(__DIR__) . '/inc/head.php';
               </details>
               <div class="admin-actions">
                 <button class="btn btn-cta" type="submit"><?= $articleSlotMode ? 'Ulozit produkt a vratit sa do clanku' : 'Ulozit produkt' ?></button>
-                <?php if ($articleSlotMode): ?>
-                  <a class="btn btn-secondary" href="<?= esc($articleSlotBackHref) ?>">Spat na clanok bez ulozenia</a>
-                <?php else: ?>
-                  <button class="btn btn-secondary" type="submit" name="action" value="delete_product_override" onclick="return confirm('Naozaj zmazat admin override produktu?');">Zmazat override produktu</button>
-                <?php endif; ?>
+                <button class="btn btn-secondary" type="submit" name="action" value="delete_product_override" onclick="return confirm('Naozaj zmazat admin override produktu?');">Zmazat override produktu</button>
               </div>
               </div>
             </form>
-          <?php if ($articleSlotMode): ?>
-          </section>
-          <?php else: ?>
           </details>
           <?php endif; ?>
         <?php endif; ?>
@@ -7276,11 +7036,12 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="images" />
-                <select name="slug" onchange="this.form.submit()">
+                <select name="slug">
                   <?php foreach ($articleOptions as $slug => $item): ?>
                     <option value="<?= esc($slug) ?>" <?= $slug === $selectedArticleSlug ? 'selected' : '' ?>><?= esc($item['title']) ?></option>
                   <?php endforeach; ?>
                 </select>
+                <button class="btn btn-secondary btn-small" type="submit">Otvorit clanok</button>
               </form>
             </div>
 
@@ -7411,11 +7172,12 @@ require dirname(__DIR__) . '/inc/head.php';
                 <form method="get" action="/admin" class="admin-inline-form">
                   <input type="hidden" name="section" value="images" />
                   <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
-                  <select name="topic" onchange="this.form.submit()">
+                  <select name="topic">
                     <?php foreach ($categoryOptions as $themeSlug => $themeItem): ?>
                       <option value="<?= esc((string) $themeSlug) ?>" <?= (string) $themeSlug === $selectedThemeSlug ? 'selected' : '' ?>><?= esc((string) ($themeItem['title'] ?? $themeSlug)) ?></option>
                     <?php endforeach; ?>
                   </select>
+                  <button class="btn btn-secondary btn-small" type="submit">Otvorit temu</button>
                 </form>
               </div>
               <div class="admin-asset-preview__grid">
@@ -7991,11 +7753,12 @@ require dirname(__DIR__) . '/inc/head.php';
               </div>
               <form method="get" action="/admin" class="admin-inline-form">
                 <input type="hidden" name="section" value="affiliates" />
-                <select name="code" onchange="this.form.submit()">
+                <select name="code">
                   <?php foreach ($affiliateCodes as $code): ?>
                     <option value="<?= esc($code) ?>" <?= $code === $selectedAffiliateCode ? 'selected' : '' ?>><?= esc($code) ?></option>
                   <?php endforeach; ?>
                 </select>
+                <button class="btn btn-secondary btn-small" type="submit">Otvorit odkaz</button>
               </form>
             </div>
 
