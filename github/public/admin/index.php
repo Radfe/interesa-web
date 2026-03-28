@@ -7,6 +7,8 @@ require_once dirname(__DIR__) . '/inc/admin-content.php';
 require_once dirname(__DIR__) . '/inc/admin-auth.php';
 require_once dirname(__DIR__) . '/inc/admin-feed-import.php';
 require_once dirname(__DIR__) . '/inc/article-commerce.php';
+require_once dirname(__DIR__) . '/inc/article-enhancements.php';
+require_once dirname(__DIR__) . '/inc/article-related.php';
 require_once dirname(__DIR__) . '/inc/dognet-helper.php';
 
 if (trim((string) ($_GET['suggest_products'] ?? '')) === '1') {
@@ -3518,6 +3520,17 @@ while (count($sections) < 5) {
     $sections[] = ['heading' => '', 'body' => ''];
 }
 
+$articleFaqItems = function_exists('interessa_article_faq_items')
+    ? interessa_article_faq_items($selectedArticleSlug)
+    : [];
+$articleRelatedItems = function_exists('interessa_related_articles')
+    ? interessa_related_articles($selectedArticleSlug, 4)
+    : [];
+$articleLastUpdated = trim((string) ($selectedArticleOverride['updated_at'] ?? ''));
+$articleLastUpdatedLabel = $articleLastUpdated !== ''
+    ? str_replace('T', ' ', substr($articleLastUpdated, 0, 16))
+    : 'Zatial bez admin ulozenia';
+
 $comparison = is_array($selectedArticleOverride['comparison'] ?? null) ? $selectedArticleOverride['comparison'] : ['columns' => [], 'rows' => []];
 $comparisonEditor = interessa_admin_comparison_editor_state($comparison);
 $selectedArticleProductState = ['product_plan' => [], 'recommended_products' => [], 'source' => 'article_override'];
@@ -5131,6 +5144,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   <span>Kategoria</span>
                   <strong><?= esc($articleContextCategoryLabel) ?></strong>
                 </div>
+                <div>
+                  <span>Posledna zmena</span>
+                  <strong><?= esc($articleLastUpdatedLabel) ?></strong>
+                </div>
               </div>
             </section>
 
@@ -5269,93 +5286,6 @@ require dirname(__DIR__) . '/inc/head.php';
                 </div>
               </section>
 
-              <section class="admin-subsection is-compact" id="article-check-block">
-                <div class="admin-subsection-head">
-                  <div>
-                    <h3>Affiliate pripravenost clanku</h3>
-                    <p class="admin-meta">Rychly prehlad pred ulozenim. Hned vidis stav slotov, hlavny produkt, top produkty a rizikove miesta.</p>
-                  </div>
-                  <div class="admin-inline-actions">
-                    <a class="btn btn-secondary btn-small" href="#article-products-block">Prejst na produkty v clanku</a>
-                  </div>
-                </div>
-                <div class="admin-status-grid">
-                  <article class="admin-status-card">
-                    <strong><?= esc((string) $articleSelectedCount) ?></strong>
-                    <span>Vybrane produkty</span>
-                  </article>
-                  <article class="admin-status-card">
-                    <strong><?= esc((string) $articleSelectedReadyCount) ?></strong>
-                    <span>Uplne hotove</span>
-                  </article>
-                  <article class="admin-status-card">
-                    <strong><?= esc((string) $articleSelectedImageMissingCount) ?></strong>
-                    <span>Chyba obrazok</span>
-                  </article>
-                  <article class="admin-status-card">
-                    <strong><?= esc((string) $articleSelectedClickMissingCount) ?></strong>
-                    <span>Chyba klik do obchodu</span>
-                  </article>
-                </div>
-                <?php if ($articleSelectedMissingProductCount > 0): ?>
-                  <p class="admin-note">Pozor: <?= esc((string) $articleSelectedMissingProductCount) ?> vybranych produktov este nie je poriadne doplnenych v katalogu.</p>
-                <?php endif; ?>
-                <?php if ($articleSelectedActionRows !== []): ?>
-                  <div class="admin-queue-list">
-                    <?php foreach ($articleSelectedActionRows as $articleActionRow): ?>
-                      <article class="admin-queue-item<?= ($articleActionRow['exists'] && $articleActionRow['packshot_ready'] && $articleActionRow['affiliate_ready']) ? ' is-done' : '' ?>">
-                        <div>
-                          <strong><?= esc((string) ($articleActionRow['name'] ?? '')) ?></strong>
-                          <p><?= esc((string) ($articleActionRow['slug'] ?? '')) ?></p>
-                          <div class="admin-status-pills">
-                            <span class="admin-status-pill<?= !empty($articleActionRow['exists']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['exists']) ? 'Produkt hotovy' : 'Produkt chyba' ?></span>
-                            <span class="admin-status-pill<?= !empty($articleActionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['packshot_ready']) ? 'Obrazok hotovy' : 'Treba doplnit obrazok produktu' ?></span>
-                            <span class="admin-status-pill<?= !empty($articleActionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['affiliate_ready']) ? 'Produkt ma funkcny odkaz' : 'Treba vlozit priamy odkaz na konkretny produkt' ?></span>
-                          </div>
-                          <small class="admin-note"><?= esc((string) ($articleActionRow['next_note'] ?? '')) ?></small>
-                        </div>
-                        <div class="admin-inline-actions">
-                          <?php if (!empty($articleActionRow['next_enabled'])): ?>
-                            <a class="btn btn-secondary btn-small" href="<?= esc((string) ($articleActionRow['next_href'] ?? '#')) ?>"><?= esc((string) ($articleActionRow['next_label'] ?? 'Otvorit')) ?></a>
-                          <?php endif; ?>
-                          <?php if (!empty($articleActionRow['exists']) && !empty($articleActionRow['packshot_ready']) && !empty($articleActionRow['affiliate_ready'])): ?>
-                            <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Pozriet na webe</a>
-                          <?php endif; ?>
-                        </div>
-                      </article>
-                    <?php endforeach; ?>
-                  </div>
-                <?php else: ?>
-                  <p class="admin-note">Clanok zatial nema explicitne priradene produkty. Nizsie vypln 3 sloty v casti <strong>Produkty v tomto clanku</strong>.</p>
-                <?php endif; ?>
-                <div class="admin-queue-list" style="margin-top:12px;">
-                  <?php foreach ($articleSlotOverviewRows as $overviewRow): ?>
-                    <?php $overviewReadiness = $overviewRow['readiness']; ?>
-                    <article class="admin-queue-item">
-                      <div>
-                        <strong>Slot <?= esc((string) $overviewRow['slot']) ?>: <?= esc((string) $overviewRow['name']) ?></strong>
-                        <p class="admin-note" style="margin-top:6px;"><?= esc((string) ($overviewReadiness['note'] ?? '')) ?></p>
-                      </div>
-                      <div class="admin-status-pills">
-                        <span class="admin-status-pill<?= esc((string) ($overviewReadiness['badge_class'] ?? ' is-warning')) ?>"><?= esc((string) ($overviewReadiness['label'] ?? 'Chyba stav')) ?></span>
-                        <?php if ((string) ($overviewRow['role'] ?? '') === 'featured'): ?>
-                          <span class="admin-status-pill is-good">Hlavny produkt</span>
-                        <?php endif; ?>
-                        <?php if (!empty($overviewRow['show_in_top'])): ?>
-                          <span class="admin-status-pill is-good">Top vyber</span>
-                        <?php endif; ?>
-                      </div>
-                    </article>
-                  <?php endforeach; ?>
-                </div>
-                <div class="admin-check-card" style="margin-top:12px;">
-                  <strong>Rychly zaver pre clanok</strong>
-                  <p class="admin-note" style="margin-top:6px;"><strong>Hlavny produkt:</strong> <?= esc($articleFeaturedSummary) ?></p>
-                  <p class="admin-note" style="margin-top:6px;"><strong>Top produkty:</strong> <?= esc($articleTopRows !== [] ? implode(' / ', $articleTopRows) : 'Zatial nie su oznacene top produkty.') ?></p>
-                  <p class="admin-note" style="margin-top:6px;"><strong>Rizikove sloty:</strong> <?= esc($articleRiskRows !== [] ? implode(' / ', $articleRiskRows) : 'Ziadne. Vsetky sloty su bez rizika.') ?></p>
-                </div>
-              </section>
-
               <div hidden aria-hidden="true">
                 <?php foreach ($articleScopedProductOptions as $hiddenProductSlug => $hiddenProductRow): ?>
                   <?php
@@ -5379,12 +5309,65 @@ require dirname(__DIR__) . '/inc/head.php';
                   <div>
                     <h3>Produkty v tomto clanku</h3>
                     <p class="admin-flash is-success"><strong>DIRECT SLOT SAVE MODE ACTIVE</strong></p>
-                    <p class="admin-meta">Tu uz len vidis aktualne sloty, hlavny produkt a stav pripravenosti. Zmenu produktu rob priamo tu cez vyber produktu a tlacidlo <strong>Ulozit Slot</strong>.</p>
+                    <p class="admin-meta">Tu mas rychly operacny prehlad aj priamy vyber produktu do Slotu 1 / 2 / 3. Zmenu urobis hned cez <strong>Ulozit Slot</strong>.</p>
                   </div>
+                </div>
+                <div class="admin-status-grid">
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $articleSelectedCount) ?></strong>
+                    <span>Vybrane produkty</span>
+                  </article>
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $articleSelectedReadyCount) ?></strong>
+                    <span>Uplne hotove</span>
+                  </article>
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $articleSelectedImageMissingCount) ?></strong>
+                    <span>Chyba obrazok</span>
+                  </article>
+                  <article class="admin-status-card">
+                    <strong><?= esc((string) $articleSelectedClickMissingCount) ?></strong>
+                    <span>Chyba klik do obchodu</span>
+                  </article>
+                </div>
+                <div class="admin-check-card" style="margin-top:12px;">
+                  <strong>Rychly zaver pre produkty</strong>
+                  <p class="admin-note" style="margin-top:6px;"><strong>Hlavny produkt:</strong> <?= esc($articleFeaturedSummary) ?></p>
+                  <p class="admin-note" style="margin-top:6px;"><strong>Top produkty:</strong> <?= esc($articleTopRows !== [] ? implode(' / ', $articleTopRows) : 'Zatial nie su oznacene top produkty.') ?></p>
+                  <p class="admin-note" style="margin-top:6px;"><strong>Rizikove sloty:</strong> <?= esc($articleRiskRows !== [] ? implode(' / ', $articleRiskRows) : 'Ziadne. Vsetky sloty su bez rizika.') ?></p>
                 </div>
                 <p class="admin-note">Tento clanok ma pevne 3 sloty. Slot 1 alebo explicitne oznaceny slot ma byt hlavny produkt pre citatela.</p>
                 <?php if ($articleProductPlanHasExplicitSource === false): ?>
                   <p class="admin-note">Clanok zatial nema explicitne priradene produkty.</p>
+                <?php endif; ?>
+                <?php if ($articleSelectedActionRows !== []): ?>
+                  <details class="admin-subsection is-compact">
+                    <summary><strong>Co pri produktoch este chyba</strong> - otvor len ked treba nieco dokoncit</summary>
+                    <div class="admin-queue-list">
+                      <?php foreach ($articleSelectedActionRows as $articleActionRow): ?>
+                        <article class="admin-queue-item<?= ($articleActionRow['exists'] && $articleActionRow['packshot_ready'] && $articleActionRow['affiliate_ready']) ? ' is-done' : '' ?>">
+                          <div>
+                            <strong><?= esc((string) ($articleActionRow['name'] ?? '')) ?></strong>
+                            <p><?= esc((string) ($articleActionRow['slug'] ?? '')) ?></p>
+                            <div class="admin-status-pills">
+                              <span class="admin-status-pill<?= !empty($articleActionRow['exists']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['exists']) ? 'Produkt hotovy' : 'Produkt chyba' ?></span>
+                              <span class="admin-status-pill<?= !empty($articleActionRow['packshot_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['packshot_ready']) ? 'Obrazok hotovy' : 'Treba doplnit obrazok produktu' ?></span>
+                              <span class="admin-status-pill<?= !empty($articleActionRow['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($articleActionRow['affiliate_ready']) ? 'Produkt ma funkcny odkaz' : 'Treba vlozit priamy odkaz na konkretny produkt' ?></span>
+                            </div>
+                            <small class="admin-note"><?= esc((string) ($articleActionRow['next_note'] ?? '')) ?></small>
+                          </div>
+                          <div class="admin-inline-actions">
+                            <?php if (!empty($articleActionRow['next_enabled'])): ?>
+                              <a class="btn btn-secondary btn-small" href="<?= esc((string) ($articleActionRow['next_href'] ?? '#')) ?>"><?= esc((string) ($articleActionRow['next_label'] ?? 'Otvorit')) ?></a>
+                            <?php endif; ?>
+                            <?php if (!empty($articleActionRow['exists']) && !empty($articleActionRow['packshot_ready']) && !empty($articleActionRow['affiliate_ready'])): ?>
+                              <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Pozriet na webe</a>
+                            <?php endif; ?>
+                          </div>
+                        </article>
+                      <?php endforeach; ?>
+                    </div>
+                  </details>
                 <?php endif; ?>
                 <div class="admin-grid one-up">
                   <?php for ($slotIndex = 1; $slotIndex <= 3; $slotIndex++): ?>
@@ -5474,9 +5457,13 @@ require dirname(__DIR__) . '/inc/head.php';
                 </details>
               </div>
 
-              <details class="admin-subsection is-compact">
-                <summary><strong>Pokrocile</strong> - text clanku a redakcne polia</summary>
-                <p class="admin-note">Toto otvor len ked potrebujes upravit text, intro, sekcie alebo metadata. Bezny denny workflow je hero obrazok, produkty, ulozit a skontrolovat live web.</p>
+              <section class="admin-subsection is-compact" id="article-editorial-block">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Redakcny obsah clanku</h3>
+                    <p class="admin-meta">Tu rychlo doladis titulok a intro. Dlhsie sekcie ostavaju nizsie pod Pokrocile.</p>
+                  </div>
+                </div>
                 <div class="admin-grid two-up">
                   <label>
                     <span>Titulok</span>
@@ -5484,34 +5471,90 @@ require dirname(__DIR__) . '/inc/head.php';
                   </label>
                   <label>
                     <span>Intro</span>
-                    <textarea name="intro" rows="3"><?= esc((string) ($selectedArticleOverride['intro'] ?: $selectedArticleMeta['description'])) ?></textarea>
+                    <textarea name="intro" rows="4"><?= esc((string) ($selectedArticleOverride['intro'] ?: $selectedArticleMeta['description'])) ?></textarea>
                   </label>
                 </div>
-                <div class="admin-subsection is-compact">
-                  <div class="admin-subsection-head">
-                    <h3>Sekcie clanku</h3>
-                    <button class="btn btn-secondary btn-small" type="button" data-add-section>Pridej sekciu</button>
+              </section>
+
+              <section class="admin-subsection is-compact" id="article-faq-block">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>FAQ</h3>
+                    <p class="admin-meta">Rychla kontrola castych otazok, ktore sa na clanku dnes zobrazia na webe.</p>
                   </div>
-                  <div class="admin-sections" data-sections-root>
-                    <?php foreach ($sections as $sectionRow): ?>
-                      <div class="admin-section-row" data-section-row>
-                        <input type="text" name="section_heading[]" value="<?= esc((string) ($sectionRow['heading'] ?? '')) ?>" placeholder="Nadpis sekcie" />
-                        <textarea name="section_body[]" rows="4" placeholder="Obsah sekcie"><?= esc((string) ($sectionRow['body'] ?? '')) ?></textarea>
-                      </div>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>#faq" target="_blank" rel="noopener">Otvorit FAQ na webe</a>
+                  </div>
+                </div>
+                <?php if ($articleFaqItems === []): ?>
+                  <p class="admin-note">Tento clanok zatial nema samostatne FAQ polozky v content registry.</p>
+                <?php else: ?>
+                  <div class="admin-queue-list">
+                    <?php foreach ($articleFaqItems as $faqItem): ?>
+                      <article class="admin-queue-item">
+                        <div>
+                          <strong><?= esc((string) ($faqItem['q'] ?? '')) ?></strong>
+                          <p><?= esc((string) ($faqItem['a'] ?? '')) ?></p>
+                        </div>
+                      </article>
                     <?php endforeach; ?>
                   </div>
-                  <template id="admin-section-template">
-                    <div class="admin-section-row" data-section-row>
-                      <input type="text" name="section_heading[]" placeholder="Nadpis sekcie" />
-                      <textarea name="section_body[]" rows="4" placeholder="Obsah sekcie"></textarea>
-                    </div>
-                  </template>
+                <?php endif; ?>
+              </section>
+
+              <section class="admin-subsection is-compact" id="article-related-block">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>Suvisiace clanky / interne prepojenie</h3>
+                    <p class="admin-meta">Rychly prehlad, ake interne odkazy sa pre tento clanok dnes pravdepodobne zobrazia.</p>
+                  </div>
+                  <div class="admin-inline-actions">
+                    <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
+                  </div>
                 </div>
-              </details>
+                <?php if ($articleRelatedItems === []): ?>
+                  <p class="admin-note">Zatial sa nenasli ziadne suvisiace clanky pre tento slug.</p>
+                <?php else: ?>
+                  <div class="admin-queue-list">
+                    <?php foreach ($articleRelatedItems as $relatedItem): ?>
+                      <?php $relatedSlug = canonical_article_slug((string) ($relatedItem['slug'] ?? '')); ?>
+                      <article class="admin-queue-item">
+                        <div>
+                          <strong><?= esc((string) ($relatedItem['title'] ?? $relatedSlug)) ?></strong>
+                          <p><?= esc($relatedSlug) ?></p>
+                        </div>
+                        <div class="admin-inline-actions">
+                          <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($relatedSlug) ?>">Otvorit v admine</a>
+                          <a class="btn btn-secondary btn-small" href="<?= esc(article_url($relatedSlug)) ?>" target="_blank" rel="noopener">Otvorit na webe</a>
+                        </div>
+                      </article>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
+              </section>
+
+              <section class="admin-subsection is-compact" id="article-seo-block">
+                <div class="admin-subsection-head">
+                  <div>
+                    <h3>SEO box</h3>
+                    <p class="admin-meta">Sem patri len meta title a meta description pre rychly finalny pass pred publikaciou.</p>
+                  </div>
+                </div>
+                <div class="admin-grid two-up">
+                  <label>
+                    <span>Meta title</span>
+                    <input type="text" name="meta_title" value="<?= esc((string) ($selectedArticleOverride['meta_title'] ?? '')) ?>" />
+                  </label>
+                  <label>
+                    <span>Meta description</span>
+                    <input type="text" name="meta_description" value="<?= esc((string) ($selectedArticleOverride['meta_description'] ?? '')) ?>" />
+                  </label>
+                </div>
+              </section>
 
               <?php if ($showAdvancedArticleEditor): ?>
               <details class="admin-subsection" open>
-                <summary><strong>Pokrocile</strong> - metadata, porovnanie a legacy polia</summary>
+                <summary><strong>Pokrocile</strong> - sekcie, porovnanie a legacy polia</summary>
                 <div class="admin-grid two-up">
                   <label>
                     <span>Kategoria</span>
@@ -5527,16 +5570,27 @@ require dirname(__DIR__) . '/inc/head.php';
                     <input type="text" name="hero_asset" value="<?= esc((string) ($selectedArticleOverride['hero_asset'] ?? '')) ?>" placeholder="img/articles/heroes/slug.webp" />
                   </label>
                 </div>
-                <div class="admin-grid two-up">
-                  <label>
-                    <span>Meta title</span>
-                    <input type="text" name="meta_title" value="<?= esc((string) ($selectedArticleOverride['meta_title'] ?? '')) ?>" />
-                  </label>
-                  <label>
-                    <span>Meta description</span>
-                    <input type="text" name="meta_description" value="<?= esc((string) ($selectedArticleOverride['meta_description'] ?? '')) ?>" />
-                  </label>
+
+              <div class="admin-subsection is-compact">
+                <div class="admin-subsection-head">
+                  <h3>Sekcie clanku</h3>
+                  <button class="btn btn-secondary btn-small" type="button" data-add-section>Pridej sekciu</button>
                 </div>
+                <div class="admin-sections" data-sections-root>
+                  <?php foreach ($sections as $sectionRow): ?>
+                    <div class="admin-section-row" data-section-row>
+                      <input type="text" name="section_heading[]" value="<?= esc((string) ($sectionRow['heading'] ?? '')) ?>" placeholder="Nadpis sekcie" />
+                      <textarea name="section_body[]" rows="4" placeholder="Obsah sekcie"><?= esc((string) ($sectionRow['body'] ?? '')) ?></textarea>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+                <template id="admin-section-template">
+                  <div class="admin-section-row" data-section-row>
+                    <input type="text" name="section_heading[]" placeholder="Nadpis sekcie" />
+                    <textarea name="section_body[]" rows="4" placeholder="Obsah sekcie"></textarea>
+                  </div>
+                </template>
+              </div>
 
               <div class="admin-subsection">
                 <div class="admin-subsection-head">
@@ -5805,8 +5859,8 @@ require dirname(__DIR__) . '/inc/head.php';
               </section>
               <?php else: ?>
               <details class="admin-subsection">
-                <summary><strong>Pokrocile</strong> - metadata, porovnanie a legacy polia</summary>
-                <p class="admin-note">Zakladny workflow mas vyssie. Tu su skryte meta polia, porovnanie, legacy odporucane produkty a dalsie vedlajsie nastavenia.</p>
+                <summary><strong>Pokrocile</strong> - sekcie, porovnanie a legacy polia</summary>
+                <p class="admin-note">Zakladny workflow mas vyssie. Tu ostavaju sekcie clanku, porovnanie, legacy odporucane produkty a dalsie vedlajsie nastavenia.</p>
                 <div class="admin-inline-actions">
                   <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;saved=advanced&amp;advanced_article=1">Otvorit pokrocily editor clanku</a>
                 </div>
