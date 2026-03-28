@@ -2661,27 +2661,11 @@ if ($isAuthed) {
                 }
 
                 interessa_admin_assign_product_to_article_slot($articleSlug, $productSlug, $targetSlot);
-                $assignedState = interessa_admin_article_product_state($articleSlug);
-                $assignedPlan = array_values(array_filter((array) ($assignedState['product_plan'] ?? []), static fn($row): bool => is_array($row)));
-                $assignedSlotsByOrder = [1 => '', 2 => '', 3 => ''];
-                foreach ($assignedPlan as $assignedRow) {
-                    $assignedOrder = max(1, min(3, (int) ($assignedRow['order'] ?? 0)));
-                    $assignedSlotsByOrder[$assignedOrder] = trim((string) ($assignedRow['product_slug'] ?? ''));
-                }
                 interessa_admin_redirect_fragment('articles', [
                     'slug' => $articleSlug,
                     'saved' => 'product',
                     'slot_ready' => (string) $targetSlot,
                     'suggest_products' => '1',
-                    'debug_assign' => '1',
-                    'debug_assign_action' => 'assign_suggested_product_to_slot',
-                    'debug_assign_slug' => $articleSlug,
-                    'debug_assign_product_slug' => $productSlug,
-                    'debug_assign_target_slot' => (string) $targetSlot,
-                    'debug_assign_handler_reached' => 'yes',
-                    'debug_assign_saved_slot_1' => (string) ($assignedSlotsByOrder[1] ?? ''),
-                    'debug_assign_saved_slot_2' => (string) ($assignedSlotsByOrder[2] ?? ''),
-                    'debug_assign_saved_slot_3' => (string) ($assignedSlotsByOrder[3] ?? ''),
                 ], 'slot-' . $targetSlot);
             }
 
@@ -4907,21 +4891,6 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php if ($section === 'articles' && $saved === 'product' && $selectedArticleSlug !== '' && (int) ($_GET['slot_ready'] ?? 0) > 0): ?>
           <div class="admin-flash is-success">Produkt bol priradeny do Slotu <?= esc((string) max(1, min(3, (int) ($_GET['slot_ready'] ?? 0)))) ?>.</div>
         <?php endif; ?>
-        <?php if ($section === 'articles' && ((string) ($_GET['debug_assign'] ?? '') === '1')): ?>
-          <div class="admin-flash is-success">
-            <strong>DEBUG ASSIGN TEST</strong> - docasny debug. Po potvrdeni sa odstrani.
-            <div style="margin-top:8px;">
-              <div>action: <code><?= esc((string) ($_GET['debug_assign_action'] ?? '')) ?></code></div>
-              <div>slug: <code><?= esc((string) ($_GET['debug_assign_slug'] ?? '')) ?></code></div>
-              <div>product_slug: <code><?= esc((string) ($_GET['debug_assign_product_slug'] ?? '')) ?></code></div>
-              <div>target_slot: <code><?= esc((string) ($_GET['debug_assign_target_slot'] ?? '')) ?></code></div>
-              <div>handler_reached: <code><?= esc((string) ($_GET['debug_assign_handler_reached'] ?? 'no')) ?></code></div>
-              <div>assigned_slot_saved_slug_1: <code><?= esc((string) (trim((string) ($_GET['debug_assign_saved_slot_1'] ?? '')) !== '' ? $_GET['debug_assign_saved_slot_1'] : '(empty)')) ?></code></div>
-              <div>assigned_slot_saved_slug_2: <code><?= esc((string) (trim((string) ($_GET['debug_assign_saved_slot_2'] ?? '')) !== '' ? $_GET['debug_assign_saved_slot_2'] : '(empty)')) ?></code></div>
-              <div>assigned_slot_saved_slug_3: <code><?= esc((string) (trim((string) ($_GET['debug_assign_saved_slot_3'] ?? '')) !== '' ? $_GET['debug_assign_saved_slot_3'] : '(empty)')) ?></code></div>
-            </div>
-          </div>
-        <?php endif; ?>
         <?php if ($section === 'articles' && $saved === 'product' && $selectedArticleSlug !== '' && ((string) ($_GET['prefill_filled'] ?? '') !== '' || (string) ($_GET['prefill_skipped'] ?? '') !== '')): ?>
           <div class="admin-flash is-success">Navrhy boli predvyplnene do volnych slotov.</div>
         <?php endif; ?>
@@ -5548,21 +5517,14 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Produkty v tomto clanku</h3>
-                    <p class="admin-meta">Toto je hlavna pracovna cast pre produkty: vyber Slot 1 / Slot 2 / Slot 3, oznac hlavny produkt a potom uloz clanok.</p>
+                    <p class="admin-meta">Tu uz len vidis aktualne sloty, hlavny produkt a stav pripravenosti. Zmenu produktu rob len cez tlacidlo <strong>Vybrat alebo zmenit produkt</strong>.</p>
                   </div>
-                  <div class="admin-inline-actions">
-                    <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($selectedArticleSlug) ?>&amp;suggest_products=1#article-product-suggestions">Navrhnut produkty</a>
-                  </div>
-                </div>
-                <div class="admin-actions" style="margin-bottom:12px;">
-                  <button class="btn btn-cta" type="submit" form="article-save-form">ULOZIT CLANOK</button>
-                  <a class="btn btn-secondary" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
                 </div>
                 <p class="admin-note">Tento clanok ma pevne 3 sloty. Slot 1 alebo explicitne oznaceny slot ma byt hlavny produkt pre citatela.</p>
                 <?php if ($articleProductPlanHasExplicitSource === false): ?>
                   <p class="admin-note">Clanok zatial nema explicitne priradene produkty.</p>
                 <?php endif; ?>
-                <?php if ($showSuggestedProducts): ?>
+                <?php if (false && $showSuggestedProducts): ?>
                   <section class="admin-subsection is-compact" id="article-product-suggestions" style="margin-bottom:16px;">
                     <div class="admin-subsection-head">
                       <div>
@@ -5645,16 +5607,8 @@ require dirname(__DIR__) . '/inc/head.php';
                         <strong><?= $slotSlug !== '' ? esc((string) ($slotRow['name'] ?? $slotSlug)) : 'Ziadny produkt' ?></strong>
                         <p class="admin-note" style="margin-top:6px;"><?= esc($slotStatusNote) ?></p>
                       </div>
-                      <label>
-                        <span>Rychla zmena produktu</span>
-                        <?php $slotSelectOptions = $articleScopedProductOptionsBySlot[$slotIndex] ?? $articleScopedProductOptions; ?>
-                        <select name="article_product_slot[<?= esc((string) $slotIndex) ?>]" autocomplete="off" form="article-save-form">
-                          <option value="" <?= $slotSlug === '' ? 'selected' : '' ?>>Nechat prazdny slot</option>
-                          <?php foreach ($slotSelectOptions as $optionSlug => $optionRow): ?>
-                            <option value="<?= esc((string) $optionSlug) ?>" <?= $slotSlug === (string) $optionSlug ? 'selected' : '' ?>><?= esc((string) ($optionRow['name'] ?? $optionSlug)) ?></option>
-                          <?php endforeach; ?>
-                        </select>
-                      </label>
+                      <input type="hidden" name="article_product_slot[<?= esc((string) $slotIndex) ?>]" value="<?= esc($slotSlug) ?>" form="article-save-form" />
+                      <p class="admin-note">Produkt pre tento slot zmenis len cez tlacidlo nizsie.</p>
                       <div class="admin-status-pills">
                         <span class="admin-status-pill<?= esc($slotStatusClass) ?>"><?= esc($slotStatusLabel) ?></span>
                       </div>
@@ -5692,9 +5646,6 @@ require dirname(__DIR__) . '/inc/head.php';
                         </label>
                         <div class="admin-inline-actions">
                           <a class="btn btn-secondary btn-small" href="/admin?section=products&amp;article=<?= esc($selectedArticleSlug) ?>&amp;slot=<?= esc((string) $slotIndex) ?>&amp;return_section=articles&amp;return_slug=<?= esc($selectedArticleSlug) ?>"><?= $slotSlug !== '' ? 'Vybrat alebo zmenit produkt' : 'Vybrat produkt' ?></a>
-                          <?php if (!empty($slotActionRow['next_enabled'])): ?>
-                            <a class="btn btn-secondary btn-small" href="<?= esc((string) ($slotActionRow['next_href'] ?? ($slotRow['next_href'] ?? '#'))) ?>"><?= esc((string) ($slotActionRow['next_label'] ?? ($slotRow['next_label'] ?? 'Skontrolovat produkt'))) ?></a>
-                          <?php endif; ?>
                           <?php if (!empty($slotActionRow['exists']) && !empty($slotActionRow['affiliate_ready'])): ?>
                             <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Pozriet na webe</a>
                           <?php endif; ?>
@@ -6124,13 +6075,14 @@ require dirname(__DIR__) . '/inc/head.php';
                   <input type="hidden" name="target_slot" value="<?= esc((string) $returnArticleSlotPrefill) ?>" />
                   <label class="admin-inline-select">
                     <span>Produkt pre tento slot</span>
-                    <select name="product_slug" onchange="this.form.submit()">
+                    <select name="product_slug">
                       <option value="">Vyber produkt</option>
                       <?php foreach ($productSlugs as $slug): ?>
                         <option value="<?= esc($slug) ?>" <?= $slug === $selectedProductSlug ? 'selected' : '' ?>><?= esc((string) ($catalog[$slug]['name'] ?? $slug)) ?></option>
                       <?php endforeach; ?>
                     </select>
                   </label>
+                  <button class="btn btn-cta btn-small" type="submit">Potvrdit vyber produktu</button>
                 </form>
                 <a class="btn btn-secondary" href="<?= esc($articleSlotBackHref) ?>">Spat na clanok</a>
                 <a class="btn btn-secondary" href="<?= esc(article_url($returnArticlePrefill)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
