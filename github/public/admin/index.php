@@ -2649,7 +2649,11 @@ if ($isAuthed) {
                 }
 
                 interessa_admin_assign_product_to_article_slot($articleSlug, $productSlug, $targetSlot);
-                interessa_admin_redirect('products', interessa_admin_product_article_slot_query($productSlug, $articleSlug, $targetSlot, 'product', 'product_edit'));
+                interessa_admin_redirect_fragment('articles', [
+                    'slug' => $articleSlug,
+                    'saved' => 'product',
+                    'slot_ready' => (string) $targetSlot,
+                ], 'slot-' . $targetSlot);
             }
 
             if ($action === 'assign_suggested_product_to_slot') {
@@ -6064,9 +6068,8 @@ require dirname(__DIR__) . '/inc/head.php';
             <div class="admin-card-head">
               <div>
                 <p class="admin-kicker">Clanok je hlavny kontext</p>
-                <h2>Slot <?= esc((string) $returnArticleSlotPrefill) ?> pre clanok <?= esc($articleSlotModeTitle) ?></h2>
-                <p class="admin-note">Tu doplnas len jeden produkt pre konkretny slot. Po ulozeni sa vratis spat na clanok.</p>
-                <p class="admin-meta">article: <?= esc($returnArticlePrefill) ?> / slot: <?= esc((string) $returnArticleSlotPrefill) ?> / mode: article-slot</p>
+                <h2>Vyberas produkt pre Slot <?= esc((string) $returnArticleSlotPrefill) ?> clanku <?= esc($articleSlotModeTitle) ?></h2>
+                <p class="admin-note">Toto je jediny krok pre zmenu produktu v slote: vyber produkt, klikni <strong>Potvrdit vyber produktu</strong> a system ta hned vrati spat na clanok.</p>
               </div>
               <div class="admin-inline-actions">
                 <form method="post" action="/admin" class="admin-inline-form">
@@ -6108,7 +6111,7 @@ require dirname(__DIR__) . '/inc/head.php';
               </article>
             </div>
             <?php else: ?>
-            <p class="admin-note">Najprv vyber produkt pre tento slot. Az potom sa otvori editor produktu pre clanok a slot.</p>
+            <p class="admin-note">Najprv vyber produkt v tomto selecte a klikni <strong>Potvrdit vyber produktu</strong>. Nic dalsie tu netreba nastavovat.</p>
             <?php endif; ?>
           </section>
           <?php endif; ?>
@@ -6467,7 +6470,7 @@ require dirname(__DIR__) . '/inc/head.php';
           </section>
           <?php endif; ?>
 
-          <?php if ((($articleSlotMode && $selectedProductSlug !== '') || (!$articleSlotMode && !$productCandidateFocusMode && $manualProductRequested && $selectedProductSlug !== ''))): ?>
+          <?php if ((!$articleSlotMode && !$productCandidateFocusMode && $manualProductRequested && $selectedProductSlug !== '')): ?>
           <?php if ($articleSlotMode): ?>
           <section class="admin-card" id="products-main-page">
           <?php else: ?>
