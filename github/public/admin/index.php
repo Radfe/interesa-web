@@ -2661,11 +2661,27 @@ if ($isAuthed) {
                 }
 
                 interessa_admin_assign_product_to_article_slot($articleSlug, $productSlug, $targetSlot);
+                $assignedState = interessa_admin_article_product_state($articleSlug);
+                $assignedPlan = array_values(array_filter((array) ($assignedState['product_plan'] ?? []), static fn($row): bool => is_array($row)));
+                $assignedSlotsByOrder = [1 => '', 2 => '', 3 => ''];
+                foreach ($assignedPlan as $assignedRow) {
+                    $assignedOrder = max(1, min(3, (int) ($assignedRow['order'] ?? 0)));
+                    $assignedSlotsByOrder[$assignedOrder] = trim((string) ($assignedRow['product_slug'] ?? ''));
+                }
                 interessa_admin_redirect_fragment('articles', [
                     'slug' => $articleSlug,
                     'saved' => 'product',
                     'slot_ready' => (string) $targetSlot,
                     'suggest_products' => '1',
+                    'debug_assign' => '1',
+                    'debug_assign_action' => 'assign_suggested_product_to_slot',
+                    'debug_assign_slug' => $articleSlug,
+                    'debug_assign_product_slug' => $productSlug,
+                    'debug_assign_target_slot' => (string) $targetSlot,
+                    'debug_assign_handler_reached' => 'yes',
+                    'debug_assign_saved_slot_1' => (string) ($assignedSlotsByOrder[1] ?? ''),
+                    'debug_assign_saved_slot_2' => (string) ($assignedSlotsByOrder[2] ?? ''),
+                    'debug_assign_saved_slot_3' => (string) ($assignedSlotsByOrder[3] ?? ''),
                 ], 'slot-' . $targetSlot);
             }
 
@@ -4890,6 +4906,21 @@ require dirname(__DIR__) . '/inc/head.php';
         <?php endif; ?>
         <?php if ($section === 'articles' && $saved === 'product' && $selectedArticleSlug !== '' && (int) ($_GET['slot_ready'] ?? 0) > 0): ?>
           <div class="admin-flash is-success">Produkt bol priradeny do Slotu <?= esc((string) max(1, min(3, (int) ($_GET['slot_ready'] ?? 0)))) ?>.</div>
+        <?php endif; ?>
+        <?php if ($section === 'articles' && ((string) ($_GET['debug_assign'] ?? '') === '1')): ?>
+          <div class="admin-flash is-success">
+            <strong>DEBUG ASSIGN TEST</strong> - docasny debug. Po potvrdeni sa odstrani.
+            <div style="margin-top:8px;">
+              <div>action: <code><?= esc((string) ($_GET['debug_assign_action'] ?? '')) ?></code></div>
+              <div>slug: <code><?= esc((string) ($_GET['debug_assign_slug'] ?? '')) ?></code></div>
+              <div>product_slug: <code><?= esc((string) ($_GET['debug_assign_product_slug'] ?? '')) ?></code></div>
+              <div>target_slot: <code><?= esc((string) ($_GET['debug_assign_target_slot'] ?? '')) ?></code></div>
+              <div>handler_reached: <code><?= esc((string) ($_GET['debug_assign_handler_reached'] ?? 'no')) ?></code></div>
+              <div>assigned_slot_saved_slug_1: <code><?= esc((string) (trim((string) ($_GET['debug_assign_saved_slot_1'] ?? '')) !== '' ? $_GET['debug_assign_saved_slot_1'] : '(empty)')) ?></code></div>
+              <div>assigned_slot_saved_slug_2: <code><?= esc((string) (trim((string) ($_GET['debug_assign_saved_slot_2'] ?? '')) !== '' ? $_GET['debug_assign_saved_slot_2'] : '(empty)')) ?></code></div>
+              <div>assigned_slot_saved_slug_3: <code><?= esc((string) (trim((string) ($_GET['debug_assign_saved_slot_3'] ?? '')) !== '' ? $_GET['debug_assign_saved_slot_3'] : '(empty)')) ?></code></div>
+            </div>
+          </div>
         <?php endif; ?>
         <?php if ($section === 'articles' && $saved === 'product' && $selectedArticleSlug !== '' && ((string) ($_GET['prefill_filled'] ?? '') !== '' || (string) ($_GET['prefill_skipped'] ?? '') !== '')): ?>
           <div class="admin-flash is-success">Navrhy boli predvyplnene do volnych slotov.</div>
