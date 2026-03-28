@@ -82108,8 +82108,68 @@
     },
     "kreatin-porovnanie-proteinsk": {
         "code": "kreatin-porovnanie-proteinsk",
-        "url": "https://www.protein.sk/kreatin/",
+        "url": "https://www.protein.sk/100-pure-creatine-scitec-nutrition-produkt",
         "merchant": "Protein.sk",
         "product_slug": "proteinsk-kreatin-monohydrat-value"
+    },
+    "proteinsk-100-whey-protein-nutrend": {
+        "code": "proteinsk-100-whey-protein-nutrend",
+        "url": "https://www.protein.sk/whey-protein-nutrend",
+        "merchant": "Protein.sk",
+        "product_slug": "proteinsk-100-whey-protein-nutrend"
+    },
+    "proteinsk-kolagen-protein-nutrition": {
+        "code": "proteinsk-kolagen-protein-nutrition",
+        "url": "https://www.protein.sk/kolagen/protein-nutrition",
+        "merchant": "Protein.sk",
+        "product_slug": "proteinsk-kolagen-protein-nutrition"
+    },
+    "ironaesthetics-kofein-100-tab": {
+        "code": "ironaesthetics-kofein-100-tab",
+        "url": "https://ironaesthetics.sk/anabolizery-a-stimulanty/1847-kofein-90-tab-iron-aesthetics.html",
+        "merchant": "Iron Aesthetics",
+        "product_slug": "ironaesthetics-kofein-100-tab"
+    },
+    "ironaesthetics-arginin-akg-100-tab": {
+        "code": "ironaesthetics-arginin-akg-100-tab",
+        "url": "https://ironaesthetics.sk/aminokyseliny-a-bcaa/1845-arginin-akg-100-tab-iron-aesthetics.html",
+        "merchant": "Iron Aesthetics",
+        "product_slug": "ironaesthetics-arginin-akg-100-tab"
+    },
+    "ironaesthetics-synefrin-100-tab": {
+        "code": "ironaesthetics-synefrin-100-tab",
+        "url": "https://ironaesthetics.sk/1852-synefrin-90-tab-iron-aesthetics.html",
+        "merchant": "Iron Aesthetics",
+        "product_slug": "ironaesthetics-synefrin-100-tab"
+    },
+    "imunoklub-imunoglukan-p4h-60-kapsul": {
+        "code": "imunoklub-imunoglukan-p4h-60-kapsul",
+        "url": "https://www.imunoklub.sk/imunoglukan-p4h-60-kapsul",
+        "merchant": "Imunoklub",
+        "product_slug": "imunoklub-imunoglukan-p4h-60-kapsul"
+    },
+    "imunoklub-imunoglukan-p4h-prod-60-kapsul": {
+        "code": "imunoklub-imunoglukan-p4h-prod-60-kapsul",
+        "url": "https://www.imunoklub.sk/imunoglukan-p4h-prod-60-kapsul",
+        "merchant": "Imunoklub",
+        "product_slug": "imunoklub-imunoglukan-p4h-prod-60-kapsul"
+    },
+    "imunoklub-imunoglukan-p4h-250-ml": {
+        "code": "imunoklub-imunoglukan-p4h-250-ml",
+        "url": "https://www.imunoklub.sk/eshop/imunoglukan-p4h-250-ml.html?page_id=61",
+        "merchant": "Imunoklub",
+        "product_slug": "imunoklub-imunoglukan-p4h-250-ml"
+    },
+    "symprove-daily-essential-4-tyzdne": {
+        "code": "symprove-daily-essential-4-tyzdne",
+        "url": "https://www.symprove.sk/products/daily-essential",
+        "merchant": "Symprove",
+        "product_slug": "symprove-daily-essential-4-tyzdne"
+    },
+    "symprove-daily-essential-12-tyzdnov": {
+        "code": "symprove-daily-essential-12-tyzdnov",
+        "url": "https://www.symprove.sk/products/daily-essential?variant=41577951002742&view=default",
+        "merchant": "Symprove",
+        "product_slug": "symprove-daily-essential-12-tyzdnov"
     }
 }
