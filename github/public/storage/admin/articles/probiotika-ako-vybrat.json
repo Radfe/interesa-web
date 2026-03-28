@@ -1,0 +1,75 @@
+{
+    "slug": "probiotika-ako-vybrat",
+    "title": "Ako vybrať probiotiká: kmene, CFU a čo má zmysel pri trávení",
+    "intro": "Pri probiotikách nestačí pozerať len na čo najvyššie číslo CFU. Dôležitejšie je vedieť, na aký problém produkt kupuješ, ako dlho ho chceš používať a či ide o zrozumiteľnú everyday voľbu alebo špecifickejší produkt pre konkrétny prípad.",
+    "meta_title": "Ako vybrať probiotiká: kmene, CFU a praktický výber podľa použitia",
+    "meta_description": "Praktický sprievodca výberom probiotík. Zisti, ako čítať kmene, CFU, kedy má zmysel jednoduchý everyday produkt a ktoré tri voľby sú dnes najpraktickejšie.",
+    "category": "probiotika-travenie",
+    "hero_asset": "",
+    "sections": [
+        {
+            "heading": "Rýchle rozhodnutie: ktoré probiotiká vybrať",
+            "body": "Ako hlavný tip pre väčšinu ľudí vychádza ProbioTen od GymBeam, pretože ide o jednoduchú everyday voľbu. Ako druhá voľba dáva zmysel GymBeam Probio Complex pre ľudí, ktorí chcú širší základ. A ako špecifickejší prípad je vhodný GymBeam Lactobacillus rhamnosus, ak chceš cielenejšie zameranie na konkrétny kmeňový profil."
+        },
+        {
+            "heading": "Čo je dôležitejšie než samotné CFU",
+            "body": "Číslo CFU je len jedna časť obrázka. Dôležité je aj to, aké kmene produkt obsahuje, na aký problém ho chceš použiť a či ho vieš reálne brať pravidelne. Extrémne vysoké číslo samo o sebe ešte neznamená lepší výsledok."
+        },
+        {
+            "heading": "Everyday probiotiká vs špecifickejší produkt",
+            "body": "Pre veľa ľudí je najlepšia everyday voľba jednoduchý produkt, ktorý zapadne do bežného režimu. Špecifickejší produkt má zmysel tam, kde cielene riešiš konkrétnu oblasť trávenia alebo dlhší problém a nechceš len všeobecnú poistku."
+        },
+        {
+            "heading": "Ako probiotiká používať",
+            "body": "Najväčší zmysel má pravidelnosť. Lepšie funguje jednoduchý produkt, ktorý vieš brať dlhodobo, než komplikovaná schéma s viacerými doplnkami, ktorú nevydržíš. Pri výbere preto sleduj nielen zloženie, ale aj praktickosť používania."
+        },
+        {
+            "heading": "Najčastejšie chyby pri výbere probiotík",
+            "body": "Častá chyba je kupovať probiotiká len podľa najvyššieho CFU. Druhá chyba je nemať jasno, či ide o everyday voľbu alebo špecifické riešenie. A tretia chyba je očakávať rýchly efekt bez konzistentného používania."
+        },
+        {
+            "heading": "FAQ",
+            "body": "Je vyššie CFU vždy lepšie? Nie. Záleží aj na kmeňoch a použití. Má zmysel brať probiotiká dlhodobo? Pri niektorých produktoch áno, ak zapadajú do bežného režimu. Ako vybrať medzi všeobecným a špecifickým produktom? Podľa toho, či riešiš širšiu podporu trávenia alebo konkrétny problém."
+        },
+        {
+            "heading": "Súvisiace články",
+            "body": "Ak riešiš širší základ doplnkov, pokračuj na doplnky-vyzivy. Pri imunite a každodennej rutine môže dávať zmysel aj vitamin-d3-a-imunita."
+        }
+    ],
+    "comparison": {
+        "title": "",
+        "intro": "",
+        "columns": [],
+        "rows": []
+    },
+    "recommended_products": [
+        "gymbeam-probioten",
+        "gymbeam-gymbeam-probio-complex",
+        "gymbeam-gymbeam-lactobacillus-rhamnosus"
+    ],
+    "product_plan": [
+        {
+            "product_slug": "gymbeam-probioten",
+            "order": 1,
+            "role": "featured",
+            "show_in_top": true,
+            "show_in_comparison": false
+        },
+        {
+            "product_slug": "gymbeam-gymbeam-probio-complex",
+            "order": 2,
+            "role": "value",
+            "show_in_top": true,
+            "show_in_comparison": false
+        },
+        {
+            "product_slug": "gymbeam-gymbeam-lactobacillus-rhamnosus",
+            "order": 3,
+            "role": "alternative",
+            "show_in_top": true,
+            "show_in_comparison": false
+        }
+    ],
+    "updated_at": "2026-03-28T20:18:38+00:00",
+    "updated_by": "admin"
+}

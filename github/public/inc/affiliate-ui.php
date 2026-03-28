@@ -24,6 +24,11 @@ if (!function_exists('interessa_affiliate_cta_html')) {
     function interessa_affiliate_cta_html(array $row, array $options = []): string {
         $row = interessa_resolve_product_reference($row);
         $target = interessa_affiliate_target($row);
+        $target['href'] = interessa_affiliate_tracking_href(
+            trim((string) ($target['href'] ?? '')),
+            $row,
+            $options
+        );
         $class = trim((string) ($options['class'] ?? 'btn btn-cta')) ?: 'btn btn-cta';
         $label = trim((string) ($options['label'] ?? $target['label'] ?? interessa_text('Do obchodu'))) ?: interessa_text('Do obchodu');
 
@@ -32,6 +37,66 @@ if (!function_exists('interessa_affiliate_cta_html')) {
         }
 
         return '<a class="' . esc($class) . '" href="' . esc($target['href']) . '" target="_blank" rel="' . esc($target['rel']) . '">' . esc($label) . '</a>';
+    }
+}
+
+if (!function_exists('interessa_affiliate_tracking_article_slug')) {
+    function interessa_affiliate_tracking_article_slug(array $row, array $options = []): string {
+        $articleSlug = trim((string) ($options['article_slug'] ?? $row['article_slug'] ?? ''));
+        if ($articleSlug !== '') {
+            return canonical_article_slug($articleSlug);
+        }
+
+        $requestUri = trim((string) ($_SERVER['REQUEST_URI'] ?? ''));
+        if ($requestUri === '') {
+            return '';
+        }
+
+        $path = (string) parse_url($requestUri, PHP_URL_PATH);
+        if (!preg_match('~^/clanky/([^/]+)$~', $path, $matches)) {
+            return '';
+        }
+
+        return canonical_article_slug(rawurldecode((string) $matches[1]));
+    }
+}
+
+if (!function_exists('interessa_affiliate_tracking_href')) {
+    function interessa_affiliate_tracking_href(string $href, array $row, array $options = []): string {
+        $href = trim($href);
+        if ($href === '' || !str_starts_with($href, '/go/')) {
+            return $href;
+        }
+
+        $articleSlug = interessa_affiliate_tracking_article_slug($row, $options);
+        $productSlug = trim((string) ($options['product_slug'] ?? $row['product_slug'] ?? $row['slug'] ?? ''));
+        $merchantSlug = trim((string) ($options['merchant_slug'] ?? $row['merchant_slug'] ?? ''));
+        $slot = (int) ($options['slot'] ?? $row['slot'] ?? $row['order'] ?? 0);
+        $variant = trim((string) ($options['variant'] ?? ''));
+
+        $query = [];
+        if ($articleSlug !== '') {
+            $query['article'] = $articleSlug;
+        }
+        if ($productSlug !== '') {
+            $query['product'] = $productSlug;
+        }
+        if ($merchantSlug !== '') {
+            $query['merchant'] = $merchantSlug;
+        }
+        if ($slot > 0) {
+            $query['slot'] = (string) $slot;
+        }
+        if ($variant !== '') {
+            $query['variant'] = $variant;
+        }
+
+        if ($query === []) {
+            return $href;
+        }
+
+        $separator = str_contains($href, '?') ? '&' : '?';
+        return $href . $separator . http_build_query($query);
     }
 }
 

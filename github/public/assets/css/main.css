@@ -253,7 +253,7 @@ a:hover{color:#0954aa}
   .hero-inner{grid-template-columns:1fr}
   .promo-cards{grid-template-columns:1fr 1fr}
   .two-col{grid-template-columns:1fr}
-  .sidebar{order:-1}
+  .sidebar{order:0}
   .footer-inner{grid-template-columns:1fr}
   .footer-links{justify-content:start}
 }
@@ -265,7 +265,9 @@ a:hover{color:#0954aa}
   .main-nav{
     position:fixed;inset:66px 0 auto 0;background:#fff;border-bottom:1px solid var(--line);
     transform:translateY(-16px);opacity:0;pointer-events:none;transition:transform .2s ease,opacity .2s ease;
-    box-shadow:0 12px 30px rgba(16,24,40,.08)
+    box-shadow:0 12px 30px rgba(16,24,40,.08);
+    max-height:calc(100vh - 66px);
+    overflow-y:auto
   }
   .nav-toggle:checked ~ .nav-toggle-btn{outline:none;box-shadow:var(--ring)}
   .nav-toggle:checked ~ .main-nav{transform:translateY(0);opacity:1;pointer-events:auto}

@@ -1,0 +1,75 @@
+{
+    "slug": "doplnky-vyzivy",
+    "title": "Doplnky výživy 2026: ktoré doplnky dávajú zmysel pre väčšinu ľudí",
+    "intro": "Doplnky výživy dávajú zmysel vtedy, keď dopĺňajú bežný režim a nerobia z neho ešte väčší chaos. Tento článok nie je o tom, aby si kupoval všetko naraz, ale aby si vedel rozlíšiť základ, ktorý vie pomôcť väčšine ľudí, od doplnkov, ktoré majú zmysel len v konkrétnom prípade.",
+    "meta_title": "Doplnky výživy 2026: základný výber podľa cieľa a praktického použitia",
+    "meta_description": "Praktický výber doplnkov výživy pre rok 2026. Kreatín, horčík a vitamín D ako základ, ktorý dáva zmysel pre väčšinu ľudí podľa cieľa a režimu.",
+    "category": "vyziva",
+    "hero_asset": "",
+    "sections": [
+        {
+            "heading": "Rýchle rozhodnutie: s čím začať",
+            "body": "Ak chceš najpraktickejší výkonový základ, začni kreatínom. Ak riešiš regeneráciu, hektický režim alebo napätie, veľký zmysel má horčík. A ak máš slabý pobyt na slnku alebo riešiš dlhodobo základnú rutinu, rozumný základ je vitamín D3 + K."
+        },
+        {
+            "heading": "Tri doplnky, ktoré majú najvyššiu praktickú hodnotu",
+            "body": "GymBeam Kreatín (100% Creapure®) je hlavný tip, pretože má najlepšie dáta a dlhodobý zmysel. GymBeam Magnesium chelate powder je value každodenná voľba pre ľudí, ktorí chcú riešiť regeneráciu a napätie bez zbytočného chaosu. GymBeam Vitamin D3+K1+K2 Forte je dobrý základ tam, kde treba doriešiť bežnú mikronutrientovú rutinu."
+        },
+        {
+            "heading": "Ako vyberať doplnky podľa cieľa",
+            "body": "Najprv si odpovedz, čo riešiš. Ak výkon a sila, kreatín má jasne najsilnejšiu pozíciu. Ak regeneráciu alebo večerný komfort, horčík je zvyčajne praktickejší. Ak potrebuješ jednoduchý základ bez veľkého rozhodovania, vitamín D býva stabilná voľba podľa režimu a sezóny."
+        },
+        {
+            "heading": "Čo netreba kupovať naslepo",
+            "body": "Najväčšia chyba je kupovať celý stack len preto, že vyzerá komplexne. Väčšina ľudí nepotrebuje desať doplnkov naraz. Lepšie funguje malý základ, ktorý reálne používaš, než plná skrinka produktov bez jasnej roly."
+        },
+        {
+            "heading": "Najčastejšie chyby pri výbere doplnkov",
+            "body": "Prvou chybou je riešiť doplnky skôr než základ jedálnička a spánku. Druhou je kupovať zbytočne veľa produktov bez priority. A treťou je nemať jasnú odpoveď, čo má byť hlavná voľba, value voľba a čo je skôr doplnok pre špecifickú situáciu."
+        },
+        {
+            "heading": "FAQ",
+            "body": "S čím začať, ak nechcem veľa doplnkov? Najpraktickejší základ býva kreatín, horčík alebo vitamín D podľa cieľa. Oplatí sa kupovať veľký stack hneď? Väčšinou nie. Oveľa lepšie je začať jedným až tromi doplnkami, ktoré reálne zapadnú do režimu."
+        },
+        {
+            "heading": "Súvisiace články",
+            "body": "Na detail výkonovej voľby nadviaž v článku kreatin-porovnanie. Ak riešiš proteíny, pokračuj na najlepsie-proteiny-2026. Pri špecifickom trávení sa hodí aj probiotika-ako-vybrat."
+        }
+    ],
+    "comparison": {
+        "title": "",
+        "intro": "",
+        "columns": [],
+        "rows": []
+    },
+    "recommended_products": [
+        "gymbeam-gymbeam-kreat-in-100-creapure-r",
+        "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
+        "gymbeam-gymbeam-vitamin-d3-k1-k2-forte"
+    ],
+    "product_plan": [
+        {
+            "product_slug": "gymbeam-gymbeam-kreat-in-100-creapure-r",
+            "order": 1,
+            "role": "featured",
+            "show_in_top": true,
+            "show_in_comparison": false
+        },
+        {
+            "product_slug": "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
+            "order": 2,
+            "role": "value",
+            "show_in_top": true,
+            "show_in_comparison": false
+        },
+        {
+            "product_slug": "gymbeam-gymbeam-vitamin-d3-k1-k2-forte",
+            "order": 3,
+            "role": "alternative",
+            "show_in_top": true,
+            "show_in_comparison": false
+        }
+    ],
+    "updated_at": "2026-03-28T20:18:38+00:00",
+    "updated_by": "admin"
+}

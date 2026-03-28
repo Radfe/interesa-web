@@ -1,12 +1,41 @@
 {
     "slug": "pre-workout-ako-vybrat",
-    "title": "Ako vybrat pre-workout - stimulanty, pumpa a realne davky",
-    "intro": "Kofein, citrulin, beta-alanin a ich kombinacie: kedy dava pre-workout zmysel a kedy je lepsi non-stim pristup.",
-    "meta_title": "",
-    "meta_description": "",
+    "title": "Ako vybrať pre-workout: stimulanty, pumpa a čo má zmysel pred tréningom",
+    "intro": "Pre-workout dáva zmysel vtedy, keď vieš, čo od neho chceš. Niekomu ide o silnejší stimulant, niekomu o pumpu a fokus, a niekto potrebuje skôr miernejší variant, ktorý nezruinuje večerný tréning. Tento výber je postavený na tom, aby si vedel rýchlo odlíšiť hlavný tip, value voľbu a alternatívu pre iný typ použitia.",
+    "meta_title": "Ako vybrať pre-workout: stimulanty, pumpa, dávky a praktický výber",
+    "meta_description": "Praktický nákupný návod na pre-workout. Zisti, kedy dáva zmysel silnejší stimulant, kedy pump formula a ktoré tri produkty sú dnes najpraktickejšia voľba.",
     "category": "sila",
     "hero_asset": "",
-    "sections": [],
+    "sections": [
+        {
+            "heading": "Rýchle rozhodnutie: ktorý pre-workout vybrať",
+            "body": "Ako hlavný tip vychádza ActivLab Black Wolf multifruit, pretože najlepšie spája výrazný efekt a jasnú rolu pre výkonový článok. Ako value voľba dáva zmysel Nutrend Pre-Workout Pump berry splash. A ako tretia vetva rozhodnutia funguje Nutrend Pre-Workout Pump rainbow pre ľudí, ktorí chcú skôr pump orientovaný variant bez potreby najtvrdšieho stimu."
+        },
+        {
+            "heading": "Ako rozmýšľať nad pre-workoutom",
+            "body": "Najprv rieš toleranciu kofeínu a čas tréningu. Ak cvičíš neskoro večer, silný stim nemusí byť najpraktickejšia cesta. Potom sa pozeraj na to, či potrebuješ viac fokus, energiu alebo pump. Až potom rieš chuť a marketing."
+        },
+        {
+            "heading": "Stimulant vs pump formula",
+            "body": "Silnejší stimulant dáva zmysel tam, kde chceš výraznejší nákop a tréning absolvuješ skôr počas dňa. Pump orientovaný produkt je praktickejší pre ľudí, ktorí nechcú zbytočne vysoký stimulant alebo hľadajú mäkší výkonový support."
+        },
+        {
+            "heading": "Kedy sa pre-workout neoplatí",
+            "body": "Ak máš slabý spánok, vysoký denný príjem kofeínu alebo trénuješ príliš neskoro, niekedy je rozumnejšie zvoliť miernejší variant alebo riešiť základ režimu. Pre-workout nemá maskovať dlhodobý deficit spánku a regenerácie."
+        },
+        {
+            "heading": "Najčastejšie chyby pri výbere",
+            "body": "Veľká chyba je vyberať len podľa počtu stimulantov na etikete. Druhá chyba je ignorovať čas tréningu a vlastnú citlivosť na kofeín. A tretia chyba je porovnávať len pocit „kopnutia“ namiesto toho, či produkt dlhodobo sedí režimu."
+        },
+        {
+            "heading": "FAQ",
+            "body": "Je silnejší pre-workout automaticky lepší? Nie. Dôležitejšie je, či sedí času tréningu a tolerancii kofeínu. Oplatí sa pre-workout večer? Často skôr nie, alebo len v miernejšej forme. Dá sa fungovať aj bez pre-workoutu? Áno, pre-workout má byť pomocník, nie nutnosť."
+        },
+        {
+            "heading": "Súvisiace články",
+            "body": "Ak riešiš aj základ výkonového stacku, pokračuj na kreatin-porovnanie. Pri širšom pohľade na doplnky sa hodí článok doplnky-vyzivy."
+        }
+    ],
     "comparison": {
         "title": "",
         "intro": "",
@@ -29,18 +58,18 @@
         {
             "product_slug": "gymbeam-nutrend-pre-workout-pump-berry-splash",
             "order": 2,
-            "role": "standard",
+            "role": "value",
             "show_in_top": true,
             "show_in_comparison": false
         },
         {
             "product_slug": "gymbeam-nutrend-pre-workout-pump-rainbow",
             "order": 3,
-            "role": "standard",
+            "role": "alternative",
             "show_in_top": true,
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-28T18:32:10+00:00",
+    "updated_at": "2026-03-28T20:18:38+00:00",
     "updated_by": "admin"
 }

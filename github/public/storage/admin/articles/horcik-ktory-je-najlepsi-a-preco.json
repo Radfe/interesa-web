@@ -1,0 +1,75 @@
+{
+    "slug": "horcik-ktory-je-najlepsi-a-preco",
+    "title": "Horčík: ktorý je najlepší a prečo záleží na forme aj použití",
+    "intro": "Pri horčíku sa ľudia často pýtajú, ktorý je najlepší, ale bez toho, aby riešili formu a praktické použitie. Rozumnejšia otázka je, ktorý horčík je najvhodnejší na bežné každodenné použitie, ktorý je value voľba a ktorý dáva zmysel v špecifickejšom formáte.",
+    "meta_title": "Horčík: ktorý je najlepší, aké formy existujú a čo dáva zmysel",
+    "meta_description": "Praktický výber horčíka podľa formy a použitia. Citrát, chelát a hotové formáty bez chaosu, aby si vedel vybrať hlavnú voľbu aj rozumnú alternatívu.",
+    "category": "mineraly",
+    "hero_asset": "",
+    "sections": [
+        {
+            "heading": "Rýchle rozhodnutie: ktorý horčík vybrať",
+            "body": "Ako hlavná voľba pre väčšinu ľudí dáva zmysel GymBeam Magnesium Citrate Caps. Ako druhá value voľba funguje GymBeam Magnesium chelate powder, najmä ak chceš flexibilnejší formát. A ako tretia alternatíva môže dávať zmysel GymBeam Magnesium Shot pre ľudí, ktorí uprednostňujú hotový rýchly formát."
+        },
+        {
+            "heading": "Prečo záleží na forme",
+            "body": "Nie každý horčík sa používa rovnako pohodlne. Pre bežný everyday režim je dôležité, aby forma zapadla do tvojho dňa a zároveň bola zrozumiteľná aj pre človeka, ktorý nechce študovať dlhé chemické názvy."
+        },
+        {
+            "heading": "Citrát, chelát a hotové formáty",
+            "body": "Citrát je často dobrá univerzálna voľba. Chelát môže dávať zmysel tam, kde chceš inú každodennú formu používania. Shot je špecifickejšia praktická cesta, ak nechceš kapsuly alebo prášok. Článok má preto ukazovať rozdiel v použití, nie len tri podobné produkty."
+        },
+        {
+            "heading": "Ako horčík zaradiť do režimu",
+            "body": "Dôležité je, aby si si vybral formu, ktorú budeš vedieť používať pravidelne. V praxi často vyhráva jednoduchosť a návyk pred „dokonalou“ formou, ktorú aj tak nebudeš brať konzistentne."
+        },
+        {
+            "heading": "Najčastejšie chyby",
+            "body": "Veľká chyba je myslieť si, že existuje jedna univerzálne najlepšia forma pre každého. Druhá chyba je riešiť len marketing formy a ignorovať praktické používanie. Tretia chyba je kupovať zbytočne veľa minerálových doplnkov naraz bez jasnej priority."
+        },
+        {
+            "heading": "FAQ",
+            "body": "Ktorý horčík je najlepší pre väčšinu ľudí? Prakticky najčastejšie citrát alebo dobre použiteľný chelát. Je forma dôležitá? Áno, ale hlavne z pohľadu použitia a tolerancie. Oplatí sa shot? Áno, ak cielene chceš hotový a rýchly formát."
+        },
+        {
+            "heading": "Súvisiace články",
+            "body": "Ak riešiš širší mikronutrientový základ, pokračuj na doplnky-vyzivy. Pri imunite a vitamínovej rutine nadviaž na vitamin-d3-a-imunita."
+        }
+    ],
+    "comparison": {
+        "title": "",
+        "intro": "",
+        "columns": [],
+        "rows": []
+    },
+    "recommended_products": [
+        "gymbeam-magnesium-citrate-caps",
+        "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
+        "gymbeam-gymbeam-magnesium-shot-citr-on"
+    ],
+    "product_plan": [
+        {
+            "product_slug": "gymbeam-magnesium-citrate-caps",
+            "order": 1,
+            "role": "featured",
+            "show_in_top": true,
+            "show_in_comparison": false
+        },
+        {
+            "product_slug": "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
+            "order": 2,
+            "role": "value",
+            "show_in_top": true,
+            "show_in_comparison": false
+        },
+        {
+            "product_slug": "gymbeam-gymbeam-magnesium-shot-citr-on",
+            "order": 3,
+            "role": "alternative",
+            "show_in_top": true,
+            "show_in_comparison": false
+        }
+    ],
+    "updated_at": "2026-03-28T20:18:38+00:00",
+    "updated_by": "admin"
+}

@@ -72,22 +72,4 @@ return [
         'campaign_public_url' => 'https://www.dognet.sk/',
         'feed_available' => true,
     ],
-    'aktin' => [
-        'name' => 'Aktin',
-        'aliases' => ['vilgain'],
-        'hosts' => ['aktin.sk', 'aktin.cz', 'vilgain.sk', 'vilgain.cz'],
-        'network' => 'manual-or-other',
-        'affiliate_supported' => false,
-        'campaign_status' => 'manual',
-        'feed_available' => false,
-    ],
-    'myprotein' => [
-        'name' => 'Myprotein',
-        'aliases' => ['my protein'],
-        'hosts' => ['myprotein.sk', 'myprotein.cz', 'myprotein.com'],
-        'network' => 'manual-or-other',
-        'affiliate_supported' => false,
-        'campaign_status' => 'manual',
-        'feed_available' => false,
-    ],
 ];
