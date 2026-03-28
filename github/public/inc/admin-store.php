@@ -1119,16 +1119,40 @@ if (!function_exists('interessa_admin_sync_article_product_override')) {
             throw new RuntimeException('Chyba slug clanku pre article_product mirror.');
         }
 
-        $links = interessa_admin_article_product_records_for_article($articleSlug);
-        $productPlan = [];
-        $recommendedProducts = [];
-        $comparisonRows = [];
-
-        foreach ($links as $row) {
-            if (!is_array($row) || empty($row['enabled'])) {
+        $rows = interessa_admin_article_products();
+        $links = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
                 continue;
             }
 
+            $normalized = interessa_admin_normalize_article_product_record($row);
+            if ((string) ($normalized['article_slug'] ?? '') !== $articleSlug) {
+                continue;
+            }
+            if (empty($normalized['enabled'])) {
+                continue;
+            }
+
+            $links[] = $normalized;
+        }
+
+        usort($links, static function (array $a, array $b): int {
+            $orderA = max(1, (int) ($a['order'] ?? 1));
+            $orderB = max(1, (int) ($b['order'] ?? 1));
+            if ($orderA === $orderB) {
+                return strcmp(
+                    interessa_admin_slugify((string) ($a['product_slug'] ?? '')),
+                    interessa_admin_slugify((string) ($b['product_slug'] ?? ''))
+                );
+            }
+            return $orderA <=> $orderB;
+        });
+
+        $productPlan = [];
+        $recommendedProducts = [];
+
+        foreach ($links as $row) {
             $productSlug = interessa_admin_slugify((string) ($row['product_slug'] ?? ''));
             if ($productSlug === '') {
                 continue;
@@ -1142,27 +1166,23 @@ if (!function_exists('interessa_admin_sync_article_product_override')) {
                 'show_in_comparison' => !empty($row['show_in_comparison']),
             ];
             $productPlan[] = $planRow;
-
-            if (!empty($planRow['show_in_top'])) {
-                $recommendedProducts[] = $productSlug;
-            }
-
-            if (!empty($planRow['show_in_comparison'])) {
-                $comparisonRows[] = [
-                    'product_slug' => $productSlug,
-                    'best_for' => interessa_admin_article_product_role_label((string) ($planRow['role'] ?? 'standard')),
-                ];
-            }
+            $recommendedProducts[] = $productSlug;
         }
 
-        $override = interessa_admin_article_content($articleSlug);
-        $existingComparison = is_array($override['comparison'] ?? null) ? $override['comparison'] : [];
+        $override = interessa_admin_article_override($articleSlug);
+        if ($override === []) {
+            $override = ['slug' => $articleSlug];
+        }
         $override['product_plan'] = $productPlan;
-        $override['recommended_products'] = array_values(array_unique($recommendedProducts));
-        $override['comparison'] = array_replace($existingComparison, [
-            'rows' => $comparisonRows,
-        ]);
+        $override['recommended_products'] = array_values($recommendedProducts);
         interessa_admin_write_article_override_raw($articleSlug, $override);
+
+        $slotMap = [1 => '-', 2 => '-', 3 => '-'];
+        foreach ($productPlan as $planRow) {
+            $slot = max(1, min(3, (int) ($planRow['order'] ?? 1)));
+            $slotMap[$slot] = (string) ($planRow['product_slug'] ?? '-');
+        }
+        error_log('SYNC UPDATED: SLOT 1=' . $slotMap[1] . ', SLOT 2=' . $slotMap[2] . ', SLOT 3=' . $slotMap[3]);
     }
 }
 
