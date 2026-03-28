@@ -82114,5 +82114,11 @@
         "product_slug": "gymbeam-true-whey",
         "link_type": "affiliate",
         "source": "admin-panel"
+    },
+    "kreatin-porovnanie-proteinsk": {
+        "code": "kreatin-porovnanie-proteinsk",
+        "url": "https://www.protein.sk/kreatin/",
+        "merchant": "Protein.sk",
+        "product_slug": "proteinsk-kreatin-monohydrat-value"
     }
 }
