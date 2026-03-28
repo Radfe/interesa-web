@@ -5568,6 +5568,7 @@ require dirname(__DIR__) . '/inc/head.php';
                       <div>
                         <h4>Navrhnute produkty pre tento clanok</h4>
                         <p class="admin-meta">Toto len ukazuje navrhy. Nic sa samo neulozi, kym nekliknes <strong>Do slotu X</strong> alebo <strong>Predvyplnit sloty</strong>.</p>
+                        <p class="admin-note"><strong>INLINE SUGGEST FORMS ACTIVE</strong></p>
                       </div>
                       <div class="admin-inline-actions">
                         <form method="post" action="/admin" class="admin-inline-form">
