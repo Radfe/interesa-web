@@ -5375,6 +5375,12 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </details>
 
+            <form method="post" action="/admin" enctype="multipart/form-data" id="article-hero-upload-form" hidden>
+              <input type="hidden" name="action" value="upload_hero_only" />
+              <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
+              <input type="hidden" name="hero_crop_mode" value="center" />
+            </form>
+
             <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack" autocomplete="off" id="article-save-form">
               <input type="hidden" name="action" value="save_article" />
               <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
@@ -5462,8 +5468,13 @@ require dirname(__DIR__) . '/inc/head.php';
                     </div>
                     <label>
                       <span>2. Nahraj hotovy hero obrazok</span>
-                      <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" />
+                      <input type="file" name="hero_image" form="article-hero-upload-form" accept="image/webp,image/png,image/jpeg" />
                     </label>
+                    <div class="admin-actions" style="margin-top:10px;">
+                      <button type="submit" form="article-hero-upload-form" class="btn btn-cta">
+                        Nahrat hero obrazok
+                      </button>
+                    </div>
                     <small class="admin-note">Po ulozeni sa hero obrazok ulozi ako finalny asset pre clanok.</small>
                   </div>
                 </div>
