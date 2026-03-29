@@ -38,36 +38,6 @@
         "columns": [],
         "rows": []
     },
-    "recommended_products": [
-        "gymbeam-gymbeam-kreat-in-100-creapure-r",
-        "proteinsk-kreatin-monohydrat-value",
-        "gymbeam-gymbeam-creatine-hcl-bez-pr-ichute"
-    ],
-    "product_plan": [
-        {
-            "product_slug": "gymbeam-gymbeam-kreat-in-100-creapure-r",
-            "order": 1,
-            "role": "featured",
-            "show_in_top": true,
-            "show_in_comparison": true
-        },
-        {
-            "product_slug": "proteinsk-kreatin-monohydrat-value",
-            "order": 2,
-            "role": "value",
-            "show_in_top": true,
-            "show_in_comparison": true
-        },
-        {
-            "product_slug": "gymbeam-gymbeam-creatine-hcl-bez-pr-ichute",
-            "order": 3,
-            "role": "alternative",
-            "show_in_top": true,
-            "show_in_comparison": true
-        }
-    ],
-    "updated_at": "2026-03-29T07:01:24+00:00",
-    "updated_by": "admin",
     "related_links": [
         {
             "slug": "najlepsie-proteiny-2026",
@@ -84,5 +54,87 @@
             "label": "Doplnky vyzivy",
             "description": "Ak chces sirsi prehlad doplnkov, ktore maju realny prakticky zmysel."
         }
-    ]
+    ],
+    "product_recommendation": {
+        "article_slug": "kreatin-porovnanie",
+        "intent_key": "kreatin-general",
+        "intent_label": "Kreatin",
+        "summary": "System hlada monohydrat ako hlavnu volbu, value alternativu z ineho schvaleneho merchanta a specificku odlisnu formu.",
+        "generated_at": "2026-03-29T09:21:34+00:00",
+        "applied_at": "2026-03-29T09:21:34+00:00",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-gymbeam-kreat-in-100-creapure-r",
+                "role": "featured",
+                "branch": "overall",
+                "branch_label": "Najlepsi kreatin celkovo",
+                "reasoning": "Najbezpecnejsia hlavna volba pre vacsinu ludi, ktori chcu klasicky monohydrat.",
+                "score": 2425,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "kreatin",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "proteinsk-kreatin-monohydrat-value",
+                "role": "value",
+                "branch": "value",
+                "branch_label": "Najlepsi pomer cena vykon",
+                "reasoning": "Value alternativa s rovnakou zakladnou logikou, ale s lepsim rozpoctovym uhlom.",
+                "score": 2902,
+                "merchant": "Protein.sk",
+                "merchant_slug": "protein-sk",
+                "category": "kreatin",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-gymbeam-creatine-hcl-bez-pr-ichute",
+                "role": "alternative",
+                "branch": "specific",
+                "branch_label": "Alternativa pre iny use-case",
+                "reasoning": "Odlisna forma pre citatela, ktory nechce ostat len pri klasickom monohydrate.",
+                "score": 2425,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "kreatin",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
+    "recommended_products": [
+        "gymbeam-gymbeam-kreat-in-100-creapure-r",
+        "proteinsk-kreatin-monohydrat-value",
+        "gymbeam-gymbeam-creatine-hcl-bez-pr-ichute"
+    ],
+    "product_plan": [
+        {
+            "product_slug": "gymbeam-gymbeam-kreat-in-100-creapure-r",
+            "order": 1,
+            "role": "featured",
+            "show_in_top": true,
+            "show_in_comparison": false
+        },
+        {
+            "product_slug": "proteinsk-kreatin-monohydrat-value",
+            "order": 2,
+            "role": "value",
+            "show_in_top": true,
+            "show_in_comparison": false
+        },
+        {
+            "product_slug": "gymbeam-gymbeam-creatine-hcl-bez-pr-ichute",
+            "order": 3,
+            "role": "alternative",
+            "show_in_top": true,
+            "show_in_comparison": false
+        }
+    ],
+    "updated_at": "2026-03-29T07:01:24+00:00",
+    "updated_by": "admin"
 }

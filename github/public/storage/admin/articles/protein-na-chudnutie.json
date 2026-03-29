@@ -38,6 +38,70 @@
         "columns": [],
         "rows": []
     },
+    "related_links": [
+        {
+            "slug": "najlepsie-proteiny-2026",
+            "label": "Najlepsie proteiny 2026",
+            "description": "Ak chces porovnat aj univerzalnejsie proteiny mimo cisto redukcneho kontextu."
+        },
+        {
+            "slug": "doplnky-vyzivy",
+            "label": "Doplnky vyzivy",
+            "description": "Ak chces vediet, ktore dalsie doplnky vedia podporit jednoduchy zaklad rutiny."
+        }
+    ],
+    "product_recommendation": {
+        "article_slug": "protein-na-chudnutie",
+        "intent_key": "proteiny-chudnutie",
+        "intent_label": "Protein na chudnutie",
+        "summary": "System hlada isolate ako hlavnu volbu, value whey ako kompromis a univerzalny whey ako sirsi default.",
+        "generated_at": "2026-03-29T09:21:31+00:00",
+        "applied_at": "",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-gymbeam-pure-isowhey-bez-pr-ichute",
+                "role": "featured",
+                "branch": "lean",
+                "branch_label": "Najlepsi na chudnutie",
+                "reasoning": "Cistejsi profil, ktory lepsie zapada do dietneho alebo redukcneho kontextu.",
+                "score": 2425,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "proteiny",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "gymbeam-true-whey",
+                "role": "value",
+                "branch": "value",
+                "branch_label": "Najlepsi pomer cena vykon",
+                "reasoning": "Rozumna value alternativa, ked nechces zbytocne preplacat isolate.",
+                "score": 2617,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "proteiny",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-just-whey",
+                "role": "alternative",
+                "branch": "general",
+                "branch_label": "Univerzalna alternativa",
+                "reasoning": "Sirsia univerzalna volba pre ludi, ktori nechcu byt viazani len na dietny profil.",
+                "score": 2617,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "proteiny",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
     "recommended_products": [
         "gymbeam-gymbeam-pure-isowhey-bez-pr-ichute",
         "gymbeam-true-whey",
@@ -67,17 +131,5 @@
         }
     ],
     "updated_at": "2026-03-29T07:01:24+00:00",
-    "updated_by": "admin",
-    "related_links": [
-        {
-            "slug": "najlepsie-proteiny-2026",
-            "label": "Najlepsie proteiny 2026",
-            "description": "Ak chces porovnat aj univerzalnejsie proteiny mimo cisto redukcneho kontextu."
-        },
-        {
-            "slug": "doplnky-vyzivy",
-            "label": "Doplnky vyzivy",
-            "description": "Ak chces vediet, ktore dalsie doplnky vedia podporit jednoduchy zaklad rutiny."
-        }
-    ]
+    "updated_by": "admin"
 }

@@ -42,6 +42,75 @@
         "columns": [],
         "rows": []
     },
+    "related_links": [
+        {
+            "slug": "doplnky-vyzivy",
+            "label": "Doplnky vyzivy",
+            "description": "Ak chces vidiet, kde ma horcik miesto v sirsom zaklade suplementacie."
+        },
+        {
+            "slug": "pre-workout-ako-vybrat",
+            "label": "Ako vybrat pre-workout",
+            "description": "Ak popri regeneracii riesis aj energiu a vykon okolo treningu."
+        },
+        {
+            "slug": "vitamin-d3-k2-spolu-alebo-osobitne",
+            "label": "Vitamin D3 a K2: spolu alebo osobitne",
+            "description": "Ak chces nadviazat na dalsi prakticky micronutrientovy vyber."
+        }
+    ],
+    "product_recommendation": {
+        "article_slug": "horcik-ktory-je-najlepsi-a-preco",
+        "intent_key": "mineraly-horcik",
+        "intent_label": "Horcik",
+        "summary": "System hlada daily-use magnesium, value citrate a recovery vetvu bez weak convenience logiky.",
+        "generated_at": "2026-03-29T09:21:45+00:00",
+        "applied_at": "2026-03-29T09:21:45+00:00",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
+                "role": "featured",
+                "branch": "daily",
+                "branch_label": "Najlepsi horcik na bezne pouzitie",
+                "reasoning": "Hlavna daily-use volba pre cloveka, ktory chce kvalitny magnesium na pravidelny rezim.",
+                "score": 2855,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "mineraly",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "gymbeam-magnesium-citrate-caps",
+                "role": "value",
+                "branch": "value",
+                "branch_label": "Najlepsia value volba",
+                "reasoning": "Rozumna budget alebo jednoduchsia alternativa pre kazdodenne doplnenie magnezia.",
+                "score": 2927,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "mineraly",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-gymbeam-zmb6-chelate",
+                "role": "alternative",
+                "branch": "recovery",
+                "branch_label": "Specificky recovery use-case",
+                "reasoning": "Odlisna vetva pre recovery, vecerny rezim alebo sleep-oriented use-case.",
+                "score": 2625,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "mineraly",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
     "recommended_products": [
         "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
         "gymbeam-magnesium-citrate-caps",
@@ -71,22 +140,5 @@
         }
     ],
     "updated_at": "2026-03-29T07:01:24+00:00",
-    "updated_by": "admin",
-    "related_links": [
-        {
-            "slug": "doplnky-vyzivy",
-            "label": "Doplnky vyzivy",
-            "description": "Ak chces vidiet, kde ma horcik miesto v sirsom zaklade suplementacie."
-        },
-        {
-            "slug": "pre-workout-ako-vybrat",
-            "label": "Ako vybrat pre-workout",
-            "description": "Ak popri regeneracii riesis aj energiu a vykon okolo treningu."
-        },
-        {
-            "slug": "vitamin-d3-k2-spolu-alebo-osobitne",
-            "label": "Vitamin D3 a K2: spolu alebo osobitne",
-            "description": "Ak chces nadviazat na dalsi prakticky micronutrientovy vyber."
-        }
-    ]
+    "updated_by": "admin"
 }

@@ -42,6 +42,75 @@
         "columns": [],
         "rows": []
     },
+    "related_links": [
+        {
+            "slug": "kreatin-porovnanie",
+            "label": "Kreatin porovnanie",
+            "description": "Ak chces doplnit predtreningovy stack o spolahlivy vykonovy zaklad."
+        },
+        {
+            "slug": "doplnky-vyzivy",
+            "label": "Doplnky vyzivy",
+            "description": "Ak chces sirsi prehlad doplnkov, ktore maju realny prakticky zmysel."
+        },
+        {
+            "slug": "najlepsie-proteiny-2026",
+            "label": "Najlepsie proteiny 2026",
+            "description": "Ak popri energii pred treningom riesis aj zaklad regeneracie a prijmu bielkovin."
+        }
+    ],
+    "product_recommendation": {
+        "article_slug": "pre-workout-ako-vybrat",
+        "intent_key": "pre-workout-general",
+        "intent_label": "Pre-workout",
+        "summary": "System hlada vyvazeny default, silnejsi stimulant a pump-focused alternativu bez fake-choice duplicity.",
+        "generated_at": "2026-03-29T09:21:44+00:00",
+        "applied_at": "2026-03-29T09:21:44+00:00",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-cellucor-c4-original-frozen-bombsicle",
+                "role": "featured",
+                "branch": "overall",
+                "branch_label": "Najlepsi vyvazeny default",
+                "reasoning": "Najbezpecnejsia hlavna volba pre vacsinu ludi, ktori chcu hotovy pre-workout bez extremu.",
+                "score": 2705,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "pre-workout",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "gymbeam-activlab-black-wolf-multifruit",
+                "role": "value",
+                "branch": "stim",
+                "branch_label": "Silnejsia alebo tvrdsia alternativa",
+                "reasoning": "Silnejsia stim vetva pre ludi, ktori chcu tvrdsi nakop na intenzivnejsi trening.",
+                "score": 2580,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "pre-workout",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-gymbeam-citrulline-malate-bez-pr-ichute",
+                "role": "alternative",
+                "branch": "pump",
+                "branch_label": "Ina vetva rozhodnutia",
+                "reasoning": "Jasne odlisny use-case pre pump-focused alebo menej stimulantovy pristup.",
+                "score": 2655,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "pre-workout",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
     "recommended_products": [
         "gymbeam-cellucor-c4-original-frozen-bombsicle",
         "gymbeam-activlab-black-wolf-multifruit",
@@ -71,22 +140,5 @@
         }
     ],
     "updated_at": "2026-03-29T07:01:24+00:00",
-    "updated_by": "admin",
-    "related_links": [
-        {
-            "slug": "kreatin-porovnanie",
-            "label": "Kreatin porovnanie",
-            "description": "Ak chces doplnit predtreningovy stack o spolahlivy vykonovy zaklad."
-        },
-        {
-            "slug": "doplnky-vyzivy",
-            "label": "Doplnky vyzivy",
-            "description": "Ak chces sirsi prehlad doplnkov, ktore maju realny prakticky zmysel."
-        },
-        {
-            "slug": "najlepsie-proteiny-2026",
-            "label": "Najlepsie proteiny 2026",
-            "description": "Ak popri energii pred treningom riesis aj zaklad regeneracie a prijmu bielkovin."
-        }
-    ]
+    "updated_by": "admin"
 }

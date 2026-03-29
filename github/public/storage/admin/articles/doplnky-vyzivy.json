@@ -38,6 +38,75 @@
         "columns": [],
         "rows": []
     },
+    "related_links": [
+        {
+            "slug": "kreatin-porovnanie",
+            "label": "Kreatin porovnanie",
+            "description": "Ak chces ist hlbsie do jedneho z najpraktickejsich vykonovych doplnkov."
+        },
+        {
+            "slug": "najlepsie-proteiny-2026",
+            "label": "Najlepsie proteiny 2026",
+            "description": "Ak riesis protein ako dalsi logicky zaklad suplementacnej rutiny."
+        },
+        {
+            "slug": "probiotika-ako-vybrat",
+            "label": "Ako vybrat probiotika",
+            "description": "Ak ta zaujima travenie, mikrobiom a doplnky s wellness presahom."
+        }
+    ],
+    "product_recommendation": {
+        "article_slug": "doplnky-vyzivy",
+        "intent_key": "vyziva-general",
+        "intent_label": "Doplnky vyzivy",
+        "summary": "System hlada vykonovy zaklad, recovery/value zaklad a sirsi mikronutrientovy next step.",
+        "generated_at": "2026-03-29T09:21:13+00:00",
+        "applied_at": "",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-gymbeam-kreat-in-100-creapure-r",
+                "role": "featured",
+                "branch": "foundation-performance",
+                "branch_label": "Najpraktickejsi zaklad",
+                "reasoning": "Najsilnejsi vykonovy zaklad, ktory dava zmysel pre siroku skupinu citatelov.",
+                "score": 2510,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "kreatin",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
+                "role": "value",
+                "branch": "foundation-recovery",
+                "branch_label": "Value alebo recovery zaklad",
+                "reasoning": "Rozumna kazdodenna alternativa pre regeneraciu, napatie alebo hekticky rezim.",
+                "score": 2390,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "mineraly",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-gymbeam-vitamin-d3-k1-k2-forte",
+                "role": "alternative",
+                "branch": "micronutrient",
+                "branch_label": "Sirsi micronutrientovy next step",
+                "reasoning": "Specificka tretia vetva pre cloveka, ktory chce doplnit zaklad o rozumny mikronutrientovy produkt.",
+                "score": 3015,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "imunita",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
     "recommended_products": [
         "gymbeam-gymbeam-kreat-in-100-creapure-r",
         "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
@@ -67,22 +136,5 @@
         }
     ],
     "updated_at": "2026-03-29T07:01:24+00:00",
-    "updated_by": "admin",
-    "related_links": [
-        {
-            "slug": "kreatin-porovnanie",
-            "label": "Kreatin porovnanie",
-            "description": "Ak chces ist hlbsie do jedneho z najpraktickejsich vykonovych doplnkov."
-        },
-        {
-            "slug": "najlepsie-proteiny-2026",
-            "label": "Najlepsie proteiny 2026",
-            "description": "Ak riesis protein ako dalsi logicky zaklad suplementacnej rutiny."
-        },
-        {
-            "slug": "probiotika-ako-vybrat",
-            "label": "Ako vybrat probiotika",
-            "description": "Ak ta zaujima travenie, mikrobiom a doplnky s wellness presahom."
-        }
-    ]
+    "updated_by": "admin"
 }

@@ -2493,6 +2493,7 @@ if ($isAuthed) {
                 if ($slug === '') {
                     throw new RuntimeException('Vyber clanok, ktory chces ulozit.');
                 }
+                $currentArticleOverride = interessa_admin_article_override($slug);
                 $receivedSlots = $_POST['article_product_slot'] ?? [];
                 interessa_admin_article_save_log('entered-save-article', [
                     'slug' => $slug,
@@ -2540,6 +2541,9 @@ if ($isAuthed) {
                         'rows' => $comparisonRows,
                     ],
                     'related_links' => interessa_admin_collect_related_links($slug),
+                    'product_recommendation' => is_array($currentArticleOverride['product_recommendation'] ?? null)
+                        ? $currentArticleOverride['product_recommendation']
+                        : [],
                     'recommended_products' => $recommended,
                     'product_plan' => $productPlan,
                 ];
@@ -2736,6 +2740,62 @@ if ($isAuthed) {
                         'slug' => $articleSlug,
                         'slot_error' => trim($slotError->getMessage()) !== '' ? trim($slotError->getMessage()) : ('SLOT SAVE FAILED: expected ' . $productSlug . ' in slot ' . $targetSlot . ', but persisted state does not match'),
                     ], 'slot-' . $targetSlot);
+                }
+            }
+
+            if ($action === 'suggest_article_products') {
+                $articleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? '')));
+                if ($articleSlug === '') {
+                    interessa_admin_redirect_fragment('articles', [
+                        'slug' => $articleSlug,
+                        'slot_error' => 'Navrh produktov zlyhal: chyba clanok.',
+                    ], 'article-products-block');
+                }
+
+                try {
+                    $recommendation = interessa_admin_store_article_product_recommendation($articleSlug);
+                    $slotSummary = implode(', ', array_map(
+                        static fn(array $item): string => 'Slot ' . max(1, min(3, (int) ($item['slot'] ?? 1))) . '=' . trim((string) ($item['product_slug'] ?? '')),
+                        array_values(array_filter((array) ($recommendation['items'] ?? []), 'is_array'))
+                    ));
+                    interessa_admin_redirect_fragment('articles', [
+                        'slug' => $articleSlug,
+                        'slot_message' => 'Navrhy su pripravene. ' . $slotSummary,
+                    ], 'article-products-block');
+                } catch (Throwable $recommendationError) {
+                    interessa_admin_redirect_fragment('articles', [
+                        'slug' => $articleSlug,
+                        'slot_error' => trim($recommendationError->getMessage()) !== '' ? trim($recommendationError->getMessage()) : 'Navrh produktov zlyhal.',
+                    ], 'article-products-block');
+                }
+            }
+
+            if ($action === 'apply_article_product_recommendations') {
+                $articleSlug = canonical_article_slug(trim((string) ($_POST['article_slug'] ?? '')));
+                $forceRegenerate = trim((string) ($_POST['force_regenerate'] ?? '')) === '1';
+                if ($articleSlug === '') {
+                    interessa_admin_redirect_fragment('articles', [
+                        'slug' => $articleSlug,
+                        'slot_error' => 'Automaticke priradenie zlyhalo: chyba clanok.',
+                    ], 'article-products-block');
+                }
+
+                try {
+                    $result = interessa_admin_apply_article_product_recommendation($articleSlug, $forceRegenerate);
+                    $slotSummary = implode(', ', array_map(
+                        static fn(array $item): string => 'Slot ' . max(1, min(3, (int) ($item['slot'] ?? 1))) . '=' . trim((string) ($item['product_slug'] ?? '')),
+                        array_values(array_filter((array) ($result['items'] ?? []), 'is_array'))
+                    ));
+                    interessa_admin_redirect_fragment('articles', [
+                        'slug' => $articleSlug,
+                        'slot_message' => 'Ulozene: system priradil navrhnute produkty. ' . $slotSummary,
+                        'slot_ready' => '1',
+                    ], 'article-products-block');
+                } catch (Throwable $applyError) {
+                    interessa_admin_redirect_fragment('articles', [
+                        'slug' => $articleSlug,
+                        'slot_error' => trim($applyError->getMessage()) !== '' ? trim($applyError->getMessage()) : 'Automaticke priradenie produktov zlyhalo.',
+                    ], 'article-products-block');
                 }
             }
 
@@ -3612,6 +3672,23 @@ $articleLastUpdated = trim((string) ($selectedArticleOverride['updated_at'] ?? '
 $articleLastUpdatedLabel = $articleLastUpdated !== ''
     ? str_replace('T', ' ', substr($articleLastUpdated, 0, 16))
     : 'Zatial bez admin ulozenia';
+$articleProductRecommendation = is_array($selectedArticleOverride['product_recommendation'] ?? null)
+    ? $selectedArticleOverride['product_recommendation']
+    : [];
+$articleProductRecommendationItems = array_values(array_filter(
+    is_array($articleProductRecommendation['items'] ?? null) ? $articleProductRecommendation['items'] : [],
+    'is_array'
+));
+$articleProductRecommendationIntentLabel = trim((string) ($articleProductRecommendation['intent_label'] ?? ''));
+$articleProductRecommendationSummary = trim((string) ($articleProductRecommendation['summary'] ?? ''));
+$articleProductRecommendationGeneratedAt = trim((string) ($articleProductRecommendation['generated_at'] ?? ''));
+$articleProductRecommendationGeneratedLabel = $articleProductRecommendationGeneratedAt !== ''
+    ? str_replace('T', ' ', substr($articleProductRecommendationGeneratedAt, 0, 16))
+    : 'Zatial nevygenerovane';
+$articleProductRecommendationAppliedAt = trim((string) ($articleProductRecommendation['applied_at'] ?? ''));
+$articleProductRecommendationAppliedLabel = $articleProductRecommendationAppliedAt !== ''
+    ? str_replace('T', ' ', substr($articleProductRecommendationAppliedAt, 0, 16))
+    : '';
 
 $comparison = is_array($selectedArticleOverride['comparison'] ?? null) ? $selectedArticleOverride['comparison'] : ['columns' => [], 'rows' => []];
 $comparisonEditor = interessa_admin_comparison_editor_state($comparison);
@@ -5393,6 +5470,58 @@ require dirname(__DIR__) . '/inc/head.php';
                     <p class="admin-flash is-success"><strong>DIRECT SLOT SAVE MODE ACTIVE</strong></p>
                     <p class="admin-meta">Tu mas rychly operacny prehlad aj priamy vyber produktu do Slotu 1 / 2 / 3. Zmenu urobis hned cez <strong>Ulozit Slot</strong>.</p>
                   </div>
+                  <div class="admin-inline-actions">
+                    <form method="post" action="/admin" class="admin-inline-form">
+                      <input type="hidden" name="action" value="suggest_article_products" />
+                      <input type="hidden" name="article_slug" value="<?= esc($selectedArticleSlug) ?>" />
+                      <button class="btn btn-secondary btn-small" type="submit">Navrhnut produkty pre clanok</button>
+                    </form>
+                    <form method="post" action="/admin" class="admin-inline-form">
+                      <input type="hidden" name="action" value="apply_article_product_recommendations" />
+                      <input type="hidden" name="article_slug" value="<?= esc($selectedArticleSlug) ?>" />
+                      <input type="hidden" name="force_regenerate" value="<?= $articleProductRecommendationItems === [] ? '1' : '0' ?>" />
+                      <button class="btn btn-cta btn-small" type="submit">Pouzit navrhnute produkty</button>
+                    </form>
+                  </div>
+                </div>
+                <div class="admin-check-card" style="margin-top:12px;">
+                  <strong>Automaticky navrh systemu</strong>
+                  <p class="admin-note" style="margin-top:6px;">
+                    <strong>Intent:</strong>
+                    <?= esc($articleProductRecommendationIntentLabel !== '' ? $articleProductRecommendationIntentLabel : 'Zatial nevypocitany') ?>
+                    <?php if ($articleProductRecommendationGeneratedLabel !== ''): ?>
+                      | <strong>Generovane:</strong> <?= esc($articleProductRecommendationGeneratedLabel) ?>
+                    <?php endif; ?>
+                    <?php if ($articleProductRecommendationAppliedLabel !== ''): ?>
+                      | <strong>Naposledy pouzite:</strong> <?= esc($articleProductRecommendationAppliedLabel) ?>
+                    <?php endif; ?>
+                  </p>
+                  <p class="admin-note" style="margin-top:6px;"><?= esc($articleProductRecommendationSummary !== '' ? $articleProductRecommendationSummary : 'Po kliknuti na Navrhnut produkty pre clanok system vyhodnoti title, intro, sekcie, kategoriu a vyberie 3 odlisne sloty.') ?></p>
+                  <?php if ($articleProductRecommendationItems !== []): ?>
+                    <div class="admin-queue-list" style="margin-top:12px;">
+                      <?php foreach ($articleProductRecommendationItems as $recommendedItem): ?>
+                        <?php
+                          $recommendedSlug = trim((string) ($recommendedItem['product_slug'] ?? ''));
+                          $recommendedCatalogRow = $recommendedSlug !== '' && isset($catalog[$recommendedSlug]) && is_array($catalog[$recommendedSlug]) ? $catalog[$recommendedSlug] : [];
+                          $recommendedName = trim((string) ($recommendedCatalogRow['name'] ?? $recommendedSlug));
+                        ?>
+                        <article class="admin-queue-item">
+                          <div>
+                            <strong>Slot <?= esc((string) max(1, min(3, (int) ($recommendedItem['slot'] ?? 1)))) ?>: <?= esc($recommendedName) ?></strong>
+                            <p><?= esc((string) ($recommendedItem['branch_label'] ?? 'Navrhnuty slot')) ?></p>
+                            <div class="admin-status-pills">
+                              <span class="admin-status-pill<?= !empty($recommendedItem['affiliate_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recommendedItem['affiliate_ready']) ? 'Affiliate ready' : 'Treba doplnit affiliate' ?></span>
+                              <span class="admin-status-pill<?= !empty($recommendedItem['product_level_ready']) ? ' is-good' : ' is-warning' ?>"><?= !empty($recommendedItem['product_level_ready']) ? 'Produktovy ciel OK' : 'Slaby ciel' ?></span>
+                              <span class="admin-status-pill"><?= esc('Skore ' . (string) ((int) ($recommendedItem['score'] ?? 0))) ?></span>
+                            </div>
+                            <small class="admin-note"><?= esc((string) ($recommendedItem['reasoning'] ?? '')) ?></small>
+                          </div>
+                        </article>
+                      <?php endforeach; ?>
+                    </div>
+                  <?php else: ?>
+                    <p class="admin-note" style="margin-top:10px;">Zatial nie je ulozeny ziaden systemovy navrh pre Slot 1 / 2 / 3.</p>
+                  <?php endif; ?>
                 </div>
                 <div class="admin-status-grid">
                   <article class="admin-status-card">

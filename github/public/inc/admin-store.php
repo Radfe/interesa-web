@@ -621,6 +621,61 @@ if (!function_exists('interessa_admin_normalize_related_links')) {
     }
 }
 
+if (!function_exists('interessa_admin_normalize_product_recommendation')) {
+    function interessa_admin_normalize_product_recommendation(string $articleSlug, array $data): array {
+        $articleSlug = function_exists('canonical_article_slug') ? canonical_article_slug($articleSlug) : trim($articleSlug);
+        $intentKey = interessa_admin_slugify((string) ($data['intent_key'] ?? ''));
+        $generatedAt = trim((string) ($data['generated_at'] ?? ''));
+        $appliedAt = trim((string) ($data['applied_at'] ?? ''));
+        $normalizedItems = [];
+        $seenSlots = [];
+        $seenSlugs = [];
+
+        foreach ((array) ($data['items'] ?? []) as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $slot = max(1, min(3, (int) ($item['slot'] ?? 0)));
+            $productSlug = interessa_admin_slugify((string) ($item['product_slug'] ?? $item['slug'] ?? ''));
+            if ($productSlug === '' || isset($seenSlots[$slot]) || isset($seenSlugs[$productSlug])) {
+                continue;
+            }
+
+            $seenSlots[$slot] = true;
+            $seenSlugs[$productSlug] = true;
+            $normalizedItems[] = [
+                'slot' => $slot,
+                'product_slug' => $productSlug,
+                'role' => interessa_admin_normalize_candidate_role($item['role'] ?? 'standard'),
+                'branch' => interessa_admin_slugify((string) ($item['branch'] ?? '')),
+                'branch_label' => interessa_admin_normalize_text($item['branch_label'] ?? ''),
+                'reasoning' => interessa_admin_normalize_text($item['reasoning'] ?? ''),
+                'score' => max(0, (int) ($item['score'] ?? 0)),
+                'merchant' => interessa_admin_normalize_text($item['merchant'] ?? ''),
+                'merchant_slug' => interessa_admin_slugify((string) ($item['merchant_slug'] ?? '')),
+                'category' => normalize_category_slug((string) ($item['category'] ?? '')),
+                'affiliate_ready' => !empty($item['affiliate_ready']),
+                'product_level_ready' => !empty($item['product_level_ready']),
+            ];
+        }
+
+        usort($normalizedItems, static function (array $left, array $right): int {
+            return max(1, (int) ($left['slot'] ?? 1)) <=> max(1, (int) ($right['slot'] ?? 1));
+        });
+
+        return [
+            'article_slug' => $articleSlug,
+            'intent_key' => $intentKey,
+            'intent_label' => interessa_admin_normalize_text($data['intent_label'] ?? ''),
+            'summary' => interessa_admin_normalize_text($data['summary'] ?? ''),
+            'generated_at' => $generatedAt,
+            'applied_at' => $appliedAt,
+            'items' => $normalizedItems,
+        ];
+    }
+}
+
 if (!function_exists('interessa_admin_normalize_article_override')) {
     function interessa_admin_normalize_article_override(string $slug, array $data): array {
         $canonicalSlug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : $slug;
@@ -638,6 +693,7 @@ if (!function_exists('interessa_admin_normalize_article_override')) {
             'sections' => interessa_admin_normalize_sections(is_array($data['sections'] ?? null) ? $data['sections'] : []),
             'comparison' => interessa_admin_normalize_comparison(is_array($data['comparison'] ?? null) ? $data['comparison'] : []),
             'related_links' => interessa_admin_normalize_related_links($canonicalSlug, is_array($data['related_links'] ?? null) ? $data['related_links'] : []),
+            'product_recommendation' => interessa_admin_normalize_product_recommendation($canonicalSlug, is_array($data['product_recommendation'] ?? null) ? $data['product_recommendation'] : []),
             'recommended_products' => array_values(array_filter(array_map(
                 'interessa_admin_slugify',
                 is_array($data['recommended_products'] ?? null) ? $data['recommended_products'] : []
@@ -747,7 +803,7 @@ if (!function_exists('interessa_admin_validate_article_save_payload')) {
             }
         }
 
-        foreach (['sections', 'comparison', 'related_links', 'recommended_products', 'product_plan'] as $field) {
+        foreach (['sections', 'comparison', 'related_links', 'product_recommendation', 'recommended_products', 'product_plan'] as $field) {
             if (array_key_exists($field, $data) && !is_array($data[$field])) {
                 return [
                     'success' => false,
@@ -1733,6 +1789,1056 @@ if (!function_exists('interessa_admin_direct_save_article_slot_product')) {
                 'product_plan' => $overridePlan,
                 'recommended_products' => $persistedRecommended,
             ];
+        } catch (Throwable $e) {
+            interessa_admin_restore_article_state($articlePath, $articleExisted, $originalArticleJson, $originalRows);
+            throw $e;
+        }
+    }
+}
+
+if (!function_exists('interessa_admin_recommendation_keyword_hits')) {
+    function interessa_admin_recommendation_keyword_hits(string $text, array $keywords): array {
+        $text = interessa_product_lower(trim($text));
+        if ($text === '') {
+            return [];
+        }
+
+        $hits = [];
+        foreach ($keywords as $keyword) {
+            $keyword = interessa_product_lower(trim((string) $keyword));
+            if ($keyword !== '' && str_contains($text, $keyword)) {
+                $hits[] = $keyword;
+            }
+        }
+
+        return array_values(array_unique($hits));
+    }
+}
+
+if (!function_exists('interessa_admin_recommendation_product_text')) {
+    function interessa_admin_recommendation_product_text(array $product): string {
+        $normalized = interessa_normalize_product($product);
+        return interessa_product_lower(trim(implode(' ', array_filter([
+            (string) ($normalized['slug'] ?? ''),
+            str_replace('-', ' ', (string) ($normalized['slug'] ?? '')),
+            (string) ($normalized['name'] ?? ''),
+            (string) ($normalized['summary'] ?? ''),
+            (string) ($normalized['category'] ?? ''),
+        ]))));
+    }
+}
+
+if (!function_exists('interessa_admin_recommendation_family_key')) {
+    function interessa_admin_recommendation_family_key(array $product): string {
+        $normalized = interessa_normalize_product($product);
+        $base = interessa_product_lower(trim((string) ($normalized['name'] ?? $normalized['slug'] ?? '')));
+        if ($base === '') {
+            return interessa_admin_slugify((string) ($normalized['slug'] ?? ''));
+        }
+
+        $base = preg_replace('~\([^)]*\)~u', ' ', $base) ?? $base;
+        $base = preg_replace('~\b\d+\s?(g|kg|mg|ml|caps|kapsul|kapsuly|tbl|tabs|tabliet|servings?|porci[ea]|pcs|kusov?)\b~iu', ' ', $base) ?? $base;
+        $base = preg_replace('~\b(chocolate|cokolada|vanilla|strawberry|jahoda|banana|banan|berry|fruit punch|watermelon|tropical|orange|lemon|mango|apple|cola|grape|peach|lime|neutral|natural|original|unflavoured|unflavored|bez prichute)\b~iu', ' ', $base) ?? $base;
+        $base = preg_replace('~[^a-z0-9]+~', '-', $base) ?? $base;
+        $base = trim($base, '-');
+
+        return $base !== '' ? $base : interessa_admin_slugify((string) ($normalized['slug'] ?? ''));
+    }
+}
+
+if (!function_exists('interessa_admin_article_recommendation_context')) {
+    function interessa_admin_article_recommendation_context(string $articleSlug): array {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        if ($articleSlug === '') {
+            return [];
+        }
+
+        $override = interessa_admin_article_content($articleSlug);
+        $meta = function_exists('article_meta') ? article_meta($articleSlug) : [];
+        $title = trim((string) (($override['title'] ?? '') ?: ($meta['title'] ?? '')));
+        $intro = trim((string) (($override['intro'] ?? '') ?: ($meta['description'] ?? '')));
+        $category = normalize_category_slug((string) (($override['category'] ?? '') ?: ($meta['category'] ?? '')));
+        $sections = is_array($override['sections'] ?? null) ? $override['sections'] : [];
+        $relatedLinks = is_array($override['related_links'] ?? null) ? $override['related_links'] : [];
+        $coreTextParts = [$articleSlug, str_replace('-', ' ', $articleSlug), $title, $intro, $category];
+        $textParts = $coreTextParts;
+
+        foreach ($sections as $section) {
+            if (!is_array($section)) {
+                continue;
+            }
+            $heading = (string) ($section['heading'] ?? '');
+            $body = (string) ($section['body'] ?? '');
+            $coreTextParts[] = $heading;
+            $coreTextParts[] = $body;
+            $textParts[] = $heading;
+            $textParts[] = $body;
+        }
+        foreach ($relatedLinks as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $textParts[] = (string) ($item['slug'] ?? '');
+            $textParts[] = (string) ($item['label'] ?? '');
+            $textParts[] = (string) ($item['description'] ?? '');
+        }
+
+        return [
+            'slug' => $articleSlug,
+            'title' => $title,
+            'intro' => $intro,
+            'category' => $category,
+            'sections' => $sections,
+            'related_links' => $relatedLinks,
+            'core_haystack' => interessa_product_lower(trim(implode(' ', array_filter($coreTextParts)))),
+            'haystack' => interessa_product_lower(trim(implode(' ', array_filter($textParts)))),
+            'rule' => function_exists('interessa_article_product_rule')
+                ? interessa_article_product_rule($articleSlug)
+                : ['allow_categories' => [], 'prefer_keywords' => [], 'exclude_keywords' => [], 'categories' => [], 'strict' => false],
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_article_recommendation_profiles')) {
+    function interessa_admin_article_recommendation_profiles(): array {
+        return [
+            'proteiny-general' => [
+                'intent_label' => 'Proteiny',
+                'summary' => 'System hlada 3 rozdielne vetvy: univerzalny whey, value alternativu a cistejsiu specializovanu volbu.',
+                'allow_categories' => ['proteiny'],
+                'prefer_keywords' => ['protein', 'proteiny', 'whey', 'isolate', 'isolat', 'hydro', 'casein', 'kasein'],
+                'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'probiotik', 'magnesium', 'horcik', 'zinc', 'zinok'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'overall',
+                        'branch_label' => 'Najlepsi protein celkovo',
+                        'reasoning' => 'Najvyvazenejsi default choice pre vacsinu ludi, ktori chcu univerzalny whey protein.',
+                        'preferred_slugs' => ['gymbeam-just-whey'],
+                        'preferred_keywords' => ['just whey', 'whey', 'blend'],
+                        'avoid_keywords' => ['isolate', 'isolat', 'vegan', 'gainer', 'breakfast', 'bar'],
+                        'preferred_categories' => ['proteiny'],
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'value',
+                        'branch_label' => 'Najlepsi pomer cena vykon',
+                        'reasoning' => 'Rozumna value alternativa pre kazdodenne pouzitie bez zbytocneho preplacania.',
+                        'preferred_slugs' => ['gymbeam-true-whey', 'proteinsk-100-whey-protein-nutrend'],
+                        'preferred_keywords' => ['true whey', '100 whey', '100% whey', 'whey premium', 'premium whey'],
+                        'avoid_keywords' => ['isolate', 'isolat', 'vegan', 'gainer', 'breakfast', 'bar'],
+                        'preferred_categories' => ['proteiny'],
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'specific',
+                        'branch_label' => 'Ina vetva rozhodnutia',
+                        'reasoning' => 'Specificka alternativa pre cistejsi profil alebo uzsi use-case.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-pure-isowhey-bez-pr-ichute'],
+                        'preferred_keywords' => ['isolate', 'isolat', 'isowhey', 'hydro', 'vegan'],
+                        'avoid_keywords' => ['breakfast', 'bar'],
+                        'preferred_categories' => ['proteiny'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'proteiny-chudnutie' => [
+                'intent_label' => 'Protein na chudnutie',
+                'summary' => 'System hlada isolate ako hlavnu volbu, value whey ako kompromis a univerzalny whey ako sirsi default.',
+                'allow_categories' => ['proteiny'],
+                'prefer_keywords' => ['protein', 'whey', 'isolate', 'isolat', 'dieta', 'chudnut', 'redukcia'],
+                'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'probiotik', 'magnesium', 'horcik'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'lean',
+                        'branch_label' => 'Najlepsi na chudnutie',
+                        'reasoning' => 'Cistejsi profil, ktory lepsie zapada do dietneho alebo redukcneho kontextu.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-pure-isowhey-bez-pr-ichute'],
+                        'preferred_keywords' => ['isolate', 'isolat', 'isowhey', 'lean', 'diet'],
+                        'preferred_categories' => ['proteiny'],
+                        'requires_prefer_hit' => true,
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'value',
+                        'branch_label' => 'Najlepsi pomer cena vykon',
+                        'reasoning' => 'Rozumna value alternativa, ked nechces zbytocne preplacat isolate.',
+                        'preferred_slugs' => ['gymbeam-true-whey'],
+                        'preferred_keywords' => ['true whey', '100 whey', 'whey premium', 'whey'],
+                        'avoid_keywords' => ['gainer', 'breakfast', 'bar'],
+                        'preferred_categories' => ['proteiny'],
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'general',
+                        'branch_label' => 'Univerzalna alternativa',
+                        'reasoning' => 'Sirsia univerzalna volba pre ludi, ktori nechcu byt viazani len na dietny profil.',
+                        'preferred_slugs' => ['gymbeam-just-whey'],
+                        'preferred_keywords' => ['just whey', 'whey', 'blend'],
+                        'preferred_categories' => ['proteiny'],
+                    ],
+                ],
+            ],
+            'kreatin-general' => [
+                'intent_label' => 'Kreatin',
+                'summary' => 'System hlada monohydrat ako hlavnu volbu, value alternativu z ineho schvaleneho merchanta a specificku odlisnu formu.',
+                'allow_categories' => ['kreatin'],
+                'prefer_keywords' => ['kreatin', 'creatine', 'creapure', 'monohydrate', 'monohydrat'],
+                'exclude_keywords' => ['pre-workout', 'predtrening', 'whey', 'isolate', 'isolat', 'gainer', 'probiotik', 'magnesium', 'horcik'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'overall',
+                        'branch_label' => 'Najlepsi kreatin celkovo',
+                        'reasoning' => 'Najbezpecnejsia hlavna volba pre vacsinu ludi, ktori chcu klasicky monohydrat.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-kreat-in-100-creapure-r'],
+                        'preferred_keywords' => ['creapure', 'monohydrate', 'monohydrat', 'creatine'],
+                        'avoid_keywords' => ['hcl', 'caps'],
+                        'preferred_categories' => ['kreatin'],
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'value',
+                        'branch_label' => 'Najlepsi pomer cena vykon',
+                        'reasoning' => 'Value alternativa s rovnakou zakladnou logikou, ale s lepsim rozpoctovym uhlom.',
+                        'preferred_slugs' => ['proteinsk-kreatin-monohydrat-value'],
+                        'preferred_keywords' => ['monohydrate', 'monohydrat', 'creatine', 'kreatin'],
+                        'preferred_merchants' => ['protein-sk'],
+                        'avoid_keywords' => ['hcl'],
+                        'preferred_categories' => ['kreatin'],
+                        'allow_family_overlap' => true,
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'specific',
+                        'branch_label' => 'Alternativa pre iny use-case',
+                        'reasoning' => 'Odlisna forma pre citatela, ktory nechce ostat len pri klasickom monohydrate.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-creatine-hcl-bez-pr-ichute'],
+                        'preferred_keywords' => ['hcl', 'micronized', 'caps'],
+                        'preferred_categories' => ['kreatin'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'pre-workout-general' => [
+                'intent_label' => 'Pre-workout',
+                'summary' => 'System hlada vyvazeny default, silnejsi stimulant a pump-focused alternativu bez fake-choice duplicity.',
+                'allow_categories' => ['pre-workout'],
+                'prefer_keywords' => ['pre-workout', 'predtrening', 'stim', 'pump', 'citrulline', 'citrulin', 'beta alanine', 'kofein', 'caffeine'],
+                'exclude_keywords' => ['kreatin', 'creatine', 'whey', 'protein', 'probiotik', 'magnesium', 'horcik', 'zinc', 'zinok'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'overall',
+                        'branch_label' => 'Najlepsi vyvazeny default',
+                        'reasoning' => 'Najbezpecnejsia hlavna volba pre vacsinu ludi, ktori chcu hotovy pre-workout bez extremu.',
+                        'preferred_slugs' => ['gymbeam-cellucor-c4-original-frozen-bombsicle'],
+                        'preferred_keywords' => ['pre-workout', 'original', 'c4'],
+                        'avoid_keywords' => ['citrulline', 'citrulin', 'malate', 'aakg', 'arginine', 'caffeine power'],
+                        'preferred_categories' => ['pre-workout'],
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'stim',
+                        'branch_label' => 'Silnejsia alebo tvrdsia alternativa',
+                        'reasoning' => 'Silnejsia stim vetva pre ludi, ktori chcu tvrdsi nakop na intenzivnejsi trening.',
+                        'preferred_slugs' => ['gymbeam-activlab-black-wolf-multifruit'],
+                        'preferred_keywords' => ['black wolf', 'hardcore', 'hard', 'stim', 'caffeine'],
+                        'avoid_keywords' => ['citrulline', 'citrulin', 'pump', 'aakg', 'arginine'],
+                        'preferred_categories' => ['pre-workout'],
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'pump',
+                        'branch_label' => 'Ina vetva rozhodnutia',
+                        'reasoning' => 'Jasne odlisny use-case pre pump-focused alebo menej stimulantovy pristup.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-citrulline-malate-bez-pr-ichute'],
+                        'preferred_keywords' => ['stim free', 'stim-free', 'pump', 'citrulline', 'citrulin', 'malate', 'arginine', 'aakg'],
+                        'preferred_categories' => ['pre-workout'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'pre-workout-caffeine-free' => [
+                'intent_label' => 'Pre-workout bez kofeinu',
+                'summary' => 'System hlada pump alebo non-stim default, silnejsiu pump alternativu a az tretiu vetvu s miernejsim hotovym pre-workoutom.',
+                'allow_categories' => ['pre-workout'],
+                'prefer_keywords' => ['pre-workout', 'predtrening', 'pump', 'stim free', 'stim-free', 'bez kofeinu', 'citrulline', 'citrulin', 'arginine'],
+                'exclude_keywords' => ['kreatin', 'creatine', 'whey', 'protein', 'probiotik', 'magnesium', 'horcik'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'pump',
+                        'branch_label' => 'Najlepsia non-stim volba',
+                        'reasoning' => 'Hlavny pump-focused default pre clanok, ktory nechce stavat vyber na kofeine.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-citrulline-malate-bez-pr-ichute'],
+                        'preferred_keywords' => ['stim free', 'stim-free', 'pump', 'citrulline', 'citrulin', 'malate', 'arginine', 'aakg'],
+                        'preferred_categories' => ['pre-workout'],
+                        'requires_prefer_hit' => true,
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'pump-alt',
+                        'branch_label' => 'Druha pump alternativa',
+                        'reasoning' => 'Druha pump vetva pre cloveka, ktory chce iny typ no-stim supportu.',
+                        'preferred_keywords' => ['pump', 'arginine', 'aakg', 'citrulline', 'citrulin'],
+                        'preferred_categories' => ['pre-workout'],
+                        'requires_prefer_hit' => true,
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'balanced',
+                        'branch_label' => 'Miernejsi hotovy pre-workout',
+                        'reasoning' => 'Sirsi default pre citatela, ktory napriek teme nechce cisto single-ingredient vetvu.',
+                        'preferred_slugs' => ['gymbeam-cellucor-c4-original-frozen-bombsicle'],
+                        'preferred_keywords' => ['pre-workout', 'original', 'c4'],
+                        'preferred_categories' => ['pre-workout'],
+                    ],
+                ],
+            ],
+            'probiotika-general' => [
+                'intent_label' => 'Probiotika',
+                'summary' => 'System hlada everyday probiotikum, sirsi complex a specificku strainovu alternativu.',
+                'allow_categories' => ['probiotika-travenie'],
+                'prefer_keywords' => ['probiotik', 'digest', 'gut', 'lactobac', 'bifido', 'traven', 'enzym'],
+                'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein', 'magnesium', 'horcik'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'everyday',
+                        'branch_label' => 'Najlepsia everyday volba',
+                        'reasoning' => 'Jednoducha kazdodenna volba pre vacsinu ludi, ktori chcu probiotic basis bez chaosu.',
+                        'preferred_slugs' => ['gymbeam-probioten'],
+                        'preferred_keywords' => ['probio', 'probiotic', 'everyday'],
+                        'avoid_keywords' => ['lactobacillus', 'rhamnosus'],
+                        'preferred_categories' => ['probiotika-travenie'],
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'complex',
+                        'branch_label' => 'Sirsia alebo value alternativa',
+                        'reasoning' => 'Sirsia probiotic vetva pre cloveka, ktory chce complex alebo sirsi blend.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-probio-complex'],
+                        'preferred_keywords' => ['complex', 'multi', 'blend', 'probio'],
+                        'preferred_categories' => ['probiotika-travenie'],
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'strain',
+                        'branch_label' => 'Specificka strainova alternativa',
+                        'reasoning' => 'Odlisna vetva pre citatela, ktory chce cielenejsi strain alebo uzsi use-case.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-lactobacillus-rhamnosus'],
+                        'preferred_keywords' => ['lactobacillus', 'rhamnosus', 'strain'],
+                        'preferred_categories' => ['probiotika-travenie'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'mineraly-horcik' => [
+                'intent_label' => 'Horcik',
+                'summary' => 'System hlada daily-use magnesium, value citrate a recovery vetvu bez weak convenience logiky.',
+                'allow_categories' => ['mineraly'],
+                'prefer_keywords' => ['magnesium', 'magnez', 'horcik', 'citrate', 'citrat', 'chelate', 'bisglycinat', 'zmb'],
+                'exclude_keywords' => ['zinc', 'zinok', 'pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein', 'probiotik'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'daily',
+                        'branch_label' => 'Najlepsi horcik na bezne pouzitie',
+                        'reasoning' => 'Hlavna daily-use volba pre cloveka, ktory chce kvalitny magnesium na pravidelny rezim.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute'],
+                        'preferred_keywords' => ['magnesium chelate', 'chelate', 'bisglycinat', 'bisglycinate', 'magnesium'],
+                        'avoid_keywords' => ['zinc', 'zinok', 'shot', 'zmb'],
+                        'preferred_categories' => ['mineraly'],
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'value',
+                        'branch_label' => 'Najlepsia value volba',
+                        'reasoning' => 'Rozumna budget alebo jednoduchsia alternativa pre kazdodenne doplnenie magnezia.',
+                        'preferred_slugs' => ['gymbeam-magnesium-citrate-caps'],
+                        'preferred_keywords' => ['citrate', 'citrat', 'caps', 'kaps'],
+                        'avoid_keywords' => ['zinc', 'zinok', 'zmb'],
+                        'preferred_categories' => ['mineraly'],
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'recovery',
+                        'branch_label' => 'Specificky recovery use-case',
+                        'reasoning' => 'Odlisna vetva pre recovery, vecerny rezim alebo sleep-oriented use-case.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-zmb6-chelate'],
+                        'preferred_keywords' => ['zmb', 'sleep', 'recovery', 'chelate'],
+                        'preferred_categories' => ['mineraly'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'mineraly-zinok' => [
+                'intent_label' => 'Zinok',
+                'summary' => 'System hlada chelat ako hlavnu volbu, basic zinc ako value a jasne odlisnu kombinovanu vetvu.',
+                'allow_categories' => ['mineraly'],
+                'prefer_keywords' => ['zinok', 'zinc', 'chelat', 'bisglycinat', 'picolinat', 'citrate'],
+                'exclude_keywords' => ['magnesium', 'magnez', 'horcik', 'pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'daily',
+                        'branch_label' => 'Najlepsia daily-use forma zinku',
+                        'reasoning' => 'Chelatovana alebo lepsie obhajitelna forma zinku ako hlavna volba pre clanok o zinku.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-zinok-chel-at-bisglycin-at', 'gymbeam-gymbeam-zinok-pikolin-at'],
+                        'preferred_keywords' => ['zinc chelate', 'zinok chelat', 'bisglycinat', 'bisglycinate', 'picolinat'],
+                        'preferred_categories' => ['mineraly'],
+                        'requires_prefer_hit' => true,
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'value',
+                        'branch_label' => 'Najlepsia value volba',
+                        'reasoning' => 'Jednoduchy basic zinok ako budget alebo value alternativa.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-zinok-180-tab', 'gymbeam-gymbeam-zinok-90-tab-bez-pr-ichute'],
+                        'preferred_keywords' => ['zinok', 'zinc', 'tab'],
+                        'avoid_keywords' => ['vitamin c', 'medi', 'magnesium'],
+                        'preferred_categories' => ['mineraly'],
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'combo',
+                        'branch_label' => 'Specificka kombinovana alternativa',
+                        'reasoning' => 'Ina vetva rozhodnutia pre cloveka, ktory chce zinok v kombinacii alebo s inym use-case akcentom.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-chel-at-zinku-medi', 'gymbeam-gymbeam-vitam-in-c-zinok-120-tab'],
+                        'preferred_keywords' => ['vitamin c', 'zinok', 'zinku', 'medi', 'c + zinok'],
+                        'preferred_categories' => ['mineraly'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'vyziva-general' => [
+                'intent_label' => 'Doplnky vyzivy',
+                'summary' => 'System hlada vykonovy zaklad, recovery/value zaklad a sirsi mikronutrientovy next step.',
+                'allow_categories' => ['kreatin', 'mineraly', 'proteiny', 'probiotika-travenie', 'klby-koza', 'imunita'],
+                'prefer_keywords' => ['doplnky', 'vyziva', 'kreatin', 'magnesium', 'horcik', 'vitamin d', 'protein', 'probiotik'],
+                'exclude_keywords' => ['predtrening extreme', 'pre-workout hardcore'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'foundation-performance',
+                        'branch_label' => 'Najpraktickejsi zaklad',
+                        'reasoning' => 'Najsilnejsi vykonovy zaklad, ktory dava zmysel pre siroku skupinu citatelov.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-kreat-in-100-creapure-r'],
+                        'preferred_keywords' => ['kreatin', 'creatine', 'creapure', 'vykon', 'sila'],
+                        'preferred_categories' => ['kreatin'],
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'foundation-recovery',
+                        'branch_label' => 'Value alebo recovery zaklad',
+                        'reasoning' => 'Rozumna kazdodenna alternativa pre regeneraciu, napatie alebo hekticky rezim.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute'],
+                        'preferred_keywords' => ['magnesium', 'horcik', 'recovery', 'regeneracia'],
+                        'preferred_categories' => ['mineraly'],
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'micronutrient',
+                        'branch_label' => 'Sirsi micronutrientovy next step',
+                        'reasoning' => 'Specificka tretia vetva pre cloveka, ktory chce doplnit zaklad o rozumny mikronutrientovy produkt.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-vitamin-d3-k1-k2-forte'],
+                        'preferred_keywords' => ['vitamin d', 'vitamin d3', 'k1', 'k2', 'imunita'],
+                        'preferred_categories' => ['mineraly', 'imunita'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'imunita-general' => [
+                'intent_label' => 'Imunita',
+                'summary' => 'System hlada hlavnu imunitnu volbu, value podporu a odlisnu gut alebo wellness vetvu.',
+                'allow_categories' => ['imunita', 'mineraly', 'probiotika-travenie'],
+                'prefer_keywords' => ['imunita', 'immune', 'vitamin d', 'zinc', 'zinok', 'probiotic', 'gut'],
+                'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'immune-core',
+                        'branch_label' => 'Najlepsi imunitny zaklad',
+                        'reasoning' => 'Hlavna volba pre cloveka, ktory hlada jasny imunitny default produkt.',
+                        'preferred_slugs' => ['imunoklub-imunoglukan-p4h-60-kapsul', 'gymbeam-gymbeam-vitamin-d3-k1-k2-forte'],
+                        'preferred_keywords' => ['imuno', 'glukan', 'immune', 'vitamin d', 'd3'],
+                        'preferred_categories' => ['imunita', 'mineraly'],
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'value',
+                        'branch_label' => 'Najlepsia value podpora',
+                        'reasoning' => 'Jednoduchsia value alternativa pre bezny imunitny support.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-vitam-in-c-zinok-120-tab'],
+                        'preferred_keywords' => ['vitamin c', 'zinok', 'zinc'],
+                        'preferred_categories' => ['mineraly'],
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'gut',
+                        'branch_label' => 'Ina wellness vetva',
+                        'reasoning' => 'Doplna imunitnu temu o gut alebo digestion angle ako odlisny next step.',
+                        'preferred_slugs' => ['symprove-daily-essential-4-tyzdne', 'gymbeam-probioten'],
+                        'preferred_keywords' => ['probiotic', 'probio', 'gut', 'digestion'],
+                        'preferred_categories' => ['probiotika-travenie'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_article_recommendation_profile')) {
+    function interessa_admin_article_recommendation_profile(string $articleSlug): array {
+        $context = interessa_admin_article_recommendation_context($articleSlug);
+        $haystack = (string) (($context['core_haystack'] ?? '') ?: ($context['haystack'] ?? ''));
+        $profiles = interessa_admin_article_recommendation_profiles();
+
+        $hasTokens = static function (array $tokens) use ($haystack): bool {
+            foreach ($tokens as $token) {
+                $token = interessa_product_lower(trim((string) $token));
+                if ($token !== '' && str_contains($haystack, $token)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        $profileKey = 'vyziva-general';
+        if (in_array($articleSlug, ['najlepsie-proteiny-2026', 'najlepsie-proteiny-2025'], true)) {
+            $profileKey = 'proteiny-general';
+        } elseif ($articleSlug === 'protein-na-chudnutie') {
+            $profileKey = 'proteiny-chudnutie';
+        } elseif ($articleSlug === 'kreatin-porovnanie') {
+            $profileKey = 'kreatin-general';
+        } elseif (str_contains($articleSlug, 'pre-workout')) {
+            $profileKey = $hasTokens(['bez kofeinu', 'bezkofein', 'stim free', 'stim-free', 'without caffeine', 'caffeine free'])
+                ? 'pre-workout-caffeine-free'
+                : 'pre-workout-general';
+        } elseif (str_contains($articleSlug, 'probiot')) {
+            $profileKey = 'probiotika-general';
+        } elseif (str_contains($articleSlug, 'horcik') || str_contains($articleSlug, 'magnez')) {
+            $profileKey = 'mineraly-horcik';
+        } elseif (str_contains($articleSlug, 'zinok') || str_contains($articleSlug, 'zinc')) {
+            $profileKey = 'mineraly-zinok';
+        } elseif ($articleSlug === 'doplnky-vyzivy' || normalize_category_slug((string) ($context['category'] ?? '')) === 'vyziva') {
+            $profileKey = 'vyziva-general';
+        } elseif ($hasTokens(['pre-workout', 'predtrening', 'pred trening', 'nakopavac'])) {
+            $profileKey = $hasTokens(['bez kofeinu', 'bezkofein', 'stim free', 'stim-free', 'without caffeine', 'caffeine free'])
+                ? 'pre-workout-caffeine-free'
+                : 'pre-workout-general';
+        } elseif ($hasTokens(['kreatin', 'creatine', 'creapure'])) {
+            $profileKey = 'kreatin-general';
+        } elseif ($hasTokens(['protein', 'proteiny', 'whey', 'isolate', 'isolat'])) {
+            $profileKey = $hasTokens(['chudnut', 'chudnutie', 'redukcia', 'dieta', 'diet'])
+                ? 'proteiny-chudnutie'
+                : 'proteiny-general';
+        } elseif ($hasTokens(['probiotik', 'digestion', 'gut', 'lactobac', 'rhamnosus'])) {
+            $profileKey = 'probiotika-general';
+        } elseif ($hasTokens(['zinok', 'zinc'])) {
+            $profileKey = 'mineraly-zinok';
+        } elseif ($hasTokens(['horcik', 'magnez', 'magnesium', 'zmb'])) {
+            $profileKey = 'mineraly-horcik';
+        } elseif ($hasTokens(['imunita', 'immune', 'vitamin d', 'd3', 'imunoglukan'])) {
+            $profileKey = 'imunita-general';
+        }
+
+        $profile = $profiles[$profileKey] ?? $profiles['vyziva-general'];
+        $rule = is_array($context['rule'] ?? null) ? $context['rule'] : [];
+        $profileAllowCategories = array_values(array_unique(array_filter(array_map(
+            static fn($value): string => normalize_category_slug((string) $value),
+            is_array($profile['allow_categories'] ?? null) ? $profile['allow_categories'] : []
+        ))));
+        if ($profileAllowCategories === []) {
+            $profileAllowCategories = array_values(array_unique(array_filter(array_map(
+                static fn($value): string => normalize_category_slug((string) $value),
+                is_array($rule['categories'] ?? null) ? $rule['categories'] : []
+            ))));
+        }
+        $profilePreferKeywords = array_values(array_unique(array_filter(array_map(
+            static fn($value): string => interessa_product_lower(trim((string) $value)),
+            is_array($profile['prefer_keywords'] ?? null) ? $profile['prefer_keywords'] : []
+        ))));
+        $profileExcludeKeywords = array_values(array_unique(array_filter(array_map(
+            static fn($value): string => interessa_product_lower(trim((string) $value)),
+            is_array($profile['exclude_keywords'] ?? null) ? $profile['exclude_keywords'] : []
+        ))));
+
+        $profile['key'] = $profileKey;
+        $profile['context'] = $context;
+        $profile['article_rule'] = [
+            'allow_categories' => $profileAllowCategories,
+            'prefer_keywords' => $profilePreferKeywords,
+            'exclude_keywords' => $profileExcludeKeywords,
+            'categories' => $profileAllowCategories,
+            'strict' => true,
+        ];
+
+        return $profile;
+    }
+}
+
+if (!function_exists('interessa_admin_recommendation_target_state')) {
+    function interessa_admin_recommendation_target_state(array $product): array {
+        $normalized = interessa_normalize_product($product);
+        $target = function_exists('interessa_affiliate_target') ? interessa_affiliate_target($normalized) : [];
+        $directUrl = trim((string) ($target['direct_url'] ?? $normalized['url'] ?? $normalized['fallback_url'] ?? ''));
+        if ($directUrl === '') {
+            $directUrl = trim((string) ($normalized['url'] ?? $normalized['fallback_url'] ?? ''));
+        }
+
+        $merchantSlug = trim((string) ($normalized['merchant_slug'] ?? ''));
+        $affiliateCode = trim((string) ($target['code'] ?? $normalized['affiliate_code'] ?? ''));
+        $productLevelReady = $directUrl !== '' && interessa_admin_looks_like_product_url($directUrl);
+        $affiliateReady = $productLevelReady && ($affiliateCode !== '' || trim((string) ($target['status'] ?? '')) === 'affiliate_ready');
+        $hasImage = !empty($normalized['has_local_image']) || trim((string) ($normalized['image_remote_src'] ?? '')) !== '';
+
+        return [
+            'merchant_slug' => $merchantSlug,
+            'direct_url' => $directUrl,
+            'affiliate_code' => $affiliateCode,
+            'product_level_ready' => $productLevelReady,
+            'affiliate_ready' => $affiliateReady,
+            'has_image' => $hasImage,
+            'supported_merchant' => function_exists('interessa_is_supported_affiliate_merchant')
+                ? interessa_is_supported_affiliate_merchant($merchantSlug)
+                : false,
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_recommendation_slot_candidate')) {
+    function interessa_admin_recommendation_slot_candidate(array $product, array $profile, array $slotProfile): ?array {
+        $normalized = interessa_normalize_product($product);
+        $slug = interessa_admin_slugify((string) ($normalized['slug'] ?? ''));
+        $category = normalize_category_slug((string) ($normalized['category'] ?? ''));
+        if ($slug === '' || $category === '') {
+            return null;
+        }
+
+        $baseRule = is_array($profile['article_rule'] ?? null) ? $profile['article_rule'] : [];
+        if (!empty($slotProfile['preferred_categories'])) {
+            $baseRule['allow_categories'] = array_values(array_unique(array_filter(array_map(
+                static fn($value): string => normalize_category_slug((string) $value),
+                (array) ($slotProfile['preferred_categories'] ?? [])
+            ))));
+            $baseRule['categories'] = $baseRule['allow_categories'];
+        }
+
+        $text = interessa_admin_recommendation_product_text($normalized);
+        $preferredSlugs = array_values(array_filter(array_map('interessa_admin_slugify', (array) ($slotProfile['preferred_slugs'] ?? []))));
+        $preferHits = interessa_admin_recommendation_keyword_hits($text, (array) ($slotProfile['preferred_keywords'] ?? []));
+        $avoidHits = interessa_admin_recommendation_keyword_hits($text, (array) ($slotProfile['avoid_keywords'] ?? []));
+        $baseMeta = function_exists('interessa_product_article_match_score')
+            ? interessa_product_article_match_score($normalized, $baseRule)
+            : null;
+        if (!is_array($baseMeta) && !in_array($slug, $preferredSlugs, true) && $preferHits === []) {
+            return null;
+        }
+
+        $targetState = interessa_admin_recommendation_target_state($normalized);
+        if (empty($targetState['supported_merchant']) || empty($targetState['product_level_ready'])) {
+            return null;
+        }
+        if (!empty($slotProfile['requires_prefer_hit']) && $preferHits === [] && !in_array($slug, (array) ($slotProfile['preferred_slugs'] ?? []), true)) {
+            return null;
+        }
+        if ($avoidHits !== []) {
+            return null;
+        }
+
+        $score = (int) ($baseMeta['score'] ?? 0);
+        if (in_array($slug, $preferredSlugs, true)) {
+            $score += 1400;
+        }
+        $score += count($preferHits) * 160;
+        $score += !empty($targetState['affiliate_ready']) ? 220 : 40;
+        $score += !empty($targetState['has_image']) ? 50 : 0;
+        $preferredMerchants = array_values(array_filter(array_map('interessa_admin_slugify', (array) ($slotProfile['preferred_merchants'] ?? []))));
+        if ($preferredMerchants !== [] && in_array((string) ($targetState['merchant_slug'] ?? ''), $preferredMerchants, true)) {
+            $score += 140;
+        }
+
+        return [
+            'slot' => max(1, min(3, (int) ($slotProfile['slot'] ?? 1))),
+            'product_slug' => $slug,
+            'role' => interessa_admin_normalize_candidate_role($slotProfile['role'] ?? 'standard'),
+            'branch' => interessa_admin_slugify((string) ($slotProfile['branch'] ?? '')),
+            'branch_label' => interessa_admin_normalize_text($slotProfile['branch_label'] ?? ''),
+            'reasoning' => interessa_admin_normalize_text($slotProfile['reasoning'] ?? ''),
+            'score' => $score,
+            'merchant' => trim((string) ($normalized['merchant'] ?? '')),
+            'merchant_slug' => trim((string) ($targetState['merchant_slug'] ?? '')),
+            'category' => $category,
+            'affiliate_ready' => !empty($targetState['affiliate_ready']),
+            'product_level_ready' => !empty($targetState['product_level_ready']),
+            'family_key' => interessa_admin_recommendation_family_key($normalized),
+            'name' => trim((string) ($normalized['name'] ?? $slug)),
+        ];
+    }
+}
+
+if (!function_exists('interessa_admin_build_article_product_recommendation')) {
+    function interessa_admin_build_article_product_recommendation(string $articleSlug): array {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        if ($articleSlug === '') {
+            throw new RuntimeException('Nepodarilo sa vyhodnotit clanok pre navrh produktov.');
+        }
+
+        $profile = interessa_admin_article_recommendation_profile($articleSlug);
+        $catalog = function_exists('interessa_product_catalog') ? interessa_product_catalog() : [];
+        if (!is_array($catalog) || $catalog === []) {
+            throw new RuntimeException('Katalog produktov nie je dostupny.');
+        }
+
+        $allowedCategories = array_values(array_unique(array_filter(array_map(
+            static fn($value): string => normalize_category_slug((string) $value),
+            (array) (($profile['article_rule']['allow_categories'] ?? []))
+        ))));
+        $globalPreferKeywords = array_values(array_unique(array_filter(array_map(
+            static fn($value): string => interessa_product_lower(trim((string) $value)),
+            (array) (($profile['article_rule']['prefer_keywords'] ?? []))
+        ))));
+        $globalExcludeKeywords = array_values(array_unique(array_filter(array_map(
+            static fn($value): string => interessa_product_lower(trim((string) $value)),
+            (array) (($profile['article_rule']['exclude_keywords'] ?? []))
+        ))));
+        $preferredSlugs = [];
+        foreach ((array) ($profile['slots'] ?? []) as $slotProfile) {
+            foreach ((array) ($slotProfile['preferred_slugs'] ?? []) as $preferredSlug) {
+                $normalizedPreferredSlug = interessa_admin_slugify((string) $preferredSlug);
+                if ($normalizedPreferredSlug !== '') {
+                    $preferredSlugs[$normalizedPreferredSlug] = true;
+                }
+            }
+        }
+
+        $candidatePool = [];
+        foreach ($catalog as $catalogSlug => $catalogRow) {
+            if (!is_array($catalogRow)) {
+                continue;
+            }
+
+            $rawSlug = interessa_admin_slugify((string) ($catalogRow['slug'] ?? $catalogSlug));
+            $rawCategory = normalize_category_slug((string) ($catalogRow['category'] ?? ''));
+            $rawMerchantSlug = interessa_admin_slugify((string) ($catalogRow['merchant_slug'] ?? ''));
+            if ($rawSlug === '' || $rawCategory === '' || !function_exists('interessa_is_supported_affiliate_merchant') || !interessa_is_supported_affiliate_merchant($rawMerchantSlug)) {
+                continue;
+            }
+            if ($allowedCategories !== [] && !in_array($rawCategory, $allowedCategories, true) && !isset($preferredSlugs[$rawSlug])) {
+                continue;
+            }
+
+            $rawText = interessa_product_lower(trim(implode(' ', array_filter([
+                $rawSlug,
+                str_replace('-', ' ', $rawSlug),
+                (string) ($catalogRow['name'] ?? ''),
+                (string) ($catalogRow['summary'] ?? ''),
+                $rawCategory,
+            ]))));
+            if ($globalExcludeKeywords !== [] && interessa_admin_recommendation_keyword_hits($rawText, $globalExcludeKeywords) !== []) {
+                continue;
+            }
+            if ($globalPreferKeywords !== [] && interessa_admin_recommendation_keyword_hits($rawText, $globalPreferKeywords) === [] && !isset($preferredSlugs[$rawSlug])) {
+                continue;
+            }
+
+            $candidatePool[$rawSlug] = $catalogRow;
+        }
+        if ($candidatePool === []) {
+            throw new RuntimeException('System nenasiel relevantny pool produktov pre clanok.');
+        }
+
+        $selected = [];
+        $selectedSlugs = [];
+        $selectedFamilies = [];
+        $allCandidates = [];
+        foreach (range(1, 3) as $slot) {
+            $slotProfile = is_array($profile['slots'][$slot] ?? null) ? $profile['slots'][$slot] : [];
+            $slotProfile['slot'] = $slot;
+            $slotCandidates = [];
+
+            foreach ($candidatePool as $product) {
+                if (!is_array($product)) {
+                    continue;
+                }
+
+                $candidate = interessa_admin_recommendation_slot_candidate($product, $profile, $slotProfile);
+                if (!is_array($candidate)) {
+                    continue;
+                }
+                if (isset($selectedSlugs[$candidate['product_slug']])) {
+                    continue;
+                }
+
+                $familyKey = trim((string) ($candidate['family_key'] ?? $candidate['product_slug']));
+                $allowFamilyOverlap = !empty($slotProfile['allow_family_overlap']);
+                if (!$allowFamilyOverlap && $familyKey !== '' && isset($selectedFamilies[$familyKey])) {
+                    continue;
+                }
+
+                $slotCandidates[] = $candidate;
+                $allCandidates[] = $candidate;
+            }
+
+            usort($slotCandidates, static function (array $left, array $right): int {
+                $compare = ((int) ($right['score'] ?? 0)) <=> ((int) ($left['score'] ?? 0));
+                if ($compare !== 0) {
+                    return $compare;
+                }
+
+                return strcasecmp((string) ($left['name'] ?? ''), (string) ($right['name'] ?? ''));
+            });
+
+            $top = $slotCandidates[0] ?? null;
+            if (is_array($top)) {
+                $selected[] = $top;
+                $selectedSlugs[$top['product_slug']] = true;
+                $familyKey = trim((string) ($top['family_key'] ?? $top['product_slug']));
+                if ($familyKey !== '') {
+                    $selectedFamilies[$familyKey] = true;
+                }
+            }
+        }
+
+        if (count($selected) < 3) {
+            usort($allCandidates, static function (array $left, array $right): int {
+                $compare = ((int) ($right['score'] ?? 0)) <=> ((int) ($left['score'] ?? 0));
+                if ($compare !== 0) {
+                    return $compare;
+                }
+
+                return max(1, (int) ($left['slot'] ?? 1)) <=> max(1, (int) ($right['slot'] ?? 1));
+            });
+            foreach ($allCandidates as $candidate) {
+                $slot = max(1, min(3, (int) ($candidate['slot'] ?? 1)));
+                $familyKey = trim((string) ($candidate['family_key'] ?? $candidate['product_slug']));
+                $slotProfile = is_array($profile['slots'][$slot] ?? null) ? $profile['slots'][$slot] : [];
+                $allowFamilyOverlap = !empty($slotProfile['allow_family_overlap']);
+                if (isset($selectedSlugs[$candidate['product_slug']]) || (!$allowFamilyOverlap && $familyKey !== '' && isset($selectedFamilies[$familyKey]))) {
+                    continue;
+                }
+
+                $alreadyFilled = false;
+                foreach ($selected as $selectedItem) {
+                    if (max(1, min(3, (int) ($selectedItem['slot'] ?? 1))) === $slot) {
+                        $alreadyFilled = true;
+                        break;
+                    }
+                }
+                if ($alreadyFilled) {
+                    continue;
+                }
+
+                $selected[] = $candidate;
+                $selectedSlugs[$candidate['product_slug']] = true;
+                if ($familyKey !== '') {
+                    $selectedFamilies[$familyKey] = true;
+                }
+                if (count($selected) >= 3) {
+                    break;
+                }
+            }
+        }
+
+        usort($selected, static function (array $left, array $right): int {
+            return max(1, (int) ($left['slot'] ?? 1)) <=> max(1, (int) ($right['slot'] ?? 1));
+        });
+
+        if (count($selected) !== 3) {
+            throw new RuntimeException('System nenasiel 3 dostatocne relevantne a odlisne produkty pre clanok.');
+        }
+
+        return interessa_admin_normalize_product_recommendation($articleSlug, [
+            'article_slug' => $articleSlug,
+            'intent_key' => (string) ($profile['key'] ?? ''),
+            'intent_label' => (string) ($profile['intent_label'] ?? ''),
+            'summary' => (string) ($profile['summary'] ?? ''),
+            'generated_at' => date('c'),
+            'items' => array_map(static function (array $item): array {
+                return [
+                    'slot' => max(1, min(3, (int) ($item['slot'] ?? 1))),
+                    'product_slug' => (string) ($item['product_slug'] ?? ''),
+                    'role' => (string) ($item['role'] ?? 'standard'),
+                    'branch' => (string) ($item['branch'] ?? ''),
+                    'branch_label' => (string) ($item['branch_label'] ?? ''),
+                    'reasoning' => (string) ($item['reasoning'] ?? ''),
+                    'score' => (int) ($item['score'] ?? 0),
+                    'merchant' => (string) ($item['merchant'] ?? ''),
+                    'merchant_slug' => (string) ($item['merchant_slug'] ?? ''),
+                    'category' => (string) ($item['category'] ?? ''),
+                    'affiliate_ready' => !empty($item['affiliate_ready']),
+                    'product_level_ready' => !empty($item['product_level_ready']),
+                ];
+            }, $selected),
+        ]);
+    }
+}
+
+if (!function_exists('interessa_admin_store_article_product_recommendation')) {
+    function interessa_admin_store_article_product_recommendation(string $articleSlug): array {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        if ($articleSlug === '') {
+            throw new RuntimeException('Chyba clanok pre navrh produktov.');
+        }
+
+        $recommendation = interessa_admin_build_article_product_recommendation($articleSlug);
+        $override = interessa_admin_article_override($articleSlug);
+        if ($override === []) {
+            $override = ['slug' => $articleSlug];
+        }
+        $override['product_recommendation'] = $recommendation;
+        interessa_admin_write_article_override_raw($articleSlug, $override);
+
+        $persisted = interessa_admin_article_override($articleSlug);
+        $persistedRecommendation = interessa_admin_normalize_product_recommendation($articleSlug, is_array($persisted['product_recommendation'] ?? null) ? $persisted['product_recommendation'] : []);
+        if (count((array) ($persistedRecommendation['items'] ?? [])) !== 3) {
+            throw new RuntimeException('Navrh produktov sa neulozil korektne.');
+        }
+
+        return $persistedRecommendation;
+    }
+}
+
+if (!function_exists('interessa_admin_load_or_build_article_product_recommendation')) {
+    function interessa_admin_load_or_build_article_product_recommendation(string $articleSlug, bool $forceRegenerate = false): array {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        if ($articleSlug === '') {
+            throw new RuntimeException('Chyba clanok pre navrh produktov.');
+        }
+
+        $override = interessa_admin_article_override($articleSlug);
+        $stored = interessa_admin_normalize_product_recommendation($articleSlug, is_array($override['product_recommendation'] ?? null) ? $override['product_recommendation'] : []);
+        if (!$forceRegenerate && count((array) ($stored['items'] ?? [])) === 3) {
+            return $stored;
+        }
+
+        return interessa_admin_store_article_product_recommendation($articleSlug);
+    }
+}
+
+if (!function_exists('interessa_admin_apply_article_product_recommendation')) {
+    function interessa_admin_apply_article_product_recommendation(string $articleSlug, bool $forceRegenerate = false): array {
+        $articleSlug = canonical_article_slug(trim($articleSlug));
+        if ($articleSlug === '') {
+            throw new RuntimeException('Chyba clanok pre automaticke priradenie produktov.');
+        }
+
+        $recommendation = interessa_admin_load_or_build_article_product_recommendation($articleSlug, $forceRegenerate);
+        $items = array_values(array_filter((array) ($recommendation['items'] ?? []), 'is_array'));
+        if (count($items) !== 3) {
+            throw new RuntimeException('System nema pripravene 3 navrhnute produkty pre clanok.');
+        }
+
+        $originalRows = interessa_admin_article_products();
+        $articlePath = interessa_admin_article_override_path($articleSlug);
+        $articleExisted = is_file($articlePath);
+        $originalArticleJson = $articleExisted ? (string) @file_get_contents($articlePath) : '';
+        if ($articleExisted && $originalArticleJson === '') {
+            throw new RuntimeException('Nepodarilo sa precitat povodny clanok pred automatickym priradenim.');
+        }
+
+        $comparisonAllowed = false;
+        if (function_exists('interessa_article_comparison_table_whitelist')) {
+            $comparisonAllowed = in_array($articleSlug, interessa_article_comparison_table_whitelist(), true);
+        }
+
+        try {
+            usort($items, static function (array $left, array $right): int {
+                return max(1, (int) ($left['slot'] ?? 1)) <=> max(1, (int) ($right['slot'] ?? 1));
+            });
+
+            foreach ($items as $item) {
+                $slot = max(1, min(3, (int) ($item['slot'] ?? 1)));
+                $productSlug = interessa_admin_slugify((string) ($item['product_slug'] ?? ''));
+                if ($productSlug === '') {
+                    throw new RuntimeException('Navrhnuty produkt pre Slot ' . $slot . ' nema validny slug.');
+                }
+                interessa_admin_direct_save_article_slot_product($articleSlug, $productSlug, $slot, 1);
+            }
+
+            $productPlan = [];
+            foreach ($items as $item) {
+                $slot = max(1, min(3, (int) ($item['slot'] ?? 1)));
+                $productPlan[] = [
+                    'product_slug' => interessa_admin_slugify((string) ($item['product_slug'] ?? '')),
+                    'order' => $slot,
+                    'role' => interessa_admin_normalize_candidate_role($item['role'] ?? ($slot === 1 ? 'featured' : 'standard')),
+                    'show_in_top' => true,
+                    'show_in_comparison' => $comparisonAllowed,
+                ];
+            }
+            interessa_admin_save_article_product_plan($articleSlug, $productPlan);
+
+            $override = interessa_admin_article_override($articleSlug);
+            $recommendation['applied_at'] = date('c');
+            $override['product_recommendation'] = $recommendation;
+            interessa_admin_write_article_override_raw($articleSlug, $override);
+
+            $persistedRows = interessa_admin_article_product_records_for_article($articleSlug);
+            $enabledRows = array_values(array_filter($persistedRows, static function ($row): bool {
+                return is_array($row) && !empty($row['enabled']);
+            }));
+            usort($enabledRows, static function (array $left, array $right): int {
+                return max(1, (int) ($left['order'] ?? 1)) <=> max(1, (int) ($right['order'] ?? 1));
+            });
+            if (count($enabledRows) !== 3) {
+                throw new RuntimeException('SLOT SAVE FAILED: article-products nema presne 3 aktivne sloty po automatickom priradeni.');
+            }
+
+            $expectedSlugs = [];
+            foreach ($items as $item) {
+                $expectedSlugs[max(1, min(3, (int) ($item['slot'] ?? 1)))] = interessa_admin_slugify((string) ($item['product_slug'] ?? ''));
+            }
+            ksort($expectedSlugs);
+
+            foreach ($enabledRows as $row) {
+                $slot = max(1, min(3, (int) ($row['order'] ?? 1)));
+                $rowSlug = interessa_admin_slugify((string) ($row['product_slug'] ?? ''));
+                if (($expectedSlugs[$slot] ?? '') !== $rowSlug) {
+                    throw new RuntimeException('SLOT SAVE FAILED: aktivny produkt v Slot ' . $slot . ' nesedi s navrhom.');
+                }
+            }
+
+            $state = interessa_admin_article_product_state($articleSlug, interessa_admin_article_override($articleSlug));
+            $statePlan = array_values(array_filter((array) ($state['product_plan'] ?? []), 'is_array'));
+            usort($statePlan, static function (array $left, array $right): int {
+                return max(1, (int) ($left['order'] ?? 1)) <=> max(1, (int) ($right['order'] ?? 1));
+            });
+            if (count($statePlan) !== 3) {
+                throw new RuntimeException('SLOT SAVE FAILED: product_plan nema presne 3 polozky po automatickom priradeni.');
+            }
+            foreach ($statePlan as $planRow) {
+                $slot = max(1, min(3, (int) ($planRow['order'] ?? 1)));
+                $rowSlug = interessa_admin_slugify((string) ($planRow['product_slug'] ?? ''));
+                if (($expectedSlugs[$slot] ?? '') !== $rowSlug) {
+                    throw new RuntimeException('SLOT SAVE FAILED: product_plan pre Slot ' . $slot . ' nesedi s navrhom.');
+                }
+            }
+
+            $recommended = array_values(array_map(
+                'interessa_admin_slugify',
+                is_array($state['recommended_products'] ?? null) ? $state['recommended_products'] : []
+            ));
+            $expectedRecommended = array_values($expectedSlugs);
+            if ($recommended !== $expectedRecommended) {
+                throw new RuntimeException('SLOT SAVE FAILED: recommended_products po automatickom priradeni nesedi s aktivnymi slotmi.');
+            }
+
+              return [
+                  'success' => true,
+                  'article_slug' => $articleSlug,
+                  'intent_key' => (string) ($recommendation['intent_key'] ?? ''),
+                  'intent_label' => (string) ($recommendation['intent_label'] ?? ''),
+                  'summary' => (string) ($recommendation['summary'] ?? ''),
+                  'applied_at' => (string) ($recommendation['applied_at'] ?? ''),
+                  'items' => $items,
+                  'product_plan' => $statePlan,
+                  'recommended_products' => $recommended,
+              ];
         } catch (Throwable $e) {
             interessa_admin_restore_article_state($articlePath, $articleExisted, $originalArticleJson, $originalRows);
             throw $e;

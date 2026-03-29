@@ -46,6 +46,75 @@
         "columns": [],
         "rows": []
     },
+    "related_links": [
+        {
+            "slug": "protein-na-chudnutie",
+            "label": "Protein na chudnutie",
+            "description": "Ak riesis redukciu a vyber vhodnejsieho proteinu do diety."
+        },
+        {
+            "slug": "pre-workout-ako-vybrat",
+            "label": "Ako vybrat pre-workout",
+            "description": "Ak chces doplnit vykonovy stack okolo treningu."
+        },
+        {
+            "slug": "doplnky-vyzivy",
+            "label": "Doplnky vyzivy",
+            "description": "Ak chces vediet, s ktorymi doplnkami ma zmysel zacat sirsie."
+        }
+    ],
+    "product_recommendation": {
+        "article_slug": "najlepsie-proteiny-2026",
+        "intent_key": "proteiny-general",
+        "intent_label": "Proteiny",
+        "summary": "System hlada 3 rozdielne vetvy: univerzalny whey, value alternativu a cistejsiu specializovanu volbu.",
+        "generated_at": "2026-03-29T09:21:02+00:00",
+        "applied_at": "",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-just-whey",
+                "role": "featured",
+                "branch": "overall",
+                "branch_label": "Najlepsi protein celkovo",
+                "reasoning": "Najvyvazenejsi default choice pre vacsinu ludi, ktori chcu univerzalny whey protein.",
+                "score": 2652,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "proteiny",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "proteinsk-100-whey-protein-nutrend",
+                "role": "value",
+                "branch": "value",
+                "branch_label": "Najlepsi pomer cena vykon",
+                "reasoning": "Rozumna value alternativa pre kazdodenne pouzitie bez zbytocneho preplacania.",
+                "score": 2642,
+                "merchant": "Protein.sk",
+                "merchant_slug": "protein-sk",
+                "category": "proteiny",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-gymbeam-pure-isowhey-bez-pr-ichute",
+                "role": "alternative",
+                "branch": "specific",
+                "branch_label": "Ina vetva rozhodnutia",
+                "reasoning": "Specificka alternativa pre cistejsi profil alebo uzsi use-case.",
+                "score": 2460,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "proteiny",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
     "recommended_products": [
         "gymbeam-just-whey",
         "gymbeam-true-whey",
@@ -75,22 +144,5 @@
         }
     ],
     "updated_at": "2026-03-29T07:01:24+00:00",
-    "updated_by": "admin",
-    "related_links": [
-        {
-            "slug": "protein-na-chudnutie",
-            "label": "Protein na chudnutie",
-            "description": "Ak riesis redukciu a vyber vhodnejsieho proteinu do diety."
-        },
-        {
-            "slug": "pre-workout-ako-vybrat",
-            "label": "Ako vybrat pre-workout",
-            "description": "Ak chces doplnit vykonovy stack okolo treningu."
-        },
-        {
-            "slug": "doplnky-vyzivy",
-            "label": "Doplnky vyzivy",
-            "description": "Ak chces vediet, s ktorymi doplnkami ma zmysel zacat sirsie."
-        }
-    ]
+    "updated_by": "admin"
 }

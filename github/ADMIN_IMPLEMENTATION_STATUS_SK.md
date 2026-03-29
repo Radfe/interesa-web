@@ -118,6 +118,37 @@ Najnovsi UX a click-layer cleanup:
   - vyber clanku
   - hero obrazok clanku
   - Canva prompt / upload
+
+Najnovsie automaticke odporucanie produktov pre clanok:
+- article editor uz vie pre konkretne clanky automaticky vyhodnotit intent a navrhnut 3 relevantne slot produkty
+- odporucanie pouziva:
+  - slug
+  - title
+  - intro
+  - sections
+  - category
+  - related_links
+- engine filtruje nerelevantne produkty podla category + keyword profilov a preferuje affiliate-ready produktove URL z podporovanych merchantov
+- v article editore pribudli akcie:
+  - `Navrhnut produkty pre clanok`
+  - `Pouzit navrhnute produkty`
+- aplikacia navrhu ide cez existujucu stabilnu direct slot save path, nie cez stare broken form wiring
+- do article JSON sa uklada `product_recommendation` s:
+  - intentom
+  - summary
+  - slot itemami
+  - scoringom
+  - reasoningom
+  - generated/applied timestampmi
+- prvy overeny batch:
+  - `najlepsie-proteiny-2026`
+  - `kreatin-porovnanie`
+  - `doplnky-vyzivy`
+  - `protein-na-chudnutie`
+  - `pre-workout-ako-vybrat`
+  - `probiotika-ako-vybrat`
+  - `horcik-ktory-je-najlepsi-a-preco`
+- zinok/mineral workflow ma pripraveny samostatny `mineraly-zinok` profil a je pripraveny, ked pre dany clanok bude v storage realny article override
   - az potom produktove sloty
 - starsie pokrocile polia pre odporucane produkty ostavaju dostupne len ako legacy fallback
 - verejny clanok uz vie citat admin `product_plan` / `article-products.json` ako source of truth pre odporucane produkty

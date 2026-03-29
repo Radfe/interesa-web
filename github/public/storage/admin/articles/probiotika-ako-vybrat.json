@@ -38,6 +38,75 @@
         "columns": [],
         "rows": []
     },
+    "related_links": [
+        {
+            "slug": "doplnky-vyzivy",
+            "label": "Doplnky vyzivy",
+            "description": "Ak chces sirsi prehlad doplnkov, ktore davaju zmysel v kazdodennom rezime."
+        },
+        {
+            "slug": "ako-vybrat-probiotika-podla-problemu",
+            "label": "Ako vybrat probiotika podla problemu",
+            "description": "Ak chces ist hlbsie do rozdielov medzi konkretnymi problemami a scenarmi pouzitia."
+        },
+        {
+            "slug": "imunita-prirodne-latky-ktore-funguju",
+            "label": "Imunita - 5 prirodnych latok, ktore funguju",
+            "description": "Ak ta zaujima sirsia immunity a wellness nadvaznost okolo mikrobiomu."
+        }
+    ],
+    "product_recommendation": {
+        "article_slug": "probiotika-ako-vybrat",
+        "intent_key": "probiotika-general",
+        "intent_label": "Probiotika",
+        "summary": "System hlada everyday probiotikum, sirsi complex a specificku strainovu alternativu.",
+        "generated_at": "2026-03-29T09:21:32+00:00",
+        "applied_at": "",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-probioten",
+                "role": "featured",
+                "branch": "everyday",
+                "branch_label": "Najlepsia everyday volba",
+                "reasoning": "Jednoducha kazdodenna volba pre vacsinu ludi, ktori chcu probiotic basis bez chaosu.",
+                "score": 2417,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "probiotika-travenie",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "gymbeam-gymbeam-probio-complex",
+                "role": "value",
+                "branch": "complex",
+                "branch_label": "Sirsia alebo value alternativa",
+                "reasoning": "Sirsia probiotic vetva pre cloveka, ktory chce complex alebo sirsi blend.",
+                "score": 2545,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "probiotika-travenie",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-gymbeam-lactobacillus-rhamnosus",
+                "role": "alternative",
+                "branch": "strain",
+                "branch_label": "Specificka strainova alternativa",
+                "reasoning": "Odlisna vetva pre citatela, ktory chce cielenejsi strain alebo uzsi use-case.",
+                "score": 2620,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "probiotika-travenie",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
     "recommended_products": [
         "gymbeam-probioten",
         "gymbeam-gymbeam-probio-complex",
@@ -67,22 +136,5 @@
         }
     ],
     "updated_at": "2026-03-29T07:01:24+00:00",
-    "updated_by": "admin",
-    "related_links": [
-        {
-            "slug": "doplnky-vyzivy",
-            "label": "Doplnky vyzivy",
-            "description": "Ak chces sirsi prehlad doplnkov, ktore davaju zmysel v kazdodennom rezime."
-        },
-        {
-            "slug": "ako-vybrat-probiotika-podla-problemu",
-            "label": "Ako vybrat probiotika podla problemu",
-            "description": "Ak chces ist hlbsie do rozdielov medzi konkretnymi problemami a scenarmi pouzitia."
-        },
-        {
-            "slug": "imunita-prirodne-latky-ktore-funguju",
-            "label": "Imunita - 5 prirodnych latok, ktore funguju",
-            "description": "Ak ta zaujima sirsia immunity a wellness nadvaznost okolo mikrobiomu."
-        }
-    ]
+    "updated_by": "admin"
 }

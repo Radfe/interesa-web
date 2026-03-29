@@ -395,6 +395,7 @@ if (!function_exists('interessa_supported_affiliate_merchants')) {
         return [
             'symprove',
             'protein',
+            'protein-sk',
             'gymbeam',
             'ironaesthetics',
             'imunoklub',
