@@ -124,6 +124,8 @@ Najnovsia oprava current-article contextu v article editore:
 - vyber clanku uz nevyzaduje dalsie `Otvorit clanok` tlacidlo:
   - zmena selectu hned otvori zvoleny clanok v tom istom admin flow
 - akcie `upload_hero_only`, `suggest_article_products` a `apply_article_product_recommendations` uz bezia len nad aktualnym slugom a po uspesnej akcii sa vracaju spat na ten isty clanok a prislusny blok
+- hero upload, suggest a apply uz nie su ani fyzicky vnutri velkeho `save_article` formulara:
+  - bezia cez vlastne samostatne action formy, aby nemohol browser omylom odoslat outer article save
 - pri clankoch bez existujuceho override JSON sa pred save doplni minimalny override seed z `article_meta(...)`, aby hero upload ani produktove odporucanie nespadli na chybe `Vypln nazov clanku.`
 
 Najnovsie automaticke odporucanie produktov pre clanok:

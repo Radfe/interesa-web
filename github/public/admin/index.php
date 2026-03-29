@@ -5405,10 +5405,6 @@ require dirname(__DIR__) . '/inc/head.php';
               <input type="hidden" name="force_regenerate" value="<?= $articleProductRecommendationItems === [] ? '1' : '0' ?>" />
             </form>
 
-            <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack" autocomplete="off" id="article-save-form">
-              <input type="hidden" name="action" value="save_article" />
-              <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
-
               <?php $selectedCategory = (string) ($selectedArticleOverride['category'] ?: $selectedArticleMeta['category']); ?>
               <?php
                 $articleFeaturedSlot = 1;
@@ -5717,6 +5713,10 @@ require dirname(__DIR__) . '/inc/head.php';
                   <p class="admin-note">Na vyber mas <?= esc((string) count($articleScopedProductOptions)) ?> produktov. Zoznam sa sklada z explicitnych produktov clanku, kandidatov pre tento clanok a tematicky relevantnych produktov z katalogu. Pri uzkych temach ako pre-workout sa nerelevantny katalogovy fallback neukazuje.</p>
                 </details>
               </div>
+
+              <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack" autocomplete="off" id="article-save-form">
+                <input type="hidden" name="action" value="save_article" />
+                <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
 
               <section class="admin-subsection is-compact" id="article-editorial-block">
                 <div class="admin-subsection-head">

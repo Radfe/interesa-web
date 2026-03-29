@@ -60,8 +60,8 @@
         "intent_key": "kreatin-general",
         "intent_label": "Kreatin",
         "summary": "System hlada monohydrat ako hlavnu volbu, value alternativu z ineho schvaleneho merchanta a specificku odlisnu formu.",
-        "generated_at": "2026-03-29T14:40:16+00:00",
-        "applied_at": "2026-03-29T14:40:16+00:00",
+        "generated_at": "2026-03-29T14:33:15+00:00",
+        "applied_at": "",
         "items": [
             {
                 "slot": 1,
@@ -135,6 +135,6 @@
             "show_in_comparison": true
         }
     ],
-    "updated_at": "2026-03-29T14:39:59+00:00",
+    "updated_at": "2026-03-29T14:32:51+00:00",
     "updated_by": "admin"
 }

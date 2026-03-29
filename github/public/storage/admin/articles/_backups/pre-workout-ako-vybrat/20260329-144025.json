@@ -64,8 +64,8 @@
         "intent_key": "pre-workout-general",
         "intent_label": "Pre-workout",
         "summary": "System hlada vyvazeny default, silnejsi stimulant a pump-focused alternativu bez fake-choice duplicity.",
-        "generated_at": "2026-03-29T14:40:44+00:00",
-        "applied_at": "2026-03-29T14:40:45+00:00",
+        "generated_at": "2026-03-29T14:35:26+00:00",
+        "applied_at": "2026-03-29T14:35:27+00:00",
         "items": [
             {
                 "slot": 1,
@@ -139,6 +139,6 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-29T14:40:25+00:00",
+    "updated_at": "2026-03-29T14:36:11+00:00",
     "updated_by": "admin"
 }
