@@ -216,6 +216,62 @@ usort($comparisonReadyArticles, static function (array $a, array $b): int {
     return ((int) @filemtime($bFile)) <=> ((int) @filemtime($aFile));
 });
 $comparisonReadyArticles = array_slice($comparisonReadyArticles, 0, 2);
+$primaryGuide = null;
+$supportingGuides = [];
+$topSectionSlugs = [];
+foreach ($featuredGuides as $guide) {
+    $guideSlug = trim((string) ($guide['slug'] ?? ''));
+    if ($guideSlug === '' || isset($topSectionSlugs[$guideSlug])) {
+        continue;
+    }
+
+    if ($primaryGuide === null) {
+        $primaryGuide = $guide;
+        $topSectionSlugs[$guideSlug] = true;
+        continue;
+    }
+
+    if (count($supportingGuides) >= 3) {
+        break;
+    }
+
+    $supportingGuides[] = $guide;
+    $topSectionSlugs[$guideSlug] = true;
+}
+$quickDecisionLimit = ($primaryGuideSlug !== '' && $primaryGuideSlug === $primaryCommercialGuideSlug) ? 2 : 3;
+$quickDecisionEntries = [];
+$quickDecisionSeen = $topSectionSlugs;
+foreach ($comparisonReadyArticles as $item) {
+    $itemSlug = (string) ($item['slug'] ?? '');
+    if ($itemSlug === '' || isset($quickDecisionSeen[$itemSlug])) {
+        continue;
+    }
+
+    $item['_decision_label'] = 'Porovnanie';
+    $item['_decision_cta'] = 'Otvorit porovnanie';
+    $quickDecisionEntries[] = $item;
+    $quickDecisionSeen[$itemSlug] = true;
+    if (count($quickDecisionEntries) >= $quickDecisionLimit) {
+        break;
+    }
+}
+if (count($quickDecisionEntries) < $quickDecisionLimit) {
+    foreach ($readyArticles as $item) {
+        $itemSlug = (string) ($item['slug'] ?? '');
+        if ($itemSlug === '' || isset($quickDecisionSeen[$itemSlug])) {
+            continue;
+        }
+
+        $item['_decision_label'] = 'Odporucany vyber';
+        $item['_decision_cta'] = interessa_article_cta_label($itemSlug, (string) ($item['title'] ?? ''));
+        $quickDecisionEntries[] = $item;
+        $quickDecisionSeen[$itemSlug] = true;
+        if (count($quickDecisionEntries) >= $quickDecisionLimit) {
+            break;
+        }
+    }
+}
+$crossThemeIsHelpful = $crossThemePaths !== [] && (count($supportingGuides) < 3 || count($extraArticles) > 0);
 
 $page_schema = [
     breadcrumb_schema([
@@ -256,10 +312,12 @@ include dirname(__DIR__) . '/inc/head.php';
         <h1><?= esc($hub['title']) ?></h1>
       </div>
       <p class="lead"><?= esc($hub['intro']) ?></p>
-      <div class="hub-meta-row">
-        <span class="article-meta-chip"><?= esc((string) $articleCount) ?> <?= esc(interessa_pluralize_slovak($articleCount, 'clanok', 'clanky', 'clankov')) ?> v teme</span>
-        <a class="card-link" href="/clanky/?category=<?= esc($slug) ?>">Vsetky clanky v teme</a>
-      </div>
+      <p class="meta">
+        <?= esc((string) $articleCount) ?> <?= esc(interessa_pluralize_slovak($articleCount, 'clanok', 'clanky', 'clankov')) ?> v teme
+        <?php if ($commercialCount > 0): ?>
+          • vyber produktov v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?>
+        <?php endif; ?>
+      </p>
       <div class="hero-cta">
         <?php if ($primaryGuideSlug !== ''): ?>
           <a class="btn btn-primary" href="<?= esc(article_url($primaryGuideSlug)) ?>">Zacat hlavnym clankom</a>
@@ -271,59 +329,107 @@ include dirname(__DIR__) . '/inc/head.php';
         <?php else: ?>
           <a class="btn btn-ghost" href="/clanky/?category=<?= esc($slug) ?>&amp;commercial=1">Clanky s odporucaniami</a>
         <?php endif; ?>
-        <a class="btn btn-ghost" href="/clanky/?category=<?= esc($slug) ?>">Vsetky clanky v teme</a>
       </div>
-      <div class="hub-stats-inline" aria-label="Prehlad obsahu v kategorii">
-        <div class="hub-stat-inline">
-          <strong><?= esc((string) $featuredCount) ?></strong>
-          <span><?= esc(interessa_pluralize_slovak($featuredCount, 'klucovy clanok', 'klucove clanky', 'klucovych clankov')) ?></span>
-        </div>
-        <div class="hub-stat-inline">
-          <strong><?= esc((string) $recentCount) ?></strong>
-          <span>aktualizovane za 60 dni</span>
-        </div>
-        <div class="hub-stat-inline">
-          <strong><?= esc((string) $articleCount) ?></strong>
-          <span>spolu v teme</span>
-        </div>
-      </div>
-      <?php if ($topFormats !== []): ?>
-        <div class="filters-bar archive-format-bar hub-format-summary" aria-label="Formaty clankov v tejto teme">
-          <?php foreach ($topFormats as $label => $count): ?>
-            <span class="filter-chip is-muted">
-              <span class="article-card-chip is-format"><?= esc((string) $label) ?></span>
-              <?= esc((string) $count) ?>
-            </span>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
-      <?php if ($commercialCount > 0): ?>
-        <div class="article-card-submeta">
-          <span class="article-card-subchip">Vyber produktov v <?= esc((string) $commercialCount) ?> <?= esc(interessa_pluralize_slovak($commercialCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
-          <?php if ($fullCoverageCount > 0): ?>
-            <span class="article-card-subchip is-coverage is-full">Tabulka a realne fotky v <?= esc((string) $fullCoverageCount) ?> <?= esc(interessa_pluralize_slovak($fullCoverageCount, 'clanku', 'clankoch', 'clankoch')) ?></span>
-          <?php else: ?>
-            <span class="article-card-subchip is-coverage is-partial">Vyber je pripraveny</span>
-          <?php endif; ?>
-        </div>
-      <?php endif; ?>
-      <?php if (!empty($hub['focus_points'])): ?>
-        <ul class="hub-checklist">
-          <?php foreach ($hub['focus_points'] as $point): ?>
-            <li><?= esc((string) $point) ?></li>
-          <?php endforeach; ?>
-        </ul>
-      <?php endif; ?>
     </article>
 
-    <?php if ($featuredGuides !== []): ?>
+    <?php if ($primaryGuide !== null): ?>
       <section class="card">
         <div class="section-head">
-          <h2>Zacat podla toho, co riesis</h2>
-          <p class="meta">Vyber si clanok podla toho, co chces vyriesit ako prve: rychly vyber, porovnanie alebo prakticky sprievodca.</p>
+          <h2>Zacni tu</h2>
+          <p class="meta">Najrychlejsia cesta, ako sa v tejto teme zorientovat a prejst k spravnemu vyberu.</p>
+        </div>
+        <?php
+        $guideSlug = trim((string) ($primaryGuide['slug'] ?? ''));
+        $meta = article_meta($guideSlug);
+        $title = trim((string) ($primaryGuide['title'] ?? $meta['title']));
+        $description = interessa_article_card_description($guideSlug, trim((string) ($primaryGuide['description'] ?? $meta['description'])), 24);
+        $label = trim((string) ($primaryGuide['label'] ?? 'Hlavny guide'));
+        $guideImage = interessa_article_image_meta($guideSlug, 'thumb', true);
+        $guideFile = dirname(__DIR__) . '/content/articles/' . $guideSlug . '.html';
+        $guideDate = is_file($guideFile) ? date('d.m.Y', (int) @filemtime($guideFile)) : '';
+        $formatLabel = interessa_article_format_label($guideSlug, $title);
+        $hasDedicatedImage = $hasDedicatedArticleImage($guideImage, $guideSlug);
+        ?>
+        <article class="hub-card">
+          <?php if ($hasDedicatedImage): ?>
+            <a href="<?= esc(article_url($guideSlug)) ?>">
+              <?= interessa_render_image($guideImage, ['class' => 'hub-card-image', 'alt' => $title]) ?>
+            </a>
+          <?php else: ?>
+            <?= $renderArticleFallbackMedia(article_url($guideSlug), $slug, $formatLabel, $label) ?>
+          <?php endif; ?>
+          <div class="hub-card-body">
+            <div class="article-card-meta">
+              <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
+              <span class="hub-card-label"><?= esc($label) ?></span>
+              <?php if ($guideDate !== ''): ?><span class="article-card-date"><?= esc($guideDate) ?></span><?php endif; ?>
+            </div>
+            <?= interessa_render_article_commerce_submeta($guideSlug, 'compact') ?>
+            <h3><a href="<?= esc(article_url($guideSlug)) ?>"><?= esc($title) ?></a></h3>
+            <?php if ($description !== ''): ?><p><?= esc($description) ?></p><?php endif; ?>
+            <a class="btn btn-primary" href="<?= esc(article_url($guideSlug)) ?>"><?= esc(interessa_article_cta_label($guideSlug, $title)) ?></a>
+          </div>
+        </article>
+      </section>
+    <?php elseif ($featuredGuides === []): ?>
+      <section class="card">
+        <p class="note"><?= esc((string) ($hub['empty_message'] ?? 'Tato kategoria sa este doplna. Zatial tu coskoro pribudnu odporucane clanky.')) ?></p>
+      </section>
+    <?php endif; ?>
+
+    <?php if ($quickDecisionEntries !== []): ?>
+      <section class="card">
+        <div class="section-head">
+          <h2>Rychle rozhodnutie</h2>
+          <p class="meta">Ak chces ist co najrychlejsie k porovnaniu alebo odporucanym produktom, zacni jednym z tychto clankov.</p>
         </div>
         <div class="hub-grid article-related-grid">
-          <?php foreach ($featuredGuides as $guide): ?>
+          <?php foreach ($quickDecisionEntries as $item): ?>
+            <?php
+            $itemSlug = (string) ($item['slug'] ?? '');
+            $itemTitle = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake((string) ($item['title'] ?? '')) : (string) ($item['title'] ?? '');
+            $itemDescription = interessa_article_card_description($itemSlug, trim((string) ($item['description'] ?? '')), 18);
+            $itemImage = interessa_article_image_meta($itemSlug, 'thumb', true);
+            $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
+            $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
+            $formatLabel = interessa_article_format_label($itemSlug, $itemTitle);
+            $hasDedicatedImage = $hasDedicatedArticleImage($itemImage, $itemSlug);
+            $decisionLabel = trim((string) ($item['_decision_label'] ?? 'Rychla volba'));
+            $decisionCta = trim((string) ($item['_decision_cta'] ?? 'Otvorit clanok'));
+            ?>
+            <article class="hub-card article-teaser-card">
+              <?php if ($hasDedicatedImage): ?>
+                <a href="<?= esc(article_url($itemSlug)) ?>">
+                  <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
+                </a>
+              <?php else: ?>
+                <?= $renderArticleFallbackMedia(article_url($itemSlug), $slug, $formatLabel, $decisionLabel) ?>
+              <?php endif; ?>
+              <div class="hub-card-body article-teaser-body">
+                <div class="article-card-meta">
+                  <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
+                  <span class="hub-card-label"><?= esc($decisionLabel) ?></span>
+                  <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
+                </div>
+                <?= interessa_render_article_commerce_submeta($itemSlug, 'compact') ?>
+                <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
+                <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
+                <a class="card-link" href="<?= esc(article_url($itemSlug)) ?>"><?= esc($decisionCta) ?></a>
+              </div>
+            </article>
+          <?php endforeach; ?>
+        </div>
+      </section>
+    <?php endif; ?>
+
+    <?php if ($supportingGuides !== []): ?>
+      <section class="card">
+        <div class="section-head">
+          <h2>Dalsie dobre starty v teme</h2>
+          <p class="meta">Doplnujuce cesty pre iny ciel alebo hlbsie zorientovanie sa v teme.</p>
+        </div>
+        <div class="hub-grid article-related-grid">
+          <?php foreach ($supportingGuides as $guide): ?>
             <?php
             $guideSlug = trim((string) ($guide['slug'] ?? ''));
             if ($guideSlug === '') {
@@ -352,142 +458,22 @@ include dirname(__DIR__) . '/inc/head.php';
       </section>
     <?php endif; ?>
 
-    <?php if ($comparisonReadyArticles !== []): ?>
+    <?php if ($crossThemeIsHelpful): ?>
       <section class="card">
         <div class="section-head">
-          <h2>Kde sa zorientujes najrychlejsie</h2>
-          <p class="meta">Ak nechces citat dlhy uvod a chces ist rovno na prehlad produktov, zacni jednym z tychto clankov.</p>
+          <h2>Suvisiace temy</h2>
+          <p class="meta">Dalsi krok, ked uz mas tuto temu zorientovanu a chces plynulo pokracovat dalej.</p>
         </div>
-        <div class="hub-grid article-related-grid">
-          <?php foreach ($comparisonReadyArticles as $item): ?>
-            <?php
-            $itemSlug = (string) ($item['slug'] ?? '');
-            $itemTitle = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake((string) ($item['title'] ?? '')) : (string) ($item['title'] ?? '');
-            $itemDescription = interessa_article_card_description($itemSlug, trim((string) ($item['description'] ?? '')), 18);
-            $itemImage = interessa_article_image_meta($itemSlug, 'thumb', true);
-            $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
-            $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
-            $formatLabel = interessa_article_format_label($itemSlug, $itemTitle);
-            $hasDedicatedImage = $hasDedicatedArticleImage($itemImage, $itemSlug);
-            ?>
-            <article class="hub-card article-teaser-card">
-              <?php if ($hasDedicatedImage): ?>
-                <a href="<?= esc(article_url($itemSlug)) ?>">
-                  <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
-                </a>
-              <?php else: ?>
-                <?= $renderArticleFallbackMedia(article_url($itemSlug), $slug, $formatLabel, 'Porovnanie') ?>
-              <?php endif; ?>
-              <div class="hub-card-body article-teaser-body">
-                <div class="article-card-meta">
-                  <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
-                  <span class="hub-card-label"><?= esc($hub['title']) ?></span>
-                  <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
-                </div>
-                <div class="article-card-submeta">
-                  <span class="article-card-subchip is-coverage is-full">Prehladna tabulka vyberu</span>
-                  <span class="article-card-subchip">Realne fotky: <?= esc((string) ($item['_coverage_percent'] ?? 0)) ?>%</span>
-                </div>
-                <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
-                <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
-                <a class="card-link" href="<?= esc(article_url($itemSlug)) ?>">Otvorit porovnanie</a>
-              </div>
-            </article>
+        <ul class="article-list">
+          <?php foreach ($crossThemePaths as $path): ?>
+            <li>
+              <a href="<?= esc((string) ($path['href'] ?? '/')) ?>"><?= esc((string) ($path['title'] ?? 'Dalsia tema')) ?></a>
+              <?php if (trim((string) ($path['description'] ?? '')) !== ''): ?> <span class="meta"><?= esc((string) ($path['description'] ?? '')) ?></span><?php endif; ?>
+            </li>
           <?php endforeach; ?>
-        </div>
+        </ul>
       </section>
     <?php endif; ?>
-
-    <?php if ($readyArticles !== []): ?>
-      <section class="card">
-        <div class="section-head">
-          <h2>Ked chces prejst rovno k odporucaniam</h2>
-          <p class="meta">Ak uz nechces len studovat temu, ale prejst ku konkretnym produktom, zacni jednym z tychto clankov.</p>
-        </div>
-        <div class="hub-grid article-related-grid">
-          <?php foreach ($readyArticles as $item): ?>
-            <?php
-            $itemSlug = (string) ($item['slug'] ?? '');
-            $itemTitle = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake((string) ($item['title'] ?? '')) : (string) ($item['title'] ?? '');
-            $itemDescription = interessa_article_card_description($itemSlug, trim((string) ($item['description'] ?? '')), 20);
-            $itemImage = interessa_article_image_meta($itemSlug, 'thumb', true);
-            $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
-            $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
-            $formatLabel = interessa_article_format_label($itemSlug, $itemTitle);
-            $hasDedicatedImage = $hasDedicatedArticleImage($itemImage, $itemSlug);
-            ?>
-            <article class="hub-card article-teaser-card">
-              <?php if ($hasDedicatedImage): ?>
-                <a href="<?= esc(article_url($itemSlug)) ?>">
-                  <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
-                </a>
-              <?php else: ?>
-                <?= $renderArticleFallbackMedia(article_url($itemSlug), $slug, $formatLabel, 'Odporucany vyber') ?>
-              <?php endif; ?>
-              <div class="hub-card-body article-teaser-body">
-                <div class="article-card-meta">
-                  <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
-                  <span class="hub-card-label"><?= esc($hub['title']) ?></span>
-                  <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
-                </div>
-                <?= interessa_render_article_commerce_submeta($itemSlug, 'compact') ?>
-                <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
-                <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
-                <a class="card-link" href="<?= esc(article_url($itemSlug)) ?>"><?= esc(interessa_article_cta_label($itemSlug, $itemTitle)) ?></a>
-              </div>
-            </article>
-          <?php endforeach; ?>
-        </div>
-      </section>
-    <?php endif; ?>
-
-    <section class="card">
-      <div class="section-head">
-        <h2>Najdolezitejsie clanky v teme</h2>
-        <p class="meta">Toto su clanky, od ktorych sa oplati zacat, ak si chces temu rychlo utriedit a az potom riesit konkretny produkt.</p>
-      </div>
-      <?php if ($featuredGuides !== []): ?>
-        <div class="hub-grid">
-          <?php foreach ($featuredGuides as $guide): ?>
-            <?php
-            $guideSlug = trim((string) ($guide['slug'] ?? ''));
-            if ($guideSlug === '') {
-                continue;
-            }
-            $meta = article_meta($guideSlug);
-            $title = trim((string) ($guide['title'] ?? $meta['title']));
-            $description = interessa_article_card_description($guideSlug, trim((string) ($guide['description'] ?? $meta['description'])), 20);
-            $label = trim((string) ($guide['label'] ?? 'Start'));
-            $guideImage = interessa_article_image_meta($guideSlug, 'thumb', true);
-            $guideFile = dirname(__DIR__) . '/content/articles/' . $guideSlug . '.html';
-            $guideDate = is_file($guideFile) ? date('d.m.Y', (int) @filemtime($guideFile)) : '';
-            $formatLabel = interessa_article_format_label($guideSlug, $title);
-            $hasDedicatedImage = $hasDedicatedArticleImage($guideImage, $guideSlug);
-            ?>
-            <article class="hub-card">
-              <?php if ($hasDedicatedImage): ?>
-                <?= interessa_render_image($guideImage, ['class' => 'hub-card-image', 'alt' => $title]) ?>
-              <?php else: ?>
-                <?= $renderArticleFallbackMedia(article_url($guideSlug), $slug, $formatLabel, $label) ?>
-              <?php endif; ?>
-              <div class="hub-card-body">
-                <div class="article-card-meta">
-                  <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
-                  <span class="hub-card-label"><?= esc($label) ?></span>
-                  <?php if ($guideDate !== ''): ?><span class="article-card-date"><?= esc($guideDate) ?></span><?php endif; ?>
-                </div>
-                <?= interessa_render_article_commerce_submeta($guideSlug, 'compact') ?>
-                <h3><a href="<?= esc(article_url($guideSlug)) ?>"><?= esc($title) ?></a></h3>
-                <?php if ($description !== ''): ?><p><?= esc($description) ?></p><?php endif; ?>
-                <a class="btn" href="<?= esc(article_url($guideSlug)) ?>"><?= esc(interessa_article_cta_label($guideSlug, $title)) ?></a>
-              </div>
-            </article>
-          <?php endforeach; ?>
-        </div>
-      <?php else: ?>
-        <p class="note"><?= esc((string) ($hub['empty_message'] ?? 'Tato kategoria sa este doplna. Zatial tu coskoro pribudnu odporucane clanky.')) ?></p>
-      <?php endif; ?>
-    </section>
 
     <?php if ($extraArticles !== []): ?>
       <section class="card">
@@ -500,64 +486,22 @@ include dirname(__DIR__) . '/inc/head.php';
             <?php endif; ?>
           </p>
         </div>
-        <div class="hub-grid article-related-grid">
+        <ul class="article-list">
           <?php foreach ($extraArticles as $item): ?>
             <?php
             $itemSlug = (string) ($item['slug'] ?? '');
             $itemTitle = function_exists('interessa_fix_mojibake') ? interessa_fix_mojibake((string) ($item['title'] ?? '')) : (string) ($item['title'] ?? '');
-            $itemDescription = interessa_article_card_description($itemSlug, trim((string) ($item['description'] ?? '')), 20);
-            $itemImage = interessa_article_image_meta($itemSlug, 'thumb', true);
-            $itemFile = dirname(__DIR__) . '/content/articles/' . $itemSlug . '.html';
-            $itemDate = is_file($itemFile) ? date('d.m.Y', (int) @filemtime($itemFile)) : '';
-            $formatLabel = interessa_article_format_label($itemSlug, $itemTitle);
-            $hasDedicatedImage = $hasDedicatedArticleImage($itemImage, $itemSlug);
+            $itemDescription = interessa_article_card_description($itemSlug, trim((string) ($item['description'] ?? '')), 16);
             ?>
-            <article class="hub-card article-teaser-card">
-              <?php if ($hasDedicatedImage): ?>
-                <a href="<?= esc(article_url($itemSlug)) ?>">
-                  <?= interessa_render_image($itemImage, ['class' => 'hub-card-image', 'alt' => $itemTitle]) ?>
-                </a>
-              <?php else: ?>
-                <?= $renderArticleFallbackMedia(article_url($itemSlug), $slug, $formatLabel, 'Doplnujuci clanok') ?>
-              <?php endif; ?>
-              <div class="hub-card-body article-teaser-body">
-                <div class="article-card-meta">
-                  <span class="article-card-chip is-format"><?= esc($formatLabel) ?></span>
-                  <span class="hub-card-label"><?= esc($hub['title']) ?></span>
-                  <?php if ($itemDate !== ''): ?><span class="article-card-date"><?= esc($itemDate) ?></span><?php endif; ?>
-                </div>
-                <?= interessa_render_article_commerce_submeta($itemSlug, 'compact') ?>
-                <h3><a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a></h3>
-                <?php if ($itemDescription !== ''): ?><p><?= esc($itemDescription) ?></p><?php endif; ?>
-                <a class="card-link" href="<?= esc(article_url($itemSlug)) ?>"><?= esc(interessa_article_cta_label($itemSlug, $itemTitle)) ?></a>
-              </div>
-            </article>
+            <li>
+              <a href="<?= esc(article_url($itemSlug)) ?>"><?= esc($itemTitle) ?></a>
+              <?php if ($itemDescription !== ''): ?> <span class="meta"><?= esc($itemDescription) ?></span><?php endif; ?>
+            </li>
           <?php endforeach; ?>
-        </div>
+        </ul>
         <?php if ($hiddenExtraArticles > 0): ?>
           <p class="meta" style="margin-top:1rem">Ak chces vidiet vsetky clanky v tejto teme, otvor <a href="/clanky/?category=<?= esc($slug) ?>">kompletny archiv temy</a>.</p>
         <?php endif; ?>
-      </section>
-    <?php endif; ?>
-
-    <?php if ($crossThemePaths !== []): ?>
-      <section class="card">
-        <div class="section-head">
-          <h2>Suvisiace temy, ktore davaju zmysel ako dalsi krok</h2>
-          <p class="meta">Ak uz mas tuto temu zorientovanu, tieto pribuzne smery ti pomozu prirodzene pokracovat dalej.</p>
-        </div>
-        <div class="hub-grid article-related-grid">
-          <?php foreach ($crossThemePaths as $path): ?>
-            <article class="hub-card article-teaser-card">
-              <div class="hub-card-body article-teaser-body">
-                <span class="hub-card-label"><?= esc($hub['title']) ?></span>
-                <h3><a href="<?= esc((string) ($path['href'] ?? '/')) ?>"><?= esc((string) ($path['title'] ?? 'Dalsia tema')) ?></a></h3>
-                <?php if (trim((string) ($path['description'] ?? '')) !== ''): ?><p><?= esc((string) ($path['description'] ?? '')) ?></p><?php endif; ?>
-                <a class="card-link" href="<?= esc((string) ($path['href'] ?? '/')) ?>"><?= esc((string) ($path['cta'] ?? 'Otvorit temu')) ?></a>
-              </div>
-            </article>
-          <?php endforeach; ?>
-        </div>
       </section>
     <?php endif; ?>
   </div>
