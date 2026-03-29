@@ -8,7 +8,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "doplnky-vyzivy::gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute": {
         "article_slug": "doplnky-vyzivy",
@@ -19,7 +19,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "doplnky-vyzivy::gymbeam-gymbeam-vitamin-d3-k1-k2-forte": {
         "article_slug": "doplnky-vyzivy",
@@ -30,7 +30,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "horcik-ktory-je-najlepsi-a-preco::gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute": {
         "article_slug": "horcik-ktory-je-najlepsi-a-preco",
@@ -41,7 +41,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "horcik-ktory-je-najlepsi-a-preco::gymbeam-gymbeam-magnesium-shot-citr-on": {
         "article_slug": "horcik-ktory-je-najlepsi-a-preco",
@@ -52,7 +52,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "horcik-ktory-je-najlepsi-a-preco::gymbeam-gymbeam-zmb6-chelate": {
         "article_slug": "horcik-ktory-je-najlepsi-a-preco",
@@ -63,7 +63,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-29T06:21:24+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "horcik-ktory-je-najlepsi-a-preco::gymbeam-magnesium-citrate-caps": {
         "article_slug": "horcik-ktory-je-najlepsi-a-preco",
@@ -74,7 +74,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "kreatin-porovnanie::gymbeam-gymbeam-creatine-hcl-bez-pr-ichute": {
         "article_slug": "kreatin-porovnanie",
@@ -82,10 +82,10 @@
         "order": 3,
         "role": "alternative",
         "show_in_top": true,
-        "show_in_comparison": false,
+        "show_in_comparison": true,
         "enabled": true,
         "created_at": "2026-03-28T19:29:36+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "kreatin-porovnanie::gymbeam-gymbeam-kreat-in-100-creapure-r": {
         "article_slug": "kreatin-porovnanie",
@@ -93,10 +93,10 @@
         "order": 1,
         "role": "featured",
         "show_in_top": true,
-        "show_in_comparison": false,
+        "show_in_comparison": true,
         "enabled": true,
         "created_at": "2026-03-28T19:29:36+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "kreatin-porovnanie::proteinsk-kreatin-monohydrat-value": {
         "article_slug": "kreatin-porovnanie",
@@ -104,10 +104,10 @@
         "order": 2,
         "role": "value",
         "show_in_top": true,
-        "show_in_comparison": false,
+        "show_in_comparison": true,
         "enabled": true,
         "created_at": "2026-03-28T19:29:36+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "najlepsie-proteiny-2026::gymbeam-gymbeam-pure-isowhey-bez-pr-ichute": {
         "article_slug": "najlepsie-proteiny-2026",
@@ -118,7 +118,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "najlepsie-proteiny-2026::gymbeam-just-whey": {
         "article_slug": "najlepsie-proteiny-2026",
@@ -129,7 +129,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "najlepsie-proteiny-2026::gymbeam-true-whey": {
         "article_slug": "najlepsie-proteiny-2026",
@@ -140,7 +140,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-activlab-black-wolf-multifruit": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -151,7 +151,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-25T15:43:28+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-activlab-caffeine-power-60-tab-bez-pr-ichute": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -162,7 +162,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T20:19:31+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-amix-cellzoom-hardcore-ovocn-y-punc": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -173,7 +173,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T19:01:21+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-balanced-stim-pre-workout": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -184,7 +184,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T15:09:27+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-beastpink-pink-drive-jahodov-a-limon-ada": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -195,7 +195,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T18:25:50+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-bsn-n-o-xplode-legendary-pre-workout-green-burst": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -206,7 +206,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T16:47:33+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-bsn-n-o-xplode-legendary-pre-workout-purple-power": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -217,7 +217,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T19:55:54+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-cellucor-c4-original-frozen-bombsicle": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -228,7 +228,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-25T21:12:21+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-citrulline-malate": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -239,7 +239,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T14:38:16+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-gymbeam-arginine-citrulline": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -250,7 +250,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-26T13:09:37+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-gymbeam-citrulline-malate-bez-pr-ichute": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -261,7 +261,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-29T06:21:24+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-nutrend-pre-workout-pump-berry-splash": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -272,7 +272,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-26T13:09:47+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::gymbeam-nutrend-pre-workout-pump-rainbow": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -283,7 +283,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-26T13:09:50+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "pre-workout-ako-vybrat::muscletech-vapor-x5-next-gen-pre-workout": {
         "article_slug": "pre-workout-ako-vybrat",
@@ -294,7 +294,7 @@
         "show_in_comparison": false,
         "enabled": false,
         "created_at": "2026-03-25T14:38:16+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "probiotika-ako-vybrat::gymbeam-gymbeam-lactobacillus-rhamnosus": {
         "article_slug": "probiotika-ako-vybrat",
@@ -305,7 +305,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "probiotika-ako-vybrat::gymbeam-gymbeam-probio-complex": {
         "article_slug": "probiotika-ako-vybrat",
@@ -316,7 +316,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "probiotika-ako-vybrat::gymbeam-probioten": {
         "article_slug": "probiotika-ako-vybrat",
@@ -327,7 +327,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "protein-na-chudnutie::gymbeam-gymbeam-pure-isowhey-bez-pr-ichute": {
         "article_slug": "protein-na-chudnutie",
@@ -338,7 +338,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "protein-na-chudnutie::gymbeam-just-whey": {
         "article_slug": "protein-na-chudnutie",
@@ -349,7 +349,7 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     },
     "protein-na-chudnutie::gymbeam-true-whey": {
         "article_slug": "protein-na-chudnutie",
@@ -360,6 +360,6 @@
         "show_in_comparison": false,
         "enabled": true,
         "created_at": "2026-03-28T20:18:38+00:00",
-        "updated_at": "2026-03-29T09:21:45+00:00"
+        "updated_at": "2026-03-29T12:28:37+00:00"
     }
 }

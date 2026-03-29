@@ -138,6 +138,13 @@ Najnovsie automaticke odporucanie produktov pre clanok:
   - summary
   - slot itemami
   - scoringom
+- kriticke article-editor akcie uz nesmu byt zabalene do nested formularov:
+  - `upload_hero_only`
+  - `suggest_article_products`
+  - `apply_article_product_recommendations`
+- tieto 3 akcie teraz pouzivaju samostatne hidden formy s explicitnym `form=` ownership, aby sa vzdy odoslal spravny `action` a spravny aktualny `slug`
+- `upload_hero_only` sa po uspesnom ulozeni vracia spat do rovnakeho admin article editora na `#article-hero-block`, nie na iny clanok ani na public clanok
+- `suggest_article_products` a `apply_article_product_recommendations` sa po POST vratia spat na ten isty clanok do `#article-products-block`
   - reasoningom
   - generated/applied timestampmi
 - prvy overeny batch:

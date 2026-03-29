@@ -1,0 +1,4 @@
+[Sun Mar 29 14:11:50 2026] PHP 8.5.1 Development Server (http://127.0.0.1:8099) started
+[Sun Mar 29 14:11:52 2026] 127.0.0.1:50612 Accepted
+[Sun Mar 29 14:11:52 2026] 127.0.0.1:50612 [200]: GET /admin
+[Sun Mar 29 14:11:52 2026] 127.0.0.1:50612 Closing

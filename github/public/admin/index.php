@@ -2858,8 +2858,10 @@ if ($isAuthed) {
                 $override = interessa_admin_article_override($slug);
                 $override['hero_asset'] = $asset;
                 interessa_admin_save_article_override($slug, $override);
-                header('Location: ' . article_url($slug), true, 303);
-                exit;
+                interessa_admin_redirect_fragment('articles', [
+                    'slug' => $slug,
+                    'saved' => 'hero',
+                ], 'article-hero-block');
             }
 
             if ($action === 'upload_category_image_only') {
@@ -5380,6 +5382,15 @@ require dirname(__DIR__) . '/inc/head.php';
               <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
               <input type="hidden" name="hero_crop_mode" value="center" />
             </form>
+            <form method="post" action="/admin" id="article-suggest-products-form" hidden>
+              <input type="hidden" name="action" value="suggest_article_products" />
+              <input type="hidden" name="article_slug" value="<?= esc($selectedArticleSlug) ?>" />
+            </form>
+            <form method="post" action="/admin" id="article-apply-products-form" hidden>
+              <input type="hidden" name="action" value="apply_article_product_recommendations" />
+              <input type="hidden" name="article_slug" value="<?= esc($selectedArticleSlug) ?>" />
+              <input type="hidden" name="force_regenerate" value="<?= $articleProductRecommendationItems === [] ? '1' : '0' ?>" />
+            </form>
 
             <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack" autocomplete="off" id="article-save-form">
               <input type="hidden" name="action" value="save_article" />
@@ -5506,17 +5517,8 @@ require dirname(__DIR__) . '/inc/head.php';
                     <p class="admin-meta">Tu mas rychly operacny prehlad aj priamy vyber produktu do Slotu 1 / 2 / 3. Zmenu urobis hned cez <strong>Ulozit Slot</strong>.</p>
                   </div>
                   <div class="admin-inline-actions">
-                    <form method="post" action="/admin" class="admin-inline-form">
-                      <input type="hidden" name="action" value="suggest_article_products" />
-                      <input type="hidden" name="article_slug" value="<?= esc($selectedArticleSlug) ?>" />
-                      <button class="btn btn-secondary btn-small" type="submit">Navrhnut produkty pre clanok</button>
-                    </form>
-                    <form method="post" action="/admin" class="admin-inline-form">
-                      <input type="hidden" name="action" value="apply_article_product_recommendations" />
-                      <input type="hidden" name="article_slug" value="<?= esc($selectedArticleSlug) ?>" />
-                      <input type="hidden" name="force_regenerate" value="<?= $articleProductRecommendationItems === [] ? '1' : '0' ?>" />
-                      <button class="btn btn-cta btn-small" type="submit">Pouzit navrhnute produkty</button>
-                    </form>
+                    <button class="btn btn-secondary btn-small" type="submit" form="article-suggest-products-form">Navrhnut produkty pre clanok</button>
+                    <button class="btn btn-cta btn-small" type="submit" form="article-apply-products-form">Pouzit navrhnute produkty</button>
                   </div>
                 </div>
                 <div class="admin-check-card" style="margin-top:12px;">
