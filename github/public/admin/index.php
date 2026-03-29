@@ -3221,6 +3221,8 @@ if ($isAuthed) {
         $error = trim($e->getMessage());
 
         if (in_array($action, [
+            'save_article',
+            'upload_hero_only',
             'create_product',
             'save_product',
             'prepare_product_from_link',
@@ -3233,6 +3235,14 @@ if ($isAuthed) {
             'save_candidate_assignment',
             'approve_candidate_for_web',
         ], true)) {
+            $articleSlug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
+            if (in_array($action, ['save_article', 'upload_hero_only'], true) && $articleSlug !== '') {
+                interessa_admin_redirect_fragment('articles', [
+                    'slug' => $articleSlug,
+                    'error' => $error,
+                ], 'article-hero-block');
+            }
+
             $productSlug = trim((string) ($_POST['product_slug'] ?? $_POST['new_product_slug'] ?? ''));
             $candidateId = trim((string) ($_POST['candidate_id'] ?? ''));
             $returnSection = trim((string) ($_POST['return_section'] ?? ''));
@@ -7386,7 +7396,7 @@ require dirname(__DIR__) . '/inc/head.php';
                 <?php endif; ?>
               </section>
 
-            <section class="admin-subsection admin-asset-preview">
+            <section class="admin-subsection admin-asset-preview" id="article-hero-block">
               <div class="admin-subsection-head">
                 <div>
                   <h3>Nahrat hero obrazok clanku</h3>
@@ -9492,6 +9502,15 @@ require dirname(__DIR__) . '/inc/head.php';
       }
     }
 
+    function submitFormWithoutInlineUpload(form) {
+      if (!(form instanceof HTMLFormElement)) {
+        return;
+      }
+
+      form.dataset.nativeSubmit = '1';
+      HTMLFormElement.prototype.submit.call(form);
+    }
+
     async function submitRemotePackshotForm(form) {
       setFormBusy(form, true);
 
@@ -9617,11 +9636,23 @@ require dirname(__DIR__) . '/inc/head.php';
       }
 
       form.addEventListener('submit', function (event) {
+        if (form.dataset.nativeSubmit === '1') {
+          delete form.dataset.nativeSubmit;
+          return;
+        }
+
         event.preventDefault();
         event.stopPropagation();
 
         submitInlineUploadForm(form).catch(function (error) {
           console.error(error);
+          const actionInput = form.querySelector('input[name="action"]');
+          const actionValue = actionInput instanceof HTMLInputElement ? actionInput.value : '';
+          if (actionValue === 'upload_hero_only') {
+            showToast('Automaticka konverzia v prehliadaci zlyhala. Pokracujem bez nej.', false);
+            submitFormWithoutInlineUpload(form);
+            return;
+          }
           showToast('Konverzia do WebP zlyhala. Nahraj iny obrazok.', true);
         });
         }, true);

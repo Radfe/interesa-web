@@ -158,6 +158,13 @@ Rozsirena coverage odporucacieho enginu:
   - `kolagen-general`
   - `omega3-general`
   - `multivitamin-general`
+
+Najnovsie spevnenie hero uploadu:
+- article hero upload uz nesmie byt zavisly len od klientovej WebP konverzie v prehliadaci
+- server-side helper teraz prijme `webp`, `png` aj `jpg` a cieli na finalny asset:
+  - `public/assets/img/articles/heroes/<slug>.webp`
+- pri zlyhani browserovej konverzie sa hero form vrati na bezny submit namiesto ticheho zastavenia
+- po prepise hero assetu sa lokalne asset URL renderuju s `filemtime` query, aby admin aj web okamzite videli novu verziu obrazka
   - `vitamin-c-general`
   - `vitamin-b12-general`
 - article editor vie pre tieto clustre ulozit `product_recommendation` aj bez existujuceho admin article override; override sa vie vytvorit on-demand

@@ -3509,6 +3509,158 @@ if (!function_exists('interessa_admin_uploaded_image_extension')) {
     }
 }
 
+if (!function_exists('interessa_admin_detect_local_image_extension')) {
+    function interessa_admin_detect_local_image_extension(string $path, string $originalName = '', string $default = 'webp'): string {
+        $default = strtolower(trim($default)) ?: 'webp';
+        $originalName = strtolower(trim($originalName));
+
+        if ($originalName !== '') {
+            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            if (in_array($ext, ['webp', 'png', 'jpg', 'jpeg'], true)) {
+                return $ext === 'jpeg' ? 'jpg' : $ext;
+            }
+        }
+
+        if (!is_file($path)) {
+            return $default;
+        }
+
+        $mime = '';
+        if (function_exists('finfo_open')) {
+            $finfo = @finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo !== false) {
+                $mime = strtolower((string) @finfo_file($finfo, $path));
+                @finfo_close($finfo);
+            }
+        }
+
+        $map = [
+            'image/webp' => 'webp',
+            'image/png' => 'png',
+            'image/jpeg' => 'jpg',
+            'image/jpg' => 'jpg',
+        ];
+        if ($mime !== '' && isset($map[$mime])) {
+            return $map[$mime];
+        }
+
+        $prefix = @file_get_contents($path, false, null, 0, 16);
+        if (is_string($prefix) && $prefix !== '') {
+            if (substr($prefix, 0, 4) === 'RIFF' && substr($prefix, 8, 4) === 'WEBP') {
+                return 'webp';
+            }
+            if (substr($prefix, 0, 8) === "\x89PNG\x0D\x0A\x1A\x0A") {
+                return 'png';
+            }
+            if (substr($prefix, 0, 3) === "\xFF\xD8\xFF") {
+                return 'jpg';
+            }
+        }
+
+        return $default;
+    }
+}
+
+if (!function_exists('interessa_admin_convert_local_image_to_webp')) {
+    function interessa_admin_convert_local_image_to_webp(string $sourcePath, string $sourceExt, string $targetPath): void {
+        $sourceExt = strtolower(trim($sourceExt));
+
+        if ($sourceExt === 'webp') {
+            if (!@copy($sourcePath, $targetPath)) {
+                throw new RuntimeException('Nepodarilo sa ulozit WebP subor.');
+            }
+            return;
+        }
+
+        if (class_exists('Imagick')) {
+            try {
+                $image = new Imagick($sourcePath);
+                $image->setImageFormat('webp');
+                $image->setImageCompressionQuality(90);
+                if (!$image->writeImage($targetPath)) {
+                    throw new RuntimeException('Imagick nedokazal zapisat WebP.');
+                }
+                $image->clear();
+                $image->destroy();
+                return;
+            } catch (Throwable $e) {
+                if (is_file($targetPath)) {
+                    @unlink($targetPath);
+                }
+            }
+        }
+
+        $createFn = match ($sourceExt) {
+            'jpg', 'jpeg' => 'imagecreatefromjpeg',
+            'png' => 'imagecreatefrompng',
+            default => '',
+        };
+
+        if ($createFn !== '' && function_exists($createFn) && function_exists('imagewebp')) {
+            $image = @$createFn($sourcePath);
+            if (!$image) {
+                throw new RuntimeException('Nepodarilo sa spracovat nahraty obrazok.');
+            }
+
+            if ($sourceExt === 'png') {
+                @imagepalettetotruecolor($image);
+                @imagealphablending($image, true);
+                @imagesavealpha($image, true);
+            }
+
+            $written = @imagewebp($image, $targetPath, 90);
+            @imagedestroy($image);
+            if (!$written) {
+                throw new RuntimeException('Nepodarilo sa ulozit WebP verziu obrazka.');
+            }
+            return;
+        }
+
+        throw new RuntimeException('Server nedokaze previest PNG/JPG na WebP. Nahraj priamo WebP alebo dopln GD/Imagick.');
+    }
+}
+
+if (!function_exists('interessa_admin_store_article_hero_from_local_path')) {
+    function interessa_admin_store_article_hero_from_local_path(string $slug, string $sourcePath, string $originalName = '', bool $isUploaded = false): string {
+        $slug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : trim($slug);
+        if ($slug === '') {
+            throw new RuntimeException('Chyba slug clanku.');
+        }
+        if (!is_file($sourcePath)) {
+            throw new RuntimeException('Hero obrazok sa nepodarilo nacitat.');
+        }
+
+        $sourceExt = interessa_admin_detect_local_image_extension($sourcePath, $originalName, 'webp');
+        if (!in_array($sourceExt, ['webp', 'png', 'jpg'], true)) {
+            throw new RuntimeException('Hero obrazok musi byt vo formate JPG, PNG alebo WebP.');
+        }
+
+        $target = interessa_admin_article_hero_path($slug, 'webp');
+        $targetBase = preg_replace('~\.webp$~i', '', $target) ?: $target;
+        $targetTemp = $target . '.tmp';
+        interessa_admin_ensure_dir(dirname($target));
+
+        if ($sourceExt === 'webp') {
+            $stored = $isUploaded && is_uploaded_file($sourcePath)
+                ? @move_uploaded_file($sourcePath, $targetTemp)
+                : @copy($sourcePath, $targetTemp);
+            if (!$stored) {
+                throw new RuntimeException('Nepodarilo sa ulozit hero obrazok.');
+            }
+        } else {
+            interessa_admin_convert_local_image_to_webp($sourcePath, $sourceExt, $targetTemp);
+        }
+
+        interessa_admin_delete_asset_variants($targetBase);
+        if (!@rename($targetTemp, $target)) {
+            @unlink($targetTemp);
+            throw new RuntimeException('Nepodarilo sa finalne ulozit hero obrazok.');
+        }
+
+        return interessa_admin_article_hero_asset($slug, 'webp');
+    }
+}
+
 if (!function_exists('interessa_admin_store_uploaded_article_hero')) {
     function interessa_admin_store_uploaded_article_hero(string $slug, array $file): string {
         $slug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : trim($slug);
@@ -3521,17 +3673,12 @@ if (!function_exists('interessa_admin_store_uploaded_article_hero')) {
             throw new RuntimeException('Hero obrazok nebol korektne nahraty.');
         }
 
-        $ext = interessa_admin_uploaded_image_extension($file, 'webp');
-        if ($ext !== 'webp') {
-            throw new RuntimeException('Admin ocakava finalny WebP. PNG/JPG sa ma automaticky previest na WebP este pred uploadom. Obnov stranku a skus to znova.');
-        }
-        $target = interessa_admin_article_hero_path($slug, $ext);
-        interessa_admin_ensure_dir(dirname($target));
-        if (!move_uploaded_file($tmp, $target)) {
-            throw new RuntimeException('Nepodarilo sa ulozit hero obrazok.');
-        }
-
-        return interessa_admin_article_hero_asset($slug, $ext);
+        return interessa_admin_store_article_hero_from_local_path(
+            $slug,
+            $tmp,
+            (string) ($file['name'] ?? ''),
+            true
+        );
     }
 }
 
