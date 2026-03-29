@@ -5390,21 +5390,6 @@ require dirname(__DIR__) . '/inc/head.php';
               </form>
             </details>
 
-            <form method="post" action="/admin" enctype="multipart/form-data" id="article-hero-upload-form" hidden>
-              <input type="hidden" name="action" value="upload_hero_only" />
-              <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
-              <input type="hidden" name="hero_crop_mode" value="center" />
-            </form>
-            <form method="post" action="/admin" id="article-suggest-products-form" hidden>
-              <input type="hidden" name="action" value="suggest_article_products" />
-              <input type="hidden" name="article_slug" value="<?= esc($selectedArticleSlug) ?>" />
-            </form>
-            <form method="post" action="/admin" id="article-apply-products-form" hidden>
-              <input type="hidden" name="action" value="apply_article_product_recommendations" />
-              <input type="hidden" name="article_slug" value="<?= esc($selectedArticleSlug) ?>" />
-              <input type="hidden" name="force_regenerate" value="<?= $articleProductRecommendationItems === [] ? '1' : '0' ?>" />
-            </form>
-
               <?php $selectedCategory = (string) ($selectedArticleOverride['category'] ?: $selectedArticleMeta['category']); ?>
               <?php
                 $articleFeaturedSlot = 1;
@@ -5486,16 +5471,21 @@ require dirname(__DIR__) . '/inc/head.php';
                       <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['prompt'] ?? '')) ?>">1. Kopirovat Canva prompt</button>
                       <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?>">Kopirovat cestu</button>
                     </div>
-                    <label>
-                      <span>2. Nahraj hotovy hero obrazok</span>
-                      <input type="file" name="hero_image" form="article-hero-upload-form" accept="image/webp,image/png,image/jpeg" />
-                    </label>
-                    <div class="admin-actions" style="margin-top:10px;">
-                      <button type="submit" form="article-hero-upload-form" class="btn btn-cta">
-                        Nahrat hero obrazok
-                      </button>
-                    </div>
-                    <small class="admin-note">Po ulozeni sa hero obrazok ulozi ako finalny asset pre clanok.</small>
+                    <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack" style="margin-top:12px;">
+                      <input type="hidden" name="action" value="upload_hero_only" />
+                      <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
+                      <input type="hidden" name="hero_crop_mode" value="center" />
+                      <label>
+                        <span>2. Nahraj hotovy hero obrazok</span>
+                        <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" />
+                      </label>
+                      <div class="admin-actions" style="margin-top:10px;">
+                        <button type="submit" class="btn btn-cta">
+                          Nahrat hero obrazok
+                        </button>
+                      </div>
+                      <small class="admin-note">Po ulozeni sa hero obrazok ulozi ako finalny asset pre clanok.</small>
+                    </form>
                   </div>
                 </div>
               </section>
@@ -5526,8 +5516,17 @@ require dirname(__DIR__) . '/inc/head.php';
                     <p class="admin-meta">Tu mas rychly operacny prehlad aj priamy vyber produktu do Slotu 1 / 2 / 3. Zmenu urobis hned cez <strong>Ulozit Slot</strong>.</p>
                   </div>
                   <div class="admin-inline-actions">
-                    <button class="btn btn-secondary btn-small" type="submit" form="article-suggest-products-form">Navrhnut produkty pre clanok</button>
-                    <button class="btn btn-cta btn-small" type="submit" form="article-apply-products-form">Pouzit navrhnute produkty</button>
+                    <form method="post" action="/admin" class="admin-inline-form">
+                      <input type="hidden" name="action" value="suggest_article_products" />
+                      <input type="hidden" name="article_slug" value="<?= esc($selectedArticleSlug) ?>" />
+                      <button class="btn btn-secondary btn-small" type="submit">Navrhnut produkty pre clanok</button>
+                    </form>
+                    <form method="post" action="/admin" class="admin-inline-form">
+                      <input type="hidden" name="action" value="apply_article_product_recommendations" />
+                      <input type="hidden" name="article_slug" value="<?= esc($selectedArticleSlug) ?>" />
+                      <input type="hidden" name="force_regenerate" value="<?= $articleProductRecommendationItems === [] ? '1' : '0' ?>" />
+                      <button class="btn btn-cta btn-small" type="submit">Pouzit navrhnute produkty</button>
+                    </form>
                   </div>
                 </div>
                 <div class="admin-check-card" style="margin-top:12px;">

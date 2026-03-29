@@ -151,7 +151,11 @@ Najnovsie automaticke odporucanie produktov pre clanok:
   - `upload_hero_only`
   - `suggest_article_products`
   - `apply_article_product_recommendations`
-- tieto 3 akcie teraz pouzivaju samostatne hidden formy s explicitnym `form=` ownership, aby sa vzdy odoslal spravny `action` a spravny aktualny `slug`
+- tieto 3 akcie teraz pouzivaju samostatne viditelne POST formy priamo v article editore:
+  - nie hidden helper formy
+  - nie krizene `form=` ownership cez iny formular
+  - nie outer `save_article` context
+- ciel je, aby browser na live vzdy odoslal presne ten formular, na ktory clovek klikol, so spravnym `action` a spravnym aktualnym `slug`
 - `upload_hero_only` sa po uspesnom ulozeni vracia spat do rovnakeho admin article editora na `#article-hero-block`, nie na iny clanok ani na public clanok
 - `suggest_article_products` a `apply_article_product_recommendations` sa po POST vratia spat na ten isty clanok do `#article-products-block`
   - reasoningom
@@ -181,6 +185,10 @@ Najnovsie spevnenie hero uploadu:
   - `public/assets/img/articles/heroes/<slug>.webp`
 - pri zlyhani browserovej konverzie sa hero form vrati na bezny submit namiesto ticheho zastavenia
 - po prepise hero assetu sa lokalne asset URL renderuju s `filemtime` query, aby admin aj web okamzite videli novu verziu obrazka
+- dolezite parity zistenie z 2026-03-29:
+  - live mohol mat uz nasadeny fix article selectora, ale este stale stary hero/suggest/apply markup
+  - dovod bol, ze lokalne route testy obisli browserovy problem s hidden cross-form submitom
+  - skutocna odstranena pricina je az presun tychto 3 akcii na vlastne realne viditelne formulare v renderi `section=articles`
   - `vitamin-c-general`
   - `vitamin-b12-general`
 - article editor vie pre tieto clustre ulozit `product_recommendation` aj bez existujuceho admin article override; override sa vie vytvorit on-demand
