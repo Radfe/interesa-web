@@ -119,6 +119,13 @@ Najnovsi UX a click-layer cleanup:
   - hero obrazok clanku
   - Canva prompt / upload
 
+Najnovsia oprava current-article contextu v article editore:
+- source of truth pre otvoreny clanok v `section=articles` je uz len canonical `slug` z URL cez helper `interessa_admin_current_article_editor_slug(...)`
+- vyber clanku uz nevyzaduje dalsie `Otvorit clanok` tlacidlo:
+  - zmena selectu hned otvori zvoleny clanok v tom istom admin flow
+- akcie `upload_hero_only`, `suggest_article_products` a `apply_article_product_recommendations` uz bezia len nad aktualnym slugom a po uspesnej akcii sa vracaju spat na ten isty clanok a prislusny blok
+- pri clankoch bez existujuceho override JSON sa pred save doplni minimalny override seed z `article_meta(...)`, aby hero upload ani produktove odporucanie nespadli na chybe `Vypln nazov clanku.`
+
 Najnovsie automaticke odporucanie produktov pre clanok:
 - article editor uz vie pre konkretne clanky automaticky vyhodnotit intent a navrhnut 3 relevantne slot produkty
 - odporucanie pouziva:

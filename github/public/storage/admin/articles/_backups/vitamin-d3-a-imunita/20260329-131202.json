@@ -1,11 +1,11 @@
 {
     "slug": "vitamin-d3-a-imunita",
-    "title": "Vitamin D3 a imunita - co hovoria data",
+    "title": "",
     "intro": "",
-    "meta_title": "Vitamin D3 a imunita - co hovoria data",
+    "meta_title": "",
     "meta_description": "",
-    "category": "mineraly",
-    "hero_asset": "img/articles/heroes/vitamin-d3-a-imunita.webp",
+    "category": "",
+    "hero_asset": "",
     "sections": [],
     "comparison": {
         "title": "",
@@ -19,8 +19,8 @@
         "intent_key": "vitamin-d-general",
         "intent_label": "Vitamin D",
         "summary": "System hlada D3+K2 ako hlavny default, cisty D3 variant ako jednoduchsi value krok a tretiu odlisnu vetvu s dalsim wellness benefitom.",
-        "generated_at": "2026-03-29T13:12:35+00:00",
-        "applied_at": "2026-03-29T13:12:35+00:00",
+        "generated_at": "2026-03-29T13:07:36+00:00",
+        "applied_at": "2026-03-29T13:07:37+00:00",
         "items": [
             {
                 "slot": 1,
@@ -94,6 +94,6 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-29T13:12:02+00:00",
+    "updated_at": "",
     "updated_by": "admin"
 }

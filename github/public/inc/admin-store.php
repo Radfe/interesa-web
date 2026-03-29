@@ -983,6 +983,37 @@ if (!function_exists('interessa_admin_merge_article_meta')) {
     }
 }
 
+if (!function_exists('interessa_admin_seed_article_override_from_meta')) {
+    function interessa_admin_seed_article_override_from_meta(string $slug, array $override = []): array {
+        $slug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : trim($slug);
+        $seed = is_array($override) ? $override : [];
+        if ($slug === '') {
+            return $seed;
+        }
+
+        $meta = function_exists('article_meta') ? article_meta($slug) : [];
+        $seed['slug'] = $slug;
+
+        if (trim((string) ($seed['title'] ?? '')) === '') {
+            $seed['title'] = trim((string) ($meta['title'] ?? ''));
+        }
+        if (trim((string) ($seed['intro'] ?? '')) === '') {
+            $seed['intro'] = trim((string) ($meta['intro'] ?? $meta['description'] ?? ''));
+        }
+        if (trim((string) ($seed['meta_title'] ?? '')) === '') {
+            $seed['meta_title'] = trim((string) ($meta['meta_title'] ?? $meta['title'] ?? ''));
+        }
+        if (trim((string) ($seed['meta_description'] ?? '')) === '') {
+            $seed['meta_description'] = trim((string) ($meta['meta_description'] ?? $meta['description'] ?? ''));
+        }
+        if (trim((string) ($seed['category'] ?? '')) === '') {
+            $seed['category'] = normalize_category_slug((string) ($meta['category'] ?? ''));
+        }
+
+        return $seed;
+    }
+}
+
 
 if (!function_exists('interessa_admin_products')) {
     function interessa_admin_products(): array {
@@ -2930,10 +2961,7 @@ if (!function_exists('interessa_admin_store_article_product_recommendation')) {
         }
 
         $recommendation = interessa_admin_build_article_product_recommendation($articleSlug);
-        $override = interessa_admin_article_override($articleSlug);
-        if ($override === []) {
-            $override = ['slug' => $articleSlug];
-        }
+        $override = interessa_admin_seed_article_override_from_meta($articleSlug, interessa_admin_article_override($articleSlug));
         $override['product_recommendation'] = $recommendation;
         interessa_admin_write_article_override_raw($articleSlug, $override);
 
@@ -3017,7 +3045,7 @@ if (!function_exists('interessa_admin_apply_article_product_recommendation')) {
             }
             interessa_admin_save_article_product_plan($articleSlug, $productPlan);
 
-            $override = interessa_admin_article_override($articleSlug);
+            $override = interessa_admin_seed_article_override_from_meta($articleSlug, interessa_admin_article_override($articleSlug));
             $recommendation['applied_at'] = date('c');
             $override['product_recommendation'] = $recommendation;
             interessa_admin_write_article_override_raw($articleSlug, $override);

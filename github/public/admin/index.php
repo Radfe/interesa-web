@@ -49,6 +49,16 @@ function interessa_admin_redirect_fragment(string $section, array $query = [], s
     exit;
 }
 
+function interessa_admin_current_article_editor_slug(array $articleOptions): string {
+    $requestedSlug = canonical_article_slug(trim((string) ($_GET['slug'] ?? '')));
+    if ($requestedSlug !== '' && isset($articleOptions[$requestedSlug])) {
+        return $requestedSlug;
+    }
+
+    $firstSlug = trim((string) (array_key_first($articleOptions) ?? ''));
+    return canonical_article_slug($firstSlug);
+}
+
 function interessa_admin_suggest_products_log(string $message, array $context = []): void {
     $payload = [];
     foreach ($context as $key => $value) {
@@ -2855,7 +2865,7 @@ if ($isAuthed) {
             if ($action === 'upload_hero_only') {
                 $slug = canonical_article_slug(trim((string) ($_POST['slug'] ?? '')));
                 $asset = interessa_admin_store_uploaded_article_hero($slug, $_FILES['hero_image']);
-                $override = interessa_admin_article_override($slug);
+                $override = interessa_admin_seed_article_override_from_meta($slug, interessa_admin_article_override($slug));
                 $override['hero_asset'] = $asset;
                 interessa_admin_save_article_override($slug, $override);
                 interessa_admin_redirect_fragment('articles', [
@@ -3327,7 +3337,7 @@ $phaseOneArticleSlugs = array_values(array_filter([
     'kreatin-porovnanie',
     'doplnky-vyzivy',
 ], static fn(string $slug): bool => isset($articleOptions[$slug])));
-$selectedArticleSlug = canonical_article_slug(trim((string) ($_GET['slug'] ?? array_key_first($articleOptions) ?? '')));
+$selectedArticleSlug = interessa_admin_current_article_editor_slug($articleOptions);
 $selectedArticleMeta = $selectedArticleSlug !== '' ? article_meta($selectedArticleSlug) : ['title' => '', 'description' => '', 'category' => ''];
 $categoryOptions = category_registry();
 $selectedThemeSlug = normalize_category_slug(trim((string) ($_GET['topic'] ?? (string) ($selectedArticleMeta['category'] ?? ''))));
@@ -5306,14 +5316,17 @@ require dirname(__DIR__) . '/inc/head.php';
                   </div>
                 </details>
               </div>
-              <form method="get" action="/admin" class="admin-inline-form">
+              <form method="get" action="/admin" class="admin-inline-form" data-article-editor-selector-form="true">
                 <input type="hidden" name="section" value="articles" />
-                <select name="slug">
-                  <?php foreach ($articleOptions as $slug => $item): ?>
-                    <option value="<?= esc($slug) ?>" <?= $slug === $selectedArticleSlug ? 'selected' : '' ?>><?= esc($item['title']) ?></option>
-                  <?php endforeach; ?>
-                </select>
-                <button class="btn btn-secondary btn-small" type="submit">Otvorit clanok</button>
+                <label class="admin-inline-select">
+                  <span>Vyber clanok</span>
+                  <select name="slug" data-article-editor-selector="true">
+                    <?php foreach ($articleOptions as $slug => $item): ?>
+                      <option value="<?= esc($slug) ?>" <?= $slug === $selectedArticleSlug ? 'selected' : '' ?>><?= esc($item['title']) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                </label>
+                <noscript><button class="btn btn-secondary btn-small" type="submit">Otvorit clanok</button></noscript>
               </form>
             </div>
 
@@ -9694,6 +9707,25 @@ require dirname(__DIR__) . '/inc/head.php';
           showToast('Ikonku sa nepodarilo pripravit.', true);
         });
       }, true);
+    });
+
+    document.querySelectorAll('form[data-article-editor-selector-form="true"]').forEach(function (form) {
+      const select = form.querySelector('select[name="slug"][data-article-editor-selector="true"]');
+      if (!(select instanceof HTMLSelectElement)) {
+        return;
+      }
+
+      select.addEventListener('change', function () {
+        const slug = (select.value || '').trim();
+        if (!slug) {
+          return;
+        }
+
+        const targetUrl = new URL(form.getAttribute('action') || '/admin', window.location.origin);
+        targetUrl.searchParams.set('section', 'articles');
+        targetUrl.searchParams.set('slug', slug);
+        window.location.assign(targetUrl.toString());
+      });
     });
 
     const focusedProductCard = document.querySelector('[data-focus-product="true"]');
