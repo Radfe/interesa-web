@@ -467,8 +467,7 @@ if (!function_exists('guess_article_category')) {
             'kreatin-porovnanie' => 'kreatin',
             'kreatin-vedlajsie-ucinky-a-fakty' => 'kreatin',
             'najlepsi-protein-na-chudnutie-wpc-vs-wpi' => 'proteiny',
-            'najlepsie-proteiny-2026' => 'proteiny',
-            'najlepsie-proteiny-2025' => 'proteiny',
+        'najlepsie-proteiny-2026' => 'proteiny',
             'pre-workout' => 'pre-workout',
             'pre-workout-ako-vybrat' => 'pre-workout',
             'probiotika-a-travenie' => 'probiotika-travenie',
@@ -478,9 +477,8 @@ if (!function_exists('guess_article_category')) {
             'proteiny-na-chudnutie' => 'proteiny',
             'spalovace-tukov-realita' => 'chudnutie',
             'srvatkovy-protein-vs-izolat-vs-hydro' => 'proteiny',
-            'veganske-proteiny-top' => 'proteiny',
-            'veganske-proteiny-top-vyber-2026' => 'proteiny',
-            'veganske-proteiny-top-vyber-2025' => 'proteiny',
+        'veganske-proteiny-top' => 'proteiny',
+        'veganske-proteiny-top-vyber-2026' => 'proteiny',
             'vitamin-c' => 'mineraly',
             'vitamin-d3' => 'mineraly',
             'vitamin-d3-a-imunita' => 'mineraly',
@@ -578,10 +576,6 @@ if (!function_exists('interessa_article_seo_overrides')) {
                 'meta_title' => 'Najlepsi protein na chudnutie - WPC vs WPI a vyber',
                 'meta_description' => 'WPC vs WPI pri chudnuti: kedy staci koncentrat, kedy sa oplati izolat a ktore proteiny davaju najlepsi zmysel v diete.',
             ],
-            'najlepsie-proteiny-2025' => [
-                'meta_title' => 'Najlepsie proteiny 2026 - vyber podla ciela a typu',
-                'meta_description' => 'Vyber najlepsich proteinov 2026 podla ciela: objem, chudnutie, intolerancia laktozy, veganska alternativa a kazdodenne pouzitie.',
-            ],
             'najlepsie-proteiny-2026' => [
                 'meta_title' => 'Najlepsie proteiny 2026 - vyber podla ciela a typu',
                 'meta_description' => 'Vyber najlepsich proteinov 2026 podla ciela: objem, chudnutie, intolerancia laktozy, veganska alternativa a kazdodenne pouzitie.',
@@ -593,10 +587,6 @@ if (!function_exists('interessa_article_seo_overrides')) {
             'srvatkovy-protein-vs-izolat-vs-hydro' => [
                 'meta_title' => 'Srvatkovy protein vs izolat vs hydro - co sa oplati',
                 'meta_description' => 'WPC vs WPI vs hydrolyzat: rozdiely v laktoze, rychlosti vstrebavania, cene a tom, pre koho sa ktory typ proteinu oplati.',
-            ],
-            'veganske-proteiny-top-vyber-2025' => [
-                'meta_title' => 'Veganske proteiny 2026 - top vyber a porovnanie',
-                'meta_description' => 'Top vyber veganskych proteinov 2026: hrach, ryza, soja a blendy. Porovnanie chuti, zlozenia, ceny a pouzitia.',
             ],
             'veganske-proteiny-top-vyber-2026' => [
                 'meta_title' => 'Veganske proteiny 2026 - top vyber a porovnanie',
@@ -910,13 +900,11 @@ if (!function_exists('article_url')) {
         $preferred = [
             'doplnky-vyzivy-top-vyber-2025' => 'doplnky-vyzivy',
             'najlepsie-proteiny-2025' => 'najlepsie-proteiny-2026',
-            'najlepsie-proteiny-2026' => 'najlepsie-proteiny-2026',
             'veganske-proteiny-top' => 'veganske-proteiny-top-vyber-2026',
             'veganske-proteiny-top-vyber-2025' => 'veganske-proteiny-top-vyber-2026',
-            'veganske-proteiny-top-vyber-2026' => 'veganske-proteiny-top-vyber-2026',
         ];
 
-        return $preferred[$slug] ?? $slug;
+        return $preferred[$slug] ?? canonical_article_slug($slug);
     }
 }
 
@@ -929,11 +917,9 @@ if (!function_exists('interessa_article_source_slug')) {
 
         $source = [
             'doplnky-vyzivy-top-vyber-2025' => 'doplnky-vyzivy',
-            'najlepsie-proteiny-2026' => 'najlepsie-proteiny-2025',
-            'veganske-proteiny-top-vyber-2026' => 'veganske-proteiny-top-vyber-2025',
         ];
 
-        return $source[$slug] ?? canonical_article_slug($slug);
+        return canonical_article_slug($source[$slug] ?? $slug);
     }
 }
 

@@ -119,7 +119,7 @@ return array (
     'link_type' => 'affiliate',
     'source' => 'dognet-manual-full',
   ),
-  'najlepsie-proteiny-2025-gymbeam' => 
+    'najlepsie-proteiny-2026-gymbeam' =>
   array (
     'url' => 'https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Fjust-whey-gymbeam.html',
     'merchant' => 'GymBeam',
@@ -164,7 +164,7 @@ return array (
     'link_type' => 'affiliate',
     'source' => 'dognet-manual-full',
   ),
-  'veganske-proteiny-top-vyber-2025-gymbeam' => 
+    'veganske-proteiny-top-vyber-2026-gymbeam' =>
   array (
     'url' => 'https://go.dognet.com/?cid=4101&chid=uZljA1P2&refid=627a5fbacdf29&url=https%3A%2F%2Fgymbeam.sk%2Fprotein-vegan-blend-gymbeam.html',
     'merchant' => 'GymBeam',

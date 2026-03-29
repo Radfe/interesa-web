@@ -34,7 +34,7 @@ if (!function_exists('interessa_article_enhancements_registry')) {
                     ['q' => 'Ktorý doplnok má najlepší pomer cena a prínos?', 'a' => 'Závisí od cieľa. Často dávajú najväčší zmysel kreatín, vitamín D3 podľa sezóny a horčík vo vhodnej forme.'],
                 ],
             ],
-            'najlepsie-proteiny-2025' => [
+            'najlepsie-proteiny-2026' => [
                 'audience' => [
                     'Ak chceš rýchly shortlist najlepších proteínov bez dlhého porovnávania e-shopov.',
                     'Ak hľadáš univerzálny proteín po tréningu aj počas dňa.',
@@ -130,7 +130,7 @@ if (!function_exists('interessa_article_enhancements_registry')) {
                     ['q' => 'Sú dôležité konkrétne kmene?', 'a' => 'Áno. Pri probiotikách je často užitočnejšie sledovať konkrétny kmeň a použitie než len marketingový opis produktu.'],
                 ],
             ],
-            'veganske-proteiny-top-vyber-2025' => [
+            'veganske-proteiny-top-vyber-2026' => [
                 'audience' => [
                     'Ak chceš rastlinný proteín bez zbytočného tápania medzi hrachom, ryžou a blendmi.',
                     'Ak riešiš vegánsku alternatívu ku klasickému srvátkovému proteínu.',

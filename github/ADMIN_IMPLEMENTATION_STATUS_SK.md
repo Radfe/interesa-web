@@ -70,6 +70,12 @@ Admin vrstva riesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsi canonical slug cleanup:
+- admin nema pracovat s dvojitym rocnikovym source slugom pre ten isty clanok
+- `najlepsie-proteiny-2025` uz nema byt aktivny storage slug, canonical slug je `najlepsie-proteiny-2026`
+- stary `2025` slug ostava len ako kompatibilny alias pre redirect a legacy vstupy
+- article JSON a article product state boli zosuladene na `2026`
+
 Najnovsi bezpecnostny hardening admin loginu:
 - login stranka uz nesmie zobrazovat predvolene heslo, internu cestu k auth suboru ani technicke instrukcie priamo v UI
 - admin auth helper teraz preferuje `password_hash` a `password_verify`

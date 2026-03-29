@@ -21,18 +21,18 @@ if (!function_exists('interessa_article_review_details')) {
                     'cons' => ['má zmysel hlavne pri reálnom deficite alebo nízkej expozícii slnku'],
                 ],
             ],
-            'najlepsie-proteiny-2025' => [
-                'najlepsie-proteiny-2025-aktin' => [
+            'najlepsie-proteiny-2026' => [
+                'najlepsie-proteiny-2026-aktin' => [
                     'best_for' => 'Každodenné dopĺňanie bielkovín bez zbytočných kompromisov',
                     'pros' => ['dobrý pomer cena a použiteľnosť', 'funguje po tréningu aj počas dňa'],
                     'cons' => ['nie je to najčistejší profil pre diétu'],
                 ],
-                'najlepsie-proteiny-2025-gymbeam' => [
+                'najlepsie-proteiny-2026-gymbeam' => [
                     'best_for' => 'Redukciu a nižšiu toleranciu laktózy',
                     'pros' => ['nižší obsah cukrov a laktózy', 'čistejší profil na dávku'],
                     'cons' => ['vyššia cena za porciu'],
                 ],
-                'najlepsie-proteiny-2025-myprotein' => [
+                'najlepsie-proteiny-2026-myprotein' => [
                     'best_for' => 'Tréningové obdobie s dôrazom na bielkoviny na dávku',
                     'pros' => ['vyšší dôraz na čistotu a výkon', 'silnejší športový positioning'],
                     'cons' => ['nemusí byť najlepšia value voľba pre každého'],
@@ -140,18 +140,18 @@ if (!function_exists('interessa_article_review_details')) {
                     'cons' => ['menej výrazný obsah pri hľadaní špecializovaných kmeňov'],
                 ],
             ],
-            'veganske-proteiny-top-vyber-2025' => [
-                'veganske-proteiny-top-vyber-2025-aktin' => [
+            'veganske-proteiny-top-vyber-2026' => [
+                'veganske-proteiny-top-vyber-2026-aktin' => [
                     'best_for' => 'Najvyváženejší rastlinný profil na bežné použitie',
                     'pros' => ['dobrá kombinácia aminokyselín', 'praktické každodenné použitie'],
                     'cons' => ['nie je to vždy najlacnejšia rastlinná voľba'],
                 ],
-                'veganske-proteiny-top-vyber-2025-gymbeam' => [
+                'veganske-proteiny-top-vyber-2026-gymbeam' => [
                     'best_for' => 'Čistejšie zloženie a vyhýbanie sa sóji',
                     'pros' => ['jednoduché zloženie', 'hodí sa pri citlivosti na sóju'],
                     'cons' => ['samostatný hrach nemusí chuťovo sadnúť každému'],
                 ],
-                'veganske-proteiny-top-vyber-2025-myprotein' => [
+                'veganske-proteiny-top-vyber-2026-myprotein' => [
                     'best_for' => 'Smoothie, kaše a univerzálne kuchynské použitie',
                     'pros' => ['praktické do receptov', 'flexibilné použitie počas dňa'],
                     'cons' => ['nemusí mať najvyšší obsah bielkovín na porciu'],

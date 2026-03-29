@@ -29,7 +29,7 @@ return [
         'merchant' => 'GymBeam',
         'merchant_slug' => 'gymbeam',
         'category' => 'proteiny',
-        'affiliate_code' => 'najlepsie-proteiny-2025-gymbeam',
+        'affiliate_code' => 'najlepsie-proteiny-2026-gymbeam',
         'fallback_url' => 'https://gymbeam.sk/just-whey-gymbeam.html',
         'summary' => 'Silnejsi premium whey variant pre hlavny top vyber.',
         'image' => [
@@ -155,7 +155,7 @@ return [
         'merchant' => 'GymBeam',
         'merchant_slug' => 'gymbeam',
         'category' => 'proteiny',
-        'affiliate_code' => 'veganske-proteiny-top-vyber-2025-gymbeam',
+        'affiliate_code' => 'veganske-proteiny-top-vyber-2026-gymbeam',
         'fallback_url' => 'https://gymbeam.sk/protein-vegan-blend-gymbeam.html',
         'summary' => 'Rastlinny proteinovy blend ako silny zaklad pre vegan vyber.',
         'image' => [

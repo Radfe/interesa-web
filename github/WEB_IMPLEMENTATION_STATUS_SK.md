@@ -55,6 +55,12 @@ Web vrstva neriesi:
 
 ## 3. Co sa menilo naposledy
 
+Najnovsi canonical slug cleanup:
+- rocnikove duplicity sa maju drzat len na jednom canonical slugu
+- `najlepsie-proteiny-2025` uz nema byt storage source, canonical slug je `najlepsie-proteiny-2026`
+- stary `2025` slug ostava len ako kompatibilny redirect alias
+- admin article JSON, article product state a fallback content boli presunute na `2026`
+
 Najnovsie zjednotenie public product layer:
 - verejny article render uz nema bezat cez dva rozdielne product systémy
 - admin structured clanok uz neinjectuje vlastny odporucany/comparison block priamo do tela

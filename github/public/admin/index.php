@@ -1931,13 +1931,13 @@ function interessa_admin_product_affiliate_queue(array $catalog, int $limit = 12
 function interessa_admin_money_page_image_gap_report(string $merchantFilter = 'all'): array {
     $articleSlugs = [
         'protein-na-chudnutie',
-        'najlepsie-proteiny-2025',
+        'najlepsie-proteiny-2026',
         'kreatin-porovnanie',
         'horcik-ktory-je-najlepsi-a-preco',
         'probiotika-ako-vybrat',
         'pre-workout-ako-vybrat',
         'kolagen-recenzia',
-        'veganske-proteiny-top-vyber-2025',
+        'veganske-proteiny-top-vyber-2026',
     ];
 
     $flatRows = [];

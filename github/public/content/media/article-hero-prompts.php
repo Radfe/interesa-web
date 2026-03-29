@@ -63,22 +63,8 @@ return [
         'status' => 'ready',
         'prompt' => 'Realistic professional hero photo for "Ako vybrat probiotika", probiotic capsules or bottle on a clean minimalist surface with calm digestion and wellness vibe, white or soft pastel background, soft natural light, minimal composition, no text, no logo, no collage, consistent centered framing, 3:2 aspect ratio.',
     ],
-    'veganske-proteiny-top-vyber-2025' => [
-        'prompt' => 'Realistic professional hero photo, vegan protein powder, plant ingredients, clean product styling, bright minimal background, soft pastel palette, modern health and fitness look, natural light, no text, no collage, 3:2 aspect ratio.',
-    ],
     'veganske-proteiny-top-vyber-2026' => [
         'prompt' => 'Realistic professional hero photo, vegan protein powder, plant ingredients, clean product styling, bright minimal background, soft pastel palette, modern health and fitness look, natural light, no text, no collage, 3:2 aspect ratio.',
-    ],
-    'najlepsie-proteiny-2025' => [
-        'title' => 'Najlepsie proteiny 2025',
-        'category' => 'proteiny',
-        'file_name' => 'najlepsie-proteiny-2025.webp',
-        'asset_path' => 'public/assets/img/articles/heroes/najlepsie-proteiny-2025.webp',
-        'alt_text' => 'Najlepsie proteiny 2025',
-        'dimensions' => '1200x800',
-        'style_brief' => 'Realistic editorial supplement hero visual, clean white or soft pastel background, soft natural lighting, minimal composition, modern fitness and wellness aesthetic, premium but believable product context, no text, no logo, no collage, consistent centered framing.',
-        'status' => 'ready',
-        'prompt' => 'Realistic professional hero photo for "Najlepsie proteiny", three protein jars with shaker in a clean comparison-style arrangement, bright white or soft pastel background, soft natural light, modern fitness and nutrition aesthetic, minimal composition, no text, no logo, no collage, consistent centered framing, 3:2 aspect ratio.',
     ],
     'najlepsie-proteiny-2026' => [
         'title' => 'Najlepsie proteiny 2026',

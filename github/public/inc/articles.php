@@ -8,7 +8,7 @@ return [
     'Kolagen - recenzia a vyber (typ I/II/III)',
     'Co sledovat pri kolagene: formy, gramaz a preco pridat vitamin C.',
   ],
-  'najlepsie-proteiny-2025' => [
+  'najlepsie-proteiny-2026' => [
     'Najlepsie proteiny 2026 - prehlad a vyber podla ciela',
     'Najlepsie proteiny podla ciela, zlozenia a ceny.',
   ],
@@ -20,7 +20,7 @@ return [
     'Srvatkovy protein vs. izolat vs. hydro - co sa oplati?',
     'Rozdiely v rychlosti, cene, chuti a laktoze.',
   ],
-  'veganske-proteiny-top-vyber-2025' => [
+  'veganske-proteiny-top-vyber-2026' => [
     'Veganske proteiny - top vyber 2026',
     'Najlepsie rastlinne proteiny podla chuti, zlozenia a ceny.',
   ],

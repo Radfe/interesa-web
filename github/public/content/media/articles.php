@@ -272,19 +272,19 @@ return array (
       'asset' => 'img/articles/heroes/najlepsi-protein-na-chudnutie-wpc-vs-wpi.webp',
     ),
   ),
-  'najlepsie-proteiny-2025' => 
+  'najlepsie-proteiny-2026' => 
   array (
     'hero' => 
     array (
       'alt' => 'Najlepšie proteíny 2026 – prehľad a výber podľa cieľa',
       'sizes' => '(min-width: 1100px) 860px, 100vw',
-      'asset' => 'img/articles/heroes/najlepsie-proteiny-2025.webp',
+      'asset' => 'img/articles/heroes/najlepsie-proteiny-2026.webp',
     ),
     'thumb' => 
     array (
       'alt' => 'Najlepšie proteíny 2026 – prehľad a výber podľa cieľa',
       'sizes' => '(min-width: 900px) 420px, 100vw',
-      'asset' => 'img/articles/heroes/najlepsie-proteiny-2025.webp',
+      'asset' => 'img/articles/heroes/najlepsie-proteiny-2026.webp',
     ),
   ),
   'pre-workout' => 
@@ -437,19 +437,19 @@ return array (
       'asset' => 'img/articles/heroes/veganske-proteiny-top.webp',
     ),
   ),
-  'veganske-proteiny-top-vyber-2025' => 
+  'veganske-proteiny-top-vyber-2026' => 
   array (
     'hero' => 
     array (
       'alt' => 'Vegánske proteíny – top výber 2026',
       'sizes' => '(min-width: 1100px) 860px, 100vw',
-      'asset' => 'img/articles/heroes/veganske-proteiny-top-vyber-2025.webp',
+      'asset' => 'img/articles/heroes/veganske-proteiny-top-vyber-2026.webp',
     ),
     'thumb' => 
     array (
       'alt' => 'Vegánske proteíny – top výber 2026',
       'sizes' => '(min-width: 900px) 420px, 100vw',
-      'asset' => 'img/articles/heroes/veganske-proteiny-top-vyber-2025.webp',
+      'asset' => 'img/articles/heroes/veganske-proteiny-top-vyber-2026.webp',
     ),
   ),
   'vitamin-c' => 

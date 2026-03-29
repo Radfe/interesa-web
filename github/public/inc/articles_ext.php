@@ -92,11 +92,6 @@ $ART += [
     'Najlepsi pomer cena/vykon, davkovanie a nasycovanie - potrebne ci nie?',
     'sila',
   ],
-  'najlepsie-proteiny-2025' => [
-    'Najlepsie proteiny 2026 - prehlad a vyber podla ciela',
-    'Ako si vybrat protein podla ciela: objem, redukcia, intolerancia a kazdodenne pouzitie.',
-    'proteiny',
-  ],
   'najlepsie-proteiny-2026' => [
     'Najlepsie proteiny 2026 - prehlad a vyber podla ciela',
     'Ako si vybrat protein podla ciela: objem, redukcia, intolerancia a kazdodenne pouzitie.',
@@ -561,11 +556,6 @@ $ART += [
     'Horcik s jedlom alebo nalacno - zalezi na tom',
     'Kedy je pri horciku dolezitejsia jednoduchost a tolerancia nez internetove pravidla a preco netreba z bezneho doplnku robit dalsi kazdodenny experiment.',
     'mineraly',
-  ],
-  'veganske-proteiny-top-vyber-2025' => [
-    'Veganske proteiny - top vyber 2026',
-    'Najlepsie rastlinne proteiny (hrach, ryza, soja, zmesi). Otestovane podla chuti, zlozenia a ceny.',
-    'proteiny',
   ],
   'veganske-proteiny-top-vyber-2026' => [
     'Veganske proteiny - top vyber 2026',

@@ -25,7 +25,7 @@ if (!function_exists('interessa_article_commerce_clean')) {
 if (!function_exists('interessa_article_commerce_sections')) {
     function interessa_article_commerce_sections(): array {
         return [
-            'najlepsie-proteiny-2025' => [
+            'najlepsie-proteiny-2026' => [
                 'title' => 'Odporúčané produkty',
                 'intro' => 'Výber nižšie je pripravený ako nákupný shortcut k článku. Keď budú doplnené finálne Dognet deeplinky, CTA ostanú rovnaké a zmení sa len cieľová URL.',
                 'products' => [
@@ -33,7 +33,7 @@ if (!function_exists('interessa_article_commerce_sections')) {
                         'name' => 'Whey Protein / univerzálny WPC',
                         'subtitle' => 'Najlepší pomer cena, chuť a použiteľnosť pre väčšinu ľudí.',
                         'rating' => 4.8,
-                        'code' => 'najlepsie-proteiny-2025-aktin',
+                        'code' => 'najlepsie-proteiny-2026-aktin',
                         'url' => 'https://www.aktin.sk/',
                         'merchant' => 'Aktin',
                     ],
@@ -41,7 +41,7 @@ if (!function_exists('interessa_article_commerce_sections')) {
                         'name' => 'Whey Isolate / čistejší WPI',
                         'subtitle' => 'Vhodný pri redukcii a nižšej tolerancii laktózy.',
                         'rating' => 4.7,
-                        'code' => 'najlepsie-proteiny-2025-gymbeam',
+                        'code' => 'najlepsie-proteiny-2026-gymbeam',
                         'url' => 'https://gymbeam.sk/',
                         'merchant' => 'GymBeam',
                     ],
@@ -49,7 +49,7 @@ if (!function_exists('interessa_article_commerce_sections')) {
                         'name' => 'Performance isolate blend',
                         'subtitle' => 'Dobrý variant pre tréning a vyšší dôraz na bielkoviny na dávku.',
                         'rating' => 4.6,
-                        'code' => 'najlepsie-proteiny-2025-myprotein',
+                        'code' => 'najlepsie-proteiny-2026-myprotein',
                         'url' => 'https://www.myprotein.sk/',
                         'merchant' => 'Myprotein',
                     ],
@@ -354,7 +354,7 @@ if (!function_exists('interessa_article_commerce_sections')) {
                     ],
                 ],
             ],
-            'veganske-proteiny-top-vyber-2025' => [
+            'veganske-proteiny-top-vyber-2026' => [
                 'title' => 'Top vegánske proteíny',
                 'intro' => 'Najlepší výsledok zvyčajne dávajú blendy hrach + ryža. Pri citlivosti na sóju je to aj praktický kompromis.',
                 'products' => [
@@ -362,7 +362,7 @@ if (!function_exists('interessa_article_commerce_sections')) {
                         'name' => 'Blend hrach + ryža',
                         'subtitle' => 'Najvyváženejší aminokyselinový profil pre bežné použitie.',
                         'rating' => 4.8,
-                        'code' => 'veganske-proteiny-top-vyber-2025-aktin',
+                        'code' => 'veganske-proteiny-top-vyber-2026-aktin',
                         'url' => 'https://www.aktin.sk/',
                         'merchant' => 'Aktin',
                     ],
@@ -370,7 +370,7 @@ if (!function_exists('interessa_article_commerce_sections')) {
                         'name' => 'Hrachový izolát',
                         'subtitle' => 'Dobrá voľba, ak chceš čisté zloženie a bez sóje.',
                         'rating' => 4.6,
-                        'code' => 'veganske-proteiny-top-vyber-2025-gymbeam',
+                        'code' => 'veganske-proteiny-top-vyber-2026-gymbeam',
                         'url' => 'https://gymbeam.sk/',
                         'merchant' => 'GymBeam',
                     ],
@@ -378,7 +378,7 @@ if (!function_exists('interessa_article_commerce_sections')) {
                         'name' => 'Rastlinný protein mix',
                         'subtitle' => 'Praktický variant do kaše, smoothie a pravidelného použitia.',
                         'rating' => 4.5,
-                        'code' => 'veganske-proteiny-top-vyber-2025-myprotein',
+                        'code' => 'veganske-proteiny-top-vyber-2026-myprotein',
                         'url' => 'https://www.myprotein.sk/',
                         'merchant' => 'Myprotein',
                     ],
@@ -392,10 +392,10 @@ if (!function_exists('interessa_article_commerce_canonical_slug')) {
     function interessa_article_commerce_canonical_slug(string $slug): ?string {
         $sections = interessa_article_commerce_sections();
         $aliases = [
-            'najlepsie-proteiny-2026' => 'najlepsie-proteiny-2025',
+            'najlepsie-proteiny-2025' => 'najlepsie-proteiny-2026',
             'proteiny-na-chudnutie' => 'protein-na-chudnutie',
-            'veganske-proteiny-top-vyber-2026' => 'veganske-proteiny-top-vyber-2025',
-            'veganske-proteiny-top' => 'veganske-proteiny-top-vyber-2025',
+            'veganske-proteiny-top-vyber-2025' => 'veganske-proteiny-top-vyber-2026',
+            'veganske-proteiny-top' => 'veganske-proteiny-top-vyber-2026',
         ];
 
         if (isset($sections[$slug])) {
@@ -463,10 +463,10 @@ if (!function_exists('interessa_article_comparison_table_whitelist')) {
             'doplnky-vyzivy',
             'kreatin-porovnanie',
             'kolagen-na-klby-porovnanie',
-            'najlepsie-proteiny-2025',
+            'najlepsie-proteiny-2026',
             'najlepsi-protein-na-chudnutie-wpc-vs-wpi',
             'protein-na-chudnutie',
-            'veganske-proteiny-top-vyber-2025',
+            'veganske-proteiny-top-vyber-2026',
         ];
     }
 }
