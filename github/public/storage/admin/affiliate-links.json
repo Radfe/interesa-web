@@ -105,7 +105,7 @@
         "merchant_slug": "gymbeam",
         "product_slug": "gymbeam-activlab-black-wolf-multifruit",
         "link_type": "product",
-        "source": "admin-affiliate-integrity-fix"
+        "source": "admin-slot-logic-fix"
     },
     "gymbeam-activlab-black-wolf-multifruit-gymbeam": {
         "code": "gymbeam-activlab-black-wolf-multifruit-gymbeam",
@@ -6632,6 +6632,15 @@
         "link_type": "affiliate",
         "source": "supported-affiliate-feed"
     },
+    "gymbeam-cellucor-c4-original-frozen-bombsicle": {
+        "code": "gymbeam-cellucor-c4-original-frozen-bombsicle",
+        "url": "https://gymbeam.sk/c4-original-cellucor.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-cellucor-c4-original-frozen-bombsicle",
+        "link_type": "product",
+        "source": "admin-slot-logic-fix"
+    },
     "gymbeam-cellucor-c4-original-frozen-bombsicle-gymbeam": {
         "code": "gymbeam-cellucor-c4-original-frozen-bombsicle-gymbeam",
         "url": "https://gymbeam.sk/c4-original-cellucor.html",
@@ -12553,6 +12562,15 @@
         "product_slug": "gymbeam-gymbeam-citrul-in-caps",
         "link_type": "product",
         "source": "supported-affiliate-feed"
+    },
+    "gymbeam-gymbeam-citrulline-malate-bez-pr-ichute": {
+        "code": "gymbeam-gymbeam-citrulline-malate-bez-pr-ichute",
+        "url": "https://gymbeam.sk/citrulin-malat-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-gymbeam-citrulline-malate-bez-pr-ichute",
+        "link_type": "product",
+        "source": "admin-slot-logic-fix"
     },
     "gymbeam-gymbeam-citrulline-malate-bez-pr-ichute-gymbeam": {
         "code": "gymbeam-gymbeam-citrulline-malate-bez-pr-ichute-gymbeam",
@@ -31857,7 +31875,7 @@
         "merchant_slug": "gymbeam",
         "product_slug": "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute",
         "link_type": "product",
-        "source": "admin-affiliate-integrity-fix"
+        "source": "admin-slot-logic-fix"
     },
     "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute-gymbeam": {
         "code": "gymbeam-gymbeam-magnesium-chelate-powder-bez-pr-ichute-gymbeam",
@@ -59201,6 +59219,15 @@
         "link_type": "product",
         "source": "supported-affiliate-feed"
     },
+    "gymbeam-gymbeam-zmb6-chelate": {
+        "code": "gymbeam-gymbeam-zmb6-chelate",
+        "url": "https://gymbeam.sk/zmb6-chelate-gymbeam.html",
+        "merchant": "GymBeam",
+        "merchant_slug": "gymbeam",
+        "product_slug": "gymbeam-gymbeam-zmb6-chelate",
+        "link_type": "product",
+        "source": "admin-slot-logic-fix"
+    },
     "gymbeam-gymbeam-zmb6-chelate-gymbeam": {
         "code": "gymbeam-gymbeam-zmb6-chelate-gymbeam",
         "url": "https://gymbeam.sk/zmb6-chelate-gymbeam.html",
@@ -60045,7 +60072,7 @@
         "merchant_slug": "gymbeam",
         "product_slug": "gymbeam-magnesium-citrate-caps",
         "link_type": "product",
-        "source": "admin-affiliate-integrity-fix"
+        "source": "admin-slot-logic-fix"
     },
     "gymbeam-mammut-nutrition-amylopektin-waxy-maize-gain-gymbeam": {
         "code": "gymbeam-mammut-nutrition-amylopektin-waxy-maize-gain-gymbeam",
