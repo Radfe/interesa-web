@@ -107,6 +107,9 @@ Najnovsia stabilizacia article save/load flow:
 - public SEO meta vrstva uz vie preferovat admin `meta_title` a `meta_description`
 - public clanok prepne na admin structured body len vtedy, ked naozaj existuje structured text/porovnanie
 - samotny `product_plan` alebo metadata uz nesmu vyprázdnit legacy HTML telo clanku
+- article editor uz podporuje kontrolovane `related_links` pre interne prepojenie
+- `sections.body` ostava plain-text safe a interne odkazy sa neriesia cez raw HTML
+- editor-driven related block je na webe source of truth, auto related ostava len fallback
 
 Najnovsi UX a click-layer cleanup:
 - verejne CTA `Do obchodu` maju ist cez interni route `/go/<code>` namiesto priameho zobrazenia dlheho Dognet URL

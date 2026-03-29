@@ -30,10 +30,6 @@
         {
             "heading": "FAQ",
             "body": "Koľko kreatínu brať denne? Najčastejšie 3 až 5 g denne. Treba nasycovaciu fázu? Nie je nutná. Je HCl automaticky lepší ako monohydrát? Nie, ide skôr o alternatívu pre špecifický prípad než o default lepšiu voľbu."
-        },
-        {
-            "heading": "Súvisiace články",
-            "body": "Ak popri kreatíne riešiš aj proteín, pokračuj na najlepsie-proteiny-2026. Ak ťa zaujíma výkon pred tréningom, nadviaž na pre-workout-ako-vybrat."
         }
     ],
     "comparison": {
@@ -70,6 +66,23 @@
             "show_in_comparison": true
         }
     ],
-    "updated_at": "2026-03-28T21:27:06+00:00",
-    "updated_by": "admin"
+    "updated_at": "2026-03-29T07:01:24+00:00",
+    "updated_by": "admin",
+    "related_links": [
+        {
+            "slug": "najlepsie-proteiny-2026",
+            "label": "Najlepsie proteiny 2026",
+            "description": "Ak popri kreatine riesis aj hlavny protein pre trening a regeneraciu."
+        },
+        {
+            "slug": "pre-workout-ako-vybrat",
+            "label": "Ako vybrat pre-workout",
+            "description": "Ak chces k vykonovemu stacku doplnit aj predtreningovy support."
+        },
+        {
+            "slug": "doplnky-vyzivy",
+            "label": "Doplnky vyzivy",
+            "description": "Ak chces sirsi prehlad doplnkov, ktore maju realny prakticky zmysel."
+        }
+    ]
 }

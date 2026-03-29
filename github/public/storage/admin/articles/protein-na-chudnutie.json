@@ -30,10 +30,6 @@
         {
             "heading": "FAQ",
             "body": "Je isolate pri chudnutí nutnosť? Nie, ale môže byť praktickejší. Kedy sa oplatí piť proteín? Najmä po tréningu alebo keď nestíhaš normálne jedlo. Pomôže proteín sám o sebe schudnúť? Nie, ale môže výrazne zjednodušiť udržanie bielkovín a režimu."
-        },
-        {
-            "heading": "Súvisiace články",
-            "body": "Na širší výber proteínov nadviaž v článku najlepsie-proteiny-2026. Ak riešiš aj základné doplnky okolo režimu, pokračuj na doplnky-vyzivy."
         }
     ],
     "comparison": {
@@ -70,6 +66,18 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-28T21:27:06+00:00",
-    "updated_by": "admin"
+    "updated_at": "2026-03-29T07:01:24+00:00",
+    "updated_by": "admin",
+    "related_links": [
+        {
+            "slug": "najlepsie-proteiny-2026",
+            "label": "Najlepsie proteiny 2026",
+            "description": "Ak chces porovnat aj univerzalnejsie proteiny mimo cisto redukcneho kontextu."
+        },
+        {
+            "slug": "doplnky-vyzivy",
+            "label": "Doplnky vyzivy",
+            "description": "Ak chces vediet, ktore dalsie doplnky vedia podporit jednoduchy zaklad rutiny."
+        }
+    ]
 }

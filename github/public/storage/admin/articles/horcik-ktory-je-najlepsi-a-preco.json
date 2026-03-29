@@ -34,10 +34,6 @@
         {
             "heading": "FAQ",
             "body": "Ktory horcik je najlepsi pre vacsinu ludi? Najlepsia hlavna volba je tu Magnesium Chelate Powder ako daily-use magnesium.\n\nJe citrate zla volba? Nie, prave naopak, je to rozumna value moznost.\n\nKedy dava zmysel ZMB6? Ked hladas skor recovery a vecerny use-case, nie len obycajne doplnenie magnezia."
-        },
-        {
-            "heading": "Suvisiace clanky",
-            "body": "Ak riesis sirsi mikronutrientovy zaklad, pokracuj na doplnky-vyzivy. Pri sportovom vykone a energii moze nadviazat aj clanok pre-workout-ako-vybrat."
         }
     ],
     "comparison": {
@@ -74,6 +70,23 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-29T06:25:20+00:00",
-    "updated_by": "admin"
+    "updated_at": "2026-03-29T07:01:24+00:00",
+    "updated_by": "admin",
+    "related_links": [
+        {
+            "slug": "doplnky-vyzivy",
+            "label": "Doplnky vyzivy",
+            "description": "Ak chces vidiet, kde ma horcik miesto v sirsom zaklade suplementacie."
+        },
+        {
+            "slug": "pre-workout-ako-vybrat",
+            "label": "Ako vybrat pre-workout",
+            "description": "Ak popri regeneracii riesis aj energiu a vykon okolo treningu."
+        },
+        {
+            "slug": "vitamin-d3-k2-spolu-alebo-osobitne",
+            "label": "Vitamin D3 a K2: spolu alebo osobitne",
+            "description": "Ak chces nadviazat na dalsi prakticky micronutrientovy vyber."
+        }
+    ]
 }

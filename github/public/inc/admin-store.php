@@ -569,6 +569,58 @@ if (!function_exists('interessa_admin_normalize_comparison')) {
     }
 }
 
+if (!function_exists('interessa_admin_normalize_related_links')) {
+    function interessa_admin_normalize_related_links(string $articleSlug, array $items): array {
+        $articleSlug = function_exists('canonical_article_slug') ? canonical_article_slug($articleSlug) : trim($articleSlug);
+        $knownSlugs = [];
+
+        if (function_exists('article_registry')) {
+            foreach (article_registry() as $knownSlug => $_row) {
+                $normalized = function_exists('canonical_article_slug') ? canonical_article_slug((string) $knownSlug) : trim((string) $knownSlug);
+                if ($normalized !== '') {
+                    $knownSlugs[$normalized] = true;
+                }
+            }
+        }
+
+        foreach (glob(INTERESSA_ADMIN_ARTICLES_DIR . '/*.json') ?: [] as $file) {
+            $normalized = function_exists('canonical_article_slug')
+                ? canonical_article_slug((string) basename($file, '.json'))
+                : trim((string) basename($file, '.json'));
+            if ($normalized !== '') {
+                $knownSlugs[$normalized] = true;
+            }
+        }
+
+        $normalizedItems = [];
+        $seen = [];
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $slug = interessa_admin_slugify((string) ($item['slug'] ?? ''));
+            $slug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : $slug;
+            if ($slug === '' || $slug === $articleSlug || isset($seen[$slug]) || !isset($knownSlugs[$slug])) {
+                continue;
+            }
+
+            $seen[$slug] = true;
+            $normalizedItems[] = [
+                'slug' => $slug,
+                'label' => interessa_admin_normalize_text($item['label'] ?? ''),
+                'description' => interessa_admin_normalize_text($item['description'] ?? ''),
+            ];
+
+            if (count($normalizedItems) >= 4) {
+                break;
+            }
+        }
+
+        return $normalizedItems;
+    }
+}
+
 if (!function_exists('interessa_admin_normalize_article_override')) {
     function interessa_admin_normalize_article_override(string $slug, array $data): array {
         $canonicalSlug = function_exists('canonical_article_slug') ? canonical_article_slug($slug) : $slug;
@@ -585,6 +637,7 @@ if (!function_exists('interessa_admin_normalize_article_override')) {
             'hero_asset' => trim((string) ($data['hero_asset'] ?? '')),
             'sections' => interessa_admin_normalize_sections(is_array($data['sections'] ?? null) ? $data['sections'] : []),
             'comparison' => interessa_admin_normalize_comparison(is_array($data['comparison'] ?? null) ? $data['comparison'] : []),
+            'related_links' => interessa_admin_normalize_related_links($canonicalSlug, is_array($data['related_links'] ?? null) ? $data['related_links'] : []),
             'recommended_products' => array_values(array_filter(array_map(
                 'interessa_admin_slugify',
                 is_array($data['recommended_products'] ?? null) ? $data['recommended_products'] : []
@@ -694,7 +747,7 @@ if (!function_exists('interessa_admin_validate_article_save_payload')) {
             }
         }
 
-        foreach (['sections', 'comparison', 'recommended_products', 'product_plan'] as $field) {
+        foreach (['sections', 'comparison', 'related_links', 'recommended_products', 'product_plan'] as $field) {
             if (array_key_exists($field, $data) && !is_array($data[$field])) {
                 return [
                     'success' => false,

@@ -30,10 +30,6 @@
         {
             "heading": "FAQ",
             "body": "Je vyššie CFU vždy lepšie? Nie. Záleží aj na kmeňoch a použití. Má zmysel brať probiotiká dlhodobo? Pri niektorých produktoch áno, ak zapadajú do bežného režimu. Ako vybrať medzi všeobecným a špecifickým produktom? Podľa toho, či riešiš širšiu podporu trávenia alebo konkrétny problém."
-        },
-        {
-            "heading": "Súvisiace články",
-            "body": "Ak riešiš širší základ doplnkov, pokračuj na doplnky-vyzivy. Pri imunite a každodennej rutine môže dávať zmysel aj vitamin-d3-a-imunita."
         }
     ],
     "comparison": {
@@ -70,6 +66,23 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-28T21:27:06+00:00",
-    "updated_by": "admin"
+    "updated_at": "2026-03-29T07:01:24+00:00",
+    "updated_by": "admin",
+    "related_links": [
+        {
+            "slug": "doplnky-vyzivy",
+            "label": "Doplnky vyzivy",
+            "description": "Ak chces sirsi prehlad doplnkov, ktore davaju zmysel v kazdodennom rezime."
+        },
+        {
+            "slug": "ako-vybrat-probiotika-podla-problemu",
+            "label": "Ako vybrat probiotika podla problemu",
+            "description": "Ak chces ist hlbsie do rozdielov medzi konkretnymi problemami a scenarmi pouzitia."
+        },
+        {
+            "slug": "imunita-prirodne-latky-ktore-funguju",
+            "label": "Imunita - 5 prirodnych latok, ktore funguju",
+            "description": "Ak ta zaujima sirsia immunity a wellness nadvaznost okolo mikrobiomu."
+        }
+    ]
 }

@@ -107,6 +107,12 @@ Najnovsie dorovnanie article hero vrstvy:
 - pre prioritne clanky boli dorovnane realne hero asset cesty do admin article JSON
 - `najlepsie-proteiny-2026` uz ma pripraveny aj vlastny hero asset subor, aby neostal bez obrazku pri deployi
 
+Najnovsie dorovnanie interneho prelinkovania:
+- structured article override uz podporuje kontrolovane `related_links`
+- editorom vybrate interne odkazy sa na webe renderuju ako realny klikatelny block
+- automaticky related block uz sluzi len ako fallback, ked clanok nema vlastne `related_links`
+- `sections.body` ostava plain-text safe, bez inline HTML parsera
+
 Najnovsi brand/Canva zaver:
 - admin uz ma sekciu `Logo a ikonka`, prompty pre Canvu aj automaticku pripravu icon bundle
 - netreba novy brand system od nuly

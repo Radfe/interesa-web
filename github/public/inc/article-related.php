@@ -3,8 +3,92 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/article-commerce.php';
 
-if (!function_exists('interessa_related_articles')) {
-    function interessa_related_articles(string $slug, int $limit = 3): array {
+if (!function_exists('interessa_known_related_article_slugs')) {
+    function interessa_known_related_article_slugs(): array {
+        static $slugs = null;
+        if (is_array($slugs)) {
+            return $slugs;
+        }
+
+        $slugs = [];
+        foreach (article_registry() as $slug => $_row) {
+            $canonicalSlug = canonical_article_slug((string) $slug);
+            if ($canonicalSlug !== '') {
+                $slugs[$canonicalSlug] = true;
+            }
+        }
+
+        if (defined('INTERESSA_ADMIN_ARTICLES_DIR')) {
+            foreach (glob(INTERESSA_ADMIN_ARTICLES_DIR . '/*.json') ?: [] as $file) {
+                $canonicalSlug = canonical_article_slug((string) basename($file, '.json'));
+                if ($canonicalSlug !== '') {
+                    $slugs[$canonicalSlug] = true;
+                }
+            }
+        }
+
+        return $slugs;
+    }
+}
+
+if (!function_exists('interessa_editor_related_articles')) {
+    function interessa_editor_related_articles(string $slug, int $limit = 3): array {
+        $canonicalSlug = canonical_article_slug($slug);
+        if ($canonicalSlug === '' || !function_exists('interessa_admin_article_override')) {
+            return [];
+        }
+
+        $override = interessa_admin_article_override($canonicalSlug);
+        $rows = is_array($override['related_links'] ?? null) ? $override['related_links'] : [];
+        if ($rows === []) {
+            return [];
+        }
+
+        $knownSlugs = interessa_known_related_article_slugs();
+        $items = [];
+        $seen = [$canonicalSlug => true];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $itemSlug = canonical_article_slug((string) ($row['slug'] ?? ''));
+            if ($itemSlug === '' || isset($seen[$itemSlug]) || !isset($knownSlugs[$itemSlug])) {
+                continue;
+            }
+
+            $meta = article_meta($itemSlug);
+            $file = __DIR__ . '/../content/articles/' . $itemSlug . '.html';
+            $commerceSummary = interessa_article_commerce_summary($itemSlug);
+            $title = trim((string) ($row['label'] ?? ''));
+            $description = trim((string) ($row['description'] ?? ''));
+
+            $items[] = [
+                'slug' => $itemSlug,
+                'title' => $title !== '' ? $title : (string) ($meta['title'] ?? humanize_slug($itemSlug)),
+                'description' => $description !== '' ? $description : (string) ($meta['description'] ?? ''),
+                'category' => normalize_category_slug((string) ($meta['category'] ?? '')),
+                'mtime' => is_file($file) ? (int) @filemtime($file) : 0,
+                'commerce_summary' => $commerceSummary,
+                'has_commerce' => is_array($commerceSummary) && (int) ($commerceSummary['count'] ?? 0) > 0,
+                'has_full_coverage' => interessa_article_has_full_packshot_coverage($itemSlug),
+                'coverage_percent' => interessa_shortlist_coverage_percent($commerceSummary),
+                'source' => 'editor',
+            ];
+            $seen[$itemSlug] = true;
+
+            if (count($items) >= $limit) {
+                break;
+            }
+        }
+
+        return array_values($items);
+    }
+}
+
+if (!function_exists('interessa_related_articles_fallback')) {
+    function interessa_related_articles_fallback(string $slug, int $limit = 3): array {
         $canonicalSlug = canonical_article_slug($slug);
         $meta = article_meta($canonicalSlug);
         $category = normalize_category_slug((string) ($meta['category'] ?? ''));
@@ -30,6 +114,7 @@ if (!function_exists('interessa_related_articles')) {
                     'has_commerce' => is_array($commerceSummary) && (int) ($commerceSummary['count'] ?? 0) > 0,
                     'has_full_coverage' => interessa_article_has_full_packshot_coverage($itemSlug),
                     'coverage_percent' => interessa_shortlist_coverage_percent($commerceSummary),
+                    'source' => 'fallback',
                 ];
                 $seen[$itemSlug] = true;
             }
@@ -67,6 +152,7 @@ if (!function_exists('interessa_related_articles')) {
                     'has_commerce' => interessa_article_has_commerce($itemSlug),
                     'has_full_coverage' => interessa_article_has_full_packshot_coverage($itemSlug),
                     'coverage_percent' => interessa_shortlist_coverage_percent(interessa_article_commerce_summary($itemSlug)),
+                    'source' => 'fallback',
                 ];
                 $seen[$itemSlug] = true;
 
@@ -80,9 +166,22 @@ if (!function_exists('interessa_related_articles')) {
     }
 }
 
+if (!function_exists('interessa_related_articles')) {
+    function interessa_related_articles(string $slug, int $limit = 3): array {
+        $editorItems = interessa_editor_related_articles($slug, $limit);
+        if ($editorItems !== []) {
+            return $editorItems;
+        }
+
+        return interessa_related_articles_fallback($slug, $limit);
+    }
+}
+
 if (!function_exists('interessa_render_related_articles')) {
     function interessa_render_related_articles(string $slug, int $limit = 3): void {
-        $items = interessa_related_articles($slug, $limit);
+        $editorItems = interessa_editor_related_articles($slug, $limit);
+        $usesEditorItems = $editorItems !== [];
+        $items = $usesEditorItems ? $editorItems : interessa_related_articles_fallback($slug, $limit);
         if ($items === []) {
             return;
         }
@@ -91,7 +190,9 @@ if (!function_exists('interessa_render_related_articles')) {
         echo '<section class="article-related">';
         echo '<div class="section-head">';
         echo '<h2>' . esc('Suvisiace clanky') . '</h2>';
-        if ($categoryMeta !== null) {
+        if ($usesEditorItems) {
+            echo '<p class="meta">' . esc('Dalsie kroky vybrate priamo v redakcii pre tento clanok.') . '</p>';
+        } elseif ($categoryMeta !== null) {
             echo '<p class="meta">' . esc('Dalsie navody a porovnania v teme') . ' ' . esc((string) ($categoryMeta['title'] ?? '')) . '.</p>';
         }
         echo '</div>';

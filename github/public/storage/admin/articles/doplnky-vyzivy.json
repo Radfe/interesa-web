@@ -30,10 +30,6 @@
         {
             "heading": "FAQ",
             "body": "S čím začať, ak nechcem veľa doplnkov? Najpraktickejší základ býva kreatín, horčík alebo vitamín D podľa cieľa. Oplatí sa kupovať veľký stack hneď? Väčšinou nie. Oveľa lepšie je začať jedným až tromi doplnkami, ktoré reálne zapadnú do režimu."
-        },
-        {
-            "heading": "Súvisiace články",
-            "body": "Na detail výkonovej voľby nadviaž v článku kreatin-porovnanie. Ak riešiš proteíny, pokračuj na najlepsie-proteiny-2026. Pri špecifickom trávení sa hodí aj probiotika-ako-vybrat."
         }
     ],
     "comparison": {
@@ -70,6 +66,23 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-28T21:27:06+00:00",
-    "updated_by": "admin"
+    "updated_at": "2026-03-29T07:01:24+00:00",
+    "updated_by": "admin",
+    "related_links": [
+        {
+            "slug": "kreatin-porovnanie",
+            "label": "Kreatin porovnanie",
+            "description": "Ak chces ist hlbsie do jedneho z najpraktickejsich vykonovych doplnkov."
+        },
+        {
+            "slug": "najlepsie-proteiny-2026",
+            "label": "Najlepsie proteiny 2026",
+            "description": "Ak riesis protein ako dalsi logicky zaklad suplementacnej rutiny."
+        },
+        {
+            "slug": "probiotika-ako-vybrat",
+            "label": "Ako vybrat probiotika",
+            "description": "Ak ta zaujima travenie, mikrobiom a doplnky s wellness presahom."
+        }
+    ]
 }

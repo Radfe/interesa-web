@@ -36,10 +36,6 @@
             "body": "Ktory protein je najlepsi? Pre vacsinu ludi je najlepsia univerzalna volba GymBeam Just Whey, pretoze najlahsie spaja kvalitu, pouzitie a rozumnu cenu.\n\nKtory protein je najlepsi na chudnutie? Pri chudnuti casto najviac dava zmysel cistejsi protein s nizsim obsahom tukov a cukrov, preto tu ako najlepsiu volbu pre tento ciel vyberame GymBeam Pure Isowhey.\n\nKedy uzivat protein? Najcastejsie po treningu alebo vtedy, ked cez den nestihas doplnit dost bielkovin z normalneho jedla.\n\nAky je rozdiel medzi WPC a WPI? WPC je beznejsia a casto vyhodnejsia volba na kazdy den. WPI je cistejsi isolate, ktory sa hodi viac pri diete alebo citlivejsom traveni.\n\nJe drahsi protein automaticky lepsi? Nie. Dolezitejsie je, ci sa hodi na tvoj ciel a ci ho budes vediet dlhodobo pouzivat."
         },
         {
-            "heading": "Suvisiace clanky a dalsie odporucania",
-            "body": "Ak riesis aj dalsie doplnky okolo treningu, pozri si clanok pre-workout-ako-vybrat. Ak ta zaujima redukcia hmotnosti a vhodnejsi protein do diety, nadviaz na clanok protein-na-chudnutie. Sirsie odporucania na doplnky najdes aj v clanku doplnky-vyzivy."
-        },
-        {
             "heading": "Zaver: co si odniest",
             "body": "Ak chces vybrat protein bez chaosu, najbezpecnejsia hlavna volba je GymBeam Just Whey. Ak chces usetrit a stale kupit rozumny produkt, chod do GymBeam True Whey. A ak je tvoj hlavny ciel chudnutie alebo cistejsi profil, najviac dava zmysel GymBeam Pure Isowhey.\n\nPre vacsinu citatelov tu netreba hladat exoticke riesenia. Dolezite je vybrat produkt, ktory sa hodi na tvoj ciel a ktory budes vediet realne pouzivat."
         }
@@ -78,6 +74,23 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-28T21:27:06+00:00",
-    "updated_by": "admin"
+    "updated_at": "2026-03-29T07:01:24+00:00",
+    "updated_by": "admin",
+    "related_links": [
+        {
+            "slug": "protein-na-chudnutie",
+            "label": "Protein na chudnutie",
+            "description": "Ak riesis redukciu a vyber vhodnejsieho proteinu do diety."
+        },
+        {
+            "slug": "pre-workout-ako-vybrat",
+            "label": "Ako vybrat pre-workout",
+            "description": "Ak chces doplnit vykonovy stack okolo treningu."
+        },
+        {
+            "slug": "doplnky-vyzivy",
+            "label": "Doplnky vyzivy",
+            "description": "Ak chces vediet, s ktorymi doplnkami ma zmysel zacat sirsie."
+        }
+    ]
 }

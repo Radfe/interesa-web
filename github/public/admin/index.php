@@ -171,6 +171,85 @@ function interessa_admin_collect_sections(): array {
     return $sections;
 }
 
+function interessa_admin_collect_related_links(string $articleSlug = ''): array {
+    $slugs = $_POST['related_link_slug'] ?? [];
+    $labels = $_POST['related_link_label'] ?? [];
+    $descriptions = $_POST['related_link_description'] ?? [];
+    $rows = [];
+
+    if (!is_array($slugs) || !is_array($labels) || !is_array($descriptions)) {
+        return $rows;
+    }
+
+    $count = max(count($slugs), count($labels), count($descriptions));
+    for ($i = 0; $i < $count; $i++) {
+        $slug = canonical_article_slug(interessa_admin_slugify((string) ($slugs[$i] ?? '')));
+        $label = trim((string) ($labels[$i] ?? ''));
+        $description = trim((string) ($descriptions[$i] ?? ''));
+        if ($slug === '' && $label === '' && $description === '') {
+            continue;
+        }
+
+        $rows[] = [
+            'slug' => $slug,
+            'label' => $label,
+            'description' => $description,
+        ];
+    }
+
+    return $rows;
+}
+
+function interessa_admin_article_link_options(string $excludeSlug = ''): array {
+    $excludeSlug = canonical_article_slug(interessa_admin_slugify($excludeSlug));
+    $items = [];
+
+    if (function_exists('indexed_articles')) {
+        foreach (indexed_articles() as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            $slug = canonical_article_slug((string) ($item['slug'] ?? ''));
+            if ($slug === '' || $slug === $excludeSlug) {
+                continue;
+            }
+            $items[$slug] = trim((string) ($item['title'] ?? humanize_slug($slug)));
+        }
+    } elseif (function_exists('article_registry')) {
+        foreach (article_registry() as $slug => $_row) {
+            $slug = canonical_article_slug((string) $slug);
+            if ($slug === '' || $slug === $excludeSlug) {
+                continue;
+            }
+            $items[$slug] = trim((string) (article_meta($slug)['title'] ?? humanize_slug($slug)));
+        }
+    }
+
+    asort($items, SORT_NATURAL | SORT_FLAG_CASE);
+    return $items;
+}
+
+function interessa_admin_related_links_editor_rows(array $rows, int $max = 4): array {
+    $normalized = [];
+    foreach ($rows as $row) {
+        if (!is_array($row)) {
+            continue;
+        }
+        $normalized[] = [
+            'slug' => canonical_article_slug(interessa_admin_slugify((string) ($row['slug'] ?? ''))),
+            'label' => trim((string) ($row['label'] ?? '')),
+            'description' => trim((string) ($row['description'] ?? '')),
+        ];
+    }
+
+    $max = max(1, $max);
+    while (count($normalized) < $max) {
+        $normalized[] = ['slug' => '', 'label' => '', 'description' => ''];
+    }
+
+    return array_slice($normalized, 0, $max);
+}
+
 function interessa_admin_article_starter(string $type, string $title, string $intro): array {
     $type = strtolower(trim($type));
     $title = trim($title);
@@ -183,6 +262,7 @@ function interessa_admin_article_starter(string $type, string $title, string $in
         'meta_description' => $intro,
         'sections' => [],
         'comparison' => ['columns' => [], 'rows' => []],
+        'related_links' => [],
         'recommended_products' => [],
     ];
 
@@ -2459,6 +2539,7 @@ if ($isAuthed) {
                         'columns' => $comparisonColumns,
                         'rows' => $comparisonRows,
                     ],
+                    'related_links' => interessa_admin_collect_related_links($slug),
                     'recommended_products' => $recommended,
                     'product_plan' => $productPlan,
                 ];
@@ -3518,6 +3599,15 @@ $articleFaqItems = function_exists('interessa_article_faq_items')
 $articleRelatedItems = function_exists('interessa_related_articles')
     ? interessa_related_articles($selectedArticleSlug, 4)
     : [];
+$articleRelatedFallbackItems = function_exists('interessa_related_articles_fallback')
+    ? interessa_related_articles_fallback($selectedArticleSlug, 4)
+    : $articleRelatedItems;
+$articleManualRelatedLinks = array_values(array_filter(
+    is_array($selectedArticleOverride['related_links'] ?? null) ? $selectedArticleOverride['related_links'] : [],
+    'is_array'
+));
+$articleRelatedEditorRows = interessa_admin_related_links_editor_rows($articleManualRelatedLinks, 4);
+$articleLinkOptions = interessa_admin_article_link_options($selectedArticleSlug);
 $articleLastUpdated = trim((string) ($selectedArticleOverride['updated_at'] ?? ''));
 $articleLastUpdatedLabel = $articleLastUpdated !== ''
     ? str_replace('T', ' ', substr($articleLastUpdated, 0, 16))
@@ -5498,31 +5588,74 @@ require dirname(__DIR__) . '/inc/head.php';
                 <div class="admin-subsection-head">
                   <div>
                     <h3>Suvisiace clanky / interne prepojenie</h3>
-                    <p class="admin-meta">Rychly prehlad, ake interne odkazy sa pre tento clanok dnes pravdepodobne zobrazia.</p>
+                    <p class="admin-meta">Sem vyberas realne klikatelne interne odkazy. Ak nic nezadas, web pouzije len automaticky fallback.</p>
                   </div>
                   <div class="admin-inline-actions">
                     <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
                   </div>
                 </div>
-                <?php if ($articleRelatedItems === []): ?>
-                  <p class="admin-note">Zatial sa nenasli ziadne suvisiace clanky pre tento slug.</p>
-                <?php else: ?>
-                  <div class="admin-queue-list">
-                    <?php foreach ($articleRelatedItems as $relatedItem): ?>
-                      <?php $relatedSlug = canonical_article_slug((string) ($relatedItem['slug'] ?? '')); ?>
-                      <article class="admin-queue-item">
-                        <div>
-                          <strong><?= esc((string) ($relatedItem['title'] ?? $relatedSlug)) ?></strong>
-                          <p><?= esc($relatedSlug) ?></p>
+                <p class="admin-note">Na webe sa najprv zobrazi tento editorom riadeny block. Automaticky related block sa pouzije len ako fallback, ked su tieto riadky prazdne.</p>
+                <div class="admin-queue-list">
+                  <?php foreach ($articleRelatedEditorRows as $index => $relatedRow): ?>
+                    <?php
+                      $relatedSlug = canonical_article_slug((string) ($relatedRow['slug'] ?? ''));
+                      $relatedMeta = $relatedSlug !== '' ? article_meta($relatedSlug) : [];
+                      $relatedLabelValue = trim((string) ($relatedRow['label'] ?? ''));
+                      $relatedDescriptionValue = trim((string) ($relatedRow['description'] ?? ''));
+                    ?>
+                    <article class="admin-queue-item">
+                      <div style="width:100%;">
+                        <div class="admin-grid two-up">
+                          <label>
+                            <span>Cielovy clanok <?= esc((string) ($index + 1)) ?></span>
+                            <select name="related_link_slug[]">
+                              <option value="">Nevybrane</option>
+                              <?php foreach ($articleLinkOptions as $optionSlug => $optionTitle): ?>
+                                <option value="<?= esc((string) $optionSlug) ?>" <?= $relatedSlug === (string) $optionSlug ? 'selected' : '' ?>><?= esc((string) $optionTitle) ?></option>
+                              <?php endforeach; ?>
+                            </select>
+                          </label>
+                          <label>
+                            <span>Vlastny label (volitelne)</span>
+                            <input type="text" name="related_link_label[]" value="<?= esc($relatedLabelValue) ?>" placeholder="<?= esc((string) ($relatedMeta['title'] ?? 'Nadpis sa inak vezme z clanku')) ?>" />
+                          </label>
                         </div>
-                        <div class="admin-inline-actions">
-                          <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($relatedSlug) ?>">Otvorit v admine</a>
-                          <a class="btn btn-secondary btn-small" href="<?= esc(article_url($relatedSlug)) ?>" target="_blank" rel="noopener">Otvorit na webe</a>
-                        </div>
-                      </article>
-                    <?php endforeach; ?>
-                  </div>
-                <?php endif; ?>
+                        <label>
+                          <span>Kratky dovod / popis (volitelne)</span>
+                          <input type="text" name="related_link_description[]" value="<?= esc($relatedDescriptionValue) ?>" placeholder="<?= esc((string) ($relatedMeta['description'] ?? 'Preco ma tento clanok zmysel ako dalsi krok')) ?>" />
+                        </label>
+                        <?php if ($relatedSlug !== ''): ?>
+                          <div class="admin-inline-actions" style="margin-top:8px;">
+                            <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($relatedSlug) ?>">Otvorit v admine</a>
+                            <a class="btn btn-secondary btn-small" href="<?= esc(article_url($relatedSlug)) ?>" target="_blank" rel="noopener">Otvorit na webe</a>
+                          </div>
+                        <?php endif; ?>
+                      </div>
+                    </article>
+                  <?php endforeach; ?>
+                </div>
+                <details class="admin-subsection is-compact">
+                  <summary><strong>Automaticky fallback dnes</strong> - otvor len ked chces porovnat, co by web ukazal bez manualneho linking planu</summary>
+                  <?php if ($articleRelatedFallbackItems === []): ?>
+                    <p class="admin-note">Zatial sa nenasli ziadne fallback suvisiace clanky pre tento slug.</p>
+                  <?php else: ?>
+                    <div class="admin-queue-list">
+                      <?php foreach ($articleRelatedFallbackItems as $relatedItem): ?>
+                        <?php $relatedSlug = canonical_article_slug((string) ($relatedItem['slug'] ?? '')); ?>
+                        <article class="admin-queue-item">
+                          <div>
+                            <strong><?= esc((string) ($relatedItem['title'] ?? $relatedSlug)) ?></strong>
+                            <p><?= esc($relatedSlug) ?></p>
+                          </div>
+                          <div class="admin-inline-actions">
+                            <a class="btn btn-secondary btn-small" href="/admin?section=articles&amp;slug=<?= esc($relatedSlug) ?>">Otvorit v admine</a>
+                            <a class="btn btn-secondary btn-small" href="<?= esc(article_url($relatedSlug)) ?>" target="_blank" rel="noopener">Otvorit na webe</a>
+                          </div>
+                        </article>
+                      <?php endforeach; ?>
+                    </div>
+                  <?php endif; ?>
+                </details>
               </section>
 
               <section class="admin-subsection is-compact" id="article-seo-block">

@@ -59,6 +59,7 @@ if (!function_exists('interessa_admin_article_content_payload')) {
 
         $comparison = is_array($article['comparison'] ?? null) ? $article['comparison'] : [];
         $recommendedProducts = array_values(array_filter(array_map(static fn(mixed $value): string => trim((string) $value), (array) ($article['recommended_products'] ?? []))));
+        $relatedLinks = array_values(array_filter((array) ($article['related_links'] ?? []), 'is_array'));
 
         $html = (string) ob_get_clean();
         $readingTime = max(1, (int) ceil($wordCount / 180));
@@ -69,6 +70,8 @@ if (!function_exists('interessa_admin_article_content_payload')) {
             'reading_time' => $readingTime,
             'has_recommendations' => $recommendedProducts !== [],
             'has_comparison' => ($comparison['columns'] ?? []) !== [] && ($comparison['rows'] ?? []) !== [],
+            'has_related_links' => $relatedLinks !== [],
+            'related_links_count' => count($relatedLinks),
             'intro' => trim((string) ($article['intro'] ?? '')),
         ];
     }

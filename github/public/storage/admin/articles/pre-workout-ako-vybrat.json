@@ -34,10 +34,6 @@
         {
             "heading": "FAQ",
             "body": "Je silnejsi pre-workout automaticky lepsi? Nie, len pre urcity typ pouzivatela a treningu.\n\nMa zmysel pump-focused produkt aj bez vysokeho stimu? Ano, ak nechces stavat vsetko na kofeine a ide ti skor o iny typ supportu.\n\nJe Cellucor C4 dobry start? Ano, prave preto je tu ako hlavna vyvazena volba pre vacsinu ludi."
-        },
-        {
-            "heading": "Suvisiace clanky",
-            "body": "Ak riesis aj silovy zaklad okolo treningu, pokracuj na kreatin-porovnanie. Pri sirsom pohlade na doplnky sa hodi clanok doplnky-vyzivy."
         }
     ],
     "comparison": {
@@ -74,6 +70,23 @@
             "show_in_comparison": false
         }
     ],
-    "updated_at": "2026-03-29T06:25:20+00:00",
-    "updated_by": "admin"
+    "updated_at": "2026-03-29T07:01:24+00:00",
+    "updated_by": "admin",
+    "related_links": [
+        {
+            "slug": "kreatin-porovnanie",
+            "label": "Kreatin porovnanie",
+            "description": "Ak chces doplnit predtreningovy stack o spolahlivy vykonovy zaklad."
+        },
+        {
+            "slug": "doplnky-vyzivy",
+            "label": "Doplnky vyzivy",
+            "description": "Ak chces sirsi prehlad doplnkov, ktore maju realny prakticky zmysel."
+        },
+        {
+            "slug": "najlepsie-proteiny-2026",
+            "label": "Najlepsie proteiny 2026",
+            "description": "Ak popri energii pred treningom riesis aj zaklad regeneracie a prijmu bielkovin."
+        }
+    ]
 }
