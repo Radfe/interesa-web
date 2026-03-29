@@ -3361,6 +3361,20 @@ $selectedArticleOverride = $selectedArticleSlug !== '' ? interessa_admin_article
 $articlePrompt = $selectedArticleSlug !== '' ? interessa_hero_prompt_meta($selectedArticleSlug) : [];
 $selectedArticleHero = $selectedArticleSlug !== '' ? interessa_article_image_meta($selectedArticleSlug, 'hero', true) : null;
 $selectedArticleHeroSource = is_array($selectedArticleHero) ? (string) ($selectedArticleHero['source_type'] ?? 'placeholder') : 'missing';
+$articleHeroDimensionsRaw = trim((string) ($articlePrompt['dimensions'] ?? '1200x800'));
+$articleHeroDimensionsLabel = $articleHeroDimensionsRaw !== '' ? $articleHeroDimensionsRaw : '1200x800';
+if (preg_match('~^\s*(\d+)\s*x\s*(\d+)\s*$~i', $articleHeroDimensionsRaw, $articleHeroDimensionsMatch)) {
+    $articleHeroDimensionsLabel = $articleHeroDimensionsMatch[1] . ' × ' . $articleHeroDimensionsMatch[2] . ' px';
+}
+$articleHeroCanvaSteps = [
+    'Otvor Canva Pro.',
+    'Vytvor novy projekt.',
+    'Zvol Vlastne rozmery.',
+    'Nastav presne: ' . $articleHeroDimensionsLabel . '.',
+    'Skopiruj prompt nizsie a vloz ho do Canvy.',
+    'Vygeneruj 1 cisty obrazok bez textu a bez kolaze.',
+    'Stiahni obrazok a nahraj ho sem.',
+];
 
 
 $catalog = interessa_product_catalog();
@@ -7374,29 +7388,44 @@ require dirname(__DIR__) . '/inc/head.php';
 
             <section class="admin-subsection admin-asset-preview">
               <div class="admin-subsection-head">
-                <h3>Hlavny obrazok clanku</h3>
+                <div>
+                  <h3>Nahrat hero obrazok clanku</h3>
+                  <p class="admin-meta">Toto je hlavny obrazok clanku. Najprv si priprav obrazok v Canve, potom ho sem nahraj jednym krokom.</p>
+                </div>
               </div>
               <div class="admin-asset-preview__grid">
                 <div class="admin-asset-preview__media">
                   <?= interessa_render_image($selectedArticleHero, ['class' => 'admin-asset-preview__image']) ?>
                 </div>
                 <div class="admin-asset-preview__body">
-                  <p><strong>Odkial je obrazok:</strong> <?= esc($selectedArticleHeroSource) ?></p>
-                  <p><strong>Aktualny subor:</strong> <code><?= esc((string) ($selectedArticleHero['asset'] ?? '')) ?></code></p>
-                  <p><strong>Kam sa ulozi:</strong> <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></p>
-                  <p class="admin-note">Tu klikaj len v tomto poradi: 1. Skopiruj text pre Canvu. 2. V Canve sprav obrazok. 3. Nahraj obrazok sem. 4. Po nahrati sa clanok sam otvori na webe. Admin pri nahrati sam upravi rozmer na 1200 x 800.</p>
-                  <div class="admin-inline-actions">
-                    <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['prompt'] ?? '')) ?>">1. Kopirovat text pre Canvu</button>
-                    <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">4. Otvorit clanok na webe</a>
+                  <div class="admin-check-card" style="margin-bottom:12px;">
+                    <strong>Pozadovany rozmer: <?= esc($articleHeroDimensionsLabel) ?></strong>
+                    <p class="admin-note" style="margin-top:6px;">Toto je realny cielovy rozmer, ktory dnes admin pouziva pri nahrati hero obrazka.</p>
+                  </div>
+                  <div class="admin-check-card" style="margin-bottom:12px;">
+                    <strong>Canva prompt</strong>
+                    <p class="admin-note" style="margin-top:6px; white-space:pre-line;"><?= esc((string) ($articlePrompt['prompt'] ?? '')) ?></p>
+                    <div class="admin-inline-actions" style="margin-top:10px;">
+                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['prompt'] ?? '')) ?>">Kopirovat prompt pre Canvu</button>
+                    </div>
+                  </div>
+                  <div class="admin-check-card" style="margin-bottom:12px;">
+                    <strong>Postup v Canve</strong>
+                    <ol class="admin-note" style="margin:8px 0 0 18px;">
+                      <?php foreach ($articleHeroCanvaSteps as $heroCanvaStep): ?>
+                        <li><?= esc($heroCanvaStep) ?></li>
+                      <?php endforeach; ?>
+                    </ol>
                   </div>
                   <form method="post" action="/admin" enctype="multipart/form-data" class="admin-form admin-form-stack">
                     <input type="hidden" name="action" value="upload_hero_only" />
                     <input type="hidden" name="slug" value="<?= esc($selectedArticleSlug) ?>" />
                     <input type="hidden" name="hero_crop_mode" value="center" />
                     <label>
-                      <span>2. Vyber hotovy obrazok z Canvy</span>
+                      <span>Nahrat hero obrazok</span>
                       <input type="file" name="hero_image" accept="image/webp,image/png,image/jpeg" required />
                     </label>
+                    <p class="admin-note">Vyber hotovy obrazok z Canvy. Admin ho pri nahrati automaticky upravi na pozadovany rozmer.</p>
                     <section class="admin-crop-picker" data-hero-crop-picker hidden>
                       <div class="admin-crop-picker__head">
                         <strong>Vyber najlepsi vyrez obrazka</strong>
@@ -7417,8 +7446,20 @@ require dirname(__DIR__) . '/inc/head.php';
                         </button>
                       </div>
                     </section>
-                    <button class="btn btn-cta" type="submit">3. Nahraj obrazok a otvor clanok</button>
+                    <button class="btn btn-cta" type="submit">Nahrat hero obrazok</button>
                   </form>
+                  <p class="admin-note" style="margin-top:10px;">Po uspesnom nahrati sa clanok sam otvori na webe.</p>
+                  <div class="admin-check-card" style="margin-top:12px;">
+                    <strong>Technicke detaily a pomocnici</strong>
+                    <p class="admin-note" style="margin-top:6px;">Toto je len doplnkova pomoc. Bezny editor to nepotrebuje pri kazdom clanku pouzit.</p>
+                    <p><strong>Odkial je obrazok:</strong> <?= esc($selectedArticleHeroSource) ?></p>
+                    <p><strong>Aktualny subor:</strong> <code><?= esc((string) ($selectedArticleHero['asset'] ?? '')) ?></code></p>
+                    <p><strong>Kam sa ulozi:</strong> <code><?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?></code></p>
+                    <div class="admin-inline-actions" style="margin-top:10px;">
+                      <button class="btn btn-secondary btn-small" type="button" data-copy-value="<?= esc((string) ($articlePrompt['asset_path'] ?? '')) ?>">Kopirovat cielovu cestu</button>
+                      <a class="btn btn-secondary btn-small" href="<?= esc(article_url($selectedArticleSlug)) ?>" target="_blank" rel="noopener">Otvorit clanok na webe</a>
+                    </div>
+                  </div>
                   <?php if ($selectedHeroQueuePosition > 0): ?>
                     <p class="admin-note">Zostava spravit: <?= esc((string) $selectedHeroQueuePosition) ?> / <?= esc((string) count($missingHeroSlugs)) ?></p>
                   <?php endif; ?>

@@ -1,0 +1,73 @@
+{
+    "slug": "vitamin-d3-a-imunita",
+    "title": "",
+    "intro": "",
+    "meta_title": "",
+    "meta_description": "",
+    "category": "",
+    "hero_asset": "",
+    "sections": [],
+    "comparison": {
+        "title": "",
+        "intro": "",
+        "columns": [],
+        "rows": []
+    },
+    "related_links": [],
+    "product_recommendation": {
+        "article_slug": "vitamin-d3-a-imunita",
+        "intent_key": "vitamin-d-general",
+        "intent_label": "Vitamin D",
+        "summary": "System hlada D3+K2 ako hlavny default, cisty D3 variant ako jednoduchsi value krok a tretiu odlisnu vetvu s dalsim wellness benefitom.",
+        "generated_at": "2026-03-29T10:01:42+00:00",
+        "applied_at": "",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-gymbeam-vitamin-d3-k1-k2-forte",
+                "role": "featured",
+                "branch": "overall",
+                "branch_label": "Najlepsi vitamin D default",
+                "reasoning": "Najpraktickejsia hlavna volba pre cloveka, ktory chce vitamin D riesit jednym silnym defaultom.",
+                "score": 2995,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "imunita",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "gymbeam-gymbeam-vitam-in-d3-1000-iu",
+                "role": "value",
+                "branch": "value",
+                "branch_label": "Jednoduchsia D3 volba",
+                "reasoning": "Cisty D3 variant pre cloveka, ktory nechce komplikovanejsi stack a hlada jednoduchsi daily-use format.",
+                "score": 2490,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "Športová výživa > vitamíny > vitamín d",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-gymbeam-omega-3-vitamin-d3",
+                "role": "alternative",
+                "branch": "wellness",
+                "branch_label": "Ina wellness vetva",
+                "reasoning": "Doplna vitamin D temu o odlisny use-case s dalsim benefitom mimo cisteho D3 defaultu.",
+                "score": 2835,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "imunita",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
+    "recommended_products": [],
+    "product_plan": [],
+    "updated_at": "",
+    "updated_by": "admin"
+}

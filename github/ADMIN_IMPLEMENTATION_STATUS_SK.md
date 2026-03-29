@@ -149,6 +149,25 @@ Najnovsie automaticke odporucanie produktov pre clanok:
   - `probiotika-ako-vybrat`
   - `horcik-ktory-je-najlepsi-a-preco`
 - zinok/mineral workflow ma pripraveny samostatny `mineraly-zinok` profil a je pripraveny, ked pre dany clanok bude v storage realny article override
+
+Rozsirena coverage odporucacieho enginu:
+- engine uz nepokryva len prvy priority batch, ale aj dalsie realne content clustre:
+  - `mineraly-zinok`
+  - `vitamin-d-general`
+  - `imunita-general`
+  - `kolagen-general`
+  - `omega3-general`
+  - `multivitamin-general`
+  - `vitamin-c-general`
+  - `vitamin-b12-general`
+- article editor vie pre tieto clustre ulozit `product_recommendation` aj bez existujuceho admin article override; override sa vie vytvorit on-demand
+- profiler stale drzi strict relevance:
+  - affiliate-ready
+  - product-level URL
+  - supported merchant
+  - odlisne slot branches
+- zname obmedzenie po tomto kroku:
+  - `vitamin-b-komplex` clustre zatial nemaju dost siroke a kvalitne produktove data, preto padaju do generic fallbacku a nie su este safe na automaticky apply
   - az potom produktove sloty
 - starsie pokrocile polia pre odporucane produkty ostavaju dostupne len ako legacy fallback
 - verejny clanok uz vie citat admin `product_plan` / `article-products.json` ako source of truth pre odporucane produkty

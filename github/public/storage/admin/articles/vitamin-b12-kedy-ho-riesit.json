@@ -1,0 +1,73 @@
+{
+    "slug": "vitamin-b12-kedy-ho-riesit",
+    "title": "",
+    "intro": "",
+    "meta_title": "",
+    "meta_description": "",
+    "category": "",
+    "hero_asset": "",
+    "sections": [],
+    "comparison": {
+        "title": "",
+        "intro": "",
+        "columns": [],
+        "rows": []
+    },
+    "related_links": [],
+    "product_recommendation": {
+        "article_slug": "vitamin-b12-kedy-ho-riesit",
+        "intent_key": "vitamin-b12-general",
+        "intent_label": "Vitamin B12",
+        "summary": "System hlada aktivnu alebo silnu B12 formu, jednoduchu tabletkovu value volbu a tretiu odlisnu formu pouzitia.",
+        "generated_at": "2026-03-29T10:01:52+00:00",
+        "applied_at": "",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-gymbeam-akt-ivny-vitam-in-b12-metylkobalam-in",
+                "role": "featured",
+                "branch": "active",
+                "branch_label": "Najlepsia aktivna forma",
+                "reasoning": "Hlavna volba pre cloveka, ktory chce lepsie obhajitelnu aktivnu alebo pokrocilejsiu B12 formu.",
+                "score": 2240,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "Športová výživa > vitamíny > vitamíny b",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "gymbeam-gymbeam-vitam-in-b12-kobalam-in-90-tab-bez-pr-ichute",
+                "role": "value",
+                "branch": "value",
+                "branch_label": "Jednoduchsia tabletkova volba",
+                "reasoning": "Jednoduchsi tabletkovy default pre cloveka, ktory chce vitamin B12 vyriesit bez komplikacii.",
+                "score": 2330,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "Športová výživa > vitamíny > vitamíny b",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-gymbeam-vitam-in-b12-v-spreji-dragon-fruit",
+                "role": "alternative",
+                "branch": "format",
+                "branch_label": "Ina forma pouzitia",
+                "reasoning": "Tretia vetva pre cloveka, ktory chce iny sposob uzivania, napríklad sprej.",
+                "score": 2330,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "Športová výživa > vitamíny > vitamíny b",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
+    "recommended_products": [],
+    "product_plan": [],
+    "updated_at": "",
+    "updated_by": "admin"
+}

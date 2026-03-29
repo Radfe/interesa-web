@@ -1,0 +1,73 @@
+{
+    "slug": "imunita-prirodne-latky-ktore-funguju",
+    "title": "",
+    "intro": "",
+    "meta_title": "",
+    "meta_description": "",
+    "category": "",
+    "hero_asset": "",
+    "sections": [],
+    "comparison": {
+        "title": "",
+        "intro": "",
+        "columns": [],
+        "rows": []
+    },
+    "related_links": [],
+    "product_recommendation": {
+        "article_slug": "imunita-prirodne-latky-ktore-funguju",
+        "intent_key": "imunita-general",
+        "intent_label": "Imunita",
+        "summary": "System hlada hlavnu imunitnu volbu, value podporu a odlisnu gut alebo wellness vetvu.",
+        "generated_at": "2026-03-29T10:01:43+00:00",
+        "applied_at": "",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "imunoklub-imunoglukan-p4h-60-kapsul",
+                "role": "featured",
+                "branch": "immune-core",
+                "branch_label": "Najlepsi imunitny zaklad",
+                "reasoning": "Hlavna volba pre cloveka, ktory hlada jasny imunitny default produkt.",
+                "score": 2707,
+                "merchant": "Imunoklub",
+                "merchant_slug": "imunoklub",
+                "category": "imunita",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "gymbeam-gymbeam-vitam-in-c-zinok-120-tab",
+                "role": "value",
+                "branch": "value",
+                "branch_label": "Najlepsia value podpora",
+                "reasoning": "Jednoduchsia value alternativa pre bezny imunitny support.",
+                "score": 2390,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "mineraly",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "symprove-daily-essential-4-tyzdne",
+                "role": "alternative",
+                "branch": "gut",
+                "branch_label": "Ina wellness vetva",
+                "reasoning": "Doplna imunitnu temu o gut alebo digestion angle ako odlisny next step.",
+                "score": 2687,
+                "merchant": "Symprove",
+                "merchant_slug": "symprove",
+                "category": "probiotika-travenie",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
+    "recommended_products": [],
+    "product_plan": [],
+    "updated_at": "",
+    "updated_by": "admin"
+}

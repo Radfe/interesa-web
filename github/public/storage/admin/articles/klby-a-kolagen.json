@@ -1,0 +1,73 @@
+{
+    "slug": "klby-a-kolagen",
+    "title": "",
+    "intro": "",
+    "meta_title": "",
+    "meta_description": "",
+    "category": "",
+    "hero_asset": "",
+    "sections": [],
+    "comparison": {
+        "title": "",
+        "intro": "",
+        "columns": [],
+        "rows": []
+    },
+    "related_links": [],
+    "product_recommendation": {
+        "article_slug": "klby-a-kolagen",
+        "intent_key": "kolagen-general",
+        "intent_label": "Kolagen a klby",
+        "summary": "System hlada joint-focused hlavnu volbu, value kolagenovu alternativu a tretiu odlisnu kolagenovu vetvu.",
+        "generated_at": "2026-03-29T10:01:45+00:00",
+        "applied_at": "",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-gymbeam-collagen-type-ii-joint-complex",
+                "role": "featured",
+                "branch": "joint",
+                "branch_label": "Najlepsi kolagen na klby",
+                "reasoning": "Hlavna volba pre clanok, ktory riesi klby, pohyb a cielenejsi joint use-case.",
+                "score": 2895,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "klby-koza",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "proteinsk-kolagen-protein-nutrition",
+                "role": "value",
+                "branch": "value",
+                "branch_label": "Najlepsia value kolagen volba",
+                "reasoning": "Jednoduchsia alebo rozpoctovo lepsia kolagenova volba pre cloveka, ktory nechce ist hned do specializovanej joint vetvy.",
+                "score": 2547,
+                "merchant": "Protein.sk",
+                "merchant_slug": "protein-sk",
+                "category": "klby-koza",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-runcollg-collagen",
+                "role": "alternative",
+                "branch": "specific",
+                "branch_label": "Ina kolagenova vetva",
+                "reasoning": "Tretia vetva pre citatela, ktory chce iny typ kolagenu alebo iny format pouzitia.",
+                "score": 3007,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "klby-koza",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
+    "recommended_products": [],
+    "product_plan": [],
+    "updated_at": "",
+    "updated_by": "admin"
+}

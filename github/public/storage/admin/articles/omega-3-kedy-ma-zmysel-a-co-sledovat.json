@@ -1,0 +1,73 @@
+{
+    "slug": "omega-3-kedy-ma-zmysel-a-co-sledovat",
+    "title": "",
+    "intro": "",
+    "meta_title": "",
+    "meta_description": "",
+    "category": "",
+    "hero_asset": "",
+    "sections": [],
+    "comparison": {
+        "title": "",
+        "intro": "",
+        "columns": [],
+        "rows": []
+    },
+    "related_links": [],
+    "product_recommendation": {
+        "article_slug": "omega-3-kedy-ma-zmysel-a-co-sledovat",
+        "intent_key": "omega3-general",
+        "intent_label": "Omega-3",
+        "summary": "System hlada klasicky fish oil default, silnejsiu forte value volbu a tretiu odlisnu vetvu pre iny use-case.",
+        "generated_at": "2026-03-29T10:01:48+00:00",
+        "applied_at": "",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-gymbeam-omega-3",
+                "role": "featured",
+                "branch": "overall",
+                "branch_label": "Najlepsia omega-3 default volba",
+                "reasoning": "Najpraktickejsi hlavny fish oil default pre vacsinu ludi, ktori chcu doplnit omega-3 bez komplikacii.",
+                "score": 2600,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "Športová výživa > zdravé tuky > omega-3",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "gymbeam-gymbeam-omega-3-forte",
+                "role": "value",
+                "branch": "forte",
+                "branch_label": "Silnejsia alebo value forte alternativa",
+                "reasoning": "Forte alebo silnejsie nastavena alternativa pre cloveka, ktory chce vyssiu koncentraciu alebo silnejsi dojem z produktu.",
+                "score": 2760,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "Športová výživa > zdravé tuky > omega-3",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-gymbeam-omega-3-vitamin-d3",
+                "role": "alternative",
+                "branch": "specific",
+                "branch_label": "Ina vetva rozhodnutia",
+                "reasoning": "Odlisna omega-3 vetva pre citatela, ktory chce vegan variant alebo sirsi wellness angle.",
+                "score": 2600,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "imunita",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
+    "recommended_products": [],
+    "product_plan": [],
+    "updated_at": "",
+    "updated_by": "admin"
+}

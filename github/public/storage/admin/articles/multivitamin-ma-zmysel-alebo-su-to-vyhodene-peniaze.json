@@ -1,0 +1,73 @@
+{
+    "slug": "multivitamin-ma-zmysel-alebo-su-to-vyhodene-peniaze",
+    "title": "",
+    "intro": "",
+    "meta_title": "",
+    "meta_description": "",
+    "category": "",
+    "hero_asset": "",
+    "sections": [],
+    "comparison": {
+        "title": "",
+        "intro": "",
+        "columns": [],
+        "rows": []
+    },
+    "related_links": [],
+    "product_recommendation": {
+        "article_slug": "multivitamin-ma-zmysel-alebo-su-to-vyhodene-peniaze",
+        "intent_key": "multivitamin-general",
+        "intent_label": "Multivitamin",
+        "summary": "System hlada silnejsi all-in-one default, jednoduchsi daily-use format a tretiu alternativnu vetvu.",
+        "generated_at": "2026-03-29T10:01:50+00:00",
+        "applied_at": "",
+        "items": [
+            {
+                "slot": 1,
+                "product_slug": "gymbeam-now-men-s-active-sports-multivitamin",
+                "role": "featured",
+                "branch": "overall",
+                "branch_label": "Najlepsi multivitamin default",
+                "reasoning": "Hlavna volba pre citatela, ktory chce co najjasnejsi all-in-one multivitamin default.",
+                "score": 2565,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "Športová výživa > ostatné doplnky výživy > ostatné špeciálne doplnky výživy",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 2,
+                "product_slug": "gymbeam-gymbeam-yummies-multivitamin-pomaranc-citr-on-ceresna",
+                "role": "value",
+                "branch": "simple",
+                "branch_label": "Jednoduchsia everyday volba",
+                "reasoning": "Lahsie uchopitelna alebo jednoduchsi format orientovany na bezny daily-use.",
+                "score": 2565,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "Športová výživa > vitamíny > multivitamíny",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            },
+            {
+                "slot": 3,
+                "product_slug": "gymbeam-the-protein-works-multivitamin-ultra-60-tab",
+                "role": "alternative",
+                "branch": "specific",
+                "branch_label": "Ina multivitaminova alternativa",
+                "reasoning": "Tretia vetva pre cloveka, ktory chce iny styl multivitaminoveho produktu.",
+                "score": 2600,
+                "merchant": "GymBeam",
+                "merchant_slug": "gymbeam",
+                "category": "proteiny",
+                "affiliate_ready": true,
+                "product_level_ready": true
+            }
+        ]
+    },
+    "recommended_products": [],
+    "product_plan": [],
+    "updated_at": "",
+    "updated_by": "admin"
+}

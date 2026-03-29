@@ -2099,9 +2099,9 @@ if (!function_exists('interessa_admin_article_recommendation_profiles')) {
             ],
             'probiotika-general' => [
                 'intent_label' => 'Probiotika',
-                'summary' => 'System hlada everyday probiotikum, sirsi complex a specificku strainovu alternativu.',
+                'summary' => 'System hlada everyday probiotikum, sirsi complex a specificku strainovu alebo digestion alternativu.',
                 'allow_categories' => ['probiotika-travenie'],
-                'prefer_keywords' => ['probiotik', 'digest', 'gut', 'lactobac', 'bifido', 'traven', 'enzym'],
+                'prefer_keywords' => ['probiotik', 'digest', 'gut', 'lactobac', 'bifido', 'traven', 'enzym', 'mikrobiom', 'antibiotik', 'naduv'],
                 'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein', 'magnesium', 'horcik'],
                 'slots' => [
                     1 => [
@@ -2178,7 +2178,7 @@ if (!function_exists('interessa_admin_article_recommendation_profiles')) {
                 'intent_label' => 'Zinok',
                 'summary' => 'System hlada chelat ako hlavnu volbu, basic zinc ako value a jasne odlisnu kombinovanu vetvu.',
                 'allow_categories' => ['mineraly'],
-                'prefer_keywords' => ['zinok', 'zinc', 'chelat', 'bisglycinat', 'picolinat', 'citrate'],
+                'prefer_keywords' => ['zinok', 'zinc', 'zinek', 'chelat', 'bisglycinat', 'picolinat', 'citrate'],
                 'exclude_keywords' => ['magnesium', 'magnez', 'horcik', 'pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein'],
                 'slots' => [
                     1 => [
@@ -2209,6 +2209,221 @@ if (!function_exists('interessa_admin_article_recommendation_profiles')) {
                         'preferred_slugs' => ['gymbeam-gymbeam-chel-at-zinku-medi', 'gymbeam-gymbeam-vitam-in-c-zinok-120-tab'],
                         'preferred_keywords' => ['vitamin c', 'zinok', 'zinku', 'medi', 'c + zinok'],
                         'preferred_categories' => ['mineraly'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'vitamin-d-general' => [
+                'intent_label' => 'Vitamin D',
+                'summary' => 'System hlada D3+K2 ako hlavny default, cisty D3 variant ako jednoduchsi value krok a tretiu odlisnu vetvu s dalsim wellness benefitom.',
+                'allow_categories' => [],
+                'disable_rule_category_fallback' => true,
+                'prefer_keywords' => ['vitamin d', 'vitamin d3', 'd3', 'k2', 'k1', 'imunita'],
+                'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein', 'kolagen', 'collagen'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'overall',
+                        'branch_label' => 'Najlepsi vitamin D default',
+                        'reasoning' => 'Najpraktickejsia hlavna volba pre cloveka, ktory chce vitamin D riesit jednym silnym defaultom.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-vitamin-d3-k1-k2-forte', 'gymbeam-now-foods-vitamin-d3-k2-120-kaps'],
+                        'preferred_keywords' => ['vitamin d3', 'd3', 'k2', 'forte'],
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'value',
+                        'branch_label' => 'Jednoduchsia D3 volba',
+                        'reasoning' => 'Cisty D3 variant pre cloveka, ktory nechce komplikovanejsi stack a hlada jednoduchsi daily-use format.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-vitam-in-d3-2000-iu', 'gymbeam-gymbeam-vitam-in-d3-1000-iu'],
+                        'preferred_keywords' => ['vitamin d3', 'd3', '2000 iu', '1000 iu'],
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'wellness',
+                        'branch_label' => 'Ina wellness vetva',
+                        'reasoning' => 'Doplna vitamin D temu o odlisny use-case s dalsim benefitom mimo cisteho D3 defaultu.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-omega-3-vitamin-d3', 'gymbeam-now-foods-vitamin-d3-k2-120-kaps'],
+                        'preferred_keywords' => ['omega', 'vitamin d3', 'd3', 'k2'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'kolagen-general' => [
+                'intent_label' => 'Kolagen a klby',
+                'summary' => 'System hlada joint-focused hlavnu volbu, value kolagenovu alternativu a tretiu odlisnu kolagenovu vetvu.',
+                'allow_categories' => ['klby-koza'],
+                'prefer_keywords' => ['kolagen', 'collagen', 'klby', 'joint', 'hydrolyz', 'marine', 'type ii'],
+                'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'isolate', 'isolat', 'probiotik', 'magnesium', 'horcik'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'joint',
+                        'branch_label' => 'Najlepsi kolagen na klby',
+                        'reasoning' => 'Hlavna volba pre clanok, ktory riesi klby, pohyb a cielenejsi joint use-case.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-collagen-type-ii-joint-complex'],
+                        'preferred_keywords' => ['joint', 'type ii', 'klby', 'kolagen'],
+                        'requires_prefer_hit' => true,
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'value',
+                        'branch_label' => 'Najlepsia value kolagen volba',
+                        'reasoning' => 'Jednoduchsia alebo rozpoctovo lepsia kolagenova volba pre cloveka, ktory nechce ist hned do specializovanej joint vetvy.',
+                        'preferred_slugs' => ['proteinsk-kolagen-protein-nutrition'],
+                        'preferred_keywords' => ['kolagen', 'collagen', 'hydrolyz'],
+                        'preferred_merchants' => ['protein-sk'],
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'specific',
+                        'branch_label' => 'Ina kolagenova vetva',
+                        'reasoning' => 'Tretia vetva pre citatela, ktory chce iny typ kolagenu alebo iny format pouzitia.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-marine-collg-zelen-e-jablko', 'gymbeam-runcollg-collagen'],
+                        'preferred_keywords' => ['marine', 'hydrolyz', 'collagen', 'kolagen', 'runcollg'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'omega3-general' => [
+                'intent_label' => 'Omega-3',
+                'summary' => 'System hlada klasicky fish oil default, silnejsiu forte value volbu a tretiu odlisnu vetvu pre iny use-case.',
+                'allow_categories' => [],
+                'disable_rule_category_fallback' => true,
+                'prefer_keywords' => ['omega 3', 'omega-3', 'fish oil', 'rybi olej', 'dha', 'epa', 'omega'],
+                'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein', 'kolagen', 'probiotik'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'overall',
+                        'branch_label' => 'Najlepsia omega-3 default volba',
+                        'reasoning' => 'Najpraktickejsi hlavny fish oil default pre vacsinu ludi, ktori chcu doplnit omega-3 bez komplikacii.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-omega-3'],
+                        'preferred_keywords' => ['omega 3', 'omega-3'],
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'forte',
+                        'branch_label' => 'Silnejsia alebo value forte alternativa',
+                        'reasoning' => 'Forte alebo silnejsie nastavena alternativa pre cloveka, ktory chce vyssiu koncentraciu alebo silnejsi dojem z produktu.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-omega-3-forte'],
+                        'preferred_keywords' => ['omega 3 forte', 'forte', 'omega-3'],
+                        'requires_prefer_hit' => true,
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'specific',
+                        'branch_label' => 'Ina vetva rozhodnutia',
+                        'reasoning' => 'Odlisna omega-3 vetva pre citatela, ktory chce vegan variant alebo sirsi wellness angle.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-vegan-omega-3', 'gymbeam-gymbeam-omega-3-vitamin-d3'],
+                        'preferred_keywords' => ['vegan omega 3', 'omega-3', 'vitamin d3'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'multivitamin-general' => [
+                'intent_label' => 'Multivitamin',
+                'summary' => 'System hlada silnejsi all-in-one default, jednoduchsi daily-use format a tretiu alternativnu vetvu.',
+                'allow_categories' => [],
+                'disable_rule_category_fallback' => true,
+                'prefer_keywords' => ['multivitamin', 'multivitam', 'vitamins', 'daily vitamin'],
+                'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein isolate', 'kolagen', 'probiotik'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'overall',
+                        'branch_label' => 'Najlepsi multivitamin default',
+                        'reasoning' => 'Hlavna volba pre citatela, ktory chce co najjasnejsi all-in-one multivitamin default.',
+                        'preferred_slugs' => ['gymbeam-now-men-s-active-sports-multivitamin'],
+                        'preferred_keywords' => ['multivitamin', 'active sports'],
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'simple',
+                        'branch_label' => 'Jednoduchsia everyday volba',
+                        'reasoning' => 'Lahsie uchopitelna alebo jednoduchsi format orientovany na bezny daily-use.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-yummies-multivitamin-pomaranc-citr-on-ceresna'],
+                        'preferred_keywords' => ['multivitamin', 'yummies'],
+                        'requires_prefer_hit' => true,
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'specific',
+                        'branch_label' => 'Ina multivitaminova alternativa',
+                        'reasoning' => 'Tretia vetva pre cloveka, ktory chce iny styl multivitaminoveho produktu.',
+                        'preferred_slugs' => ['gymbeam-the-protein-works-multivitamin-ultra-60-tab'],
+                        'preferred_keywords' => ['multivitamin', 'ultra', 'vitamins'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'vitamin-c-general' => [
+                'intent_label' => 'Vitamin C',
+                'summary' => 'System hlada jednoduchy vitamin C default, silnejsiu alebo value alternativu a tretiu kombinovanu vetvu.',
+                'allow_categories' => [],
+                'disable_rule_category_fallback' => true,
+                'prefer_keywords' => ['vitamin c', 'askorb', 'imunita', 'zinc'],
+                'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein', 'kolagen'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'overall',
+                        'branch_label' => 'Najlepsi vitamin C default',
+                        'reasoning' => 'Najjednoduchsia hlavna volba pre cloveka, ktory chce riesit vitamin C priamo a bez zbytocneho komba.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-vitamin-c-500-mg'],
+                        'preferred_keywords' => ['vitamin c'],
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'higher-dose',
+                        'branch_label' => 'Silnejsia alebo value alternativa',
+                        'reasoning' => 'Vyssia davka alebo value alternativa pre cloveka, ktory chce iny format vitaminu C.',
+                        'preferred_slugs' => ['gymbeam-now-foods-vitamin-c-1000-mg'],
+                        'preferred_keywords' => ['vitamin c 1000', '1000 mg', 'vitamin c'],
+                        'requires_prefer_hit' => true,
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'combo',
+                        'branch_label' => 'Kombinovana alternativa',
+                        'reasoning' => 'Ina vetva rozhodnutia pre cloveka, ktory chce vitamin C uz v kombinacii so zinkom.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-vitam-in-c-zinok-120-tab'],
+                        'preferred_keywords' => ['vitamin c', 'zinok', 'zinc'],
+                        'requires_prefer_hit' => true,
+                    ],
+                ],
+            ],
+            'vitamin-b12-general' => [
+                'intent_label' => 'Vitamin B12',
+                'summary' => 'System hlada aktivnu alebo silnu B12 formu, jednoduchu tabletkovu value volbu a tretiu odlisnu formu pouzitia.',
+                'allow_categories' => [],
+                'disable_rule_category_fallback' => true,
+                'prefer_keywords' => ['vitamin b12', 'b12', 'kobalamin', 'metylkobalamin'],
+                'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein', 'kolagen'],
+                'slots' => [
+                    1 => [
+                        'role' => 'featured',
+                        'branch' => 'active',
+                        'branch_label' => 'Najlepsia aktivna forma',
+                        'reasoning' => 'Hlavna volba pre cloveka, ktory chce lepsie obhajitelnu aktivnu alebo pokrocilejsiu B12 formu.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-akt-ivny-vitam-in-b12-metylkobalam-in', 'gymbeam-gymbeam-vitam-in-b12-koenz-ymov-a-forma'],
+                        'preferred_keywords' => ['active', 'metylkobalamin', 'koenzym', 'vitamin b12'],
+                        'requires_prefer_hit' => true,
+                    ],
+                    2 => [
+                        'role' => 'value',
+                        'branch' => 'value',
+                        'branch_label' => 'Jednoduchsia tabletkova volba',
+                        'reasoning' => 'Jednoduchsi tabletkovy default pre cloveka, ktory chce vitamin B12 vyriesit bez komplikacii.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-vitam-in-b12-kobalam-in-90-tab-bez-pr-ichute'],
+                        'preferred_keywords' => ['vitamin b12', 'kobalamin', 'tab'],
+                    ],
+                    3 => [
+                        'role' => 'alternative',
+                        'branch' => 'format',
+                        'branch_label' => 'Ina forma pouzitia',
+                        'reasoning' => 'Tretia vetva pre cloveka, ktory chce iny sposob uzivania, napríklad sprej.',
+                        'preferred_slugs' => ['gymbeam-gymbeam-vitam-in-b12-v-spreji-dragon-fruit'],
+                        'preferred_keywords' => ['vitamin b12', 'sprej', 'spray'],
                         'requires_prefer_hit' => true,
                     ],
                 ],
@@ -2254,7 +2469,7 @@ if (!function_exists('interessa_admin_article_recommendation_profiles')) {
                 'intent_label' => 'Imunita',
                 'summary' => 'System hlada hlavnu imunitnu volbu, value podporu a odlisnu gut alebo wellness vetvu.',
                 'allow_categories' => ['imunita', 'mineraly', 'probiotika-travenie'],
-                'prefer_keywords' => ['imunita', 'immune', 'vitamin d', 'zinc', 'zinok', 'probiotic', 'gut'],
+                'prefer_keywords' => ['imunita', 'immune', 'vitamin d', 'zinc', 'zinok', 'probiotic', 'gut', 'beta glukan', 'betaglukan', 'imunoglukan'],
                 'exclude_keywords' => ['pre-workout', 'predtrening', 'kreatin', 'creatine', 'whey', 'protein'],
                 'slots' => [
                     1 => [
@@ -2262,8 +2477,9 @@ if (!function_exists('interessa_admin_article_recommendation_profiles')) {
                         'branch' => 'immune-core',
                         'branch_label' => 'Najlepsi imunitny zaklad',
                         'reasoning' => 'Hlavna volba pre cloveka, ktory hlada jasny imunitny default produkt.',
-                        'preferred_slugs' => ['imunoklub-imunoglukan-p4h-60-kapsul', 'gymbeam-gymbeam-vitamin-d3-k1-k2-forte'],
-                        'preferred_keywords' => ['imuno', 'glukan', 'immune', 'vitamin d', 'd3'],
+                        'preferred_slugs' => ['imunoklub-imunoglukan-p4h-60-kapsul'],
+                        'preferred_keywords' => ['imuno', 'glukan', 'immune', 'vitamin d', 'd3', 'beta glukan'],
+                        'preferred_merchants' => ['imunoklub'],
                         'preferred_categories' => ['imunita', 'mineraly'],
                     ],
                     2 => [
@@ -2308,42 +2524,70 @@ if (!function_exists('interessa_admin_article_recommendation_profile')) {
         };
 
         $profileKey = 'vyziva-general';
-        if (in_array($articleSlug, ['najlepsie-proteiny-2026', 'najlepsie-proteiny-2025'], true)) {
-            $profileKey = 'proteiny-general';
-        } elseif ($articleSlug === 'protein-na-chudnutie') {
-            $profileKey = 'proteiny-chudnutie';
-        } elseif ($articleSlug === 'kreatin-porovnanie') {
-            $profileKey = 'kreatin-general';
-        } elseif (str_contains($articleSlug, 'pre-workout')) {
-            $profileKey = $hasTokens(['bez kofeinu', 'bezkofein', 'stim free', 'stim-free', 'without caffeine', 'caffeine free'])
-                ? 'pre-workout-caffeine-free'
-                : 'pre-workout-general';
-        } elseif (str_contains($articleSlug, 'probiot')) {
-            $profileKey = 'probiotika-general';
-        } elseif (str_contains($articleSlug, 'horcik') || str_contains($articleSlug, 'magnez')) {
-            $profileKey = 'mineraly-horcik';
-        } elseif (str_contains($articleSlug, 'zinok') || str_contains($articleSlug, 'zinc')) {
-            $profileKey = 'mineraly-zinok';
-        } elseif ($articleSlug === 'doplnky-vyzivy' || normalize_category_slug((string) ($context['category'] ?? '')) === 'vyziva') {
-            $profileKey = 'vyziva-general';
-        } elseif ($hasTokens(['pre-workout', 'predtrening', 'pred trening', 'nakopavac'])) {
-            $profileKey = $hasTokens(['bez kofeinu', 'bezkofein', 'stim free', 'stim-free', 'without caffeine', 'caffeine free'])
-                ? 'pre-workout-caffeine-free'
-                : 'pre-workout-general';
-        } elseif ($hasTokens(['kreatin', 'creatine', 'creapure'])) {
-            $profileKey = 'kreatin-general';
-        } elseif ($hasTokens(['protein', 'proteiny', 'whey', 'isolate', 'isolat'])) {
-            $profileKey = $hasTokens(['chudnut', 'chudnutie', 'redukcia', 'dieta', 'diet'])
-                ? 'proteiny-chudnutie'
-                : 'proteiny-general';
-        } elseif ($hasTokens(['probiotik', 'digestion', 'gut', 'lactobac', 'rhamnosus'])) {
-            $profileKey = 'probiotika-general';
-        } elseif ($hasTokens(['zinok', 'zinc'])) {
-            $profileKey = 'mineraly-zinok';
-        } elseif ($hasTokens(['horcik', 'magnez', 'magnesium', 'zmb'])) {
-            $profileKey = 'mineraly-horcik';
-        } elseif ($hasTokens(['imunita', 'immune', 'vitamin d', 'd3', 'imunoglukan'])) {
-            $profileKey = 'imunita-general';
+          if (in_array($articleSlug, ['najlepsie-proteiny-2026', 'najlepsie-proteiny-2025'], true)) {
+              $profileKey = 'proteiny-general';
+          } elseif ($articleSlug === 'protein-na-chudnutie') {
+              $profileKey = 'proteiny-chudnutie';
+          } elseif ($articleSlug === 'kreatin-porovnanie') {
+              $profileKey = 'kreatin-general';
+          } elseif (str_contains($articleSlug, 'vitamin-d') || str_contains($articleSlug, 'vitamin-d3')) {
+              $profileKey = 'vitamin-d-general';
+          } elseif (str_contains($articleSlug, 'vitamin-c')) {
+              $profileKey = 'vitamin-c-general';
+          } elseif (str_contains($articleSlug, 'vitamin-b12')) {
+              $profileKey = 'vitamin-b12-general';
+          } elseif (str_contains($articleSlug, 'multivitamin')) {
+              $profileKey = 'multivitamin-general';
+          } elseif (str_contains($articleSlug, 'omega-3') || str_contains($articleSlug, 'omega3')) {
+              $profileKey = 'omega3-general';
+          } elseif (str_contains($articleSlug, 'pre-workout')) {
+              $profileKey = $hasTokens(['bez kofeinu', 'bezkofein', 'stim free', 'stim-free', 'without caffeine', 'caffeine free'])
+                  ? 'pre-workout-caffeine-free'
+                  : 'pre-workout-general';
+          } elseif (str_contains($articleSlug, 'probiot')) {
+              $profileKey = 'probiotika-general';
+          } elseif (str_contains($articleSlug, 'kolagen') || str_contains($articleSlug, 'collagen') || str_contains($articleSlug, 'klby')) {
+              $profileKey = 'kolagen-general';
+          } elseif (str_contains($articleSlug, 'imunit') || str_contains($articleSlug, 'beta-glukan')) {
+              $profileKey = 'imunita-general';
+          } elseif (str_contains($articleSlug, 'horcik') || str_contains($articleSlug, 'magnez')) {
+              $profileKey = 'mineraly-horcik';
+          } elseif (str_contains($articleSlug, 'zinok') || str_contains($articleSlug, 'zinc') || str_contains($articleSlug, 'zinek')) {
+              $profileKey = 'mineraly-zinok';
+          } elseif ($articleSlug === 'doplnky-vyzivy' || normalize_category_slug((string) ($context['category'] ?? '')) === 'vyziva') {
+              $profileKey = 'vyziva-general';
+          } elseif ($hasTokens(['pre-workout', 'predtrening', 'pred trening', 'nakopavac'])) {
+              $profileKey = $hasTokens(['bez kofeinu', 'bezkofein', 'stim free', 'stim-free', 'without caffeine', 'caffeine free'])
+                  ? 'pre-workout-caffeine-free'
+                  : 'pre-workout-general';
+          } elseif ($hasTokens(['kreatin', 'creatine', 'creapure'])) {
+              $profileKey = 'kreatin-general';
+          } elseif ($hasTokens(['vitamin d3', 'vitamin d', ' d3 ', 'k2'])) {
+              $profileKey = 'vitamin-d-general';
+          } elseif ($hasTokens(['vitamin c', 'askorb'])) {
+              $profileKey = 'vitamin-c-general';
+          } elseif ($hasTokens(['vitamin b12', ' b12 ', 'kobalamin', 'metylkobalamin'])) {
+              $profileKey = 'vitamin-b12-general';
+          } elseif ($hasTokens(['multivitamin', 'multivitam'])) {
+              $profileKey = 'multivitamin-general';
+          } elseif ($hasTokens(['omega-3', 'omega 3', 'fish oil', 'epa', 'dha', 'rybi olej'])) {
+              $profileKey = 'omega3-general';
+          } elseif ($hasTokens(['protein', 'proteiny', 'whey', 'isolate', 'isolat'])) {
+              $profileKey = $hasTokens(['chudnut', 'chudnutie', 'redukcia', 'dieta', 'diet'])
+                  ? 'proteiny-chudnutie'
+                  : 'proteiny-general';
+          } elseif ($hasTokens(['probiotik', 'digestion', 'gut', 'lactobac', 'rhamnosus'])) {
+              $profileKey = 'probiotika-general';
+          } elseif ($hasTokens(['kolagen', 'collagen', 'klby', 'joint'])) {
+              $profileKey = 'kolagen-general';
+          } elseif ($hasTokens(['imunita', 'immune', 'beta glukan', 'betaglukan', 'imunoglukan'])) {
+              $profileKey = 'imunita-general';
+          } elseif ($hasTokens(['zinok', 'zinc', 'zinek'])) {
+              $profileKey = 'mineraly-zinok';
+          } elseif ($hasTokens(['horcik', 'magnez', 'magnesium', 'zmb'])) {
+              $profileKey = 'mineraly-horcik';
+          } elseif ($hasTokens(['imunita', 'immune', 'vitamin d', 'd3', 'imunoglukan'])) {
+              $profileKey = 'imunita-general';
         }
 
         $profile = $profiles[$profileKey] ?? $profiles['vyziva-general'];
@@ -2352,12 +2596,12 @@ if (!function_exists('interessa_admin_article_recommendation_profile')) {
             static fn($value): string => normalize_category_slug((string) $value),
             is_array($profile['allow_categories'] ?? null) ? $profile['allow_categories'] : []
         ))));
-        if ($profileAllowCategories === []) {
-            $profileAllowCategories = array_values(array_unique(array_filter(array_map(
-                static fn($value): string => normalize_category_slug((string) $value),
-                is_array($rule['categories'] ?? null) ? $rule['categories'] : []
-            ))));
-        }
+          if ($profileAllowCategories === [] && empty($profile['disable_rule_category_fallback'])) {
+              $profileAllowCategories = array_values(array_unique(array_filter(array_map(
+                  static fn($value): string => normalize_category_slug((string) $value),
+                  is_array($rule['categories'] ?? null) ? $rule['categories'] : []
+              ))));
+          }
         $profilePreferKeywords = array_values(array_unique(array_filter(array_map(
             static fn($value): string => interessa_product_lower(trim((string) $value)),
             is_array($profile['prefer_keywords'] ?? null) ? $profile['prefer_keywords'] : []
